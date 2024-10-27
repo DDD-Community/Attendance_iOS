@@ -25,5 +25,5 @@ let project = Project.makeAppModule(
     sources: ["Sources/**"],
     resources: ["Resources/**"],
     infoPlist: .extendingDefault(with: infoPlist),
-    entitlements: .file(path: "../Entitlements/DDDAttendance.entitlements")
+    entitlements: .file(path: "../../Entitlements/DDDAttendance.entitlements")
 )

@@ -6,8 +6,7 @@
 //
 
 import Foundation
-import Service
-import LogMacro
+import AsyncMoya
 
 public final class DependencyContainer {
     private var registry = [String: Any]()
@@ -19,12 +18,12 @@ public final class DependencyContainer {
     public func register<T>(_ type: T.Type, build: @escaping () -> T) async -> () -> Void {
         let key = String(describing: type)
         registry[key] = build
-        Log.debug("Registered", key)
+      #logDebug("Registered", key)
         
         let releaseHandler = { [weak self] in
             self?.registry[key] = nil
             self?.releaseHandlers[key] = nil
-            Log.debug("Released", key)
+          #logDebug("Released", key)
         }
         
         releaseHandlers[key] = releaseHandler
