@@ -1,0 +1,3 @@
+git_url("git@github.com:TrandyTuist/DrumBeatMaster_Fastlane.git")
+storage_mode("git")
+app_identifier(["io.DDD.Attendance"])
