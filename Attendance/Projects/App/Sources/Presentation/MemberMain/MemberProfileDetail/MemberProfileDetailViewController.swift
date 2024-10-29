@@ -28,17 +28,17 @@ final class MemberProfileDetailViewController: UIViewController {
     // MARK: - Public helpers
     
     // MARK: - Private helpers
-    private func switchToLoginView() {
-        guard let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate,
-              let window = sceneDelegate.window else {
-            return
-        }
-        UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve) {
-            let viewController: SNSLoginViewController = .init()
-            let navigationController: UINavigationController = .init(rootViewController: viewController)
-            window.rootViewController = navigationController
-        }
-    }
+//    private func switchToLoginView() {
+//        guard let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate,
+//              let window = sceneDelegate.window else {
+//            return
+//        }
+//        UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve) {
+//            let viewController: SNSLoginViewController = .init()
+//            let navigationController: UINavigationController = .init(rootViewController: viewController)
+//            window.rootViewController = navigationController
+//        }
+//    }
 }
 
 extension MemberProfileDetailViewController: View {
@@ -60,10 +60,10 @@ extension MemberProfileDetailViewController: View {
             .distinctUntilChanged()
             .compactMap { $0 }
             .observe(on: MainScheduler.asyncInstance)
-            .bind { [weak self] isLoggedOut in
-                guard isLoggedOut else { return }
-                self?.switchToLoginView()
-            }.disposed(by: disposeBag)
+//            .bind { [weak self] isLoggedOut in
+//                guard isLoggedOut else { return }
+//                self?.switchToLoginView()
+//            }.disposed(by: disposeBag)
     }
     
     private func bindAction(_ reactor: Reactor) {

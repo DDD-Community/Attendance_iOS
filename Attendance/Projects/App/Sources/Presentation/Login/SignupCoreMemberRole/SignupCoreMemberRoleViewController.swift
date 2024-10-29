@@ -55,18 +55,19 @@ final class SignupCoreMemberRoleViewController: UIViewController {
         return coreMemberHostingViewController
     }
     
-    private func switchView() {
-        guard let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate,
-              let window = sceneDelegate.window else {
-            return
-        }
-        UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve) { [weak self] in
-            guard let viewController = self?.getViewController() else { return }
-            let navigationController: UINavigationController = .init(rootViewController: viewController)
-            navigationController.navigationBar.isHidden = true
-            window.rootViewController = navigationController
-        }
-    }
+//    private func switchView() {
+//        guard let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate,
+//              let window = sceneDelegate.window else {
+//            return
+//        }
+//        UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve) { [weak self] in
+//            guard let viewController = self?.getViewController() else { return }
+//            let navigationController: UINavigationController = .init(rootViewController: viewController)
+//            navigationController.navigationBar.isHidden = true
+//            window.rootViewController = navigationController
+//        }
+//    }
+  
 }
 
 extension SignupCoreMemberRoleViewController: ReactorKit.View {
@@ -131,10 +132,10 @@ extension SignupCoreMemberRoleViewController: ReactorKit.View {
         reactor.state.map { $0.isSignupSuccess }
             .distinctUntilChanged()
             .compactMap { $0 }
-            .bind { [weak self] isSuccess in
-                guard isSuccess else { return }
-                self?.switchView()
-            }.disposed(by: self.disposeBag)
+//            .bind { [weak self] isSuccess in
+//                guard isSuccess else { return }
+//                self?.switchView()
+//            }.disposed(by: self.disposeBag)
     }
     
 }

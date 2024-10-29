@@ -15,14 +15,14 @@ final class SplashViewController: UIViewController {
     
     typealias Reactor = SplashReactor
     
-    private var mainView: SplashView {
-        return view as! SplashView
+    private var mainView: SplashViews {
+        return view as! SplashViews
     }
     
     var disposeBag: DisposeBag = .init()
     
     override func loadView() {
-        view = SplashView()
+        view = SplashViews()
         reactor = SplashReactor()
         reactor?.action.onNext(.fetchSignedUser)
     }
@@ -44,12 +44,12 @@ final class SplashViewController: UIViewController {
     
     private func switchToLoginView() {
         let viewController: SNSLoginViewController = .init()
-        switchView(viewController)
+//        switchView(viewController)
     }
     
     private func switchToMemberView() {
         let viewController = MemberMainViewController()
-        switchView(viewController)
+//        switchView(viewController)
     }
     
     private func switchToCoreMemberView() {
@@ -60,20 +60,20 @@ final class SplashViewController: UIViewController {
                     ._printChanges()
             }))
         let coreMemberHostingViewController = UIHostingController(rootView: rootCoreMemberView)
-        switchView(coreMemberHostingViewController)
+//        switchView(coreMemberHostingViewController)
     }
     
-    private func switchView(_ viewController: UIViewController) {
-        guard let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate,
-              let window = sceneDelegate.window else {
-            return
-        }
-        UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve) {
-            let navigationController: UINavigationController = .init(rootViewController: viewController)
-            navigationController.isNavigationBarHidden = true
-            window.rootViewController = navigationController
-        }
-    }
+//    private func switchView(_ viewController: UIViewController) {
+//        guard let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate,
+//              let window = sceneDelegate.window else {
+//            return
+//        }
+//        UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve) {
+//            let navigationController: UINavigationController = .init(rootViewController: viewController)
+//            navigationController.isNavigationBarHidden = true
+//            window.rootViewController = navigationController
+//        }
+//    }
 }
 
 extension SplashViewController: ReactorKit.View {
@@ -82,8 +82,8 @@ extension SplashViewController: ReactorKit.View {
             .distinctUntilChanged()
             .compactMap { $0 }
             .observe(on: MainScheduler.asyncInstance)
-            .bind { [weak self] memberType in
-                self?.switchView(memberType)
-            }.disposed(by: self.disposeBag)
+//            .bind { [weak self] memberType in
+//                self?.switchView(memberType)
+//            }.disposed(by: self.disposeBag)
     }
 }

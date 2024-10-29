@@ -42,7 +42,7 @@ final class SNSLoginViewController: UIViewController {
     
     private func routeToMemberMain() {
         let vc: MemberMainViewController = .init()
-        self.switchViewController(vc)
+//        self.switchViewController(vc)
     }
     
     private func routeToCoreMemberMain() {
@@ -53,7 +53,7 @@ final class SNSLoginViewController: UIViewController {
                     ._printChanges()
         }))
         let coreMemberHostingViewController = UIHostingController(rootView: rootCoreMemberView)
-        self.switchViewController(coreMemberHostingViewController)
+//        self.switchViewController(coreMemberHostingViewController)
     }
     
     private func alertMessage(_ message: String) {
@@ -63,17 +63,17 @@ final class SNSLoginViewController: UIViewController {
         present(alert, animated: true, completion: nil)
     }
     
-    private func switchViewController(_ viewController: UIViewController) {
-        guard let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate,
-              let window = sceneDelegate.window else {
-            return
-        }
-        UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve) {
-            let navigationController: UINavigationController = .init(rootViewController: viewController)
-            navigationController.navigationBar.isHidden = true
-            window.rootViewController = navigationController
-        }
-    }
+//    private func switchViewController(_ viewController: UIViewController) {
+//        guard let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate,
+//              let window = sceneDelegate.window else {
+//            return
+//        }
+//        UIView.transition(with: window, duration: 0.5, options: .transitionCrossDissolve) {
+//            let navigationController: UINavigationController = .init(rootViewController: viewController)
+//            navigationController.navigationBar.isHidden = true
+//            window.rootViewController = navigationController
+//        }
+//    }
 }
 
 extension SNSLoginViewController: ReactorKit.View {

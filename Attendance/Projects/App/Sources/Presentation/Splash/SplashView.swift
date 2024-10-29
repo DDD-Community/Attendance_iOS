@@ -12,7 +12,7 @@ import Gifu
 
 import UIKit
 
-final class SplashView: BaseView {
+final class SplashViews: BaseView {
     
     private let animatedImageView: GIFImageView = {
         let imageView = GIFImageView()
@@ -52,7 +52,3 @@ final class SplashView: BaseView {
     }
 }
 
-
-#Preview {
-    SplashView()
-}

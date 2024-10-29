@@ -19,7 +19,8 @@ let project = Project.makeAppModule(
     scripts: [],
     dependencies: [
         .Shared(implements: .Shareds),
-        .Networking(implements: .Networkings)
+        .Networking(implements: .Networkings),
+        .Presentation(implements: .Presentation)
         
     ],
     sources: ["Sources/**"],
