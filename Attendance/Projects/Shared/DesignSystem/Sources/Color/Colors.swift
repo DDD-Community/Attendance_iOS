@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 
 public extension Color {
+  static let backGround = Color(hex: "0C0E0F")
     static let basicBlack = Color(hex: "1A1A1A")
     static let gray200 = Color(hex: "E6E6E6")
     static let gray300 = Color(hex: "8F8F8F")
