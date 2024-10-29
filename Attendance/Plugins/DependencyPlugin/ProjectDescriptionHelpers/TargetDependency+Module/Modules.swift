@@ -29,7 +29,7 @@ public extension ModulePath {
 public extension ModulePath {
   enum Presentations: String, CaseIterable {
     case Presentation
-    public static let name: String = "Presentations"
+    public static let name: String = "Presentation"
   }
 }
 
