@@ -57,14 +57,18 @@ extension LoginView {
         .scaledToFit()
         .frame(height: 48)
         .overlay {
-            SignInWithAppleButton(.signIn) { request in
-              var appleNonce = store.nonce
-              appleNonce = AppleLoginManger.shared.randomNonceString()
+          SignInWithAppleButton(.signIn) { request in
+              // 새 nonce 생성 및 설정
+              let rawNonce = AppleLoginManger.shared.randomNonceString()
+              store.nonce = rawNonce // `store.nonce`에 저장하여 일관성 유지
+
+              // 요청에 nonce의 SHA-256 해시 값을 설정
               request.requestedScopes = [.email, .fullName]
-              request.nonce = AppleLoginManger.shared.sha256(appleNonce)
-            } onCompletion: { result in
-               
-            }
+              request.nonce = AppleLoginManger.shared.sha256(rawNonce)
+          } onCompletion: { result in
+              // `store.nonce`를 액션에 전달
+              store.send(.async(.appleLogin(result, nonce: store.nonce)))
+          }
             .blendMode(.overlay)
             .signInWithAppleButtonStyle(.white)
             .frame(height: 30)
@@ -79,6 +83,9 @@ extension LoginView {
         .resizable()
         .scaledToFit()
         .frame(height: 48)
+        .onTapGesture {
+          store.send(.async(.googleLogin))
+        }
       
       Spacer()
         .frame(height: 40)
