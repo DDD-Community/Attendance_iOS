@@ -9,6 +9,6 @@ import RxSwift
 
 import Foundation
 
-protocol OAuthRepositoryProtocol {
-    func authorize(_ oAuthProvider: DDDOAuthProvider) -> Single<OAuthTokenResponse>
-}
+//protocol OAuthRepositoryProtocols {
+//    func authorize(_ oAuthProvider: DDDOAuthProvider) -> Single<OAuthTokenResponse>
+//}

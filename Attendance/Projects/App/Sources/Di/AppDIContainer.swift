@@ -7,6 +7,7 @@
 
 import Foundation
 import DiContainer
+import Networkings
 
 public final class AppDIContainer {
     public static let shared: AppDIContainer = .init()
@@ -25,6 +26,7 @@ public final class AppDIContainer {
     private func registerUseCases() async {
         await registerFireStoreUseCase()
         await registerQrCodeUseCase()
+      await registerOAuthUseCase()
     }
 
     private func registerFireStoreUseCase() async {
@@ -46,11 +48,22 @@ public final class AppDIContainer {
             return QrCodeUseCase(repository: repository)
         }
     }
+  
+  private func registerOAuthUseCase() async {
+    await diContainer.register(OAuthUseCaseProtocol.self) {
+      guard let repository = self.diContainer.resolve(OAuthRepositoryProtocol.self) else {
+        assertionFailure("FirestoreRepositoryProtocol must be registered before registering FirestoreUseCaseProtocol")
+        return OAuthUseCase(repository: DefaultOAuthRepository())
+      }
+      return OAuthUseCase(repository: repository)
+    }
+  }
 
     // MARK: - Repositories Registration
     private func registerRepositories() async {
         await registerFireStoreRepositories()
         await registerQrCodeRepositories()
+      await registerOAuthRepositories()
     }
 
     private func registerFireStoreRepositories() async {
@@ -64,5 +77,11 @@ public final class AppDIContainer {
             QrCodeRepository()
         }
     }
+  
+  private func registerOAuthRepositories() async {
+    await diContainer.register(OAuthRepositoryProtocol.self) {
+      OAuthRepository()
+      }
+  }
 }
 

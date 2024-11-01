@@ -10,7 +10,7 @@ import ComposableArchitecture
 
 @main
 struct AttendanceApp: App {
-//  @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+  @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
   
   init() {
     

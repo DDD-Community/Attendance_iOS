@@ -9,10 +9,10 @@ import RxSwift
 
 import Foundation
 
-final class OAuthRepository: OAuthRepositoryProtocol {
-    
-    func authorize(_ oAuthProvider: DDDOAuthProvider) -> Single<OAuthTokenResponse> {
-        oAuthProvider.service.authorize()
-    }
-    
-}
+//final class OAuthRepository: OAuthRepositoryProtocol {
+//    
+//    func authorize(_ oAuthProvider: DDDOAuthProvider) -> Single<OAuthTokenResponse> {
+//        oAuthProvider.service.authorize()
+//    }
+//    
+//}
