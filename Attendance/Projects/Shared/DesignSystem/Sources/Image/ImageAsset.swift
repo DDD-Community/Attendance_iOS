@@ -8,22 +8,25 @@
 import Foundation
 
 public enum ImageAsset: String {
-    
-    case mangeMentProfile
-    case appLogo
-    case qrCode
-    case eventGenerate
-    case arrowBack
-    case plus
-    case logo
-    case pet
-    case arrow_down
-    case arrow_up
-    case editEvent
-    
+  
+  case mangeMentProfile
+  case appLogo
+  case qrCode
+  case eventGenerate
+  case arrowBack
+  case plus
+  case logo
+  case pet
+  case arrow_down
+  case arrow_up
+  case editEvent
+  
   //MARK: - 소셜로그인 버튼
   case appleLogin
   case googleLogin
-
-    case empty
+  
+  //MARK: - 회원가입
+  case backButton
+  
+  case empty
 }
