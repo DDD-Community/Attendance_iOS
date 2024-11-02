@@ -22,9 +22,9 @@ import Presentation
           SplashView(store: store)
         }
         
-      case .login:
-        if let store = store.scope(state: \.login, action: \.view.login) {
-          LoginView(store: store)
+      case .auth:
+        if let store = store.scope(state: \.auth, action: \.view.auth) {
+          AuthCoordinatorView(store: store)
         }
       }
     }

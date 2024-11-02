@@ -15,7 +15,7 @@ struct AppReducer {
   @ObservableState
   enum State {
     case splash(Splash.State)
-    case login(Login.State)
+    case auth(AuthCoordinator.State)
    
     init() {
       self = .splash(.init())
@@ -30,7 +30,7 @@ struct AppReducer {
   enum View {
     case presntAuth
     case splash(Splash.Action)
-    case login(Login.Action)
+    case auth(AuthCoordinator.Action)
   }
   @Dependency(\.continuousClock) var clock
   var body: some  ReducerOf<Self> {
@@ -43,8 +43,8 @@ struct AppReducer {
     .ifCaseLet(\.splash, action: \.view.splash) {
       Splash()
     }
-    .ifCaseLet(\.login, action: \.view.login) {
-      Login()
+    .ifCaseLet(\.auth, action: \.view.auth) {
+      AuthCoordinator()
     }
   }
   
@@ -54,7 +54,7 @@ struct AppReducer {
   ) -> Effect<Action> {
     switch action {
     case .presntAuth:
-      state = .login(.init())
+      state = .auth(.init())
       return .none
       
     case .splash(.navigation(.presntAuth)):
