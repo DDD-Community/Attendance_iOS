@@ -61,7 +61,7 @@ public struct Login {
   
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    
+    case presntSignUpInviteView
     
   }
   
@@ -77,25 +77,28 @@ public struct Login {
         return .none
         
         
-      case .view(let View):
-        switch View {
-          
-        }
+      case .view(let viewAction):
+        return handleViewAction(state: &state, action: viewAction)
         
       case .async(let AsyncAction):
         return handleAsyncAction(state: &state, action: AsyncAction)
         
-      case .inner(let InnerAction):
-        switch InnerAction {
-          
-        }
+      case .inner(let innerAction):
+        return handleInnerAction(state: &state, action: innerAction)
         
-      case .navigation(let NavigationAction):
-        switch NavigationAction {
-          
-        }
+      case .navigation(let navigationAction):
+        return handleNavigationAction(state: &state, action: navigationAction)
       }
     }
+  }
+  
+  private func handleViewAction(
+      state: inout State,
+      action: View
+  ) -> Effect<Action> {
+      switch action {
+     
+      }
   }
   
   private func handleAsyncAction(
@@ -109,8 +112,9 @@ public struct Login {
           let result = try await oAuthUseCase.handleAppleLogin(authData, nonce: nonce)
           await send(.async(.appleRespose(.success(result))))
           try await clock.sleep(for: .seconds(0.03))
+          await send(.navigation(.presntSignUpInviteView))
         } catch {
-          Log.debug("애플 로그인 에러", error.localizedDescription)
+          #logDebug("애플 로그인 에러", error.localizedDescription)
         }
       }
       .debounce(id: LoginID(), for: 0.1, scheduler: mainQueue)
@@ -149,6 +153,10 @@ public struct Login {
         case .success(let googleLoginData):
           if let googleLoginData = googleLoginData {
             await send(.async(.oAuthResponse(.success(googleLoginData))))
+            
+            if googleLoginData.accessToken != "" {
+              await send(.navigation(.presntSignUpInviteView))
+            }
           }
         case .failure(let error):
           await send(.async(.oAuthResponse(.failure(CustomError.firestoreError("구글 로그인 실패 \(error.localizedDescription)")))))
@@ -167,4 +175,22 @@ public struct Login {
     }
   }
     
+  private func handleInnerAction(
+    state: inout State,
+    action: InnerAction
+  ) -> Effect<Action> {
+    switch action {
+      
+    }
+  }
+  
+  private func handleNavigationAction(
+    state: inout State,
+    action: NavigationAction
+  ) -> Effect<Action> {
+    switch action {
+    case .presntSignUpInviteView:
+      return .none
+    }
+  }
 }
