@@ -30,9 +30,21 @@ public struct AuthCoordinatorView: View {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()
+        
+        
+      case .signUpName(let signUpStore):
+        SignUpNameView(store: signUpStore) {
+          store.send(.view(.backAction))
+        }
+        .navigationBarBackButtonHidden()
+        
+      case .signUpPart(let signUpPartStore):
+        SignUpPartView(store: signUpPartStore) {
+          store.send(.view(.backAction))
+        }
+        .navigationBarBackButtonHidden()
       }
     }
-    
   }
 }
 

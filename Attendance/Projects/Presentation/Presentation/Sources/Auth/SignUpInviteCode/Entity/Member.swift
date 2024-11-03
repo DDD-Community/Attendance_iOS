@@ -13,7 +13,7 @@ public struct Member: Codable, Hashable, Equatable {
     var uid: String
     var memberid: String
     var name: String
-    var role: SelectPart
+    var role: SelectPart?
     var memberType: MemberType
     var manging: Managing?
     var memberTeam: ManagingTeam?
@@ -29,7 +29,7 @@ public struct Member: Codable, Hashable, Equatable {
     uid: String = "",
     memberid: String = "",
     name: String = "",
-    role: SelectPart = .all,
+    role: SelectPart? = .all,
     memberType: MemberType = .notYet,
     manging: Managing? = nil,
     memberTeam: ManagingTeam? = nil,

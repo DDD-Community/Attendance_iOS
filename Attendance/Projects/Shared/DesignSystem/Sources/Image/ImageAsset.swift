@@ -27,6 +27,11 @@ public enum ImageAsset: String {
   
   //MARK: - 회원가입
   case backButton
+  case error
+  case close
+  case errorClose
+  case disableSelectPart
+  case activeSelectPart
   
   case empty
 }

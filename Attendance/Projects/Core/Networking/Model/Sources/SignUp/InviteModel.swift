@@ -18,4 +18,10 @@ public struct InviteModel: Decodable {
         case expiredDate = "expired_date"
         case isAdmin = "is_admin"
     }
+  
+  public init(code: String?, expiredDate: Date?, isAdmin: Bool?) {
+    self.code = code
+    self.expiredDate = expiredDate
+    self.isAdmin = isAdmin
+  }
 }

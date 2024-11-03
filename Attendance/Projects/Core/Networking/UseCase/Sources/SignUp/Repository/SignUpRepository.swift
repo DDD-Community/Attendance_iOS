@@ -37,9 +37,17 @@ public class SignUpRepository: SignUpRepositoryProtcol {
                 let isAdmin = data["is_admin"] as? Bool else {
               throw UserRepositoryError.invalidInviteCode
           }
-        #logDebug("초대코드 확인", data)
-        
-        return InviteDTOModel(code: code, expireData:  timeStamp.dateValue(), isAdmin: isAdmin)
+          
+          #logDebug("초대코드 확인", data)
+          
+          // `InviteModel`을 초기화하고 `toModel()`을 사용하여 변환
+          let inviteModel = InviteModel(
+              code: code,
+              expiredDate: timeStamp.dateValue(),
+              isAdmin: isAdmin
+          )
+          
+          return inviteModel.toModel()
       } catch {
           throw UserRepositoryError.invalidInviteCode
       }

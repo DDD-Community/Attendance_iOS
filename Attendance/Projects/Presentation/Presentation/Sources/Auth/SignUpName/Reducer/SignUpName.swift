@@ -1,37 +1,31 @@
 //
-//  AuthCoordinator.swift
+//  SignUpName.swift
 //  Presentation
 //
-//  Created by Wonji Suh  on 11/2/24.
+//  Created by Wonji Suh  on 11/3/24.
 //
 
 import Foundation
 import ComposableArchitecture
 
 import Utill
-import TCACoordinators
 
 @Reducer
-public struct AuthCoordinator {
+public struct SignUpName {
   public init() {}
   
   @ObservableState
   public struct State: Equatable {
-    
-    var routes: [Route<AuthScreen.State>]
+    public init() {}
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
-    
-    
-    public init() {
-      
-      self.routes = [.root(.login(.init()), embedInNavigationView: true)]
+    var isNotAvaliableName: Bool = false
+    var enableButton: Bool {
+      return !userSignUpMember.name.isEmpty && !isNotAvaliableName
     }
-    
   }
   
-  public enum Action: FeatureAction, BindableAction {
+  public enum Action: ViewAction, BindableAction, FeatureAction {
     case binding(BindingAction<State>)
-    case router(IndexedRouterActionOf<AuthScreen>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
@@ -41,8 +35,7 @@ public struct AuthCoordinator {
   //MARK: - ViewAction
   @CasePathable
   public enum View {
-    case backAction
-    case backToRootAction
+    case checkIsAvaliableName
   }
   
   
@@ -59,8 +52,7 @@ public struct AuthCoordinator {
   
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    
-    
+    case presntSignUpPart
   }
   
   public var body: some ReducerOf<Self> {
@@ -70,8 +62,6 @@ public struct AuthCoordinator {
       case .binding(_):
         return .none
         
-      case .router(let routeAction):
-        return routerAction(state: &state, action: routeAction)
         
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
@@ -84,33 +74,7 @@ public struct AuthCoordinator {
         
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
-      
       }
-    }
-    .forEachRoute(\.routes, action: \.router)
-  }
-  
-  private func routerAction(
-    state: inout State,
-    action: IndexedRouterActionOf<AuthScreen>
-  ) -> Effect<Action> {
-    switch action {
-      //MARK: - 초대코드 입력
-    case .routeAction(id: _, action: .login(.navigation(.presntSignUpInviteView))):
-      state.routes.push(.signUpInviteCode(.init(userSignUp: state.userSignUpMember)))
-      return .none
-      
-      //MARK: - 이름 입력
-    case .routeAction(id: _, action: .signUpInviteCode(.navigation(.presntSignUpName))):
-      state.routes.push(.signUpName(.init()))
-      return .none
-      
-    case .routeAction(id: _, action: .signUpName(.navigation(.presntSignUpPart))):
-      state.routes.push(.signUpPart(.init()))
-      return .none
-      
-    default:
-      return .none
     }
   }
   
@@ -119,13 +83,16 @@ public struct AuthCoordinator {
       action: View
   ) -> Effect<Action> {
       switch action {
-      case .backAction:
-        state.routes.goBack()
-        return .none
-        
-      case .backToRootAction:
-        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-          $0.goBackToRoot()
+      case .checkIsAvaliableName:
+        if state.userSignUpMember.name.count > 5 {
+          state.isNotAvaliableName = true
+        } else {
+          state.isNotAvaliableName = false
+        }
+        return .run { [enableButton = state.enableButton] send in
+          if enableButton == true {
+            await send(.navigation(.presntSignUpPart))
+          }
         }
       }
   }
@@ -135,7 +102,8 @@ public struct AuthCoordinator {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-      
+    case .presntSignUpPart:
+      return .none
     }
   }
   
@@ -155,17 +123,5 @@ public struct AuthCoordinator {
     switch action {
       
     }
-  }
-}
-
-
-extension AuthCoordinator {
- 
-  @Reducer(state: .equatable)
-  public enum AuthScreen {
-    case login(Login)
-    case signUpInviteCode(SignUpInviteCode)
-    case signUpName(SignUpName)
-    case signUpPart(SignUpPart)
   }
 }

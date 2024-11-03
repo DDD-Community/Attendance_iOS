@@ -74,8 +74,7 @@ public struct SignUpInviteCode {
   
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    case presntAdminSignUp
-    case presntMemberSignUp
+    case presntSignUpName
   }
   
   struct SignUpInviteCodeCancel: Hashable {}
@@ -131,11 +130,7 @@ public struct SignUpInviteCode {
           if let validataCodeData = validataCodeData {
             await send(.async(.validataInviteCodeResponse(.success(validataCodeData))))
             
-            if validataCodeData.isAdmin == true {
-              await send(.navigation(.presntAdminSignUp))
-            } else {
-              await send(.navigation(.presntMemberSignUp))
-            }
+            await send(.navigation(.presntSignUpName))
           }
         case .failure(let error):
           await send(.async(.validataInviteCodeResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
@@ -161,9 +156,7 @@ public struct SignUpInviteCode {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presntAdminSignUp:
-      return .none
-    case .presntMemberSignUp:
+    case .presntSignUpName:
       return .none
     }
   }
