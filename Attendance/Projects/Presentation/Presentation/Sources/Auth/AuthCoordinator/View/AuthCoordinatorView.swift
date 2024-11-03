@@ -43,6 +43,12 @@ public struct AuthCoordinatorView: View {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()
+        
+      case .signUpManging(let signUpMangingStore):
+        SignUpSelectMangingView(store: signUpMangingStore) {
+          store.send(.view(.backAction))
+        }
+        .navigationBarBackButtonHidden()
       }
     }
   }

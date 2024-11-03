@@ -1,27 +1,28 @@
 //
-//  SignUpName.swift
+//  SignUpSelectManging.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 11/3/24.
 //
 
 import Foundation
+
+import Foundation
 import ComposableArchitecture
 
 import Utill
+import Model
 
 @Reducer
-public struct SignUpName {
+public struct SignUpSelectManging {
   public init() {}
   
   @ObservableState
   public struct State: Equatable {
     public init() {}
+    var selectMangingPart : Managing? = .notManging
+    var activeButton: Bool = false
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
-    var isNotAvaliableName: Bool = false
-    var enableButton: Bool {
-      return !userSignUpMember.name.isEmpty && !isNotAvaliableName
-    }
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -35,7 +36,7 @@ public struct SignUpName {
   //MARK: - ViewAction
   @CasePathable
   public enum View {
-    case checkIsAvaliableName
+    case selectMangingButton(selectManging: Managing)
   }
   
   
@@ -52,7 +53,8 @@ public struct SignUpName {
   
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    case presntSignUpPart
+    
+    
   }
   
   public var body: some ReducerOf<Self> {
@@ -76,25 +78,27 @@ public struct SignUpName {
         return handleNavigationAction(state: &state, action: navigationAction)
       }
     }
+    
   }
   
   private func handleViewAction(
-    state: inout State,
-    action: View
+      state: inout State,
+      action: View
   ) -> Effect<Action> {
-    switch action {
-    case .checkIsAvaliableName:
-      if state.userSignUpMember.name.count > 5 {
-        state.isNotAvaliableName = true
-      } else {
-        state.isNotAvaliableName = false
-      }
-      return .run { [enableButton = state.enableButton] send in
-        if enableButton == true {
-          await send(.navigation(.presntSignUpPart))
+      switch action {
+      case .selectMangingButton(let selectManging):
+        if state.selectMangingPart == selectManging {
+          state.selectMangingPart = nil
+          state.userSignUpMember.manging = nil
+          state.activeButton = false
+          return .none
         }
+        
+        state.selectMangingPart = selectManging
+        state.userSignUpMember.manging = selectManging
+        state.activeButton = true
+        return .none
       }
-    }
   }
   
   private func handleNavigationAction(
@@ -102,8 +106,7 @@ public struct SignUpName {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presntSignUpPart:
-      return .none
+   
     }
   }
   

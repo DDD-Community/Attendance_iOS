@@ -24,14 +24,14 @@ public struct SignUpInviteCode {
     var thirdInviteCode: String = ""
     var lastInviteCode: String = ""
     var totalInviteCode: String {
-        return firstInviteCode + secondInviteCode + thirdInviteCode + lastInviteCode
+      return firstInviteCode + secondInviteCode + thirdInviteCode + lastInviteCode
     }
     var enableButton: Bool {
-        return !isNotAvaliableCode &&
-               !firstInviteCode.isEmpty &&
-               !secondInviteCode.isEmpty &&
-               !thirdInviteCode.isEmpty &&
-               !lastInviteCode.isEmpty
+      return !isNotAvaliableCode &&
+      !firstInviteCode.isEmpty &&
+      !secondInviteCode.isEmpty &&
+      !thirdInviteCode.isEmpty &&
+      !lastInviteCode.isEmpty
     }
     var isNotAvaliableCode: Bool = false
     var inviteCodeModel: InviteDTOModel? = nil
@@ -106,12 +106,12 @@ public struct SignUpInviteCode {
   }
   
   private func handleViewAction(
-      state: inout State,
-      action: View
+    state: inout State,
+    action: View
   ) -> Effect<Action> {
-      switch action {
-     
-      }
+    switch action {
+      
+    }
   }
   
   private func handleAsyncAction(
@@ -139,18 +139,23 @@ public struct SignUpInviteCode {
       .debounce(id: SignUpInviteCodeCancel(), for: 0.3, scheduler: mainQueue)
       
     case .validataInviteCodeResponse(let result):
-        switch result {
-        case .success(let validateCodeData):
-            state.inviteCodeModel = validateCodeData
-          state.userSignUp.isAdmin = validateCodeData.isAdmin
-        case .failure(let error):
-            #logError("코드에러", error.localizedDescription)
-            state.isNotAvaliableCode.toggle()
+      switch result {
+      case .success(let validateCodeData):
+        state.inviteCodeModel = validateCodeData
+        state.userSignUp.isAdmin = validateCodeData.isAdmin
+        if validateCodeData.isAdmin == true {
+          state.userSignUp.memberType = .coreMember
+        } else  {
+          state.userSignUp.memberType = .member
         }
-        return .none
+      case .failure(let error):
+        #logError("코드에러", error.localizedDescription)
+        state.isNotAvaliableCode.toggle()
+      }
+      return .none
     }
   }
-    
+  
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction

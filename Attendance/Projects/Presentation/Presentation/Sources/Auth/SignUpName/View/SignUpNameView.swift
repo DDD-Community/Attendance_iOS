@@ -49,7 +49,7 @@ public struct SignUpNameView: View {
         
         signUpNameButton()
         
-
+        
         Spacer()
           .frame(height: 20)
       }
@@ -61,22 +61,11 @@ extension SignUpNameView {
   
   @ViewBuilder
   private func signUpNameText() -> some View {
-    VStack(alignment: .center) {
-      Spacer()
-        .frame(height: 40)
-      
-      Text("이름이 어떻게 되시나요?")
-        .pretendardCustomFont(textStyle: .tilte1NormalBold)
-        .foregroundStyle(Color.basicWhite)
-      
-      Spacer()
-        .frame(height: 8)
-      
-      Text("가입하실 때 사용할 이름을 입력해 주세요")
-        .pretendardCustomFont(textStyle: .body3NormalMedium)
-        .foregroundStyle(Color.basicWhite)
-      
-    }
+    SignUpPartText(
+      content: "이름이 어떻게 되시나요?",
+      title: "가입하실 때 사용할 이름을 입력해 주세요",
+      subtitle: ""
+    )
   }
   
   
@@ -107,7 +96,7 @@ extension SignUpNameView {
                 }
               }
               .onSubmit {
-               
+                
               }
             
             Spacer()
@@ -126,7 +115,7 @@ extension SignUpNameView {
         }
       
     }
-    .padding(.horizontal, 20)
+    .padding(.horizontal, 24)
   }
   
   @ViewBuilder
@@ -148,7 +137,7 @@ extension SignUpNameView {
               .foregroundStyle(Color.borderError)
           }
         }
-
+        
       }
       .padding(.horizontal, 24)
     }

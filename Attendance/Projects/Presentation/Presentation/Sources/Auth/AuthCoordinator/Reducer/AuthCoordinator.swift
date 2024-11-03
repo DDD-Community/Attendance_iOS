@@ -109,6 +109,11 @@ public struct AuthCoordinator {
       state.routes.push(.signUpPart(.init()))
       return .none
       
+      //MARK: - 운영진 담당업무 선택
+    case .routeAction(id: _, action: .signUpPart(.navigation(.presntManging))):
+      state.routes.push(.signUpManging(.init()))
+      return .none
+      
     default:
       return .none
     }
@@ -167,5 +172,6 @@ extension AuthCoordinator {
     case signUpInviteCode(SignUpInviteCode)
     case signUpName(SignUpName)
     case signUpPart(SignUpPart)
+    case signUpManging(SignUpSelectManging)
   }
 }

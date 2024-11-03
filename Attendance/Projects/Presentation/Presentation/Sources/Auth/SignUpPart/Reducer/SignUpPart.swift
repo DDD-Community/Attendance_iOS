@@ -82,24 +82,24 @@ public struct SignUpPart {
   }
   
   private func handleViewAction(
-      state: inout State,
-      action: View
+    state: inout State,
+    action: View
   ) -> Effect<Action> {
-      switch action {
+    switch action {
       
-      case .selectPartButton(let selectPart):
-          if state.selectPart == selectPart {
-              state.selectPart = nil
-              state.userSignUpMember.role = nil
-              state.activeSelectPart = false
-              return .none
-          }
-          
-          state.selectPart = selectPart
-          state.userSignUpMember.role = selectPart
-          state.activeSelectPart = true
-          return .none
+    case .selectPartButton(let selectPart):
+      if state.selectPart == selectPart {
+        state.selectPart = nil
+        state.userSignUpMember.role = nil
+        state.activeSelectPart = false
+        return .none
       }
+      
+      state.selectPart = selectPart
+      state.userSignUpMember.role = selectPart
+      state.activeSelectPart = true
+      return .none
+    }
   }
   
   private func handleNavigationAction(

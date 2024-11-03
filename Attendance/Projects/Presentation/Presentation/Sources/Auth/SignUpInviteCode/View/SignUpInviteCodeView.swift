@@ -63,27 +63,11 @@ extension SignUpInviteCodeView {
   
   @ViewBuilder
   private func inviteCodeInPutTextView() -> some View {
-    VStack(alignment: .center) {
-      Spacer()
-        .frame(height: 40)
-      
-    
-      Text("초대 코드를 입력해 주세요")
-        .pretendardCustomFont(textStyle: .tilte1NormalBold)
-        .foregroundStyle(Color.basicWhite)
-      
-      Spacer()
-        .frame(height: 8)
-      
-      Text("가입을 위해 신규 기수 초대 코드가 필요합니다.")
-        .pretendardCustomFont(textStyle: .body3NormalMedium)
-        .foregroundStyle(Color.basicWhite)
-      
-      Text("받으신 4자리 초대 코드를 입력해 주세요.")
-        .pretendardCustomFont(textStyle: .body3NormalMedium)
-        .foregroundStyle(Color.basicWhite)
-      
-    }
+    SignUpPartText(
+      content: "초대 코드를 입력해 주세요",
+      title: "가입을 위해 신규 기수 초대 코드가 필요합니다.",
+      subtitle: "받으신 4자리 초대 코드를 입력해 주세요."
+    )
   }
   
   

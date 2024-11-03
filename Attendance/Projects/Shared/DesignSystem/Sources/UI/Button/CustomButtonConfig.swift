@@ -15,7 +15,7 @@ public class CustomButtonConfig: DDDCustomButtonConfig {
             enableBackgroundColor: Color.surfaceEnable,
             frameHeight: 48,
             disableFontColor: Color.grayWhite,
-            disableBackgroundColor: Color.onDisabled
+            disableBackgroundColor: Color.blue30
         )
         
         return config
