@@ -1,8 +1,8 @@
 //
 //  FireBaseCollection.swift
-//  DDDAttendance
+//  Model
 //
-//  Created by 서원지 on 6/25/24.
+//  Created by Wonji Suh  on 11/3/24.
 //
 
 import Foundation

@@ -10,7 +10,8 @@ let project = Project.makeAppModule(
   product: .staticFramework,
   settings:  .settings(),
   dependencies: [
-    .SPM.asyncMoya
+    .SPM.asyncMoya,
+    .SPM.firebaseFirestore
   ],
   sources: ["Sources/**"]
 )

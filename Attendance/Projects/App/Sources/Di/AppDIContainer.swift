@@ -10,44 +10,45 @@ import DiContainer
 import Networkings
 
 public final class AppDIContainer {
-    public static let shared: AppDIContainer = .init()
-
-    private let diContainer: DependencyContainer = .live
-
-    private init() {
+  public static let shared: AppDIContainer = .init()
+  
+  private let diContainer: DependencyContainer = .live
+  
+  private init() {
+  }
+  
+  public func registerDependencies() async {
+    await registerRepositories()
+    await registerUseCases()
+  }
+  
+  // MARK: - Use Cases
+  private func registerUseCases() async {
+    await registerFireStoreUseCase()
+    await registerQrCodeUseCase()
+    await registerOAuthUseCase()
+    await registerSignUpUseCase()
+  }
+  
+  private func registerFireStoreUseCase() async {
+    await diContainer.register(FireStoreUseCaseProtocol.self) {
+      guard let repository = self.diContainer.resolve(FireStoreRepositoryProtocol.self) else {
+        assertionFailure("FirestoreRepositoryProtocol must be registered before registering FirestoreUseCaseProtocol")
+        return FireStoreUseCase(repository: DefaultFireStoreRepository())
+      }
+      return FireStoreUseCase(repository: repository)
     }
-
-    public func registerDependencies() async {
-        await registerRepositories()
-        await registerUseCases()
+  }
+  
+  private func registerQrCodeUseCase() async {
+    await diContainer.register(QrCodeUseCaseProtocool.self) {
+      guard let repository = self.diContainer.resolve(QrCodeRepositoryProtcool.self) else {
+        assertionFailure("FirestoreRepositoryProtocol must be registered before registering FirestoreUseCaseProtocol")
+        return QrCodeUseCase(repository: DefaultQrCodeRepository())
+      }
+      return QrCodeUseCase(repository: repository)
     }
-
-    // MARK: - Use Cases
-    private func registerUseCases() async {
-        await registerFireStoreUseCase()
-        await registerQrCodeUseCase()
-      await registerOAuthUseCase()
-    }
-
-    private func registerFireStoreUseCase() async {
-        await diContainer.register(FireStoreUseCaseProtocol.self) {
-            guard let repository = self.diContainer.resolve(FireStoreRepositoryProtocol.self) else {
-                assertionFailure("FirestoreRepositoryProtocol must be registered before registering FirestoreUseCaseProtocol")
-                return FireStoreUseCase(repository: DefaultFireStoreRepository())
-            }
-            return FireStoreUseCase(repository: repository)
-        }
-    }
-    
-    private func registerQrCodeUseCase() async {
-        await diContainer.register(QrCodeUseCaseProtocool.self) {
-            guard let repository = self.diContainer.resolve(QrCodeRepositoryProtcool.self) else {
-                assertionFailure("FirestoreRepositoryProtocol must be registered before registering FirestoreUseCaseProtocol")
-                return QrCodeUseCase(repository: DefaultQrCodeRepository())
-            }
-            return QrCodeUseCase(repository: repository)
-        }
-    }
+  }
   
   private func registerOAuthUseCase() async {
     await diContainer.register(OAuthUseCaseProtocol.self) {
@@ -58,30 +59,48 @@ public final class AppDIContainer {
       return OAuthUseCase(repository: repository)
     }
   }
-
-    // MARK: - Repositories Registration
-    private func registerRepositories() async {
-        await registerFireStoreRepositories()
-        await registerQrCodeRepositories()
-      await registerOAuthRepositories()
+  
+  
+  private func registerSignUpUseCase() async {
+    await diContainer.register(SignUpUseCaseProtocol.self) {
+      guard let repository = self.diContainer.resolve(SignUpRepositoryProtcol.self) else {
+        assertionFailure("SignUpRepositoryProtcol must be registered before registering SignUpUseCaseProtocol")
+        return SignUpUseCase(repository: DefaultSignUpRepository())
+      }
+      return SignUpUseCase(repository: repository)
     }
-
-    private func registerFireStoreRepositories() async {
-        await diContainer.register(FireStoreRepositoryProtocol.self) {
-            FireStoreRepository()
-        }
+  }
+  
+  // MARK: - Repositories Registration
+  private func registerRepositories() async {
+    await registerFireStoreRepositories()
+    await registerQrCodeRepositories()
+    await registerOAuthRepositories()
+    await registerSignUpRepositories()
+  }
+  
+  private func registerFireStoreRepositories() async {
+    await diContainer.register(FireStoreRepositoryProtocol.self) {
+      FireStoreRepository()
     }
-    
-    private func registerQrCodeRepositories() async {
-        await diContainer.register(QrCodeRepositoryProtcool.self) {
-            QrCodeRepository()
-        }
+  }
+  
+  private func registerQrCodeRepositories() async {
+    await diContainer.register(QrCodeRepositoryProtcool.self) {
+      QrCodeRepository()
     }
+  }
   
   private func registerOAuthRepositories() async {
     await diContainer.register(OAuthRepositoryProtocol.self) {
       OAuthRepository()
-      }
+    }
+  }
+  
+  private func registerSignUpRepositories() async {
+    await diContainer.register(SignUpRepositoryProtcol.self) {
+      SignUpRepository()
+    }
   }
 }
 

@@ -11,6 +11,10 @@ import DesignSystem
 
 public struct SignUpInviteCodeView : View {
   @Bindable var store: StoreOf<SignUpInviteCode>
+  @FocusState var firstInviteCodeFocus: Bool
+  @FocusState var secodInviteCodeFocus: Bool
+  @FocusState var thirdlnviteCodeFocus: Bool
+  @FocusState var lastlnviteCodeFocus: Bool
   var backAction: ()  -> Void = {}
 
   public init(
@@ -26,7 +30,6 @@ public struct SignUpInviteCodeView : View {
       Color.backGround
         .edgesIgnoringSafeArea(.all)
       
-      
       VStack {
         
         Spacer()
@@ -37,12 +40,18 @@ public struct SignUpInviteCodeView : View {
         ScrollView{
           inviteCodeInPutTextView()
           
-          checkInviteCodeButton()
+          inviteCodeView()
           
-          Spacer()
+          isNotValidateCodeErrorText()
+          
         }
         .scrollIndicators(.hidden)
         .scrollBounceBehavior(.basedOnSize)
+        
+        checkInviteCodeButton()
+        
+        Spacer()
+          .frame(height: 20)
         
       }
     }
@@ -82,16 +91,139 @@ extension SignUpInviteCodeView {
   private func checkInviteCodeButton() -> some View {
     VStack {
       Spacer()
-        .frame(height: UIScreen.screenHeight * 0.65)
       
       CustomButton(
-        action: {},
+        action: {
+          store.send(.async(.validataInviteCode(code: store.totalInviteCode)))
+        },
         title: "다음",
         config: CustomButtonConfig.create(),
-        isEnable: false
+        isEnable: store.enableButton
       )
     }
     .padding(.horizontal, 24)
-    .padding(.bottom, 30)
+    .fixedSize(horizontal: false, vertical: true)
+  }
+  
+  @ViewBuilder
+  private func inviteCodeView() -> some View {
+      VStack {
+          Spacer()
+              .frame(height: 40)
+          
+          HStack(spacing: 8) {
+              Spacer()
+              
+              inputCodeText(
+                  text: $store.firstInviteCode,
+                  isErrorCode: store.isNotAvaliableCode,
+                  isFocs: $firstInviteCodeFocus) { moveBack in
+                      if moveBack {
+                          firstInviteCodeFocus = true
+                        store.isNotAvaliableCode = false
+                      } else {
+                          secodInviteCodeFocus = true
+                      }
+                  }
+              
+              inputCodeText(
+                  text: $store.secondInviteCode,
+                  isErrorCode:  store.isNotAvaliableCode,
+                  isFocs: $secodInviteCodeFocus) { moveBack in
+                      if moveBack {
+                          firstInviteCodeFocus = true
+                        store.isNotAvaliableCode = false
+                      } else {
+                        thirdlnviteCodeFocus = true
+                      }
+                  }
+              
+              inputCodeText(
+                  text: $store.thirdInviteCode,
+                  isErrorCode:  store.isNotAvaliableCode,
+                  isFocs: $thirdlnviteCodeFocus) { moveBack in
+                      if moveBack {
+                          secodInviteCodeFocus = true
+                        store.isNotAvaliableCode = false
+                      } else {
+                        lastlnviteCodeFocus = true
+                      }
+                  }
+              
+              inputCodeText(
+                  text: $store.lastInviteCode,
+                  isErrorCode: store.isNotAvaliableCode,
+                  isFocs: $lastlnviteCodeFocus) { moveBack in
+                      if moveBack {
+                        thirdlnviteCodeFocus = true
+                        store.isNotAvaliableCode = false
+                      }
+                  }
+              
+              Spacer()
+          }
+          .padding(.horizontal, 24)
+      }
+  }
+  
+  @ViewBuilder
+  private func inputCodeText(
+      text: Binding<String>,
+      isErrorCode: Bool,
+      isFocs: FocusState<Bool>.Binding,
+      completion: @escaping (Bool) -> Void
+  ) -> some View {
+      RoundedRectangle(cornerRadius: 16)
+          .stroke(text.wrappedValue.isEmpty ? Color.blue20 : isErrorCode ? Color.red40 : Color.clear, style: .init(lineWidth: text.wrappedValue.isEmpty ? 1.5 : 2))
+          .background(text.wrappedValue.isEmpty ? Color.clear : isErrorCode ? Color.red10 : Color.blue10)
+          .cornerRadius(16)
+          .frame(width: 64, height: 64)
+          .overlay(alignment: .center) {
+              TextField(text: text, label: {})
+                  .pretendardCustomFont(textStyle: .headline7Semibold)
+                  .foregroundStyle(Color.gray90)
+                  .multilineTextAlignment(.center)
+                  .frame(maxWidth: .infinity)
+          }
+          .keyboardType(.decimalPad)
+          .onChange(of: text.wrappedValue) { newValue in
+              if newValue.count > 1 {
+                  text.wrappedValue = String(newValue.prefix(1))
+                  completion(false)
+                  isFocs.wrappedValue = true
+              } else if newValue.isEmpty {
+                  completion(true)
+                  isFocs.wrappedValue = false
+              }
+          }
+          .focused(isFocs)
+  }
+  
+  @ViewBuilder
+  private func isNotValidateCodeErrorText() -> some View {
+    if store.isNotAvaliableCode {
+      VStack {
+        Spacer()
+          .frame(height: 16)
+        
+        HStack {
+          Spacer()
+          Image(asset: .error)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 20, height: 20)
+          
+          Spacer()
+            .frame(width: 4)
+          
+          
+          Text("코드가 유효하지 않습니다.")
+            .pretendardCustomFont(textStyle: .body1NormalMedium)
+            .foregroundStyle(Color.borderError)
+          
+          Spacer()
+        }
+      }
+    }
   }
 }

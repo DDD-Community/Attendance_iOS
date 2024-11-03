@@ -9,6 +9,8 @@ import Foundation
 import ComposableArchitecture
 
 import Utill
+import Networkings
+import AsyncMoya
 
 @Reducer
 public struct SignUpInviteCode {
@@ -16,7 +18,31 @@ public struct SignUpInviteCode {
   
   @ObservableState
   public struct State: Equatable {
-    public init() {}
+    
+    var firstInviteCode: String = ""
+    var secondInviteCode: String = ""
+    var thirdInviteCode: String = ""
+    var lastInviteCode: String = ""
+    var totalInviteCode: String {
+        return firstInviteCode + secondInviteCode + thirdInviteCode + lastInviteCode
+    }
+    var enableButton: Bool {
+        return !isNotAvaliableCode &&
+               !firstInviteCode.isEmpty &&
+               !secondInviteCode.isEmpty &&
+               !thirdInviteCode.isEmpty &&
+               !lastInviteCode.isEmpty
+    }
+    var isNotAvaliableCode: Bool = false
+    var inviteCodeModel: InviteDTOModel? = nil
+    
+    @Shared var userSignUp: Member
+    
+    public init(
+      userSignUp: Member
+    ) {
+      self._userSignUp = Shared(wrappedValue: userSignUp, .inMemory("Member"))
+    }
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -37,7 +63,8 @@ public struct SignUpInviteCode {
   
   //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
-    
+    case validataInviteCode(code: String)
+    case validataInviteCodeResponse(Result<InviteDTOModel, CustomError>)
   }
   
   //MARK: - 앱내에서 사용하는 액션
@@ -47,9 +74,15 @@ public struct SignUpInviteCode {
   
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    
-    
+    case presntAdminSignUp
+    case presntMemberSignUp
   }
+  
+  struct SignUpInviteCodeCancel: Hashable {}
+  
+  @Dependency(SignUpUseCase.self) var signUpUseCase
+  @Dependency(\.continuousClock) var clock
+  @Dependency(\.mainQueue) var mainQueue
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
@@ -87,7 +120,39 @@ public struct SignUpInviteCode {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
+    case .validataInviteCode(let code):
+      return .run { send in
+        let validataCodeResult = await Result {
+          try await signUpUseCase.validateInviteCode(code: code)
+        }
+        
+        switch validataCodeResult {
+        case .success(let validataCodeData):
+          if let validataCodeData = validataCodeData {
+            await send(.async(.validataInviteCodeResponse(.success(validataCodeData))))
+            
+            if validataCodeData.isAdmin == true {
+              await send(.navigation(.presntAdminSignUp))
+            } else {
+              await send(.navigation(.presntMemberSignUp))
+            }
+          }
+        case .failure(let error):
+          await send(.async(.validataInviteCodeResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
+        }
+      }
+      .debounce(id: SignUpInviteCodeCancel(), for: 0.3, scheduler: mainQueue)
       
+    case .validataInviteCodeResponse(let result):
+        switch result {
+        case .success(let validateCodeData):
+            state.inviteCodeModel = validateCodeData
+          state.userSignUp.isAdmin = validateCodeData.isAdmin
+        case .failure(let error):
+            #logError("코드에러", error.localizedDescription)
+            state.isNotAvaliableCode.toggle()
+        }
+        return .none
     }
   }
     
@@ -96,7 +161,10 @@ public struct SignUpInviteCode {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-      
+    case .presntAdminSignUp:
+      return .none
+    case .presntMemberSignUp:
+      return .none
     }
   }
   
