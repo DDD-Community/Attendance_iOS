@@ -118,7 +118,7 @@ public struct Login {
         do {
           let result = try await oAuthUseCase.handleAppleLogin(authData, nonce: nonce)
           await send(.async(.appleRespose(.success(result))))
-          try await clock.sleep(for: .seconds(0.03))
+          try await clock.sleep(for: .seconds(0.4))
           await send(.async(.fetchUser))
         } catch {
           #logDebug("애플 로그인 에러", error.localizedDescription)
@@ -141,6 +141,9 @@ public struct Login {
           state.appleAccessToken = identityToken
           state.appleLoginFullName = appleIDCredential
           state.userSignUpMember.email = appleIDCredential.email ?? ""
+          let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
+          state.userSignUpMember.email = email
+          state.userEmail = email
         default:
           break
         }
@@ -148,7 +151,6 @@ public struct Login {
         #logError("애플로그인 에러", error)
       }
       return .none
-      
       
     case .googleLogin:
       return .run { send in
@@ -182,7 +184,7 @@ public struct Login {
     case .fetchUser:
       return .run { [userMember = state.userSignUpMember] send in
         let fetchUserResult = await Result {
-          try await authUseCase.fetchUser(uid: userMember.uid)
+          try await authUseCase.fetchUser(uid: userMember.email)
         }
         
         switch fetchUserResult {
@@ -211,7 +213,6 @@ public struct Login {
       case .success(let userDtoMemberData):
         state.userMember = userDtoMemberData
         let email = state.userMember?.email ?? ""
-        let uid = state.userMember?.uid ?? ""
         state.userEmail = email
         
       case .failure(let error):

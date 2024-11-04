@@ -18,12 +18,12 @@ public final class DependencyContainer {
     public func register<T>(_ type: T.Type, build: @escaping () -> T) async -> () -> Void {
         let key = String(describing: type)
         registry[key] = build
-      #logDebug("Registered", key)
+        #logDebug("Registered", key)
         
         let releaseHandler = { [weak self] in
             self?.registry[key] = nil
             self?.releaseHandlers[key] = nil
-          #logDebug("Released", key)
+            #logDebug("Released", key)
         }
         
         releaseHandlers[key] = releaseHandler
@@ -33,14 +33,14 @@ public final class DependencyContainer {
     public func resolve<T>(_ type: T.Type) -> T? {
         let key = String(describing: T.self)
         if let factory = registry[key] as? () -> T {
-            
             let result = factory()
             if let releaseHandler = releaseHandlers[key] {
                 releaseHandler()
             }
             return result
         } else {
-            fatalError("No registered dependency found for \(key)")
+            #logError("Dependency not found", "No registered dependency found for \(key)")
+            return nil // nil을 반환하여 프로그램이 중단되지 않도록 함
         }
     }
 }

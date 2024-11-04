@@ -7,7 +7,7 @@
 
 import Model
 
-final public class DefaultAuthRepository: AuthRepositoryProtocol {
+final public class DefaultAuthRepository: AuthRepositoryProtocols {
   
   public init() {}
   

@@ -17,4 +17,5 @@ public protocol OAuthRepositoryProtocol {
     fullName: ASAuthorizationAppleIDCredential
   ) async throws -> OAuthResponseDTOModel?
   func googleLogin() async throws -> OAuthResponseDTOModel?
+  func fetchUser(uid: String) async throws -> UserDTOMember?
 }

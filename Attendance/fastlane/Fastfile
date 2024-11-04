@@ -64,7 +64,7 @@ match(type: "appstore")
        beta_app_description:"DDDAttendance",
        ipa:"./fastlane/output/DDDAttendance.ipa",
        changelog:"변경사항",
-       groups: ["DDD"],
+       groups: ["ddd"],
        skip_waiting_for_build_processing: true)
 
     end

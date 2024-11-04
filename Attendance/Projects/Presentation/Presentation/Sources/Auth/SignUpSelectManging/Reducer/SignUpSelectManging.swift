@@ -25,6 +25,7 @@ public struct SignUpSelectManging {
     var activeButton: Bool = false
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     @Shared(.appStorage("UserUID")) var userUid: String = ""
+    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
     var signUpCoreMemberModel: CoreMemberDTOSignUp? = nil
   }
   
@@ -166,7 +167,8 @@ public struct SignUpSelectManging {
       switch result {
       case .success(let signUpCoreMemberData):
         state.signUpCoreMemberModel = signUpCoreMemberData
-        state.userUid = signUpCoreMemberData.uid 
+        state.userUid = signUpCoreMemberData.uid
+        state.userEmail = signUpCoreMemberData.email
       case .failure(let error):
         #logError("회원가입 실패", error.localizedDescription)
       }

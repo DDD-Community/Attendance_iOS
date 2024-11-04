@@ -24,11 +24,11 @@ public final class AppDIContainer {
   
   // MARK: - Use Cases
   private func registerUseCases() async {
+    await registerAuthUseCase()
     await registerFireStoreUseCase()
     await registerQrCodeUseCase()
     await registerOAuthUseCase()
     await registerSignUpUseCase()
-    await registerAuthUseCase()
   }
   
   private func registerFireStoreUseCase() async {
@@ -63,7 +63,7 @@ public final class AppDIContainer {
   
   private func registerAuthUseCase() async {
     await diContainer.register(AuthUseCaseProtocol.self) {
-      guard let repository = self.diContainer.resolve(AuthRepositoryProtocol.self) else {
+      guard let repository = self.diContainer.resolve(AuthRepositoryProtocols.self) else {
         assertionFailure("FirestoreRepositoryProtocol must be registered before registering FirestoreUseCaseProtocol")
         return AuthUseCase(repository: DefaultAuthRepository())
       }
@@ -84,11 +84,11 @@ public final class AppDIContainer {
   
   // MARK: - Repositories Registration
   private func registerRepositories() async {
+    await registerAuthRepositories()
     await registerFireStoreRepositories()
     await registerQrCodeRepositories()
     await registerOAuthRepositories()
     await registerSignUpRepositories()
-    await registeAuthRepositories()
   }
   
   private func registerFireStoreRepositories() async {
@@ -109,8 +109,8 @@ public final class AppDIContainer {
     }
   }
   
-  private func registeAuthRepositories() async {
-    await diContainer.register(AuthRepositoryProtocol.self) {
+  private func registerAuthRepositories() async {
+    await diContainer.register(AuthRepositoryProtocols.self) {
       AuthRepository()
     }
   }

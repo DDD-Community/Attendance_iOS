@@ -138,7 +138,7 @@ public struct InfoPlistValues {
     infoPlist.merge(setCFBundleExecutable("$(EXECUTABLE_NAME)")) { (_, new) in new }
     infoPlist.merge(setCFBundleIdentifier("$(PRODUCT_BUNDLE_IDENTIFIER)")) { (_, new) in new }
     infoPlist.merge(setCFBundleInfoDictionaryVersion("6.0")) { (_, new) in new }
-    infoPlist.merge(setCFBundleName("$(PRODUCT_NAME)")) { (_, new) in new }
+    infoPlist.merge(setCFBundleName("DDD 출석")) { (_, new) in new }
     infoPlist.merge(setCFBundlePackageType("APPL")) { (_, new) in new }
     infoPlist.merge(setCFBundleShortVersionString(.appVersion(version: "1.0.0"))) { (_, new) in new }
     infoPlist.merge(setCFBundleURLTypes([

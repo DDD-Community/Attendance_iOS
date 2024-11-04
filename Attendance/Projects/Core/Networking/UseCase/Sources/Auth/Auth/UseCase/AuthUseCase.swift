@@ -10,10 +10,10 @@ import DiContainer
 import Model
 
 public struct AuthUseCase: AuthUseCaseProtocol {
-  private let repository: AuthRepositoryProtocol
+  private let repository: AuthRepositoryProtocols
   
   public init(
-    repository: AuthRepositoryProtocol
+    repository: AuthRepositoryProtocols
   ) {
     self.repository = repository
   }
@@ -26,8 +26,8 @@ public struct AuthUseCase: AuthUseCaseProtocol {
 
 
 extension AuthUseCase: DependencyKey {
-  public static var liveValue: AuthUseCase = {
-    let authRepository = DependencyContainer.live.resolve(AuthRepositoryProtocol.self) ?? DefaultAuthRepository()
-    return AuthUseCase(repository: authRepository)
+  static public var liveValue: AuthUseCase =  {
+    let oAuthRepository = DependencyContainer.live.resolve(AuthRepositoryProtocols.self) ?? DefaultAuthRepository()
+    return AuthUseCase(repository: oAuthRepository)
   }()
 }

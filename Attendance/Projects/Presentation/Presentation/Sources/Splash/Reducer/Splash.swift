@@ -7,7 +7,7 @@
 
 import Foundation
 import ComposableArchitecture
-
+import FirebaseAuth
 
 import Utill
 import Networkings
@@ -58,7 +58,7 @@ public struct Splash {
     
   }
   
-  @Dependency(AuthUseCase.self) var authUseCase
+  @Dependency(OAuthUseCase.self) var oAuthUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
@@ -102,9 +102,9 @@ public struct Splash {
     switch action {
       
     case .fetchUser:
-      return .run { [userUid = state.userUid] send in
+      return .run { [userEmail = state.userEmail] send in
         let fetchUserResult = await Result {
-          try await authUseCase.fetchUser(uid: userUid)
+          try await oAuthUseCase.fetchUser(uid: userEmail)
         }
         
         switch fetchUserResult {
@@ -132,8 +132,8 @@ public struct Splash {
       case .success(let userDtoMemberData):
         state.userMember = userDtoMemberData
         let email = state.userMember?.email ?? ""
-        state.userEmail = email
-        
+        state.userUid = userDtoMemberData.uid
+        state.userEmail = userDtoMemberData.email
       case .failure(let error):
         #logError("유저 정보 가쟈오기", error.localizedDescription)
       }

@@ -12,6 +12,7 @@ let project = Project.makeAppModule(
   dependencies: [
     .Networking(implements: .Model),
     .Networking(implements: .ThirdPartys),
+    .Networking(implements: .DiContainer),
     .SPM.composableArchitecture,
     .SPM.googleSignIn,
     .SPM.firebaseDatabase
