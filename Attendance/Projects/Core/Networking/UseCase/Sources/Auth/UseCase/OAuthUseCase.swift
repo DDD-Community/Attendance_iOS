@@ -36,7 +36,7 @@ public struct OAuthUseCase: OAuthUseCaseProtocol {
     withIDToken: String ,
     rawNonce: String,
     fullName: ASAuthorizationAppleIDCredential
-  ) async throws -> OAuthResponseModel? {
+  ) async throws -> OAuthResponseDTOModel? {
     try await repository.appleLoginWithFireBase(
       withIDToken: withIDToken,
       rawNonce: rawNonce,
@@ -45,7 +45,7 @@ public struct OAuthUseCase: OAuthUseCaseProtocol {
   }
   
   //MARK: - 구글 로그인
-  public func googleLogin() async throws -> OAuthResponseModel? {
+  public func googleLogin() async throws -> OAuthResponseDTOModel? {
     try await repository.googleLogin()
   }
 }

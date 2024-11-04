@@ -11,7 +11,8 @@ import Foundation
 import ComposableArchitecture
 
 import Utill
-import Model
+import Networkings
+import AsyncMoya
 
 @Reducer
 public struct SignUpSelectManging {
@@ -23,6 +24,7 @@ public struct SignUpSelectManging {
     var selectMangingPart : Managing? = .notManging
     var activeButton: Bool = false
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
+    var signUpCoreMemberModel: CoreMemberDTOSignUp? = nil
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -43,7 +45,8 @@ public struct SignUpSelectManging {
   
   //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
-    
+    case signUpCoreMember
+    case signUpCoreMemberResponse(Result<CoreMemberDTOSignUp, CustomError>)
   }
   
   //MARK: - 앱내에서 사용하는 액션
@@ -56,6 +59,13 @@ public struct SignUpSelectManging {
     
     
   }
+  
+  struct SignUpSelectMangingCancel: Hashable {}
+  
+  @Dependency(SignUpUseCase.self) var signUpUseCase
+  @Dependency(\.continuousClock) var clock
+  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.uuid) var uuid
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
@@ -115,7 +125,41 @@ public struct SignUpSelectManging {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
+    case .signUpCoreMember:
+      return .run { [member = state.userSignUpMember] send in
+        var member: Member = Member(
+          uid: UUID().uuidString,
+          memberid: UUID().uuidString,
+          email: member.email,
+          name: member.name,
+          role: member.role,
+          memberType: member.memberType,
+          manging: member.manging,
+          isAdmin: member.isAdmin,
+          generation: member.generation
+        )
+        let signUpCoreMemberResult = await Result {
+          try await signUpUseCase.signUpCoreMember(member: member)
+        }
+        
+        switch signUpCoreMemberResult {
+        case .success(let signUpCoreMemberData):
+          if let signUpCoreMemberData = signUpCoreMemberData {
+            await send(.async(.signUpCoreMemberResponse(.success(signUpCoreMemberData))))
+          }
+        case .failure(let error):
+          await send(.async(.signUpCoreMemberResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
+        }
+      }
       
+    case .signUpCoreMemberResponse(let result):
+      switch result {
+      case .success(let signUpCoreMemberData):
+        state.signUpCoreMemberModel = signUpCoreMemberData
+      case .failure(let error):
+        #logError("회원가입 실패", error.localizedDescription)
+      }
+      return .none
     }
   }
   

@@ -1,8 +1,8 @@
 //
-//  SignUpSelectMangingView.swift
+//  SignUpSelectTeamView.swift
 //  Presentation
 //
-//  Created by Wonji Suh  on 11/3/24.
+//  Created by Wonji Suh  on 11/4/24.
 //
 
 import SwiftUI
@@ -10,12 +10,12 @@ import DesignSystem
 import ComposableArchitecture
 import Model
 
-public struct SignUpSelectMangingView: View {
-  @Bindable var store: StoreOf<SignUpSelectManging>
-  var backAction: () -> Void = {}
+public struct SignUpSelectTeamView: View {
+  @Bindable var store: StoreOf<SignUpSelectTeam>
+  var backAction: () -> Void
   
   public init(
-    store: StoreOf<SignUpSelectManging>,
+    store: StoreOf<SignUpSelectTeam>,
     backAction: @escaping () -> Void
   ) {
     self.store = store
@@ -33,42 +33,40 @@ public struct SignUpSelectMangingView: View {
         
         StepNavigationBar(activeStep: 3, buttonAction: backAction)
         
-        signUpSelectMangingText()
+        signUpSelectTeamText()
         
-        selectMangingList()
+        selectTeamList()
         
-        signUpSelectMangeButton()
-        
+        signUpSelectTeamButton()
       }
     }
   }
 }
 
-
-extension SignUpSelectMangingView {
+extension SignUpSelectTeamView {
   
   @ViewBuilder
-  private func signUpSelectMangingText() -> some View {
+  private func signUpSelectTeamText() -> some View {
     SignUpPartText(
-      content: "담당 업무를 선택해주세요",
-      title: "프로젝트 참여하시는 직무을 선택해 주세요.",
+      content: "팀을 선택해주세요",
+      title: "프로젝트 참여하시는 팀을 선택해 주세요.",
       subtitle: ""
     )
   }
   
   @ViewBuilder
-  private func selectMangingList() -> some View {
+  private func selectTeamList() -> some View {
     VStack {
       Spacer()
         .frame(height: 40)
       
       ScrollView {
         VStack {
-          ForEach(Managing.mangingList, id: \.self) { item in
-            SelectPartItem(
-              content: item.mangingDesc,
-              isActive: item == store.selectMangingPart) {
-                store.send(.view(.selectMangingButton(selectManging: item)))
+          ForEach(SelectTeam.teamList, id: \.self) { item in
+            SelectTeamIteam(
+              content: item.selectTeamDesc,
+              isActive:  item == store.selectTeam) {
+                store.send(.view(.selectTeamButton(selectTeam: item)))
               }
           }
         }
@@ -79,14 +77,12 @@ extension SignUpSelectMangingView {
   }
   
   @ViewBuilder
-  private func signUpSelectMangeButton() -> some View {
+  private func signUpSelectTeamButton() -> some View {
     VStack {
       Spacer()
       
       CustomButton(
-        action: {
-          store.send(.async(.signUpCoreMember))
-        },
+        action: {},
         title: "가입 완료",
         config: CustomButtonConfig.create(),
         isEnable: store.activeButton

@@ -32,6 +32,8 @@ public enum ImageAsset: String {
   case errorClose
   case disableSelectPart
   case activeSelectPart
+  case acitveSelectTeam
+  
   
   case empty
 }

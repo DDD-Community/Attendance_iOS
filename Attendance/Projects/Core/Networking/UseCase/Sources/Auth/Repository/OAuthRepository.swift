@@ -59,7 +59,7 @@ public class OAuthRepository: OAuthRepositoryProtocol {
       withIDToken: String,
       rawNonce: String,
       fullName: ASAuthorizationAppleIDCredential
-  ) async throws -> OAuthResponseModel? {
+  ) async throws -> OAuthResponseDTOModel? {
       let firebaseCredential = OAuthProvider.appleCredential(
           withIDToken: withIDToken,
           rawNonce: rawNonce,
@@ -83,16 +83,18 @@ public class OAuthRepository: OAuthRepositoryProtocol {
       guard authResult != nil else {
           throw NSError(domain: "FirebaseAuthError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve user information."])
       }
-      
-      return OAuthResponseModel(
-          accessToken: accessToken,
-          refreshToken: "",
-          credential: firebaseCredential
-      )
+    let oauthResponseModel = OAuthResponseModel(
+      accessToken: accessToken,
+      refreshToken: "",
+      credential: firebaseCredential,
+      email: fullName.email ?? ""
+  )
+    
+    return oauthResponseModel.toDTOModel()
   }
  
   
-  public func googleLogin() async throws -> OAuthResponseModel? {
+  public func googleLogin() async throws -> OAuthResponseDTOModel? {
       guard let clientID = FirebaseApp.app()?.options.clientID else { return nil }
       let config = GIDConfiguration(clientID: clientID)
       GIDSignIn.sharedInstance.configuration = config
@@ -125,9 +127,10 @@ public class OAuthRepository: OAuthRepositoryProtocol {
                       let tokenResponse = OAuthResponseModel(
                           accessToken: accessToken,
                           refreshToken: "",
-                          credential: firebaseCredential
+                          credential: firebaseCredential,
+                          email: result?.user.email ?? ""
                       )
-                      continuation.resume(returning: tokenResponse)
+                    continuation.resume(returning: tokenResponse.toDTOModel())
                   }
               }
           }

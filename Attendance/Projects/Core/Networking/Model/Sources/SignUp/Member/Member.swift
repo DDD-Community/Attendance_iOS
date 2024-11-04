@@ -1,38 +1,39 @@
 //
 //  Member.swift
-//  Presentation
+//  Model
 //
-//  Created by Wonji Suh  on 11/3/24.
+//  Created by Wonji Suh  on 11/4/24.
 //
 
-import Model
 import Foundation
 
 public struct Member: Codable, Hashable, Equatable {
     /// Firebase Auth의 uid
-    var uid: String
-    var memberid: String
-    var name: String
-    var role: SelectPart?
-    var memberType: MemberType
-    var manging: Managing?
-    var memberTeam: ManagingTeam?
-    var snsURL: String
-    var createdAt: Date
-    var updatedAt: Date
-    var isAdmin: Bool
+  public var uid: String
+  public var memberid: String
+  public var email: String
+  public var name: String
+  public var role: SelectPart?
+  public var memberType: MemberType
+  public var manging: Managing?
+  public var memberTeam: SelectTeam?
+  public var snsURL: String
+  public var createdAt: Date
+  public var updatedAt: Date
+  public var isAdmin: Bool
     
     /// 기수
-    var generation: Int
+  public var generation: Int
   
-  init(
+  public init(
     uid: String = "",
     memberid: String = "",
+    email: String = "",
     name: String = "",
     role: SelectPart? = .all,
     memberType: MemberType = .notYet,
     manging: Managing? = nil,
-    memberTeam: ManagingTeam? = nil,
+    memberTeam: SelectTeam? = nil,
     snsURL: String? = nil,
     createdAt: Date = .now,
     updatedAt: Date = .now,
@@ -41,6 +42,7 @@ public struct Member: Codable, Hashable, Equatable {
   ) {
     self.uid = uid
     self.memberid = memberid
+    self.email = email
     self.name = name
     self.role = role
     self.memberType = memberType

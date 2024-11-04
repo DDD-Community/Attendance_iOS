@@ -31,12 +31,12 @@ final public class DefaultOAuthRepository: OAuthRepositoryProtocol {
     withIDToken: String,
     rawNonce: String,
     fullName: ASAuthorizationAppleIDCredential
-  ) async throws -> Model.OAuthResponseModel? {
+  ) async throws -> OAuthResponseDTOModel? {
     return nil
   }
   
   
-  public func googleLogin() async throws -> OAuthResponseModel? {
+  public func googleLogin() async throws -> OAuthResponseDTOModel? {
     return nil
   }
   

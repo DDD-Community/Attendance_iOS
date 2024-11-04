@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum ManagingTeam: String, CaseIterable, Codable {
+public enum SelectTeam: String, CaseIterable, Codable {
     case ios1 = "iOS_1"
     case ios2 = "iOS_2"
     case and1 = "Android_1"
@@ -26,7 +26,7 @@ public enum ManagingTeam: String, CaseIterable, Codable {
         if rawValue.isEmpty {
             self = .unknown
         } else {
-            self = ManagingTeam(rawValue: rawValue) ?? .unknown
+            self = SelectTeam(rawValue: rawValue) ?? .unknown
         }
     }
 
@@ -51,4 +51,29 @@ public enum ManagingTeam: String, CaseIterable, Codable {
             return "Unknown Team" // Optional: Description for the unknown case
         }
     }
+  
+  public var selectTeamDesc: String {
+    switch self {
+    case .ios1:
+      return "🍏 iOS 1팀"
+    case .ios2:
+      return "🍏 iOS 2팀"
+    case .and1:
+      return "🤖 Android 1팀"
+    case .and2:
+      return "🤖 Android 2팀"
+    case .web1:
+      return "🖥️ Web 1팀"
+    case .web2:
+      return "🖥️ Web 1팀"
+    case .notTeam:
+      return ""
+    case .unknown:
+      return ""
+    }
+  }
+  
+  public static var teamList: [SelectTeam] {
+    return [.and1, .and2, .ios1, .ios2, .web1, .web2]
+  }
 }

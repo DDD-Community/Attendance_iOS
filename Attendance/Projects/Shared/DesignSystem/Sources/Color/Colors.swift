@@ -71,6 +71,7 @@ public extension Color {
   
   //MARK: - text
   static let textInactive = Color(hex: "C6C6C6")
+  static let textPrimary = Color(hex: "202325")
   
   static let basicBlack = Color(hex: "1A1A1A")
   static let gray200 = Color(hex: "E6E6E6")

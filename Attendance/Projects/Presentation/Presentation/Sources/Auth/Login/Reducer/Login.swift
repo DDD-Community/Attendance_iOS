@@ -26,7 +26,8 @@ public struct Login {
     var appleAccessToken: String = ""
     var appleAuthCode: String = ""
     var appleLoginFullName: ASAuthorizationAppleIDCredential? = nil
-    var oAuthResponseModel: OAuthResponseModel? = nil
+    var oAuthResponseModel: OAuthResponseDTOModel? = nil
+    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -51,7 +52,7 @@ public struct Login {
     case appleLogin(Result<ASAuthorization, Error>, nonce: String)
     case appleRespose(Result<ASAuthorization, Error>)
     case googleLogin
-    case oAuthResponse(Result<OAuthResponseModel, CustomError>)
+    case oAuthResponse(Result<OAuthResponseDTOModel, CustomError>)
   }
   
   //MARK: - 앱내에서 사용하는 액션
@@ -133,7 +134,7 @@ public struct Login {
           }
           state.appleAccessToken = identityToken
           state.appleLoginFullName = appleIDCredential
-          
+          state.userSignUpMember.email = appleIDCredential.email ?? ""
         default:
           break
         }
@@ -168,6 +169,7 @@ public struct Login {
       switch result {
       case .success(let resultData):
         state.oAuthResponseModel = resultData
+        state.userSignUpMember.email = resultData.email
       case .failure(let error):
         #logError("소셜 로그인 실패", error.localizedDescription)
       }

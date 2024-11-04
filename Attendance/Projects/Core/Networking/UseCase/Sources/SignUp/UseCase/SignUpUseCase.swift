@@ -25,6 +25,23 @@ public struct SignUpUseCase: SignUpUseCaseProtocol {
   ) async throws -> InviteDTOModel? {
     try await repository.validateInviteCode(code: code)
   }
+  
+  //MARK: - 운영진 회원가입
+  public func signUpCoreMember(member: Member) async throws -> CoreMemberDTOSignUp? {
+    try await repository.signUpCoreMember(member: member)
+  }
+  
+  //MARK: - 멤법 회원가입
+  public func signUpMember(
+    member: Member
+  ) async throws -> MemberDTOSignUp? {
+    return try await repository
+      .signUpMember(
+        member: member
+      )
+  }
+  
+  
 }
 
 

@@ -19,7 +19,7 @@ public class SignUpRepository: SignUpRepositoryProtcol {
     
   }
   
-  
+  //MARK: - 초대 코드 확인
   public func validateInviteCode(
       code: String
   ) async throws -> InviteDTOModel? {
@@ -51,5 +51,39 @@ public class SignUpRepository: SignUpRepositoryProtcol {
       } catch {
           throw UserRepositoryError.invalidInviteCode
       }
+  }
+  
+  //MARK: - 운영진  회원가입
+  public func signUpCoreMember(
+    member: Member
+  ) async throws -> CoreMemberDTOSignUp? {
+    
+    let userRef = fireBaseDB.collection(FireBaseCollection.member.desc).document(member.uid)
+    var data = member.toCoreMemberDictionary()
+    
+    do {
+        try await userRef.setData(data)
+      #logDebug("운영진 회원가입: \(userRef.documentID)")
+      return member.toCoreMembersModel()
+    } catch {
+        #logError("운영진 회원가입 실패 \(error)")
+        throw CustomError.unknownError("Error adding document: \(error.localizedDescription)")
+    }
+  }
+  
+  //MARK: - 멤버 회원가입
+  
+  public func signUpMember(member: Member) async throws -> MemberDTOSignUp? {
+    let userRef = fireBaseDB.collection(FireBaseCollection.member.desc).document(member.uid)
+    var data = member.toMemberDictionary()
+    
+    do {
+        try await userRef.setData(data)
+      #logDebug("멤버 회원가입: \(userRef.documentID)")
+      return member.toMembersModel()
+    } catch {
+        #logError("멤버 회원가입 실패 \(error)")
+        throw CustomError.unknownError("Error adding document: \(error.localizedDescription)")
+    }
   }
 }

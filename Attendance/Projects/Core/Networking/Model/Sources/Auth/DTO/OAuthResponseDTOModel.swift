@@ -1,15 +1,14 @@
 //
-//  OAuthResponse.swift
+//  OAuthResponseDTOModel.swift
 //  Model
 //
-//  Created by Wonji Suh  on 10/30/24.
+//  Created by Wonji Suh  on 11/4/24.
 //
-
 import Foundation
 
 import FirebaseAuth
 
-public struct OAuthResponseModel : Equatable {
+public struct OAuthResponseDTOModel : Equatable {
   public var accessToken: String
   public var refreshToken: String
   public var credential: AuthCredential?

@@ -18,4 +18,11 @@ final public class DefaultSignUpRepository: SignUpRepositoryProtcol {
     return nil
   }
   
+  public func signUpMember(member: Member) async throws -> MemberDTOSignUp? {
+    return nil
+  }
+  
+  public func signUpCoreMember(member: Member) async throws -> CoreMemberDTOSignUp? {
+    return nil
+  }
 }

@@ -10,6 +10,7 @@ import ComposableArchitecture
 
 import Utill
 import TCACoordinators
+import Networkings
 
 @Reducer
 public struct AuthCoordinator {
@@ -114,6 +115,11 @@ public struct AuthCoordinator {
       state.routes.push(.signUpManging(.init()))
       return .none
       
+      //MARK: - 멤버 선택 할팀  선택
+    case .routeAction(id: _, action: .signUpPart(.navigation(.presntSelectTeam))):
+      state.routes.push(.signUpSelectTeam(.init()))
+      return .none
+      
     default:
       return .none
     }
@@ -173,5 +179,6 @@ extension AuthCoordinator {
     case signUpName(SignUpName)
     case signUpPart(SignUpPart)
     case signUpManging(SignUpSelectManging)
+    case signUpSelectTeam(SignUpSelectTeam)
   }
 }
