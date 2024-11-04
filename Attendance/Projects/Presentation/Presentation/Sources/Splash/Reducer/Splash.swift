@@ -58,7 +58,7 @@ public struct Splash {
     
   }
   
-  @Dependency(OAuthUseCase.self) var oAuthUseCase
+  @Dependency(AuthUseCase.self) var authUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
@@ -104,7 +104,7 @@ public struct Splash {
     case .fetchUser:
       return .run { [userEmail = state.userEmail] send in
         let fetchUserResult = await Result {
-          try await oAuthUseCase.fetchUser(uid: userEmail)
+          try await authUseCase.fetchUser(uid: userEmail)
         }
         
         switch fetchUserResult {

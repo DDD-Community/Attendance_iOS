@@ -40,9 +40,6 @@ final public class DefaultOAuthRepository: OAuthRepositoryProtocol {
     return nil
   }
   
-  
-  public func fetchUser(uid: String) async throws -> UserDTOMember? {
-    return nil
-  }
+
   
 }

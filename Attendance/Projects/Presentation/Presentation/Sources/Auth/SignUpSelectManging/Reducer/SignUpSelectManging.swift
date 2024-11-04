@@ -131,10 +131,10 @@ public struct SignUpSelectManging {
   ) -> Effect<Action> {
     switch action {
     case .signUpCoreMember:
-      return .run { [member = state.userSignUpMember, userUid = state.userUid] send in
+      return .run { [member = state.userSignUpMember] send in
         let member: Member = Member(
-          uid: UUID().uuidString,
-          memberid: UUID().uuidString,
+          uid: member.uid,
+          memberid: member.uid,
           email: member.email,
           name: member.name,
           role: SelectPart(rawValue: member.role?.rawValue ?? "") ?? .all,

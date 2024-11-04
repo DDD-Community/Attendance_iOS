@@ -128,8 +128,8 @@ public struct SignUpSelectTeam {
     case .signUpMember:
       return .run { [member = state.userSignUpMember] send in
         let member: Member = Member(
-          uid: UUID().uuidString,
-          memberid: UUID().uuidString,
+          uid: member.uid,
+          memberid: member.uid,
           email: member.email,
           name: member.name,
           role: SelectPart(rawValue: member.role?.rawValue ?? "") ?? .all,

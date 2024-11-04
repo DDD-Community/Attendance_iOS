@@ -90,17 +90,18 @@ extension QrCodeView {
                 .frame(height: UIScreen.screenHeight * 0.2)
             
             if ((store.eventID?.isEmpty) != nil) {
-                if let qrCodeImage = store.qrCodeImage {
-                    qrCodeImage
-                    .resizable()
-                        .scaledToFit()
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .frame(width: 200, height: 200)
+              if let qrCodeImage = store.qrCodeImage {
+                qrCodeImage
+                  .interpolation(.none)
+                  .resizable()
+                  .scaledToFit()
+                  .clipShape(RoundedRectangle(cornerRadius: 8))
+                  .frame(width: 200, height: 200)
                 } else {
-                    AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(true))
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 200, height: 200)
+                  Image(asset: .appLogo)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 200, height: 200)
                 }
             } else {
                 RoundedRectangle(cornerRadius: 8)

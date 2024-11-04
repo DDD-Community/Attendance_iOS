@@ -105,10 +105,16 @@ public struct CoreMemberCoordinator {
       state.routes.push(.scheduleEvent(.init(eventModel: state.eventModel, generation: 12)))
       return .none
       
+      //MARK: - qrcode
     case .routeAction(id: _, action: .coreMember(.navigation(.presentQrcode))):
       let userID = try? Keychain().get("userID")
       state.routes.push(.qrCode(.init(userID: userID)))
       return .none
+      
+    case .routeAction(id: _, action: .qrCode(.navigation(.presentSchedule))):
+      return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
+        $0.push(.scheduleEvent(.init(eventModel: state.eventModel, generation: 12)))
+      }
       
       //MARK: - 로그아웃
     case .routeAction(id: _, action: .mangeProfile(.navigation(.tapLogOut))):

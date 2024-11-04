@@ -14,7 +14,8 @@ public extension OAuthResponseModel {
       accessToken: self.accessToken,
       refreshToken: self.refreshToken,
       credential: self.credential,
-      email: self.email
+      email: self.email,
+      uid: self.uid
     )
   }
 }

@@ -142,7 +142,9 @@ public struct Login {
           state.appleLoginFullName = appleIDCredential
           state.userSignUpMember.email = appleIDCredential.email ?? ""
           let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
+          let uid = UserDefaults.standard.string(forKey: "UserUID") ?? ""
           state.userSignUpMember.email = email
+          state.userSignUpMember.uid = uid
           state.userEmail = email
         default:
           break
@@ -176,6 +178,7 @@ public struct Login {
       case .success(let resultData):
         state.oAuthResponseModel = resultData
         state.userSignUpMember.email = resultData.email
+        state.userSignUpMember.uid = resultData.uid
       case .failure(let error):
         #logError("소셜 로그인 실패", error.localizedDescription)
       }

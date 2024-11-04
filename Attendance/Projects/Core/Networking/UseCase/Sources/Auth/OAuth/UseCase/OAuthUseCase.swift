@@ -48,13 +48,6 @@ public struct OAuthUseCase: OAuthUseCaseProtocol {
   public func googleLogin() async throws -> OAuthResponseDTOModel? {
     try await repository.googleLogin()
   }
-  
-  //MARK: - 유저 조회
-  public func fetchUser(
-    uid: String
-  ) async throws -> UserDTOMember? {
-    try await repository.fetchUser(uid: uid)
-  }
 }
 
 
