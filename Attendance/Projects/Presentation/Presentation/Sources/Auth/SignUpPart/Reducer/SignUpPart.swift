@@ -96,7 +96,9 @@ public struct SignUpPart {
       }
       
       state.selectPart = selectPart
-      state.userSignUpMember.role = selectPart
+      if let part = SelectPart(rawValue: selectPart.desc) {
+          state.userSignUpMember.role = part
+      } 
       state.activeSelectPart = true
       return .none
     }

@@ -82,7 +82,9 @@ extension SignUpSelectTeamView {
       Spacer()
       
       CustomButton(
-        action: {},
+        action: {
+          store.send(.async(.signUpMember))
+        },
         title: "가입 완료",
         config: CustomButtonConfig.create(),
         isEnable: store.activeButton

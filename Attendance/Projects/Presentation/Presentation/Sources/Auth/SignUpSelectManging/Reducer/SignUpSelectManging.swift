@@ -56,7 +56,7 @@ public struct SignUpSelectManging {
   
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    
+  case presntCoreMember
     
   }
   
@@ -103,8 +103,10 @@ public struct SignUpSelectManging {
           state.activeButton = false
           return .none
         }
-        
         state.selectMangingPart = selectManging
+        if let selectManging = Managing(rawValue: selectManging.mangingDesc) {
+          state.userSignUpMember.manging = selectManging
+        }
         state.userSignUpMember.manging = selectManging
         state.activeButton = true
         return .none
@@ -116,7 +118,8 @@ public struct SignUpSelectManging {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-   
+    case .presntCoreMember:
+      return .none
     }
   }
   
@@ -127,14 +130,14 @@ public struct SignUpSelectManging {
     switch action {
     case .signUpCoreMember:
       return .run { [member = state.userSignUpMember] send in
-        var member: Member = Member(
+        let member: Member = Member(
           uid: UUID().uuidString,
           memberid: UUID().uuidString,
           email: member.email,
           name: member.name,
-          role: member.role,
-          memberType: member.memberType,
-          manging: member.manging,
+          role: SelectPart(rawValue: member.role?.rawValue ?? "") ?? .all,
+          memberType: MemberType(rawValue: member.memberType.rawValue) ?? .notYet,
+          manging: Managing(rawValue: member.manging?.rawValue ?? "") ?? .notManging,
           isAdmin: member.isAdmin,
           generation: member.generation
         )
@@ -146,11 +149,16 @@ public struct SignUpSelectManging {
         case .success(let signUpCoreMemberData):
           if let signUpCoreMemberData = signUpCoreMemberData {
             await send(.async(.signUpCoreMemberResponse(.success(signUpCoreMemberData))))
+            try await clock.sleep(for: .seconds(1))
+            if signUpCoreMemberData.isAdmin == true {
+              await send(.navigation(.presntCoreMember))
+            }
           }
         case .failure(let error):
           await send(.async(.signUpCoreMemberResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
         }
       }
+      .debounce(id: SignUpSelectMangingCancel(), for: 0.3, scheduler: mainQueue)
       
     case .signUpCoreMemberResponse(let result):
       switch result {

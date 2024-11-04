@@ -28,6 +28,8 @@ public struct Login {
     var appleLoginFullName: ASAuthorizationAppleIDCredential? = nil
     var oAuthResponseModel: OAuthResponseDTOModel? = nil
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
+    var userMember: UserDTOMember? = nil
+    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -53,6 +55,8 @@ public struct Login {
     case appleRespose(Result<ASAuthorization, Error>)
     case googleLogin
     case oAuthResponse(Result<OAuthResponseDTOModel, CustomError>)
+    case fetchUser
+    case fetchUserResponse(Result<UserDTOMember, CustomError>)
   }
   
   //MARK: - 앱내에서 사용하는 액션
@@ -63,10 +67,12 @@ public struct Login {
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
     case presntSignUpInviteView
+    case presntCoreMemberMain
     
   }
   
   @Dependency(OAuthUseCase.self) var oAuthUseCase
+  @Dependency(AuthUseCase.self) var authUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
@@ -114,6 +120,7 @@ public struct Login {
           await send(.async(.appleRespose(.success(result))))
           try await clock.sleep(for: .seconds(0.03))
           await send(.navigation(.presntSignUpInviteView))
+          await send(.async(.fetchUser))
         } catch {
           #logDebug("애플 로그인 에러", error.localizedDescription)
         }
@@ -154,10 +161,8 @@ public struct Login {
         case .success(let googleLoginData):
           if let googleLoginData = googleLoginData {
             await send(.async(.oAuthResponse(.success(googleLoginData))))
-            
-            if googleLoginData.accessToken != "" {
-              await send(.navigation(.presntSignUpInviteView))
-            }
+            await send(.async(.fetchUser))
+
           }
         case .failure(let error):
           await send(.async(.oAuthResponse(.failure(CustomError.firestoreError("구글 로그인 실패 \(error.localizedDescription)")))))
@@ -172,6 +177,45 @@ public struct Login {
         state.userSignUpMember.email = resultData.email
       case .failure(let error):
         #logError("소셜 로그인 실패", error.localizedDescription)
+      }
+      return .none
+      
+    case .fetchUser:
+      return .run { [userMember = state.userSignUpMember] send in
+        let fetchUserResult = await Result {
+          try await authUseCase.fetchUser(uid: userMember.email)
+        }
+        
+        switch fetchUserResult {
+        case .success(let fetchUserData):
+          if let fetchUserData = fetchUserData {
+            await send(.async(.fetchUserResponse(.success(fetchUserData))))
+            
+            if fetchUserData.email != "" {
+              if fetchUserData.isAdmin == true {
+                await send(.navigation(.presntCoreMemberMain))
+              } else {
+                
+              }
+            } else {
+              await send(.navigation(.presntSignUpInviteView))
+            }
+          }
+        case .failure(let error):
+          await send(.async(.fetchUserResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
+          await send(.navigation(.presntSignUpInviteView))
+        }
+      }
+      
+    case .fetchUserResponse(let result):
+      switch result {
+      case .success(let userDtoMemberData):
+        state.userMember = userDtoMemberData
+        let email = state.userMember?.email ?? ""
+        state.userEmail = email
+        
+      case .failure(let error):
+        #logError("유저 정보 가쟈오기", error.localizedDescription)
       }
       return .none
     }
@@ -192,6 +236,9 @@ public struct Login {
   ) -> Effect<Action> {
     switch action {
     case .presntSignUpInviteView:
+      return .none
+      
+    case .presntCoreMemberMain:
       return .none
     }
   }

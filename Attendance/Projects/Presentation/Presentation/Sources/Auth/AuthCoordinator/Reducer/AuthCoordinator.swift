@@ -60,6 +60,7 @@ public struct AuthCoordinator {
   
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
+    case presentCoreMember
     
     
   }
@@ -101,6 +102,9 @@ public struct AuthCoordinator {
       state.routes.push(.signUpInviteCode(.init(userSignUp: state.userSignUpMember)))
       return .none
       
+    case .routeAction(id: _, action: .login(.navigation(.presntCoreMemberMain))):
+      return .send(.navigation(.presentCoreMember))
+      
       //MARK: - 이름 입력
     case .routeAction(id: _, action: .signUpInviteCode(.navigation(.presntSignUpName))):
       state.routes.push(.signUpName(.init()))
@@ -114,6 +118,9 @@ public struct AuthCoordinator {
     case .routeAction(id: _, action: .signUpPart(.navigation(.presntManging))):
       state.routes.push(.signUpManging(.init()))
       return .none
+      
+    case .routeAction(id: _, action: .signUpManging(.navigation(.presntCoreMember))):
+      return .send(.navigation(.presentCoreMember))
       
       //MARK: - 멤버 선택 할팀  선택
     case .routeAction(id: _, action: .signUpPart(.navigation(.presntSelectTeam))):
@@ -146,7 +153,8 @@ public struct AuthCoordinator {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-      
+    case .presentCoreMember:
+      return .none
     }
   }
   

@@ -22,6 +22,7 @@ public struct SignUpSelectTeam {
     var selectTeam: SelectTeam? = .notTeam
     var activeButton: Bool = false
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
+    var signUpMemberModel: MemberDTOSignUp? = nil
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -42,7 +43,8 @@ public struct SignUpSelectTeam {
   
   //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
-    
+    case signUpMember
+    case signUpMemberResponse(Result<MemberDTOSignUp, CustomError>)
   }
   
   //MARK: - 앱내에서 사용하는 액션
@@ -55,6 +57,10 @@ public struct SignUpSelectTeam {
     
     
   }
+  
+  @Dependency(SignUpUseCase.self) var signUpUseCase
+  @Dependency(\.continuousClock) var clock
+  @Dependency(\.mainQueue) var mainQueue
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
@@ -85,18 +91,6 @@ public struct SignUpSelectTeam {
       action: View
   ) -> Effect<Action> {
       switch action {
-//      case .selectMangingButton(let selectManging):
-//        if state.selectMangingPart == selectManging {
-//          state.selectMangingPart = nil
-//          state.userSignUpMember.manging = nil
-//          state.activeButton = false
-//          return .none
-//        }
-//        
-//        state.selectMangingPart = selectManging
-//        state.userSignUpMember.manging = selectManging
-//        state.activeButton = true
-//        return .none
       case .selectTeamButton(let selectTeam):
         if state.selectTeam == selectTeam {
           state.selectTeam = nil
@@ -107,6 +101,10 @@ public struct SignUpSelectTeam {
         //
         state.selectTeam = selectTeam
         state.userSignUpMember.memberTeam = selectTeam
+        if let selectTeam = SelectTeam(rawValue: selectTeam.selectTeamDesc) {
+          state.userSignUpMember.memberTeam = selectTeam
+        }
+        
         state.activeButton = true
                 return .none
       }
@@ -127,6 +125,43 @@ public struct SignUpSelectTeam {
   ) -> Effect<Action> {
     switch action {
       
+    case .signUpMember:
+      return .run { [member = state.userSignUpMember] send in
+        let member: Member = Member(
+          uid: UUID().uuidString,
+          memberid: UUID().uuidString,
+          email: member.email,
+          name: member.name,
+          role: SelectPart(rawValue: member.role?.rawValue ?? "") ?? .all,
+          memberType: MemberType(rawValue: member.memberType.rawValue) ?? .notYet,
+          memberTeam: SelectTeam(rawValue: member.memberTeam?.rawValue ?? "") ?? .notTeam,
+          isAdmin: member.isAdmin,
+          generation: member.generation
+        )
+        let signUpCoreMemberResult = await Result {
+          try await signUpUseCase.signUpMember(member: member)
+        }
+        
+        switch signUpCoreMemberResult {
+        case .success(let signUpMemberData):
+          if let signUpMemberData = signUpMemberData {
+            await send(.async(.signUpMemberResponse(.success(signUpMemberData))))
+            try await clock.sleep(for: .seconds(1))
+           
+          }
+        case .failure(let error):
+          await send(.async(.signUpMemberResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
+        }
+      }
+      
+    case .signUpMemberResponse(let result):
+      switch result {
+      case .success(let signUpMemberData):
+        state.signUpMemberModel = signUpMemberData
+      case .failure(let error):
+        #logError("회원가입 실패", error.localizedDescription)
+      }
+      return .none
     }
   }
   
