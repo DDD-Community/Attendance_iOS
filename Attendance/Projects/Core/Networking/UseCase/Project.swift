@@ -13,7 +13,8 @@ let project = Project.makeAppModule(
     .Networking(implements: .Model),
     .Networking(implements: .ThirdPartys),
     .SPM.composableArchitecture,
-    .SPM.googleSignIn
+    .SPM.googleSignIn,
+    .SPM.firebaseDatabase
   ],
   sources: ["Sources/**"]
 )

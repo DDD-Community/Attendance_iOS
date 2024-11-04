@@ -28,9 +28,9 @@ public extension Member {
         "memberid": memberid,
         "email": email,
         "name": name,
-        "role": role?.desc ?? "",
-        "memberType": memberType.memberDesc,
-        "memberTeam": memberTeam?.selectTeamDesc ?? "",
+        "role": role?.rawValue ?? "",
+        "memberType": memberType.rawValue,
+        "memberTeam": memberTeam?.rawValue ?? "",
         "isAdmin": isAdmin ,
         "createdAt": createdAt,
         "updatedAt": updatedAt,
@@ -58,13 +58,28 @@ public extension Member {
         "memberid": memberid,
         "email": email,
         "name": name,
-        "role": role?.desc ?? "",
-        "memberType": memberType.memberDesc,
-        "manging": manging?.mangingDesc ?? "",
+        "role": role?.rawValue ?? "",
+        "memberType": memberType.rawValue,
+        "manging": manging?.rawValue ?? "",
         "isAdmin": isAdmin ,
         "createdAt": createdAt,
         "updatedAt": updatedAt,
         "generation": generation
     ]
+  }
+  
+  func toUserMember() -> UserDTOMember {
+    return UserDTOMember(
+      uid: self.uid,
+      memberid: self.memberid,
+      name: self.name,
+      email: self.email,
+      role: self.role ?? .all,
+      memberType: self.memberType,
+      manging: self.manging ?? .notManging,
+      memberTeam: self.memberTeam ?? .notTeam,
+      isAdmin: self.isAdmin,
+      generation: self.generation
+    )
   }
 }
