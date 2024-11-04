@@ -82,7 +82,7 @@ extension CustomError: LocalizedError {
     }
   }
   
-  static func map(_ error: Error) -> CustomError {
+  public static func map(_ error: Error) -> CustomError {
     if let customError = error as? CustomError {
       return customError
     } else {

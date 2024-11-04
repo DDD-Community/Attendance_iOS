@@ -10,7 +10,8 @@ let project = Project.makeAppModule(
     product: .staticFramework,
     settings:  .settings(),
     dependencies: [
-      .SPM.firebaseAuth
+      .SPM.firebaseAuth,
+      .SPM.firebaseFirestore
     ],
     sources: ["Sources/**"]
 )
