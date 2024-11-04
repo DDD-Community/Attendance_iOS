@@ -102,7 +102,7 @@ public struct CoreMemberCoordinator {
       
       //MARK: - 스케줄 화면
     case .routeAction(id: _, action: .coreMember(.navigation(.presentSchedule))):
-      state.routes.push(.scheduleEvent(.init(eventModel: state.eventModel)))
+      state.routes.push(.scheduleEvent(.init(eventModel: state.eventModel, generation: 12)))
       return .none
       
     case .routeAction(id: _, action: .coreMember(.navigation(.presentQrcode))):
