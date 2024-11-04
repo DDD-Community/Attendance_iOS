@@ -10,7 +10,7 @@ import RxSwift
 
 import Foundation
 
-final class AuthRepository: AuthRepositoryProtocol {
+final class AuthRepositorys: AuthRepositoryProtocols {
     
     private let firebaseService = FirebaseService()
     

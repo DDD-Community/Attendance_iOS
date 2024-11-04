@@ -37,12 +37,12 @@ final class SNSLoginReactor: Reactor {
     
     var initialState: State
     private let userRepository: UserRepositoryProtocol
-    private let authRepository: AuthRepositoryProtocol
+    private let authRepository: AuthRepositoryProtocols
     
     init() {
         initialState = .init()
         self.userRepository = UserRepository()
-        self.authRepository = AuthRepository()
+        self.authRepository = AuthRepositorys()
     }
     
     func mutate(action: Action) -> Observable<Mutation> {

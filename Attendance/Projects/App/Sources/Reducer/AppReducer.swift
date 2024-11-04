@@ -16,6 +16,7 @@ struct AppReducer {
   enum State {
     case splash(Splash.State)
     case auth(AuthCoordinator.State)
+    case coreMember(CoreMemberCoordinator.State)
    
     init() {
       self = .splash(.init())
@@ -28,11 +29,16 @@ struct AppReducer {
   
   @CasePathable
   enum View {
-    case presntAuth
+    case presentAuth
+    case presntCoreMember
+    
     case splash(Splash.Action)
     case auth(AuthCoordinator.Action)
+    case coreMember(CoreMemberCoordinator.Action)
   }
+  
   @Dependency(\.continuousClock) var clock
+  
   var body: some  ReducerOf<Self> {
     Reduce { state, action in
       switch action {
@@ -46,6 +52,9 @@ struct AppReducer {
     .ifCaseLet(\.auth, action: \.view.auth) {
       AuthCoordinator()
     }
+    .ifCaseLet(\.coreMember, action: \.view.coreMember) {
+      CoreMemberCoordinator()
+    }
   }
   
   func handleViewAction(
@@ -53,15 +62,32 @@ struct AppReducer {
     action: View
   ) -> Effect<Action> {
     switch action {
-    case .presntAuth:
+      //MARK: - 로그인 화면 으로
+    case .presentAuth:
       state = .auth(.init())
       return .none
       
-    case .splash(.navigation(.presntAuth)):
+    case .presntCoreMember:
+      state = .coreMember(.init())
+      return .none
+      
+    case .splash(.navigation(.presentLogin)):
       return .run { send in
-        try await clock.sleep(for: .seconds(4))
-        await send(.view(.presntAuth))
+        try await clock.sleep(for: .seconds(2))
+        await send(.view(.presentAuth))
       }
+      
+    case .splash(.navigation(.presentCoreMember)):
+      return .run { send in
+        try await clock.sleep(for: .seconds(2))
+        await send(.view(.presntCoreMember))
+      }
+      
+    case .auth(.navigation(.presentCoreMember)):
+      return .send(.view(.presntCoreMember))
+      
+    case .coreMember(.navigation(.presntLogin)):
+      return .send(.view(.presentAuth))
       
     default:
       return .none

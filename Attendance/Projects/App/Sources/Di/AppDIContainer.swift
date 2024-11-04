@@ -28,6 +28,7 @@ public final class AppDIContainer {
     await registerQrCodeUseCase()
     await registerOAuthUseCase()
     await registerSignUpUseCase()
+    await registerAuthUseCase()
   }
   
   private func registerFireStoreUseCase() async {
@@ -60,6 +61,16 @@ public final class AppDIContainer {
     }
   }
   
+  private func registerAuthUseCase() async {
+    await diContainer.register(AuthUseCaseProtocol.self) {
+      guard let repository = self.diContainer.resolve(AuthRepositoryProtocol.self) else {
+        assertionFailure("FirestoreRepositoryProtocol must be registered before registering FirestoreUseCaseProtocol")
+        return AuthUseCase(repository: DefaultAuthRepository())
+      }
+      return AuthUseCase(repository: repository)
+    }
+  }
+  
   
   private func registerSignUpUseCase() async {
     await diContainer.register(SignUpUseCaseProtocol.self) {
@@ -77,6 +88,7 @@ public final class AppDIContainer {
     await registerQrCodeRepositories()
     await registerOAuthRepositories()
     await registerSignUpRepositories()
+    await registeAuthRepositories()
   }
   
   private func registerFireStoreRepositories() async {
@@ -94,6 +106,12 @@ public final class AppDIContainer {
   private func registerOAuthRepositories() async {
     await diContainer.register(OAuthRepositoryProtocol.self) {
       OAuthRepository()
+    }
+  }
+  
+  private func registeAuthRepositories() async {
+    await diContainer.register(AuthRepositoryProtocol.self) {
+      AuthRepository()
     }
   }
   

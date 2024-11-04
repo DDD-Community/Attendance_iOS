@@ -10,6 +10,6 @@ import RxSwift
 
 import Foundation
 
-protocol AuthRepositoryProtocol {
+protocol AuthRepositoryProtocols {
     func auth(_ credential: AuthCredential) -> Single<AuthDataResult>
 }
