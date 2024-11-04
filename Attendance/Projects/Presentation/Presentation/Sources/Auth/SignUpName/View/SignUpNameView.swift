@@ -49,10 +49,15 @@ public struct SignUpNameView: View {
         
         signUpNameButton()
         
-        
         Spacer()
           .frame(height: 20)
       }
+      .onTapGesture {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+      }
+    }
+    .onTapGesture {
+      UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
   }
 }

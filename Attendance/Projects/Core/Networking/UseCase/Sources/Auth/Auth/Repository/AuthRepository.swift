@@ -18,7 +18,7 @@ public class AuthRepository: AuthRepositoryProtocol {
   
   //MARK: - 회원가입 한  유저 조회
   public func fetchUser(uid: String) async throws -> UserDTOMember? {
-    let userRef = fireBaseDB.collection(FireBaseCollection.member.desc).whereField("email", isEqualTo: uid)
+    let userRef = fireBaseDB.collection(FireBaseCollection.member.desc).whereField("uid", isEqualTo: uid)
     
     do {
       let querySnapshot = try await userRef.getDocuments()

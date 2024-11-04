@@ -33,7 +33,7 @@ public struct MangerProfile {
     var mangerProfileGeneration: String = "소속 기수"
     var logoutText: String = "로그아웃"
     
-    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
+    @Shared(.appStorage("UserUID")) var userUid: String = ""
     var userMember: UserDTOMember? = nil
     public init() {}
   }
@@ -116,9 +116,9 @@ public struct MangerProfile {
     switch action {
       
     case .fetchUser:
-      return .run { [userEmail = state.userEmail] send in
+      return .run { [userUID = state.userUid] send in
         let fetchUserResult = await Result {
-          try await authUseCase.fetchUser(uid:userEmail)
+          try await authUseCase.fetchUser(uid: userUID)
         }
         
         switch fetchUserResult {
@@ -137,8 +137,7 @@ public struct MangerProfile {
       switch result {
       case .success(let userDtoMemberData):
         state.userMember = userDtoMemberData
-        let email = state.userMember?.email ?? ""
-        state.userEmail = email
+        state.userUid = userDtoMemberData.uid
         
       case .failure(let error):
         #logError("유저 정보 가쟈오기", error.localizedDescription)

@@ -20,6 +20,7 @@ public struct Splash {
   public struct State: Equatable {
     public init() {}
     @Shared(.appStorage("UserEmail")) var userEmail: String = ""
+    @Shared(.appStorage("UserUID")) var userUid: String = ""
     var userMember: UserDTOMember? = nil
   }
   
@@ -101,9 +102,9 @@ public struct Splash {
     switch action {
       
     case .fetchUser:
-      return .run { [userEmail = state.userEmail] send in
+      return .run { [userUid = state.userUid] send in
         let fetchUserResult = await Result {
-          try await authUseCase.fetchUser(uid:userEmail)
+          try await authUseCase.fetchUser(uid: userUid)
         }
         
         switch fetchUserResult {

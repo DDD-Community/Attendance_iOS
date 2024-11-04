@@ -119,7 +119,6 @@ public struct Login {
           let result = try await oAuthUseCase.handleAppleLogin(authData, nonce: nonce)
           await send(.async(.appleRespose(.success(result))))
           try await clock.sleep(for: .seconds(0.03))
-          await send(.navigation(.presntSignUpInviteView))
           await send(.async(.fetchUser))
         } catch {
           #logDebug("애플 로그인 에러", error.localizedDescription)
@@ -183,7 +182,7 @@ public struct Login {
     case .fetchUser:
       return .run { [userMember = state.userSignUpMember] send in
         let fetchUserResult = await Result {
-          try await authUseCase.fetchUser(uid: userMember.email)
+          try await authUseCase.fetchUser(uid: userMember.uid)
         }
         
         switch fetchUserResult {
@@ -212,6 +211,7 @@ public struct Login {
       case .success(let userDtoMemberData):
         state.userMember = userDtoMemberData
         let email = state.userMember?.email ?? ""
+        let uid = state.userMember?.uid ?? ""
         state.userEmail = email
         
       case .failure(let error):

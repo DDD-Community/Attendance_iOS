@@ -24,6 +24,7 @@ public struct SignUpSelectManging {
     var selectMangingPart : Managing? = .notManging
     var activeButton: Bool = false
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
+    @Shared(.appStorage("UserUID")) var userUid: String = ""
     var signUpCoreMemberModel: CoreMemberDTOSignUp? = nil
   }
   
@@ -129,7 +130,7 @@ public struct SignUpSelectManging {
   ) -> Effect<Action> {
     switch action {
     case .signUpCoreMember:
-      return .run { [member = state.userSignUpMember] send in
+      return .run { [member = state.userSignUpMember, userUid = state.userUid] send in
         let member: Member = Member(
           uid: UUID().uuidString,
           memberid: UUID().uuidString,
@@ -150,6 +151,7 @@ public struct SignUpSelectManging {
           if let signUpCoreMemberData = signUpCoreMemberData {
             await send(.async(.signUpCoreMemberResponse(.success(signUpCoreMemberData))))
             try await clock.sleep(for: .seconds(1))
+//            userUid = signUpCoreMemberData.uid
             if signUpCoreMemberData.isAdmin == true {
               await send(.navigation(.presntCoreMember))
             }
@@ -164,6 +166,7 @@ public struct SignUpSelectManging {
       switch result {
       case .success(let signUpCoreMemberData):
         state.signUpCoreMemberModel = signUpCoreMemberData
+        state.userUid = signUpCoreMemberData.uid 
       case .failure(let error):
         #logError("회원가입 실패", error.localizedDescription)
       }
