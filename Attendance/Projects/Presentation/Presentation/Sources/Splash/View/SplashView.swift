@@ -40,7 +40,7 @@ public struct SplashView: View {
       }
     }
     .onAppear {
-      store.send(.navigation(.presntAuth))
+      store.send(.async(.fetchUser))
     }
   }
 }
