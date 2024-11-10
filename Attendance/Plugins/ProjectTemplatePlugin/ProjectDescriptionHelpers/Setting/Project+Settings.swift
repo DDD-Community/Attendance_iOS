@@ -44,7 +44,7 @@ extension Settings {
         .setCFBundleDisplayName(Project.Environment.appDevName)
         .setOtherLdFlags("-ObjC -all_load")
         .setDebugInformationFormat("non-global")
-        .setProvisioningProfileSpecifier("match AppStore io.DDD.Attendance")
+        .setProvisioningProfileSpecifier("match AppStore \(Project.Environment.mainBundleId)")
         .setSkipInstall(false)
         .setExplicitlyBuiltModules(true)
       ),
@@ -53,7 +53,7 @@ extension Settings {
         .setCFBundleDisplayName(Project.Environment.appName)
         .setOtherLdFlags("-ObjC -all_load")
         .setDebugInformationFormat("non-global")
-        .setProvisioningProfileSpecifier("match Development io.DDD.DDDAttendance")
+        .setProvisioningProfileSpecifier("match AppStore \(Project.Environment.mainBundleId)")
         .setSkipInstall(false)
         .setExplicitlyBuiltModules(true)
       )
