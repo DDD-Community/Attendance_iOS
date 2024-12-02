@@ -18,7 +18,7 @@ struct TooltipBody: View {
             VStack {
                 Text(text)
                     .pretendardFont(family: .Regular, size: 14)
-                    .foregroundStyle(Color.basicWhite)
+                    .foregroundStyle(Color.staticWhite)
                     .padding(.vertical, 10)
                     .padding(.horizontal, 12)
                     .background(

@@ -78,7 +78,7 @@ extension EditEventModalView {
             HStack {
                 Text(store.editEventModalTitle)
                     .pretendardFont(family: .Bold, size: 20)
-                    .foregroundStyle(Color.basicWhite)
+                    .foregroundStyle(Color.staticWhite)
                 
                 Spacer()
             }

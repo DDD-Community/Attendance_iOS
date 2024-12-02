@@ -100,7 +100,7 @@ extension ScheduleEventView {
             HStack {
                 Text("\(store.generation)\(store.naivgationTitle)")
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundStyle(Color.basicWhite)
+                    .foregroundStyle(Color.staticWhite)
                 
                 Spacer()
             }
@@ -174,7 +174,7 @@ extension ScheduleEventView {
                     HStack {
                         Text(eventName)
                             .pretendardFont(family: .Bold, size: 20)
-                            .foregroundStyle(Color.basicWhite)
+                            .foregroundStyle(Color.staticWhite)
                         
                         Spacer()
                         
@@ -241,7 +241,7 @@ extension ScheduleEventView {
                
             
             RoundedRectangle(cornerRadius: 5)
-                .fill(Color.basicWhite)
+                .fill(Color.staticWhite)
                 .frame(height: 90)
                 .padding(.bottom, -30)
             

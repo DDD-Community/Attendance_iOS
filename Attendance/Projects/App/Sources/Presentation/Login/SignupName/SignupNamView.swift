@@ -112,7 +112,7 @@ final class SignupNamView: BaseView {
                 }
             
             flex.addItem()
-                .backgroundColor(.basicWhite)
+                .backgroundColor(.staticWhite)
                 .height(1)
                 .marginHorizontal(24)
         }

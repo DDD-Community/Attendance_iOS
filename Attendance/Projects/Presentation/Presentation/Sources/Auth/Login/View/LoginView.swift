@@ -19,7 +19,7 @@ public struct LoginView: View {
   
   public var body: some View {
     ZStack {
-      Color.backGround
+      Color.backGroundPrimary
         .edgesIgnoringSafeArea(.all)
       
       VStack {

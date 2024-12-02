@@ -101,7 +101,7 @@ extension MangerProfileView {
             HStack {
                 Text("\(name)\(store.mangeProfileName)")
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundStyle(Color.basicWhite)
+                    .foregroundStyle(Color.staticWhite)
                 Spacer()
                     .frame(width: 8)
                 
@@ -152,7 +152,7 @@ extension MangerProfileView {
             HStack {
                 Text("\(subTitle) / \(mangingTeam)팀")
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundColor(Color.basicWhite)
+                    .foregroundColor(Color.staticWhite)
                 
                 Spacer()
             }
@@ -160,7 +160,7 @@ extension MangerProfileView {
             HStack {
                 Text("\(subTitle)기")
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundColor(Color.basicWhite)
+                    .foregroundColor(Color.staticWhite)
                 
                 Spacer()
             }
@@ -168,7 +168,7 @@ extension MangerProfileView {
             HStack {
                 Text(subTitle)
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundColor(Color.basicWhite)
+                    .foregroundColor(Color.staticWhite)
                 
                 Spacer()
             }

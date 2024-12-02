@@ -22,7 +22,7 @@ struct DropdownMenuItemView: View {
         }) {
             HStack {
                 Text(item.title)
-                    .foregroundColor(.basicWhite.opacity(0.7))
+                    .foregroundColor(.staticWhite.opacity(0.7))
                     .pretendardFont(family: .Medium, size: 16)
                     .padding(.leading, 16)
                 

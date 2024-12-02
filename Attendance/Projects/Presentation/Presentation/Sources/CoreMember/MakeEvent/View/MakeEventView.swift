@@ -76,7 +76,7 @@ extension MakeEventView {
             HStack {
                 Text(store.makeEventTitle)
                     .pretendardFont(family: .Bold, size: 20)
-                    .foregroundStyle(Color.basicWhite)
+                    .foregroundStyle(Color.staticWhite)
                 
                 Spacer()
             }
@@ -162,7 +162,7 @@ extension MakeEventView {
     @ViewBuilder
     private func makeEventButton() -> some View {
         Rectangle()
-            .fill(store.selectMakeEventReason == "이벤트 선택" ? Color.gray600 : Color.basicWhite)
+            .fill(store.selectMakeEventReason == "이벤트 선택" ? Color.gray600 : Color.staticWhite)
             .frame(height: 90)
             .overlay {
                 VStack {

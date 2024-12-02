@@ -24,7 +24,7 @@ public struct SignUpNameView: View {
   
   public var body: some View {
     ZStack {
-      Color.backGround
+      Color.backGroundPrimary
         .edgesIgnoringSafeArea(.all)
       
       VStack {
@@ -82,7 +82,7 @@ extension SignUpNameView {
       
       RoundedRectangle(cornerRadius: 16)
         .inset(by: 0.5)
-        .stroke(store.isNotAvaliableName ? Color.borderError : Color.borderInactive, lineWidth: 1)
+        .stroke(store.isNotAvaliableName ? Color.statusError : Color.borderInactive, lineWidth: 1)
         .frame(height: 56)
         .overlay {
           HStack {
@@ -139,7 +139,7 @@ extension SignUpNameView {
           } icon: {
             Text("5자 이내의 본명을 입력해주세요")
               .pretendardCustomFont(textStyle: .body3NormalMedium)
-              .foregroundStyle(Color.borderError)
+              .foregroundStyle(Color.statusError)
           }
         }
         
