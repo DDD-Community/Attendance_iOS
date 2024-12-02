@@ -165,7 +165,7 @@ extension EditEventModalView {
     @ViewBuilder
     private func editEventButton() -> some View {
         Rectangle()
-            .fill(store.editMakeEventReason == "이벤트 선택" || store.editMakeEventReason == selectMakeEventReason ? Color.gray600 : Color.basicWhite)
+        .fill(store.editMakeEventReason == "이벤트 선택" || store.editMakeEventReason == selectMakeEventReason ? Color.gray600 : Color.staticWhite)
             .frame(height: 90)
             .overlay {
                 VStack {

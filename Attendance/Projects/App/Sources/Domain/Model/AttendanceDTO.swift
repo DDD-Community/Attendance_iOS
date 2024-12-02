@@ -55,7 +55,7 @@ extension AttendanceDTO {
         case .present:
             switch (isBackground, isNameColor, isGenerationColor, isRoletTypeColor) {
             case (true, _, _, _):
-                return .basicWhite
+                return .staticWhite
             case (_, true, _, _):
                 return .basicBlack
             case (_, _, true, _):

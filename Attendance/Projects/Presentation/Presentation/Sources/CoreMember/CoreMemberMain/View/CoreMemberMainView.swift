@@ -139,7 +139,7 @@ extension CoreMemberMainView {
             HStack {
                 Text(store.headerTitle)
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundStyle(Color.basicWhite)
+                    .foregroundStyle(Color.staticWhite)
                 
                 Spacer()
             }
@@ -421,7 +421,7 @@ extension CoreMemberMainView {
             HStack {
                 Text("\(count) / \(store.attendaceMemberModel.count) 명")
                     .pretendardFont(family: .Regular, size: 16)
-                    .foregroundStyle(Color.basicWhite)
+                    .foregroundStyle(Color.staticWhite)
                 
                 Spacer()
 
