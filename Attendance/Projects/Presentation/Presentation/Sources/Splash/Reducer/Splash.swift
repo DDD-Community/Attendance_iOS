@@ -58,7 +58,7 @@ public struct Splash {
     
   }
   
-  @Dependency(AuthUseCase.self) var authUseCase
+  @Dependency(AuthUseCases.self) var authUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   

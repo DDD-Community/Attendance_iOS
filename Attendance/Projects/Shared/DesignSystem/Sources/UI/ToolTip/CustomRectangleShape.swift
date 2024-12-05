@@ -18,12 +18,12 @@ struct TooltipBody: View {
             VStack {
                 Text(text)
                     .pretendardFont(family: .Regular, size: 14)
-                    .foregroundStyle(Color.staticWhite)
+                    .foregroundStyle(.staticWhite)
                     .padding(.vertical, 10)
                     .padding(.horizontal, 12)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.gray800)
+                            .fill(.gray800)
                     )
             }
     }

@@ -72,7 +72,7 @@ public struct Login {
   }
   
   @Dependency(OAuthUseCase.self) var oAuthUseCase
-  @Dependency(AuthUseCase.self) var authUseCase
+  @Dependency(AuthUseCases.self) var authUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
