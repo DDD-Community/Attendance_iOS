@@ -14,10 +14,10 @@ struct RepositoryModuleFactory {
   
   private var repositoryDefinitions: [() -> Module] {
     [
+      { makeRepositoryModule(AuthRepositoryProtocol.self) { AuthRepository() } },
       { makeRepositoryModule(FireStoreRepositoryProtocol.self) { FireStoreRepository() } },
       { makeRepositoryModule(QrCodeRepositoryProtcool.self) { QrCodeRepository() } },
       { makeRepositoryModule(OAuthRepositoryProtocol.self) { OAuthRepository() } },
-      { makeRepositoryModule(AuthRepositoryProtocol.self) { AuthRepository() } },
       { makeRepositoryModule(SignUpRepositoryProtcol.self) { SignUpRepository() } }
     ]
   }

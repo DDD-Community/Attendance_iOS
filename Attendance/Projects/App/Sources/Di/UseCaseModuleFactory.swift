@@ -15,6 +15,15 @@ struct UseCaseModuleFactory {
   private var useCaseDefinitions: [() -> Module] {
     [
       {
+        self.makeModule(AuthUseCaseProtocol.self) {
+          AuthUseCases(
+            repository: self.resolveOrDefault(
+              AuthRepositoryProtocol.self,
+              default: DefaultAuthRepository())
+          )}
+      },
+      
+      {
         self.makeModule(FireStoreUseCaseProtocol.self) {
           FireStoreUseCase(
             repository: self.resolveOrDefault(
@@ -40,16 +49,6 @@ struct UseCaseModuleFactory {
               default: DefaultOAuthRepository())
           )}
       },
-      
-      {
-        self.makeModule(AuthUseCaseProtocol.self) {
-          AuthUseCases(
-            repository: self.resolveOrDefault(
-              AuthRepositoryProtocol.self,
-              default: DefaultAuthRepository())
-          )}
-      },
-      
       {
         self.makeModule(SignUpUseCaseProtocol.self) {
           SignUpUseCase(
