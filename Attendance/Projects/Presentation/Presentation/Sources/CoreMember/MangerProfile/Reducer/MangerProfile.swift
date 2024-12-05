@@ -72,7 +72,7 @@ public struct MangerProfile {
   }
   
   @Dependency(FireStoreUseCase.self) var fireStoreUseCase
-  @Dependency(AuthUseCase.self) var authUseCase
+  @Dependency(AuthUseCases.self) var authUseCase
   
   public var body: some ReducerOf<Self> {
     BindingReducer()

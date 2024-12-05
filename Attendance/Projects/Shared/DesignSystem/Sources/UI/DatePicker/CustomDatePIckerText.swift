@@ -24,7 +24,7 @@ public struct CustomDatePIckerText: View {
 
             Text(Date.formattedDateTimeText(date: selectedDate))
                 .pretendardFont(family: .Regular, size: 16)
-                .foregroundColor(Color.staticWhite)
+                .foregroundStyle(.staticWhite)
 
             Spacer()
                 .frame(width: 8)
@@ -34,7 +34,7 @@ public struct CustomDatePIckerText: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 10, height: 8)
-                    .foregroundColor(Color.gray600)
+                    .foregroundStyle(.gray600)
             }
 
             Spacer()

@@ -139,7 +139,7 @@ extension CoreMemberMainView {
             HStack {
                 Text(store.headerTitle)
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundStyle(Color.staticWhite)
+                    .foregroundStyle(.staticWhite)
                 
                 Spacer()
             }
@@ -192,14 +192,14 @@ extension CoreMemberMainView {
                                     
                                     Text(item.attendanceListDesc)
                                         .pretendardFont(family: .Bold, size: 16)
-                                        .foregroundColor(store.selectPart == item ? Color.staticWhite : Color.gray600)
+                                        .foregroundColor(store.selectPart == item ? .staticWhite : .gray600)
                                     
                                     Spacer()
                                         .frame(width: 16)
                                     
                                     if item != .server {
                                         Divider()
-                                            .background(Color.gray800)
+                                            .background(.gray800)
                                             .frame(width: 14, height: 20)
                                     }
                                         
@@ -244,7 +244,7 @@ extension CoreMemberMainView {
                         
                         Text(store.notEventText)
                             .pretendardFont(family: .Regular, size: 16)
-                            .foregroundStyle(Color.gray800)
+                            .foregroundStyle(.gray800)
                         
                         Spacer()
                     }
@@ -276,7 +276,7 @@ extension CoreMemberMainView {
                         
                         Text(store.notEventText)
                             .pretendardFont(family: .Regular, size: 16)
-                            .foregroundStyle(Color.gray800)
+                            .foregroundStyle(.gray800)
                         
                         Spacer()
                     }
@@ -304,10 +304,10 @@ extension CoreMemberMainView {
                             name: item.name,
                             generataion: "\(item.generation)",
                             roleType: item.roleType.attendanceListDesc,
-                            nameColor: Color.staticWhite.opacity(0.4),
-                            roleTypeColor: Color.staticWhite.opacity(0.4),
-                            generationColor: Color.staticWhite.opacity(0.4),
-                            backGroudColor: Color.gray800.opacity(0.4)
+                            nameColor: .staticWhite.opacity(0.4),
+                            roleTypeColor: .staticWhite.opacity(0.4),
+                            generationColor: .staticWhite.opacity(0.4),
+                            backGroudColor: .gray800.opacity(0.4)
                         )
                         .id(item.memberId)
                     }
@@ -325,25 +325,25 @@ extension CoreMemberMainView {
                         roleType: item.roleType.desc,
                         nameColor: getBackgroundColor(
                             for: item.id,
-                            generationColor: (item.status == .run || item.status == nil ? Color.gray600 : store.attenaceNameColor) ?? Color.gray600,
+                            generationColor: (item.status == .run || item.status == nil ? .gray600 : store.attenaceNameColor) ?? .gray600,
                             matchingAttendances: item,
                             isNameColor: true
                         ),
                         roleTypeColor: getBackgroundColor(
                             for: item.id,
-                            generationColor: (item.status == .run || item.status == nil ? Color.gray600 : store.attenaceRoleTypeColor) ?? Color.gray600 ,
+                            generationColor: (item.status == .run || item.status == nil ? .gray600 : store.attenaceRoleTypeColor) ?? Color.gray600 ,
                             matchingAttendances: item,
                             isRoletTypeColor: true
                         ),
                         generationColor: getBackgroundColor(
                             for: item.id,
-                            generationColor: (item.status == .run || item.status == nil ? Color.gray600 : store.attenaceGenerationColor) ?? Color.gray800,
+                            generationColor: (item.status == .run || item.status == nil ? .gray600 : store.attenaceGenerationColor) ?? .gray800,
                             matchingAttendances: item,
                             isGenerationColor: true
                         ),
                         backGroudColor: getBackgroundColor(
                             for: item.id,
-                            generationColor: (item.status == .run || item.status == nil ? .gray800 : store.attenaceBackGroudColor) ?? Color.gray800,
+                            generationColor: (item.status == .run || item.status == nil ? .gray800 : store.attenaceBackGroudColor) ?? .gray800,
                             matchingAttendances: item,
                             isBackground: true
                         )
@@ -387,7 +387,7 @@ extension CoreMemberMainView {
                         return backgroundColor
                     }
                 } else {
-                    return Color.gray800
+                    return .gray800
                 }
             } else  if matchingAttendancesList.count != store.attendanceCheckInModel.count {
                 if let backgroundColor = matchingAttendancesList.first?.backgroundColor(
@@ -411,7 +411,7 @@ extension CoreMemberMainView {
                     return generationColor
                 }
             } else {
-                return Color.gray800
+                return .gray800
             }
         }
 
@@ -421,7 +421,7 @@ extension CoreMemberMainView {
             HStack {
                 Text("\(count) / \(store.attendaceMemberModel.count) 명")
                     .pretendardFont(family: .Regular, size: 16)
-                    .foregroundStyle(Color.staticWhite)
+                    .foregroundStyle(.staticWhite)
                 
                 Spacer()
 

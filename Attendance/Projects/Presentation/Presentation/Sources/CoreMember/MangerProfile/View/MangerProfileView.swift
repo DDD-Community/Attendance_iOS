@@ -101,13 +101,13 @@ extension MangerProfileView {
             HStack {
                 Text("\(name)\(store.mangeProfileName)")
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundStyle(Color.staticWhite)
+                    .foregroundStyle(.staticWhite)
                 Spacer()
                     .frame(width: 8)
                 
                 if memberType == .coreMember {
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray800)
+                        .fill(.gray800)
                         .frame(width: 54, height: 24)
                         .overlay {
                             Text(memberType.memberDesc)
@@ -140,7 +140,7 @@ extension MangerProfileView {
         HStack {
             Text(title)
                 .pretendardFont(family: .SemiBold, size: 14)
-                .foregroundColor(Color.gray600)
+                .foregroundStyle(.gray600)
             
             Spacer()
         }
@@ -152,7 +152,7 @@ extension MangerProfileView {
             HStack {
                 Text("\(subTitle) / \(mangingTeam)팀")
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundColor(Color.staticWhite)
+                    .foregroundStyle(.staticWhite)
                 
                 Spacer()
             }
@@ -160,7 +160,7 @@ extension MangerProfileView {
             HStack {
                 Text("\(subTitle)기")
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundColor(Color.staticWhite)
+                    .foregroundStyle(.staticWhite)
                 
                 Spacer()
             }
@@ -168,7 +168,7 @@ extension MangerProfileView {
             HStack {
                 Text(subTitle)
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundColor(Color.staticWhite)
+                    .foregroundStyle(.staticWhite)
                 
                 Spacer()
             }
@@ -186,7 +186,7 @@ extension MangerProfileView {
             HStack(alignment: .center) {
                 Text(store.logoutText)
                     .pretendardFont(family: .Regular, size: 16)
-                    .foregroundStyle(Color.gray300)
+                    .foregroundStyle(.gray300)
                     .underline(true, color: Color.gray300)
             }
             .onTapGesture {
