@@ -43,9 +43,9 @@ struct UseCaseModuleFactory {
       
       {
         self.makeModule(AuthUseCaseProtocol.self) {
-          AuthUseCase(
+          AuthUseCases(
             repository: self.resolveOrDefault(
-              AuthRepositoryProtocols.self,
+              AuthRepositoryProtocol.self,
               default: DefaultAuthRepository())
           )}
       },

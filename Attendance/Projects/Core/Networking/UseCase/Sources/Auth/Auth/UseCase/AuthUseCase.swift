@@ -9,11 +9,11 @@ import ComposableArchitecture
 import DiContainer
 import Model
 
-public struct AuthUseCase: AuthUseCaseProtocol {
-  private let repository: AuthRepositoryProtocols
+public struct AuthUseCases: AuthUseCaseProtocol {
+  private let repository: AuthRepositoryProtocol
   
   public init(
-    repository: AuthRepositoryProtocols
+    repository: AuthRepositoryProtocol
   ) {
     self.repository = repository
   }
@@ -25,9 +25,10 @@ public struct AuthUseCase: AuthUseCaseProtocol {
 }
 
 
-extension AuthUseCase: DependencyKey {
-  static public var liveValue: AuthUseCase =  {
-    let oAuthRepository = DependencyContainer.live.resolve(AuthRepositoryProtocols.self) ?? DefaultAuthRepository()
-    return AuthUseCase(repository: oAuthRepository)
+extension AuthUseCases: DependencyKey {
+  static public var liveValue: AuthUseCases = {
+    let authRepository = DependencyContainer.live.resolve(AuthRepositoryProtocol.self)
+    ?? DefaultAuthRepository() // 기본값 사용
+    return AuthUseCases(repository: authRepository)
   }()
 }
