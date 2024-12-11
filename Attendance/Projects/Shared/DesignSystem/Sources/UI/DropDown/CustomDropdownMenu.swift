@@ -30,7 +30,7 @@ public struct CustomDropdownMenu: View {
                     HStack {
                         Text(selectionTitle == "선택해주세요." ? "선택해주세요." : selectionTitle)
                             .pretendardFont(family: selectionTitle == "선택해주세요." ? .Medium : .Bold, size: 16)
-                            .foregroundColor(selectionTitle == "선택해주세요." || selectionTitle == "이벤트 선택" ? Color.gray600 : Color.basicWhite)
+                            .foregroundColor(selectionTitle == "선택해주세요." || selectionTitle == "이벤트 선택" ? Color.gray600 : Color.staticWhite)
                             .padding(.leading, 16)
                             .offset(y: isSelecting ? -10 : 0)
                             .onTapGesture {
@@ -78,7 +78,7 @@ public struct CustomDropdownMenu: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 5)
                     .stroke(Color.basicBlack.opacity(0.4), lineWidth: 1)
-                    .foregroundColor(isSelecting ? Color.basicWhite : Color.gray600 )
+                    .foregroundColor(isSelecting ? Color.staticWhite : Color.gray600 )
                     .blur(radius: isSelecting ? 10 : 0)
             )
             .background(Color.basicBlack.opacity(0.4))

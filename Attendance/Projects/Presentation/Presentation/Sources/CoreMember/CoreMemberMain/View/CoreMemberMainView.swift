@@ -192,7 +192,7 @@ extension CoreMemberMainView {
                                     
                                     Text(item.attendanceListDesc)
                                         .pretendardFont(family: .Bold, size: 16)
-                                        .foregroundColor(store.selectPart == item ? Color.basicWhite : Color.gray600)
+                                        .foregroundColor(store.selectPart == item ? Color.staticWhite : Color.gray600)
                                     
                                     Spacer()
                                         .frame(width: 16)
@@ -304,9 +304,9 @@ extension CoreMemberMainView {
                             name: item.name,
                             generataion: "\(item.generation)",
                             roleType: item.roleType.attendanceListDesc,
-                            nameColor: Color.basicWhite.opacity(0.4),
-                            roleTypeColor: Color.basicWhite.opacity(0.4),
-                            generationColor: Color.basicWhite.opacity(0.4),
+                            nameColor: Color.staticWhite.opacity(0.4),
+                            roleTypeColor: Color.staticWhite.opacity(0.4),
+                            generationColor: Color.staticWhite.opacity(0.4),
                             backGroudColor: Color.gray800.opacity(0.4)
                         )
                         .id(item.memberId)

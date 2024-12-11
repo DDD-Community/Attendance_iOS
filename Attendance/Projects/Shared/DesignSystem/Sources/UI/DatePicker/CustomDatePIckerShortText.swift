@@ -28,11 +28,11 @@ public struct CustomDatePickerShortText: View {
             if isTimeDate {
                 Text(selectedDate.formattedTimes(date: selectedDate))
                     .pretendardFont(family: .Regular, size: 17)
-                    .foregroundStyle(isDateSelected ? Color.basicWhite : Color.gray600)
+                    .foregroundStyle(isDateSelected ? Color.staticWhite : Color.gray600)
             } else {
                 Text(Date.formattedDateTimeText(date: selectedDate))
                     .pretendardFont(family: .Regular, size: 17)
-                    .foregroundStyle(isDateSelected ? Color.basicWhite : Color.gray600)
+                    .foregroundStyle(isDateSelected ? Color.staticWhite : Color.gray600)
             }
         }
         .padding(.horizontal, 11)

@@ -27,7 +27,7 @@ public struct SignUpInviteCodeView : View {
   
   public var body: some View {
     ZStack {
-      Color.backGround
+      Color.backGroundPrimary
         .edgesIgnoringSafeArea(.all)
       
       VStack {
@@ -206,7 +206,7 @@ extension SignUpInviteCodeView {
           
           Text("코드가 유효하지 않습니다.")
             .pretendardCustomFont(textStyle: .body1NormalMedium)
-            .foregroundStyle(Color.borderError)
+            .foregroundStyle(Color.statusError)
           
           Spacer()
         }
