@@ -7,6 +7,6 @@
 
 import Model
 
-public protocol AuthRepositoryProtocols {
+public protocol AuthRepositoryProtocol {
   func fetchUser(uid: String) async throws -> UserDTOMember?
 }

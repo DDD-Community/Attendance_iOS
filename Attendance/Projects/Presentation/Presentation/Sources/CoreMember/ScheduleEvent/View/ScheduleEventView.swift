@@ -100,7 +100,7 @@ extension ScheduleEventView {
             HStack {
                 Text("\(store.generation)\(store.naivgationTitle)")
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundStyle(Color.staticWhite)
+                    .foregroundStyle(.staticWhite)
                 
                 Spacer()
             }
@@ -123,7 +123,7 @@ extension ScheduleEventView {
                 VStack(alignment: .leading) {
                     HStack {
                         Text(month)
-                            .foregroundStyle(Color.gray600)
+                            .foregroundStyle(.gray600)
                             .pretendardFont(family: .SemiBold, size: 14)
                     }
                     
@@ -161,7 +161,7 @@ extension ScheduleEventView {
         VStack {
             HStack {
                 Rectangle()
-                    .fill(Color.gray800)
+                    .fill(.gray800)
                     .frame(width: 4, height: 88)
                 
                 Spacer()
@@ -174,7 +174,7 @@ extension ScheduleEventView {
                     HStack {
                         Text(eventName)
                             .pretendardFont(family: .Bold, size: 20)
-                            .foregroundStyle(Color.staticWhite)
+                            .foregroundStyle(.staticWhite)
                         
                         Spacer()
                         
@@ -197,14 +197,14 @@ extension ScheduleEventView {
                     
                     Text("시작 시간 : \(startTime)")
                         .pretendardFont(family: .Regular, size: 14)
-                        .foregroundStyle(Color.gray400)
+                        .foregroundStyle(.gray400)
                     
                     Spacer()
                         .frame(height: 8)
                     
                     Text("종료 시간 : \(endTime)")
                         .pretendardFont(family: .Regular, size: 14)
-                        .foregroundStyle(Color.gray400)
+                        .foregroundStyle(.gray400)
                     
                     Spacer()
                         .frame(height: 8)
@@ -235,7 +235,7 @@ extension ScheduleEventView {
             
             Text(store.notEventText)
                 .pretendardFont(family: .Regular, size: 16)
-                .foregroundStyle(Color.gray800)
+                .foregroundStyle(.gray800)
             
             Spacer()
                

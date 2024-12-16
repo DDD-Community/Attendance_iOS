@@ -82,7 +82,7 @@ extension SignUpNameView {
       
       RoundedRectangle(cornerRadius: 16)
         .inset(by: 0.5)
-        .stroke(store.isNotAvaliableName ? Color.statusError : Color.borderInactive, lineWidth: 1)
+        .stroke(store.isNotAvaliableName ? .statusError : .borderInactive, lineWidth: 1)
         .frame(height: 56)
         .overlay {
           HStack {
@@ -91,7 +91,7 @@ extension SignUpNameView {
             
             TextField("이름을 입력해주세요.", text: $store.userSignUpMember.name)
               .pretendardCustomFont(textStyle: .body2NormalMedium)
-              .foregroundStyle(Color.grayWhite)
+              .foregroundStyle(.grayWhite)
               .multilineTextAlignment(.leading)
               .frame(maxWidth: .infinity)
               .onChange(of: store.userSignUpMember.name) { newValue, oldValue in
@@ -139,7 +139,7 @@ extension SignUpNameView {
           } icon: {
             Text("5자 이내의 본명을 입력해주세요")
               .pretendardCustomFont(textStyle: .body3NormalMedium)
-              .foregroundStyle(Color.statusError)
+              .foregroundStyle(.statusError)
           }
         }
         

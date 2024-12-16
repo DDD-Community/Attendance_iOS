@@ -61,7 +61,7 @@ extension CreatByAppView {
             HStack {
                 Text(store.creatByAppTitle)
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundStyle(Color.staticWhite)
+                    .foregroundStyle(.staticWhite)
                 
                 Spacer()
             }
@@ -82,7 +82,7 @@ extension CreatByAppView {
             HStack {
                 Text(roleType.attendanceListDesc)
                     .pretendardFont(family: .SemiBold, size: 14)
-                    .foregroundStyle(Color.gray600)
+                    .foregroundStyle(.gray600)
                 
                 Spacer()
             }
@@ -93,7 +93,7 @@ extension CreatByAppView {
             HStack {
                 Text(userName)
                     .pretendardFont(family: .SemiBold, size: 24)
-                    .foregroundColor(Color.staticWhite)
+                    .foregroundColor(.staticWhite)
                 
                 Spacer()
             }

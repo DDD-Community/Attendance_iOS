@@ -78,7 +78,7 @@ extension EditEventModalView {
             HStack {
                 Text(store.editEventModalTitle)
                     .pretendardFont(family: .Bold, size: 20)
-                    .foregroundStyle(Color.staticWhite)
+                    .foregroundStyle(.staticWhite)
                 
                 Spacer()
             }
@@ -94,7 +94,7 @@ extension EditEventModalView {
         VStack {
             HStack {
                 Text(store.selectMakeEventTiltle)
-                    .foregroundStyle(Color.gray400)
+                    .foregroundStyle(.gray400)
                     .pretendardFont(family: .Medium, size: 18)
                 
                 Spacer()
@@ -113,7 +113,7 @@ extension EditEventModalView {
     private func selectDateAndTimeText() -> some View {
         HStack {
             Text(store.selectMakeEventTiltle)
-                .foregroundStyle(Color.gray400)
+                .foregroundStyle(.gray400)
                 .pretendardFont(family: .Medium, size: 18)
             
             Spacer()
@@ -127,7 +127,7 @@ extension EditEventModalView {
             HStack {
                 Text(text)
                     .pretendardFont(family: .Regular, size: 16)
-                    .foregroundStyle(Color.gray600)
+                    .foregroundStyle(.gray600)
                 
                 Spacer().frame(width: 8)
                 
@@ -165,7 +165,7 @@ extension EditEventModalView {
     @ViewBuilder
     private func editEventButton() -> some View {
         Rectangle()
-            .fill(store.editMakeEventReason == "이벤트 선택" || store.editMakeEventReason == selectMakeEventReason ? Color.gray600 : Color.basicWhite)
+        .fill(store.editMakeEventReason == "이벤트 선택" || store.editMakeEventReason == selectMakeEventReason ? .gray600 : .staticWhite)
             .frame(height: 90)
             .overlay {
                 VStack {
@@ -173,7 +173,7 @@ extension EditEventModalView {
                     
                     Text("수정")
                         .pretendardFont(family: .SemiBold, size: 20)
-                        .foregroundColor(store.editMakeEventReason == "이벤트 선택" || store.editMakeEventReason == selectMakeEventReason ? Color.gray400 : Color.basicBlack)
+                        .foregroundColor(store.editMakeEventReason == "이벤트 선택" || store.editMakeEventReason == selectMakeEventReason ? .gray400 : .basicBlack)
                     
                     Spacer()
                 }

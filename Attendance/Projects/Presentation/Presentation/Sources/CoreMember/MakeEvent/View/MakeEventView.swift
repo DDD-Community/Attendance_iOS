@@ -76,7 +76,7 @@ extension MakeEventView {
             HStack {
                 Text(store.makeEventTitle)
                     .pretendardFont(family: .Bold, size: 20)
-                    .foregroundStyle(Color.staticWhite)
+                    .foregroundStyle(.staticWhite)
                 
                 Spacer()
             }
@@ -92,7 +92,7 @@ extension MakeEventView {
         VStack {
             HStack {
                 Text(store.selectMakeEventReasonTitle)
-                    .foregroundStyle(Color.gray400)
+                    .foregroundStyle(.gray400)
                     .pretendardFont(family: .Medium, size: 18)
                 
                 Spacer()
@@ -111,7 +111,7 @@ extension MakeEventView {
     private func selectDateAndTimeText() -> some View {
         HStack {
             Text(store.selectMakeEventTiltle)
-                .foregroundStyle(Color.gray400)
+                .foregroundStyle(.gray400)
                 .pretendardFont(family: .Medium, size: 18)
             
             Spacer()
@@ -125,12 +125,12 @@ extension MakeEventView {
             HStack {
                 Text(text)
                     .pretendardFont(family: .Regular, size: 16)
-                    .foregroundStyle(Color.gray600)
+                    .foregroundStyle(.gray600)
                 
                 Spacer().frame(width: 8)
                 
                 RoundedRectangle(cornerRadius: 5)
-                    .fill(Color.basicBlack.opacity(0.4))
+                    .fill(.basicBlack.opacity(0.4))
                     .frame(width: UIScreen.main.bounds.width * 0.3, height: 34)
                     .overlay {
                         if text == "시작" {
@@ -143,7 +143,7 @@ extension MakeEventView {
                 Spacer().frame(width: 6)
                 
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.basicBlack.opacity(0.4))
+                    .fill(.basicBlack.opacity(0.4))
                     .frame(width: UIScreen.main.bounds.width * 0.24, height: 34)
                     .overlay {
                         if text == "시작" {
@@ -162,7 +162,7 @@ extension MakeEventView {
     @ViewBuilder
     private func makeEventButton() -> some View {
         Rectangle()
-            .fill(store.selectMakeEventReason == "이벤트 선택" ? Color.gray600 : Color.staticWhite)
+            .fill(store.selectMakeEventReason == "이벤트 선택" ? .gray600 : .staticWhite)
             .frame(height: 90)
             .overlay {
                 VStack {
@@ -170,7 +170,7 @@ extension MakeEventView {
                     
                     Text("등록")
                         .pretendardFont(family: .SemiBold, size: 20)
-                        .foregroundColor(store.selectMakeEventReason == "이벤트 선택" ? Color.gray400 : Color.basicBlack)
+                        .foregroundStyle(store.selectMakeEventReason == "이벤트 선택" ? .gray400 : .basicBlack)
                     
                     Spacer()
                 }
