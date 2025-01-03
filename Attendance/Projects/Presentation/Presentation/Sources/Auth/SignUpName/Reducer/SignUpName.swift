@@ -53,7 +53,7 @@ public struct SignUpName {
   
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    case presntSignUpPart
+    case presentSignUpPart
   }
   
   public var body: some ReducerOf<Self> {
@@ -92,7 +92,7 @@ public struct SignUpName {
       }
       return .run { [enableButton = state.enableButton] send in
         if enableButton == true {
-          await send(.navigation(.presntSignUpPart))
+          await send(.navigation(.presentSignUpPart))
         }
       }
     }
@@ -103,7 +103,7 @@ public struct SignUpName {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presntSignUpPart:
+    case .presentSignUpPart:
       return .none
     }
   }

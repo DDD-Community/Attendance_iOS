@@ -32,30 +32,31 @@ public struct SignUpPart {
     case navigation(NavigationAction)
   }
   
-  //MARK: - ViewAction
+  // MARK: - ViewAction
+  
   @CasePathable
   public enum View {
     case selectPartButton(selectPart: SelectPart)
   }
   
+  // MARK: - AsyncAction 비동기 처리 액션
   
-  
-  //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     
   }
   
-  //MARK: - 앱내에서 사용하는 액션
+  // MARK: - 앱내에서 사용하는 액션
+  
   public enum InnerAction: Equatable {
     
   }
   
-  //MARK: - NavigationAction
+  // MARK: - NavigationAction
+  
   public enum NavigationAction: Equatable {
-    case presntManging
-    case presntSelectTeam
-    case presntNextStep
-    
+    case presentManging
+    case presentSelectTeam
+    case presentNextStep
   }
   
   public var body: some ReducerOf<Self> {
@@ -64,7 +65,6 @@ public struct SignUpPart {
       switch action {
       case .binding(_):
         return .none
-        
         
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
@@ -97,8 +97,8 @@ public struct SignUpPart {
       
       state.selectPart = selectPart
       if let part = SelectPart(rawValue: selectPart.desc) {
-          state.userSignUpMember.role = part
-      } 
+        state.userSignUpMember.role = part
+      }
       state.activeSelectPart = true
       return .none
     }
@@ -109,16 +109,16 @@ public struct SignUpPart {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presntManging:
+    case .presentManging:
       return .none
-    case .presntSelectTeam:
+    case .presentSelectTeam:
       return .none
-    case .presntNextStep:
+    case .presentNextStep:
       return .run { [isAdmin = state.userSignUpMember.isAdmin] send in
         if isAdmin == true {
-          await send(.navigation(.presntManging))
+          await send(.navigation(.presentManging))
         } else {
-          await send(.navigation(.presntSelectTeam))
+          await send(.navigation(.presentSelectTeam))
         }
       }
     }
@@ -142,4 +142,3 @@ public struct SignUpPart {
     }
   }
 }
-

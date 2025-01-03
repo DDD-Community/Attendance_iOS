@@ -5,7 +5,6 @@
 //  Created by Wonji Suh  on 10/29/24.
 //
 
-import Foundation
 import SwiftUI
 
 import DesignSystem

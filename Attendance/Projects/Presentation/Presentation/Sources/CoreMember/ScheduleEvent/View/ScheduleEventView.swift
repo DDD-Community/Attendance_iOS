@@ -7,12 +7,11 @@
 
 import SwiftUI
 
-import SDWebImageSwiftUI
-import ComposableArchitecture
-import Collections
-
 import DesignSystem
 
+import Collections
+import ComposableArchitecture
+import SDWebImageSwiftUI
 
 public struct ScheduleEventView: View {
     @Bindable var store: StoreOf<ScheduleEvent>
@@ -37,7 +36,7 @@ public struct ScheduleEventView: View {
                     .frame(height: 16)
                 
                 CustomNavigationBar(backAction: backAction, addAction: {
-                    store.send(.view(.presntEventModal))
+                    store.send(.view(.presentEventModal))
                 }, image: .plus)
                 
                 scheduleEventNavigationTitle()
@@ -64,15 +63,13 @@ public struct ScheduleEventView: View {
         
         .sheet(item: $store.scope(state: \.destination?.makeEvent, action: \.destination.makeEvent)) { makeStore in
             MakeEventView(store: makeStore) {
-                store.send(.view(.closePresntEventModal))
+                store.send(.view(.closePresentEventModal))
                 store.send(.async(.fetchEvent))
             }
             .presentationDetents([.height(UIScreen.screenHeight * 0.55)])
             .presentationCornerRadius(20)
             .presentationDragIndicator(.visible)
-            
         }
-        
         .sheet(item: $store.scope(state: \.destination?.editEventModal, action: \.destination.editEventModal)) { editEventModalStore in
             EditEventModalView(store: editEventModalStore, completion: {
                 store.send(.view(.closeEditEventModal))
@@ -82,10 +79,8 @@ public struct ScheduleEventView: View {
             .presentationCornerRadius(20)
             .presentationDragIndicator(.visible)
         }
-        
         .confirmationDialog($store.scope(state: \.confirmationDialog, action: \.confirmationDialog))
         .alert($store.scope(state: \.alert, action: \.alert))
-               
     }
 }
 
@@ -258,7 +253,7 @@ extension ScheduleEventView {
                     }
                 }
                 .onTapGesture {
-                    store.send(.view(.presntEventModal))
+                    store.send(.view(.presentEventModal))
                 }
             
 //            Spacer()

@@ -87,7 +87,7 @@ extension SignUpPartView {
       
       CustomButton(
         action: {
-          store.send(.navigation(.presntNextStep))
+          store.send(.navigation(.presentNextStep))
         },
         title: "다음",
         config: CustomButtonConfig.create(),

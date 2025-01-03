@@ -6,11 +6,12 @@
 //
 
 import Foundation
+
+import Networkings
+import Utill
+
 import ComposableArchitecture
 import FirebaseAuth
-
-import Utill
-import Networkings
 
 @Reducer
 public struct Splash {
@@ -32,29 +33,31 @@ public struct Splash {
     case navigation(NavigationAction)
   }
   
-  //MARK: - ViewAction
+  // MARK: - ViewAction
+  
   @CasePathable
   public enum View {
     
   }
   
+  // MARK: - AsyncAction 비동기 처리 액션
   
-  
-  //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     case fetchUser
     case fetchUserResponse(Result<UserDTOMember, CustomError>)
   }
   
-  //MARK: - 앱내에서 사용하는 액션
+  // MARK: - 앱내에서 사용하는 액션
+  
   public enum InnerAction: Equatable {
     
   }
   
-  //MARK: - NavigationAction
+  // MARK: - NavigationAction
+  
   public enum NavigationAction: Equatable {
-  case presentLogin
-  case presentCoreMember
+    case presentLogin
+    case presentCoreMember
     
   }
   
@@ -69,7 +72,6 @@ public struct Splash {
       case .binding(_):
         return .none
         
-        
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
         
@@ -83,7 +85,6 @@ public struct Splash {
         return handleNavigationAction(state: &state, action: navigationAction)
       }
     }
-    
   }
   
   private func handleViewAction(
@@ -162,5 +163,4 @@ public struct Splash {
       return .none
     }
   }
-  
 }

@@ -6,13 +6,13 @@
 //
 
 import Foundation
-import ComposableArchitecture
 
-import Utill
 import Networkings
-import AuthenticationServices
-import AsyncMoya
+import Utill
 
+import AsyncMoya
+import AuthenticationServices
+import ComposableArchitecture
 
 @Reducer
 public struct Login {
@@ -40,7 +40,8 @@ public struct Login {
     case navigation(NavigationAction)
   }
   
-  //MARK: - ViewAction
+  // MARK: - ViewAction
+  
   @CasePathable
   public enum View {
     
@@ -48,8 +49,8 @@ public struct Login {
   
   struct LoginID: Hashable {}
   
+  // MARK: - AsyncAction 비동기 처리 액션
   
-  //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction {
     case appleLogin(Result<ASAuthorization, Error>, nonce: String)
     case appleRespose(Result<ASAuthorization, Error>)
@@ -59,15 +60,16 @@ public struct Login {
     case fetchUserResponse(Result<UserDTOMember, CustomError>)
   }
   
-  //MARK: - 앱내에서 사용하는 액션
+  // MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
     
   }
   
-  //MARK: - NavigationAction
+  // MARK: - NavigationAction
+  
   public enum NavigationAction: Equatable {
-    case presntSignUpInviteView
-    case presntCoreMemberMain
+    case presentSignUpInviteView
+    case presentCoreMemberMain
     
   }
   
@@ -82,7 +84,6 @@ public struct Login {
       switch action {
       case .binding(_):
         return .none
-        
         
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
@@ -100,12 +101,12 @@ public struct Login {
   }
   
   private func handleViewAction(
-      state: inout State,
-      action: View
+    state: inout State,
+    action: View
   ) -> Effect<Action> {
-      switch action {
-     
-      }
+    switch action {
+      
+    }
   }
   
   private func handleAsyncAction(
@@ -165,7 +166,6 @@ public struct Login {
           if let googleLoginData = googleLoginData {
             await send(.async(.oAuthResponse(.success(googleLoginData))))
             await send(.async(.fetchUser))
-
           }
         case .failure(let error):
           await send(.async(.oAuthResponse(.failure(CustomError.firestoreError("구글 로그인 실패 \(error.localizedDescription)")))))
@@ -197,17 +197,17 @@ public struct Login {
             
             if fetchUserData.email != "" {
               if fetchUserData.isAdmin == true {
-                await send(.navigation(.presntCoreMemberMain))
+                await send(.navigation(.presentCoreMemberMain))
               } else {
                 
               }
             } else {
-              await send(.navigation(.presntSignUpInviteView))
+              await send(.navigation(.presentSignUpInviteView))
             }
           }
         case .failure(let error):
           await send(.async(.fetchUserResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
-          await send(.navigation(.presntSignUpInviteView))
+          await send(.navigation(.presentSignUpInviteView))
         }
       }
       
@@ -224,7 +224,7 @@ public struct Login {
       return .none
     }
   }
-    
+  
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
@@ -239,10 +239,10 @@ public struct Login {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presntSignUpInviteView:
+    case .presentSignUpInviteView:
       return .none
       
-    case .presntCoreMemberMain:
+    case .presentCoreMemberMain:
       return .none
     }
   }

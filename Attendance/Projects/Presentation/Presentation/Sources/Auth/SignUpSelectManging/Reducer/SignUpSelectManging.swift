@@ -37,29 +37,30 @@ public struct SignUpSelectManging {
     case navigation(NavigationAction)
   }
   
-  //MARK: - ViewAction
+  // MARK: - ViewAction
+  
   @CasePathable
   public enum View {
     case selectMangingButton(selectManging: Managing)
   }
   
+  // MARK: - AsyncAction 비동기 처리 액션
   
-  
-  //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     case signUpCoreMember
     case signUpCoreMemberResponse(Result<CoreMemberDTOSignUp, CustomError>)
   }
   
-  //MARK: - 앱내에서 사용하는 액션
+  // MARK: - 앱내에서 사용하는 액션
+  
   public enum InnerAction: Equatable {
     
   }
   
-  //MARK: - NavigationAction
+  // MARK: - NavigationAction
+  
   public enum NavigationAction: Equatable {
-  case presntCoreMember
-    
+    case presentCoreMember
   }
   
   struct SignUpSelectMangingCancel: Hashable {}
@@ -76,7 +77,6 @@ public struct SignUpSelectManging {
       case .binding(_):
         return .none
         
-        
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
         
@@ -90,7 +90,6 @@ public struct SignUpSelectManging {
         return handleNavigationAction(state: &state, action: navigationAction)
       }
     }
-    
   }
   
   private func handleViewAction(
@@ -120,7 +119,7 @@ public struct SignUpSelectManging {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presntCoreMember:
+    case .presentCoreMember:
       return .none
     }
   }
@@ -154,7 +153,7 @@ public struct SignUpSelectManging {
             try await clock.sleep(for: .seconds(1))
 //            userUid = signUpCoreMemberData.uid
             if signUpCoreMemberData.isAdmin == true {
-              await send(.navigation(.presntCoreMember))
+              await send(.navigation(.presentCoreMember))
             }
           }
         case .failure(let error):

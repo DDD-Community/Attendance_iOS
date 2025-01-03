@@ -5,9 +5,9 @@
 //  Created by Wonji Suh  on 10/29/24.
 //
 
-import ComposableArchitecture
 import Presentation
 
+import ComposableArchitecture
 
 @Reducer
 struct AppReducer {
@@ -30,7 +30,7 @@ struct AppReducer {
   @CasePathable
   enum View {
     case presentAuth
-    case presntCoreMember
+    case presentCoreMember
     
     case splash(Splash.Action)
     case auth(AuthCoordinator.Action)
@@ -67,7 +67,7 @@ struct AppReducer {
       state = .auth(.init())
       return .none
       
-    case .presntCoreMember:
+    case .presentCoreMember:
       state = .coreMember(.init())
       return .none
       
@@ -80,18 +80,17 @@ struct AppReducer {
     case .splash(.navigation(.presentCoreMember)):
       return .run { send in
         try await clock.sleep(for: .seconds(2))
-        await send(.view(.presntCoreMember))
+        await send(.view(.presentCoreMember))
       }
       
     case .auth(.navigation(.presentCoreMember)):
-      return .send(.view(.presntCoreMember))
+      return .send(.view(.presentCoreMember))
       
-    case .coreMember(.navigation(.presntLogin)):
+    case .coreMember(.navigation(.presentLogin)):
       return .send(.view(.presentAuth))
       
     default:
       return .none
     }
   }
-  
 }

@@ -6,11 +6,12 @@
 //
 
 import Foundation
-import ComposableArchitecture
 
-import Utill
-import TCACoordinators
 import Networkings
+import Utill
+
+import ComposableArchitecture
+import TCACoordinators
 
 @Reducer
 public struct AuthCoordinator {
@@ -22,12 +23,9 @@ public struct AuthCoordinator {
     var routes: [Route<AuthScreen.State>]
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     
-    
     public init() {
-      
       self.routes = [.root(.login(.init()), embedInNavigationView: true)]
     }
-    
   }
   
   public enum Action: FeatureAction, BindableAction {
@@ -39,29 +37,30 @@ public struct AuthCoordinator {
     case navigation(NavigationAction)
   }
   
-  //MARK: - ViewAction
+  // MARK: - ViewAction
+  
   @CasePathable
   public enum View {
     case backAction
     case backToRootAction
   }
   
+  // MARK: - AsyncAction 비동기 처리 액션
   
-  
-  //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     
   }
   
-  //MARK: - 앱내에서 사용하는 액션
+  // MARK: - 앱내에서 사용하는 액션
+  
   public enum InnerAction: Equatable {
     
   }
   
-  //MARK: - NavigationAction
+  // MARK: - NavigationAction
+  
   public enum NavigationAction: Equatable {
     case presentCoreMember
-    
     
   }
   
@@ -86,7 +85,6 @@ public struct AuthCoordinator {
         
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
-      
       }
     }
     .forEachRoute(\.routes, action: \.router)
@@ -97,33 +95,39 @@ public struct AuthCoordinator {
     action: IndexedRouterActionOf<AuthScreen>
   ) -> Effect<Action> {
     switch action {
-      //MARK: - 초대코드 입력
-    case .routeAction(id: _, action: .login(.navigation(.presntSignUpInviteView))):
+      
+    // MARK: - 초대코드 입력
+      
+    case .routeAction(id: _, action: .login(.navigation(.presentSignUpInviteView))):
       state.routes.push(.signUpInviteCode(.init(userSignUp: state.userSignUpMember)))
       return .none
       
-    case .routeAction(id: _, action: .login(.navigation(.presntCoreMemberMain))):
+    case .routeAction(id: _, action: .login(.navigation(.presentCoreMemberMain))):
       return .send(.navigation(.presentCoreMember))
       
       //MARK: - 이름 입력
     case .routeAction(id: _, action: .signUpInviteCode(.navigation(.presntSignUpName))):
+      
+    case .routeAction(id: _, action: .signUpInviteCode(.navigation(.presentSignUpName))):
       state.routes.push(.signUpName(.init()))
       return .none
       
-    case .routeAction(id: _, action: .signUpName(.navigation(.presntSignUpPart))):
+    case .routeAction(id: _, action: .signUpName(.navigation(.presentSignUpPart))):
       state.routes.push(.signUpPart(.init()))
       return .none
       
-      //MARK: - 운영진 담당업무 선택
-    case .routeAction(id: _, action: .signUpPart(.navigation(.presntManging))):
+    // MARK: - 운영진 담당업무 선택
+      
+    case .routeAction(id: _, action: .signUpPart(.navigation(.presentManging))):
       state.routes.push(.signUpManging(.init()))
       return .none
       
-    case .routeAction(id: _, action: .signUpManging(.navigation(.presntCoreMember))):
+    case .routeAction(id: _, action: .signUpManging(.navigation(.presentCoreMember))):
       return .send(.navigation(.presentCoreMember))
       
-      //MARK: - 멤버 선택 할팀  선택
-    case .routeAction(id: _, action: .signUpPart(.navigation(.presntSelectTeam))):
+    // MARK: - 멤버 선택 할팀 선택
+      
+    case .routeAction(id: _, action: .signUpPart(.navigation(.presentSelectTeam))):
       state.routes.push(.signUpSelectTeam(.init()))
       return .none
       
@@ -133,19 +137,19 @@ public struct AuthCoordinator {
   }
   
   private func handleViewAction(
-      state: inout State,
-      action: View
+    state: inout State,
+    action: View
   ) -> Effect<Action> {
-      switch action {
-      case .backAction:
-        state.routes.goBack()
-        return .none
-        
-      case .backToRootAction:
-        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-          $0.goBackToRoot()
-        }
+    switch action {
+    case .backAction:
+      state.routes.goBack()
+      return .none
+      
+    case .backToRootAction:
+      return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
+        $0.goBackToRoot()
       }
+    }
   }
   
   private func handleNavigationAction(
@@ -177,9 +181,7 @@ public struct AuthCoordinator {
   }
 }
 
-
 extension AuthCoordinator {
- 
   @Reducer(state: .equatable)
   public enum AuthScreen {
     case login(Login)
