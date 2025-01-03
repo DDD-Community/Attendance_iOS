@@ -17,7 +17,8 @@ struct AppReducer {
     case splash(Splash.State)
     case auth(AuthCoordinator.State)
     case coreMember(CoreMemberCoordinator.State)
-   
+    case member(MemberCoordinator.State)
+    
     init() {
       self = .splash(.init())
     }
@@ -31,10 +32,12 @@ struct AppReducer {
   enum View {
     case presentAuth
     case presentCoreMember
+    case presentMember
     
     case splash(Splash.Action)
     case auth(AuthCoordinator.Action)
     case coreMember(CoreMemberCoordinator.Action)
+    case member(MemberCoordinator.Action)
   }
   
   @Dependency(\.continuousClock) var clock
@@ -55,6 +58,9 @@ struct AppReducer {
     .ifCaseLet(\.coreMember, action: \.view.coreMember) {
       CoreMemberCoordinator()
     }
+    .ifCaseLet(\.member, action: \.view.member) {
+      MemberCoordinator()
+    }
   }
   
   func handleViewAction(
@@ -71,6 +77,10 @@ struct AppReducer {
       state = .coreMember(.init())
       return .none
       
+    case .presentMember:
+      state = .member(.init())
+      return .none
+      
     case .splash(.navigation(.presentLogin)):
       return .run { send in
         try await clock.sleep(for: .seconds(2))
@@ -83,8 +93,17 @@ struct AppReducer {
         await send(.view(.presentCoreMember))
       }
       
+    case .splash(.navigation(.presentMember)):
+      return .run { send in
+        try await clock.sleep(for: .seconds(2))
+        await send(.view(.presentMember))
+      }
+      
     case .auth(.navigation(.presentCoreMember)):
       return .send(.view(.presentCoreMember))
+      
+    case .auth(.navigation(.presentMember)):
+      return .send(.view(.presentMember))
       
     case .coreMember(.navigation(.presentLogin)):
       return .send(.view(.presentAuth))

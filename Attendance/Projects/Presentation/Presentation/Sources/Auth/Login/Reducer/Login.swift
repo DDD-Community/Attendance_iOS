@@ -70,7 +70,7 @@ public struct Login {
   public enum NavigationAction: Equatable {
     case presentSignUpInviteView
     case presentCoreMemberMain
-    
+    case presentMemberMain
   }
   
   @Dependency(OAuthUseCase.self) var oAuthUseCase
@@ -199,7 +199,7 @@ public struct Login {
               if fetchUserData.isAdmin == true {
                 await send(.navigation(.presentCoreMemberMain))
               } else {
-                
+                await send(.navigation(.presentMemberMain))
               }
             } else {
               await send(.navigation(.presentSignUpInviteView))
@@ -243,6 +243,9 @@ public struct Login {
       return .none
       
     case .presentCoreMemberMain:
+      return .none
+      
+    case .presentMemberMain:
       return .none
     }
   }

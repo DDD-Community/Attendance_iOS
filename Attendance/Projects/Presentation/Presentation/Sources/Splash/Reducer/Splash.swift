@@ -58,7 +58,7 @@ public struct Splash {
   public enum NavigationAction: Equatable {
     case presentLogin
     case presentCoreMember
-    
+    case presentMember
   }
   
   @Dependency(AuthUseCase.self) var authUseCase
@@ -117,7 +117,7 @@ public struct Splash {
               if fetchUserData.isAdmin == true {
                 await send(.navigation(.presentCoreMember))
               } else {
-                
+                await send(.navigation(.presentMember))
               }
             }
           }
@@ -160,6 +160,9 @@ public struct Splash {
       return .none
       
     case .presentCoreMember:
+      return .none
+      
+    case .presentMember:
       return .none
     }
   }

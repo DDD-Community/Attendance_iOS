@@ -61,7 +61,7 @@ public struct AuthCoordinator {
   
   public enum NavigationAction: Equatable {
     case presentCoreMember
-    
+    case presentMember
   }
   
   public var body: some ReducerOf<Self> {
@@ -105,8 +105,10 @@ public struct AuthCoordinator {
     case .routeAction(id: _, action: .login(.navigation(.presentCoreMemberMain))):
       return .send(.navigation(.presentCoreMember))
       
-      //MARK: - 이름 입력
-    case .routeAction(id: _, action: .signUpInviteCode(.navigation(.presntSignUpName))):
+    case .routeAction(id: _, action: .login(.navigation(.presentMemberMain))):
+      return .send(.navigation(.presentMember))
+      
+    // MARK: - 이름 입력
       
     case .routeAction(id: _, action: .signUpInviteCode(.navigation(.presentSignUpName))):
       state.routes.push(.signUpName(.init()))
@@ -130,6 +132,9 @@ public struct AuthCoordinator {
     case .routeAction(id: _, action: .signUpPart(.navigation(.presentSelectTeam))):
       state.routes.push(.signUpSelectTeam(.init()))
       return .none
+      
+    case .routeAction(id: _, action: .signUpSelectTeam(.navigation(.presentMember))):
+      return .send(.navigation(.presentMember))
       
     default:
       return .none
@@ -158,6 +163,9 @@ public struct AuthCoordinator {
   ) -> Effect<Action> {
     switch action {
     case .presentCoreMember:
+      return .none
+      
+    case .presentMember:
       return .none
     }
   }
