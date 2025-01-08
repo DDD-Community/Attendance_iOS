@@ -22,6 +22,8 @@ public struct SignUpSelectTeam {
     var selectTeam: SelectTeam? = .notTeam
     var activeButton: Bool = false
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
+    @Shared(.appStorage("UserUID")) var userUid: String = ""
+    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
     var signUpMemberModel: MemberDTOSignUp? = nil
   }
   
@@ -54,7 +56,7 @@ public struct SignUpSelectTeam {
   
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    
+    case presentMember
     
   }
   
@@ -98,7 +100,7 @@ public struct SignUpSelectTeam {
           state.activeButton = false
           return .none
         }
-        //
+        
         state.selectTeam = selectTeam
         state.userSignUpMember.memberTeam = selectTeam
         if let selectTeam = SelectTeam(rawValue: selectTeam.selectTeamDesc) {
@@ -115,7 +117,8 @@ public struct SignUpSelectTeam {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-   
+    case .presentMember:
+      return .none
     }
   }
   
@@ -147,7 +150,7 @@ public struct SignUpSelectTeam {
           if let signUpMemberData = signUpMemberData {
             await send(.async(.signUpMemberResponse(.success(signUpMemberData))))
             try await clock.sleep(for: .seconds(1))
-           
+            await send(.navigation(.presentMember))
           }
         case .failure(let error):
           await send(.async(.signUpMemberResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
@@ -158,6 +161,8 @@ public struct SignUpSelectTeam {
       switch result {
       case .success(let signUpMemberData):
         state.signUpMemberModel = signUpMemberData
+        state.userUid = signUpMemberData.uid
+        state.userEmail = signUpMemberData.email
       case .failure(let error):
         #logError("회원가입 실패", error.localizedDescription)
       }

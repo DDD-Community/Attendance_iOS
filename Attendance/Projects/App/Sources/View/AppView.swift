@@ -31,6 +31,11 @@ import Presentation
         if let store = store.scope(state: \.coreMember, action: \.view.coreMember) {
           CoreMemberCoordinatorView(store: store)
         }
+        
+      case .member:
+        if let store = store.scope(state: \.member, action: \.view.member) {
+          MemberCoordinatorView(store: store)
+        }
       }
     }
   }

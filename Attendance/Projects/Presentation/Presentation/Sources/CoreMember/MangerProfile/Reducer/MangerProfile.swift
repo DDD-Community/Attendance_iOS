@@ -6,18 +6,17 @@
 //
 
 import Foundation
+
+import DesignSystem
+import Model
+import Networkings
+import Service
+import Utill
+
+import AsyncMoya
 import ComposableArchitecture
 import FirebaseAuth
 import KeychainAccess
-
-import Utill
-import Model
-import DesignSystem
-import Service
-
-import Networkings
-import AsyncMoya
-
 
 @Reducer
 public struct MangerProfile {
@@ -47,12 +46,14 @@ public struct MangerProfile {
     
   }
   
-  //MARK: - View action
+  // MARK: - View action
+  
   public enum View {
     
   }
   
-  //MARK: - 비동기 처리 액션
+  // MARK: - 비동기 처리 액션
+  
   public enum AsyncAction: Equatable {
     case signOut
     case fetchUserDataResponse(Result<User, CustomError>)
@@ -60,12 +61,14 @@ public struct MangerProfile {
     case fetchUserResponse(Result<UserDTOMember, CustomError>)
   }
   
-  //MARK: - 앱내에서 사용하는 액선
+  // MARK: - 앱내에서 사용하는 액션
+  
   public enum InnerAction: Equatable {
     
   }
   
-  //MARK: - 네비게이션 연결 액션
+  // MARK: - 네비게이션 연결 액션
+  
   public enum NavigationAction: Equatable {
     case tapLogOut
     case presentCreatByApp
@@ -81,19 +84,23 @@ public struct MangerProfile {
       case .binding(_):
         return .none
         
-        //MARK: - ViewAction
+      // MARK: - ViewAction
+        
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
         
-        //MARK: - AsyncAction
+      // MARK: - AsyncAction
+        
       case .async(let asyncAction):
         return handleAsyncAction(state: &state, action: asyncAction)
         
-        //MARK: - InnerAction
+      // MARK: - InnerAction
+        
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
         
-        //MARK: - NavigationAction
+      // MARK: - NavigationAction
+        
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
       }
@@ -129,7 +136,6 @@ public struct MangerProfile {
           }
         case .failure(let error):
           await send(.async(.fetchUserResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
-          
         }
       }
       
@@ -160,7 +166,6 @@ public struct MangerProfile {
           await send(.async(.fetchUserDataResponse(.failure(CustomError.map(error)))))
         }
       }
-      
       
     case let .fetchUserDataResponse(fetchUser):
       switch fetchUser {

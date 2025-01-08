@@ -31,7 +31,6 @@ public struct AuthCoordinatorView: View {
         }
         .navigationBarBackButtonHidden()
         
-        
       case .signUpName(let signUpStore):
         SignUpNameView(store: signUpStore) {
           store.send(.view(.backAction))

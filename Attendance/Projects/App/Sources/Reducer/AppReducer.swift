@@ -5,9 +5,9 @@
 //  Created by Wonji Suh  on 10/29/24.
 //
 
-import ComposableArchitecture
 import Presentation
 
+import ComposableArchitecture
 
 @Reducer
 struct AppReducer {
@@ -17,7 +17,8 @@ struct AppReducer {
     case splash(Splash.State)
     case auth(AuthCoordinator.State)
     case coreMember(CoreMemberCoordinator.State)
-   
+    case member(MemberCoordinator.State)
+    
     init() {
       self = .splash(.init())
     }
@@ -30,11 +31,13 @@ struct AppReducer {
   @CasePathable
   enum View {
     case presentAuth
-    case presntCoreMember
+    case presentCoreMember
+    case presentMember
     
     case splash(Splash.Action)
     case auth(AuthCoordinator.Action)
     case coreMember(CoreMemberCoordinator.Action)
+    case member(MemberCoordinator.Action)
   }
   
   @Dependency(\.continuousClock) var clock
@@ -55,6 +58,9 @@ struct AppReducer {
     .ifCaseLet(\.coreMember, action: \.view.coreMember) {
       CoreMemberCoordinator()
     }
+    .ifCaseLet(\.member, action: \.view.member) {
+      MemberCoordinator()
+    }
   }
   
   func handleViewAction(
@@ -67,8 +73,12 @@ struct AppReducer {
       state = .auth(.init())
       return .none
       
-    case .presntCoreMember:
+    case .presentCoreMember:
       state = .coreMember(.init())
+      return .none
+      
+    case .presentMember:
+      state = .member(.init())
       return .none
       
     case .splash(.navigation(.presentLogin)):
@@ -80,18 +90,26 @@ struct AppReducer {
     case .splash(.navigation(.presentCoreMember)):
       return .run { send in
         try await clock.sleep(for: .seconds(2))
-        await send(.view(.presntCoreMember))
+        await send(.view(.presentCoreMember))
+      }
+      
+    case .splash(.navigation(.presentMember)):
+      return .run { send in
+        try await clock.sleep(for: .seconds(2))
+        await send(.view(.presentMember))
       }
       
     case .auth(.navigation(.presentCoreMember)):
-      return .send(.view(.presntCoreMember))
+      return .send(.view(.presentCoreMember))
       
-    case .coreMember(.navigation(.presntLogin)):
+    case .auth(.navigation(.presentMember)):
+      return .send(.view(.presentMember))
+      
+    case .coreMember(.navigation(.presentLogin)):
       return .send(.view(.presentAuth))
       
     default:
       return .none
     }
   }
-  
 }

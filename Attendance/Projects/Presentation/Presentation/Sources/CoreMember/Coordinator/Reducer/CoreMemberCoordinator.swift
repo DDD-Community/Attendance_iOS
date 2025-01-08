@@ -6,12 +6,13 @@
 //
 
 import Foundation
-import ComposableArchitecture
 
-import Utill
-import TCACoordinators
-import KeychainAccess
 import Networkings
+import Utill
+
+import ComposableArchitecture
+import KeychainAccess
+import TCACoordinators
 
 @Reducer
 public struct CoreMemberCoordinator {
@@ -36,29 +37,31 @@ public struct CoreMemberCoordinator {
     case navigation(NavigationAction)
   }
   
-  //MARK: - ViewAction
+  // MARK: - ViewAction
+  
   @CasePathable
   public enum View {
     case backAction
     case backToRootAction
   }
   
+  // MARK: - AsyncAction 비동기 처리 액션
   
-  
-  //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     case fetchEvent
     case fetchEventResponse(Result<[DDDEventDTO], CustomError>)
   }
   
-  //MARK: - 앱내에서 사용하는 액션
+  // MARK: - 앱내에서 사용하는 액션
+  
   public enum InnerAction: Equatable {
     
   }
   
-  //MARK: - NavigationAction
+  // MARK: - NavigationAction
+  
   public enum NavigationAction: Equatable {
-    case presntLogin
+    case presentLogin
     
   }
   
@@ -95,17 +98,17 @@ public struct CoreMemberCoordinator {
     action: IndexedRouterActionOf<CoreMemberScreen>
   ) -> Effect<Action> {
     switch action {
-      //MARK: - 운영진 프로필
+    // MARK: - 운영진 프로필
     case .routeAction(id: _, action: .coreMember(.navigation(.presentMangerProfile))):
       state.routes.push(.mangeProfile(.init()))
       return .none
       
-      //MARK: - 스케줄 화면
+    // MARK: - 스케줄 화면
     case .routeAction(id: _, action: .coreMember(.navigation(.presentSchedule))):
       state.routes.push(.scheduleEvent(.init(eventModel: state.eventModel, generation: 12)))
       return .none
       
-      //MARK: - qrcode
+    // MARK: - qrcode
     case .routeAction(id: _, action: .coreMember(.navigation(.presentQrcode))):
       let userID = try? Keychain().get("userID")
       state.routes.push(.qrCode(.init(userID: userID)))
@@ -116,9 +119,9 @@ public struct CoreMemberCoordinator {
         $0.push(.scheduleEvent(.init(eventModel: state.eventModel, generation: 12)))
       }
       
-      //MARK: - 로그아웃
+    // MARK: - 로그아웃
     case .routeAction(id: _, action: .mangeProfile(.navigation(.tapLogOut))):
-      return .send(.navigation(.presntLogin))
+      return .send(.navigation(.presentLogin))
      
     case .routeAction(id: _, action: .mangeProfile(.navigation(.presentCreatByApp))):
       state.routes.push(.createByApp(.init()))
@@ -150,7 +153,7 @@ public struct CoreMemberCoordinator {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presntLogin:
+    case .presentLogin:
       return .none
     }
   }
@@ -201,9 +204,7 @@ public struct CoreMemberCoordinator {
   }
 }
 
-
 extension CoreMemberCoordinator {
-  
   @Reducer(state: .equatable)
   public enum CoreMemberScreen{
     case coreMember(CoreMember)

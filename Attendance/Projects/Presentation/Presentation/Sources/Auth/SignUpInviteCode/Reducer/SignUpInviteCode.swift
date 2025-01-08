@@ -74,7 +74,7 @@ public struct SignUpInviteCode {
   
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    case presntSignUpName
+    case presentSignUpName
   }
   
   struct SignUpInviteCodeCancel: Hashable {}
@@ -130,7 +130,7 @@ public struct SignUpInviteCode {
           if let validataCodeData = validataCodeData {
             await send(.async(.validataInviteCodeResponse(.success(validataCodeData))))
             
-            await send(.navigation(.presntSignUpName))
+            await send(.navigation(.presentSignUpName))
           }
         case .failure(let error):
           await send(.async(.validataInviteCodeResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
@@ -171,7 +171,7 @@ public struct SignUpInviteCode {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presntSignUpName:
+    case .presentSignUpName:
       return .none
     }
   }

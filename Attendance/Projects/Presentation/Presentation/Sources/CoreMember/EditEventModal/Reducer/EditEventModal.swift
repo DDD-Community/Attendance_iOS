@@ -6,13 +6,12 @@
 //
 
 import Foundation
-import ComposableArchitecture
-
-import FirebaseFirestore
-
 
 import Utill
 import Networkings
+
+import ComposableArchitecture
+import FirebaseFirestore
 
 @Reducer
 public struct EditEventModal {
@@ -62,24 +61,28 @@ public struct EditEventModal {
         case navigation(NavigationAction)
     }
     
-    //MARK: - 뷰 처리 액션
+    // MARK: - 뷰 처리 액션
+  
     public enum View {
         case tapCloseDropDown
         case selectEditEventDatePOPUP(isBool: Bool)
     }
     
-    //MARK: - 비동기 처리 액션
+    // MARK: - 비동기 처리 액션
+  
     public enum AsyncAction: Equatable {
         case editEvent
         case editEventResponse(Result<DDDEvent? , CustomError>)
     }
     
-    //MARK: - 앱내에서 사용하는 액선
+    // MARK: - 앱내에서 사용하는 액션
+  
     public enum InnerAction: Equatable {
         
     }
     
-    //MARK: - 네비게이션 연결 액션
+    // MARK: - 네비게이션 연결 액션
+  
     public enum NavigationAction: Equatable {
         
     }
@@ -105,7 +108,8 @@ public struct EditEventModal {
                 state.selectEditEventDatePicker = isBool
                 return .none
                 
-            //MARK: - ViewAction
+            // MARK: - ViewAction
+              
             case .view(let View):
                 switch View {
                 case .tapCloseDropDown:
@@ -118,7 +122,8 @@ public struct EditEventModal {
                     return .none
                 }
                 
-            //MARK: - AsyncAction
+            // MARK: - AsyncAction
+              
             case .async(let AsyncAction):
                 switch AsyncAction {
                 case .editEvent:
@@ -181,13 +186,15 @@ public struct EditEventModal {
                     return .none
                 }
                 
-            //MARK: - InnerAction
+            // MARK: - InnerAction
+              
             case .inner(let InnerAction):
                 switch InnerAction {
                     
                 }
                 
-            //MARK: - NavigationAction
+            // MARK: - NavigationAction
+              
             case .navigation(let NavigationAction):
                 switch NavigationAction {
                     
