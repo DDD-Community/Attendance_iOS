@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum SelectDropDownItem: String, CaseIterable {
+public enum SelectDropDownItem: String, CaseIterable, Codable {
   case attandance
   case schedule
   
@@ -20,7 +20,7 @@ public enum SelectDropDownItem: String, CaseIterable {
     }
   }
   
-  static var item: [String] {
+  public static var item: [String] {
     SelectDropDownItem.allCases.map { $0.desc }
   }
 }
