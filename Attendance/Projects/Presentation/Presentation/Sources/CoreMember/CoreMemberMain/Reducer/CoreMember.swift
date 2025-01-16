@@ -27,6 +27,8 @@ public struct CoreMember {
     
     var isExpandedDropDown: Bool = false
     var selectedIDropDownItem = "출석"
+    var dropDownItem: [String] = SelectDropDownItem.item
+    var selectDropDownItem: SelectDropDownItem = .attandance
     
     var headerTitle: String = "출석 현황"
     var selectPart: SelectPart? = .all

@@ -177,8 +177,8 @@ extension CoreMemberMainView {
         // 드롭다운 리스트
         VStack {
           DropdownList(
-            items: SelectDropDownItem.item,
-            selectedItem: $store.selectedIDropDownItem,
+            items: store.dropDownItem,
+            selectedItem: $store.selectDropDownItem,
             isExpanded: $store.isExpandedDropDown
           )
           .frame(width: 140) // 드롭다운 리스트의 너비
