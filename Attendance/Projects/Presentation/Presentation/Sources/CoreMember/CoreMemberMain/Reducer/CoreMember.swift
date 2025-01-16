@@ -25,6 +25,9 @@ public struct CoreMember {
   @ObservableState
   public struct State: Equatable {
     
+    var isExpandedDropDown: Bool = false
+    var selectedIDropDownItem = "출석"
+    
     var headerTitle: String = "출석 현황"
     var selectPart: SelectPart? = .all
     var attendaceMemberModel : [MemberDTO] = []
@@ -133,6 +136,9 @@ public struct CoreMember {
       case .binding(_):
         return .none
         
+      case .binding(\.isExpandedDropDown):
+        return .none
+        
       case .selectDate(let date):
         if state.selectDate == date {
           //                    state.selectDatePicker.toggle()
@@ -173,7 +179,7 @@ public struct CoreMember {
         //            case .alert(.presented(.presentAlert)):
         //                return .none
         
-      // MARK: - ViewAction
+        // MARK: - ViewAction
         
       case .view(let viewAction):
         switch viewAction {
@@ -231,7 +237,7 @@ public struct CoreMember {
           return .none
         }
         
-      // MARK: - AsyncAction
+        // MARK: - AsyncAction
       case .async(let AsyncAction):
         switch AsyncAction {
         case .fetchMember:
@@ -256,7 +262,7 @@ public struct CoreMember {
             }
           }
           
-        // MARK: - 실시간으로 데이터 가져오기 출석현황
+          // MARK: - 실시간으로 데이터 가져오기 출석현황
         case .fetchAttenDance:
           return .run {  send in
             let fetchedDataResult = await Result {
@@ -415,14 +421,14 @@ public struct CoreMember {
           return .none
         }
         
-      // MARK: - InnerAction
+        // MARK: - InnerAction
         
       case .inner(let InnerAction):
         switch InnerAction {
           
         }
         
-      // MARK: - NavigationAction
+        // MARK: - NavigationAction
         
       case .navigation(let NavigationAction):
         switch NavigationAction {
