@@ -54,12 +54,20 @@ public extension Date {
     return dateFormatter.string(from: date)
   }
   
+<<<<<<< HEAD
   static func formattedDateTimeText(date: Date) -> String {
     let dateFormatter = DateFormatter()
     dateFormatter.locale = Locale(identifier: "ko_KR")
     dateFormatter.dateFormat = "yyyy.MM.dd"
     dateFormatter.dateStyle = .short
     return dateFormatter.string(from: date)
+=======
+  func formattedDateTimeText(date: Date) -> String {
+      let dateFormatter = DateFormatter()
+      dateFormatter.locale = Locale(identifier: "ko_KR")
+      dateFormatter.dateFormat = "yyyy.M.dd"
+      return dateFormatter.string(from: date)
+>>>>>>> a033295 (✨[feat]: 출석  현황 관련해서 구현  #38)
   }
   
   func extractDate(date: Date) -> String {
