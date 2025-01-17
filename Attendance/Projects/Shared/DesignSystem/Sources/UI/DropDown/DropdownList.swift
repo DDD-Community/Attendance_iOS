@@ -8,7 +8,7 @@
 import SwiftUI
 
 public struct DropdownList: View {
-  let items: [String]
+  private let items: [String]
   @Binding var selectedItem: SelectDropDownItem
   @Binding var isExpanded: Bool
   
@@ -26,26 +26,24 @@ public struct DropdownList: View {
     VStack(spacing: 0) {
       ForEach(items, id: \.self) { item in
         VStack(spacing: 0) {
-          Button {
+          HStack {
+            Text(item) // item은 이미 desc 값임
+              .foregroundColor(selectedItem.desc == item ? .staticWhite : .borderInactive)
+              .pretendardCustomFont(textStyle: .title3NormalBold)
+              .padding()
+            
+            Spacer()
+          }
+          .onTapGesture {
             withAnimation {
-              // desc 값으로 SelectDropDownItem을 찾음
               if let matchedItem = SelectDropDownItem.allCases.first(where: { $0.desc == item }) {
                 selectedItem = matchedItem
               }
               isExpanded = false
             }
-          } label: {
-            HStack {
-              Text(item) // item은 이미 desc 값임
-                .foregroundColor(selectedItem.desc == item ? .staticWhite : .borderInactive)
-                .pretendardCustomFont(textStyle: .title3NormalBold)
-                .padding()
-              
-              Spacer()
-            }
-            .background(.borderDisabled)
-            .frame(width: 140)
           }
+          .background(.borderDisabled)
+          .frame(width: 140)
           
           // Divider 추가 (마지막 항목 제외)
           if item != items.last {

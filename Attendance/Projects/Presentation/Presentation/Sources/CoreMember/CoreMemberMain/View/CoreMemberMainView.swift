@@ -26,11 +26,14 @@ struct CoreMemberMainView: View {
       Color.basicBlack
         .edgesIgnoringSafeArea(.all)
        
-     
-      
       VStack {
         
         navigationTrallingButton()
+        
+        Spacer()
+          .frame(height: 10)
+        
+        switchSelectDropDownView()
         
 //        attendaceHeaderView()
 //        
@@ -110,7 +113,7 @@ extension CoreMemberMainView {
           }
         } label: {
           HStack {
-            Text(store.selectedIDropDownItem)
+            Text(store.selectDropDownItem.desc)
                   .pretendardCustomFont(textStyle: .title2NormalBold)
                   .foregroundColor(.staticWhite)
               
@@ -157,6 +160,18 @@ extension CoreMemberMainView {
       }
     }
     .padding(.trailing, 24)
+  }
+  
+  @ViewBuilder
+  fileprivate func switchSelectDropDownView() -> some View {
+    switch store.selectDropDownItem {
+    case .attandance:
+      AttandanceCheckView(store: self.store.scope(state: \.attandanceCheck, action: \.attandanceCheck))
+      
+    case .schedule:
+      EmptyView()
+      
+    }
   }
   
   @ViewBuilder

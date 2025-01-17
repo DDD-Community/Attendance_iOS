@@ -17,18 +17,18 @@ public struct CustomDatePIckerText: View {
   ) {
     self._selectedDate = selectedDate
   }
-  
+
   public var body: some View {
     HStack {
       Spacer()
-      
-      Text(Date.formattedDateTimeText(date: selectedDate))
+
+      Text(selectedDate.formattedDateTimeText(date: selectedDate))
         .pretendardFont(family: .Regular, size: 16)
         .foregroundStyle(.staticWhite)
-      
+
       Spacer()
         .frame(width: 8)
-      
+
       VStack {
         Image(asset: .arrow_down)
           .resizable()
@@ -36,20 +36,21 @@ public struct CustomDatePIckerText: View {
           .frame(width: 10, height: 8)
           .foregroundStyle(.gray600)
       }
-      
+
       Spacer()
     }
     .overlay {
-      VStack {
-        DatePicker(
-          selection: $selectedDate,
-          displayedComponents: [.date]) { }
+        VStack {
+          DatePicker(
+            selection: $selectedDate,
+            displayedComponents: [.date]) { }
           .environment(\.locale, Locale(identifier: "ko_KR"))
           .datePickerStyle(.automatic)
           .labelsHidden()
           .colorMultiply(.clear)
           .cornerRadius(8)
           .transition(.opacity)
+        }
       }
     }
   }
