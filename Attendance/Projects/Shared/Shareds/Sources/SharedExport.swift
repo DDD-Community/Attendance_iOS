@@ -7,3 +7,4 @@
 
 @_exported import DesignSystem
 @_exported import Utill
+@_exported import Model

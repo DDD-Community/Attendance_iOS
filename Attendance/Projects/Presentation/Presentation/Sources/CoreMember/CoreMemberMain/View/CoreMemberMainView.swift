@@ -80,20 +80,20 @@ struct CoreMemberMainView: View {
 //      store.send(.async(.fetchAttendanceDataResponse(.success(newValue))))
 //    }
 //    
-//    .gesture(
-//      DragGesture()
-//        .onEnded { value in
-//          if value.translation.width < -UIScreen.screenWidth * 0.02 {
-//            store.send(.view(.swipeNext))
-//            store.send(.async(.upDateFetchAttandanceMember(selectPart: store.selectPart ?? .all)))
-//            
-//          } else if value.translation.width > UIScreen.screenWidth * 0.02 {
-//            store.send(.view(.swipePrevious))
-//            store.send(.async(.upDateFetchAttandanceMember(selectPart: store.selectPart ?? .all)))
-//            
-//          }
-//        }
-//    )
+    .gesture(
+      DragGesture()
+        .onEnded { value in
+          if value.translation.width < -UIScreen.screenWidth * 0.02 {
+            store.send(.attandanceCheck(.view(.swipeNext)))
+            
+            
+          } else if value.translation.width > UIScreen.screenWidth * 0.02 {
+            store.send(.attandanceCheck(.view(.swipePrevious)))
+            
+            
+          }
+        }
+    )
   }
 }
 

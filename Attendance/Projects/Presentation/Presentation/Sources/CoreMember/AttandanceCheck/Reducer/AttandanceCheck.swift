@@ -9,6 +9,7 @@ import Foundation
 import ComposableArchitecture
 
 import Utill
+import Networkings
 
 @Reducer
 public struct AttandanceCheck {
@@ -17,8 +18,15 @@ public struct AttandanceCheck {
   @ObservableState
   public struct State: Equatable {
     
-    public init() {}
     var selectAttandanceDate: Date = .now
+    var selectPart: SelectTeam? = .web1
+    var isActiveBoldText: Bool = false
+    var dividerWidths: [SelectTeam: CGFloat] = [:]
+    
+    
+    public init() {
+      
+    }
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -33,10 +41,10 @@ public struct AttandanceCheck {
   //MARK: - ViewAction
   @CasePathable
   public enum View {
-    
+    case selectPartButton(selectPart: SelectTeam)
+    case swipeNext
+    case swipePrevious
   }
-  
-  
   
   //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
@@ -52,7 +60,6 @@ public struct AttandanceCheck {
     
     
   }
-  
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
@@ -81,7 +88,27 @@ public struct AttandanceCheck {
     action: View
   ) -> Effect<Action> {
     switch action {
+    case .selectPartButton(let selectPart):
+      state.selectPart = selectPart
+      state.isActiveBoldText = (selectPart != nil)  // selectPart가 선택된 경우 bold text 활성화
+      return .none
       
+    case .swipeNext:
+      guard let selectPart = state.selectPart else { return .none }
+      if let currentIndex = SelectTeam.allCases.firstIndex(of: selectPart),
+         currentIndex < SelectTeam.allCases.count - 1 {
+        let nextPart = SelectTeam.allCases[currentIndex + 1]
+        state.selectPart = nextPart
+      }
+      return .none
+      
+    case .swipePrevious:
+      guard let selectPart = state.selectPart else { return .none }
+      if let currentIndex = SelectTeam.allCases.firstIndex(of: selectPart),
+         currentIndex > 0 {
+        state.selectPart = SelectTeam.allCases[currentIndex - 1]
+      }
+      return .none
     }
   }
   

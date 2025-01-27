@@ -53,7 +53,7 @@ public struct DropdownList: View {
         }
       }
     }
-    .background(Color.borderDisabled)
-    .cornerRadius(6)
+    .background(.borderDisabled)
+    .cornerRadius(12)
   }
 }
