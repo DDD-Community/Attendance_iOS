@@ -20,6 +20,9 @@ struct AttandanceCheckView: View {
       
       selectPartType()
       
+      
+      AttendanceCheckStatusCard(attandanceType: .present, selectPart: .design, selectTeam: store.selectPart ?? .ios1, name: "김디디")
+        .padding(.horizontal, 24)
     }
   }
 }

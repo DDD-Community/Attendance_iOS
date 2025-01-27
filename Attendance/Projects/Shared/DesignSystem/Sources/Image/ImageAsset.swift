@@ -42,4 +42,10 @@ public enum ImageAsset: String {
   // MARK: - 멤버 출석 현황
   
   case danger
+  
+  
+  //MARK: - attandance
+  case Abesent_icons
+  case Late_icons
+  case Present_icons
 }

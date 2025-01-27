@@ -37,10 +37,8 @@ public enum SelectPart: String, CaseIterable, Codable, Equatable {
   
   public var attendanceListDesc: String {
     switch self {
-    case .all:
-      return "전체"
     case .pm:
-      return "PM"
+      return "Product Manager"
     case .design:
       return "Designer"
     case .android:
@@ -48,9 +46,11 @@ public enum SelectPart: String, CaseIterable, Codable, Equatable {
     case .iOS:
       return "iOS"
     case .web:
-      return "FE"
+      return "Frontend"
     case .server:
-      return "BE"
+      return "Backend"
+    default:
+      return ""
     }
   }
   
