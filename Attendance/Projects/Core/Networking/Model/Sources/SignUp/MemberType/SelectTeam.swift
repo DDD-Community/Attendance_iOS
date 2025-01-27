@@ -118,4 +118,24 @@ public enum SelectTeam: String, CaseIterable, Codable {
   public var isDescEqualToAttendanceListDesc: Bool {
     return desc == attendanceListDesc
   }
+  
+  public var attandanceCardDesc: String {
+    switch self {
+    case .web1:
+      return "Web1팀"
+    case .web2:
+      return "Web2팀"
+    case .and1:
+      return "Android1팀"
+    case .and2:
+      return "Android2팀"
+    case .ios1:
+      return "iOS1팀"
+    case .ios2:
+      return "iOS2팀"
+    default:
+      return ""
+    }  }
+  
+ 
 }

@@ -32,6 +32,33 @@ public enum AttendanceType: String, Codable {
       return "RUN"
     case .notAttendance:
       return "NONE"
+  }
+  
+  public var koreanDesc: String {
+    switch self {
+    case .present:
+      return "출석"
+    case .absent:
+      return "결석"
+    case .late:
+      return "지각"
+    case .run:
+      return "탈주"
+    default:
+      return ""
+    }
+  }
+  
+  public var imageDesc: String {
+    switch self {
+    case .present:
+      return "Present_icons"
+    case .absent:
+      return "Abesent_icons"
+    case .late:
+      return "Late_icons"
+    default:
+      return "Present_icons"
     }
   }
 }
