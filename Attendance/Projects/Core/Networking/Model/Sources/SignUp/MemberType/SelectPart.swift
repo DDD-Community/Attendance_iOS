@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum SelectPart: String, CaseIterable, Codable {
+public enum SelectPart: String, CaseIterable, Codable, Equatable {
   case all
   case pm = "PM"
   case design = "Designer"
