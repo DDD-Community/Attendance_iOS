@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum MemberType: String, Codable {
+public enum MemberType: String, Codable, Sendable {
   case master = "MASTER"
   case coreMember = "CORE_MEMBER"
   case member = "MEMBER"

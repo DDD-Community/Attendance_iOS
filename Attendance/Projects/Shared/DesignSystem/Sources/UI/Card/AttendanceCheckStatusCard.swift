@@ -37,13 +37,13 @@ public struct AttendanceCheckStatusCard: View {
             HStack {
               Text(name)
                 .pretendardCustomFont(textStyle: .title3NormalBold)
-                .foregroundStyle(.staticWhite)
+                .foregroundStyle(attandanceType == .absent ? .borderDisabled : .staticWhite)
               Spacer()
             }
             
             Text("\(selectTeam.attandanceCardDesc) / \(selectPart.attendanceListDesc) ")
               .pretendardCustomFont(textStyle: .body2NormalBold)
-              .foregroundStyle(.staticWhite)
+              .foregroundStyle(attandanceType == .absent ? .borderDisabled : .staticWhite)
           }
           
           Spacer()
@@ -51,7 +51,7 @@ public struct AttendanceCheckStatusCard: View {
           HStack(spacing: .zero) {
             Text(attandanceType.koreanDesc)
               .pretendardCustomFont(textStyle: .body2NormalMedium)
-              .foregroundStyle(.staticWhite)
+              .foregroundStyle(attandanceType == .absent ? .borderDisabled : .staticWhite)
             
             Spacer()
               .frame(width: 12)
@@ -64,14 +64,21 @@ public struct AttendanceCheckStatusCard: View {
           
         }
         
-        
         Spacer()
           .frame(height: 16)
       }
       .padding(.horizontal, 20)
     }
-    .background(.borderInverse)
+    .background(attandanceType == .absent ? .staticBlack : .borderInverse)
     .frame(height: 84)
     .cornerRadius(15)
+    .overlay(
+      // ABSENT일 때 점선 테두리 적용
+      attandanceType == .absent ?
+      RoundedRectangle(cornerRadius: 15)
+        .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5]))
+        .foregroundColor(.borderDisabled) // 점선 색상 설정
+      : nil
+    )
   }
 }

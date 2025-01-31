@@ -16,8 +16,8 @@ public struct Attendance: Codable, Hashable {
   var id: String?
   var memberId: String?
   var memberType: MemberType?
-  var managing: Managing?
-  var memberTeam: ManagingTeam?
+  var manging: Managing?
+  var memberTeam: SelectTeam?
   var name: String
   var roleType: SelectPart
   var eventId: String
@@ -30,8 +30,8 @@ public struct Attendance: Codable, Hashable {
     id: String,
     memberId: String? = nil,
     memberType: MemberType? = nil,
-    managing: Managing? = nil,
-    memberTeam: ManagingTeam? = nil,
+    manging: Managing? = nil,
+    memberTeam: SelectTeam? = nil,
     name: String,
     roleType: SelectPart,
     eventId: String,
@@ -43,7 +43,7 @@ public struct Attendance: Codable, Hashable {
     self.id = id
     self.memberId = memberId
     self.memberType = memberType
-    self.managing = managing
+    self.manging = manging
     self.memberTeam = memberTeam
     self.name = name
     self.roleType = roleType
@@ -57,7 +57,7 @@ public struct Attendance: Codable, Hashable {
   enum CodingKeys: String, CodingKey {
     case id, memberId, name, roleType, eventId
     case createdAt, updatedAt, status, generation, memberType
-    case managing, memberTeam
+    case manging, memberTeam
   }
   
   public init(from decoder: Decoder) throws {
@@ -65,8 +65,8 @@ public struct Attendance: Codable, Hashable {
     self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? ""
     self.memberId = try container.decodeIfPresent(String.self, forKey: .memberId) ?? ""
     self.memberType = try container.decodeIfPresent(MemberType.self, forKey: .memberType) ?? .coreMember
-    self.managing = try container.decodeIfPresent(Managing.self, forKey: .managing) ?? .notManaging
-    self.memberTeam = try container.decodeIfPresent(ManagingTeam.self, forKey: .memberTeam) ?? .notTeam
+    self.manging = try container.decodeIfPresent(Managing.self, forKey: .manging) ?? .notManging
+    self.memberTeam = try container.decodeIfPresent(SelectTeam.self, forKey: .memberTeam) ?? .notTeam
     self.name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
     self.roleType = try container.decodeIfPresent(SelectPart.self, forKey: .roleType) ?? .all
     self.eventId = try container.decodeIfPresent(String.self, forKey: .eventId) ?? ""
@@ -81,8 +81,8 @@ public struct Attendance: Codable, Hashable {
     self.id = document.documentID
     self.memberId = data["memberId"] as? String ?? ""
     self.memberType = MemberType(rawValue: data["memberType"] as? String ?? "") ?? .coreMember
-    self.managing = Managing(rawValue: data["managing"] as? String ?? "") ?? .notManaging
-    self.memberTeam = ManagingTeam(rawValue: data["memberTeam"] as? String ?? "") ?? .notTeam
+    self.manging = Managing(rawValue: data["manging"] as? String ?? "") ?? .notManging
+    self.memberTeam = SelectTeam(rawValue: data["memberTeam"] as? String ?? "") ?? .notTeam
     self.name = data["name"] as? String ?? ""
     self.roleType = SelectPart(rawValue: data["roleType"] as? String ?? "") ?? .all
     self.eventId = data["eventId"] as? String ?? ""
@@ -173,7 +173,7 @@ extension Attendance {
     return MemberDTO(
       memberId: self.memberId ?? "",
       memberType: self.memberType ?? .coreMember,
-      managing: self.managing ?? .notManaging,
+      manging: self.manging ?? .notManging,
       memberTeam: self.memberTeam ?? .notTeam,
       name: self.name,
       roleType: self.roleType,
@@ -189,6 +189,7 @@ extension Attendance {
       id: self.id ?? "",
       memberId: self.memberId ?? "",
       memberType: self.memberType ?? .coreMember,
+      memberTeam: self.memberTeam ?? .notTeam,
       name: self.name,
       roleType: self.roleType,
       eventId: self.eventId,

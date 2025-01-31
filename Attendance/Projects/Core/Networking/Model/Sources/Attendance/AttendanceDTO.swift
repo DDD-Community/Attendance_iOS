@@ -13,6 +13,7 @@ public struct AttendanceDTO: Codable, Equatable {
   public var memberType: MemberType
   public var name: String
   public var roleType: SelectPart
+  public var memberTeam: SelectTeam
   public var eventId: String
   public var updatedAt: Date
   public var status: AttendanceType?
@@ -22,6 +23,7 @@ public struct AttendanceDTO: Codable, Equatable {
     id: String,
     memberId: String,
     memberType: MemberType,
+    memberTeam: SelectTeam,
     name: String,
     roleType: SelectPart,
     eventId: String,
@@ -34,6 +36,7 @@ public struct AttendanceDTO: Codable, Equatable {
     self.memberType = memberType
     self.name = name
     self.roleType = roleType
+    self.memberTeam = memberTeam
     self.eventId = eventId
     self.updatedAt = updatedAt
     self.status = status
@@ -66,6 +69,7 @@ extension AttendanceDTO {
         id: UUID().uuidString,
         memberId: generateCustomMemberId(),
         memberType: .member,
+        memberTeam: .ios1,
         name: "DDD iOS",
         roleType: .iOS,
         eventId: "",
@@ -77,6 +81,7 @@ extension AttendanceDTO {
         id: UUID().uuidString,
         memberId: generateCustomMemberId(),
         memberType: .member,
+        memberTeam: .and1,
         name: "DDD Android",
         roleType: .android,
         eventId: UUID().uuidString,
