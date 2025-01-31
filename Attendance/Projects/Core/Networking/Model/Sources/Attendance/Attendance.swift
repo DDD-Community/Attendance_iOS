@@ -109,6 +109,7 @@ public struct Attendance: Codable, Hashable {
     self.id = ((self.id?.isEmpty) != nil) ? other.id : self.id
     self.memberId = ((self.memberId?.isEmpty) != nil) ? other.memberId : self.memberId
     self.memberType = self.memberType ?? other.memberType
+    self.memberTeam = self.memberTeam ?? other.memberTeam
     self.name = self.name.isEmpty ? other.name : self.name
     self.roleType = self.roleType == .all ? other.roleType : self.roleType
     self.eventId = self.eventId.isEmpty ? other.eventId : self.eventId
@@ -185,6 +186,7 @@ public extension Attendance {
       id: self.id ?? "",
       memberId: self.memberId ?? "",
       memberType: self.memberType ?? .coreMember,
+      memberTeam: self.memberTeam ?? .notTeam,
       name: self.name,
       roleType: self.roleType,
       eventId: self.eventId,

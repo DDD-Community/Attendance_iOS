@@ -66,15 +66,15 @@ struct CoreMemberMainView: View {
       }
     }
     
-//    .task {
-//      store.send(.async(.fetchMember))
+    .task {
+//      store.send(.attandanceCheck(.async(.fetchMember)))
 //      store.send(.async(.fetchCurrentUser))
-//    }
-//    
-//    .onAppear {
-//      store.send(.async(.fetchAttenDance))
+    }
+    
+    .onAppear {
+//      store.send(.attandanceCheck(.async(.fetchAttenDance)))
 //      store.send(.view(.appearSelectPart(selectPart: .all)))
-//    }
+    }
 //    
 //    .onChange(of: store.attendanceCheckInModel) { oldValue, newValue in
 //      store.send(.async(.fetchAttendanceDataResponse(.success(newValue))))

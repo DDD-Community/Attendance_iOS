@@ -21,8 +21,11 @@ struct AttandanceCheckView: View {
       selectPartType()
       
       
-      AttendanceCheckStatusCard(attandanceType: .present, selectPart: .design, selectTeam: store.selectPart ?? .ios1, name: "김디디")
-        .padding(.horizontal, 24)
+      selectPartAttandanceStatus()
+    }
+    .task {
+      store.send(.async(.fetchAttenDance))
+      store.send(.async(.observeAttendance))
     }
   }
 }
@@ -60,9 +63,9 @@ extension AttandanceCheckView {
         .frame(height: 14)
       
       AttendanceCard(
-        attendanceCount: 1,
-        lateCount: 2,
-        absentCount: 4,
+        attendanceCount: store.attendanceCount,
+        lateCount: store.lateCount,
+        absentCount: store.absentCount,
         isManager: true)
     }
     .padding(.horizontal, 24)
@@ -135,6 +138,53 @@ extension AttandanceCheckView {
         
       }
     }
+  }
+  
+  @ViewBuilder
+  fileprivate func selectPartAttandanceStatus() -> some View {
+    switch store.selectPart {
+    case .web1:
+      selectPartAttandanceStatusCard()
+    case .web2:
+      selectPartAttandanceStatusCard()
+    case .and1:
+      selectPartAttandanceStatusCard()
+    case .and2:
+      selectPartAttandanceStatusCard()
+    case .ios1:
+      selectPartAttandanceStatusCard()
+    case .ios2:
+      selectPartAttandanceStatusCard()
+    default:
+      EmptyView()
+    }
+  }
+  
+  @ViewBuilder
+  fileprivate func selectPartAttandanceStatusCard() -> some View {
+    LazyVStack {
+      VStack {
+        ForEach(store.attendanceCheckInModel.filter { $0.memberTeam.desc == store.selectPart?.desc ?? "" }, id: \.id) { item in
+          AttendanceCheckStatusCard(
+            attandanceType: item.status ?? .late,
+            selectPart: item.roleType,
+            selectTeam: item.memberTeam,
+            name: item.name
+          )
+        }
+      }
+      .padding(.horizontal, 24)
+    }
+    
+    
+//    VStack {
+//      AttendanceCheckStatusCard(attandanceType: .present, selectPart: .design, selectTeam: store.selectPart ?? .ios1, name: "김디디")
+//      
+//      AttendanceCheckStatusCard(attandanceType: .present, selectPart: .design, selectTeam: store.selectPart ?? .ios1, name: "김디디")
+//      
+//      AttendanceCheckStatusCard(attandanceType: .present, selectPart: .design, selectTeam: store.selectPart ?? .ios1, name: "김디디")
+//    }
+//    .padding(.horizontal, 24)
   }
 }
 

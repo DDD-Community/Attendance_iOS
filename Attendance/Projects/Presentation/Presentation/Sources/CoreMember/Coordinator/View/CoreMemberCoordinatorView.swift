@@ -51,8 +51,5 @@ public struct CoreMemberCoordinatorView: View {
         .navigationBarBackButtonHidden()
       }
     }
-    .onAppear {
-      store.send(.async(.fetchEvent))
-    }
   }
 }
