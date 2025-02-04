@@ -104,9 +104,7 @@ public struct Login {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleAsyncAction(
@@ -229,9 +227,7 @@ public struct Login {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleNavigationAction(

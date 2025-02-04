@@ -91,6 +91,3 @@ public struct Inject<T> {
     self.dependency = DependencyContainer.live.resolve(T.self)
   }
 }
-
-
-

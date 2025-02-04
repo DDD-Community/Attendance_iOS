@@ -111,9 +111,7 @@ public struct MangerProfile {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleAsyncAction(
@@ -184,9 +182,7 @@ public struct MangerProfile {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleNavigationAction(

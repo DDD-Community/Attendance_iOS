@@ -179,8 +179,6 @@ public struct SignUpSelectManging {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
 }

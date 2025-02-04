@@ -91,11 +91,9 @@ public struct Splash {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    switch action {
-  
-    }
-  }
     
+  }
+  
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
@@ -132,7 +130,7 @@ public struct Splash {
       switch result {
       case .success(let userDtoMemberData):
         state.userMember = userDtoMemberData
-        let email = state.userMember?.email ?? ""
+        let _ = state.userMember?.email ?? ""
         state.userUid = userDtoMemberData.uid
         state.userEmail = userDtoMemberData.email
       case .failure(let error):
@@ -146,9 +144,7 @@ public struct Splash {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleNavigationAction(

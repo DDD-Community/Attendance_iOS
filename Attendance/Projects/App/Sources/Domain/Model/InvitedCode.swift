@@ -8,6 +8,6 @@
 import Foundation
 
 struct InvitedCode: Codable, Hashable {
-    var code: String
-    var expireDate: Date
+  var code: String
+  var expireDate: Date
 }

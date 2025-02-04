@@ -8,16 +8,16 @@
 import SwiftUI
 
 public class CustomButtonConfig: DDDCustomButtonConfig {
-    static public func create() -> DDDCustomButtonConfig {
-        let config = DDDCustomButtonConfig(
-            cornerRadius: 30,
-            enableFontColor: Color.grayWhite,
-            enableBackgroundColor: Color.surfaceEnable,
-            frameHeight: 48,
-            disableFontColor: Color.grayWhite,
-            disableBackgroundColor: Color.blue30
-        )
-        
-        return config
-    }
+  static public func create() -> DDDCustomButtonConfig {
+    let config = DDDCustomButtonConfig(
+      cornerRadius: 30,
+      enableFontColor: Color.grayWhite,
+      enableBackgroundColor: Color.surfaceEnable,
+      frameHeight: 48,
+      disableFontColor: Color.grayWhite,
+      disableBackgroundColor: Color.blue30
+    )
+    
+    return config
+  }
 }

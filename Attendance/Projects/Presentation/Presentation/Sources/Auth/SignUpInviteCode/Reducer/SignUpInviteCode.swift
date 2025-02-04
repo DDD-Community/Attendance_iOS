@@ -6,11 +6,12 @@
 //
 
 import Foundation
-import ComposableArchitecture
 
-import Utill
 import Networkings
+import Utill
+
 import AsyncMoya
+import ComposableArchitecture
 
 @Reducer
 public struct SignUpInviteCode {
@@ -53,26 +54,28 @@ public struct SignUpInviteCode {
     case navigation(NavigationAction)
   }
   
-  //MARK: - ViewAction
+  // MARK: - ViewAction
+  
   @CasePathable
   public enum View {
     
   }
   
+  // MARK: - AsyncAction 비동기 처리 액션
   
-  
-  //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     case validataInviteCode(code: String)
     case validataInviteCodeResponse(Result<InviteDTOModel, CustomError>)
   }
   
-  //MARK: - 앱내에서 사용하는 액션
+  // MARK: - 앱내에서 사용하는 액션
+  
   public enum InnerAction: Equatable {
     
   }
   
-  //MARK: - NavigationAction
+  // MARK: - NavigationAction
+  
   public enum NavigationAction: Equatable {
     case presentSignUpName
   }
@@ -109,9 +112,7 @@ public struct SignUpInviteCode {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleAsyncAction(
@@ -143,20 +144,20 @@ public struct SignUpInviteCode {
       case .success(let validateCodeData):
         state.inviteCodeModel = validateCodeData
         state.userSignUp.isAdmin = validateCodeData.isAdmin
-
+        
         if validateCodeData.isAdmin == true {
-            state.userSignUp.memberType = .coreMember
-            
-            // `memberDesc`를 `MemberType`의 `rawValue`로 변환하여 유효성을 확인한 후 할당
-            if let part = MemberType(rawValue: state.userSignUp.memberType.rawValue) {
-                state.userSignUp.memberType = part
-            }
+          state.userSignUp.memberType = .coreMember
+          
+          // `memberDesc`를 `MemberType`의 `rawValue`로 변환하여 유효성을 확인한 후 할당
+          if let part = MemberType(rawValue: state.userSignUp.memberType.rawValue) {
+            state.userSignUp.memberType = part
+          }
         } else {
-            state.userSignUp.memberType = .member
+          state.userSignUp.memberType = .member
           
           if let part = MemberType(rawValue: state.userSignUp.memberType.rawValue) {
-              state.userSignUp.memberType = part
-          } 
+            state.userSignUp.memberType = part
+          }
         }
       case .failure(let error):
         #logError("코드에러", error.localizedDescription)
@@ -180,8 +181,6 @@ public struct SignUpInviteCode {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
 }

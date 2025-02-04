@@ -17,7 +17,7 @@ public struct UserDTOMember: Codable, Equatable {
   public var manging: Managing
   public var memberTeam: SelectTeam?
   public var isAdmin: Bool
-    /// 기수
+  /// 기수
   public var generation: Int
   
   public init(

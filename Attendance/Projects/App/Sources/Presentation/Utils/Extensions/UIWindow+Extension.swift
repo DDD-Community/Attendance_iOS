@@ -8,7 +8,7 @@
 import UIKit
 
 extension UIWindow {
-    var topViewController: UIViewController? {
-        return self.rootViewController?.topMostViewController()
-    }
+  var topViewController: UIViewController? {
+    return self.rootViewController?.topMostViewController()
+  }
 }

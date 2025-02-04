@@ -5,40 +5,39 @@
 //  Created by 서원지 on 6/6/24.
 //
 
-import Foundation
 import SwiftUI
 
 public extension Color {
   
-  //MARK: - Static Basic
+  // MARK: - Static Basic
   
   static let staticWhite = Color(hex: "FFFFFF")
   static let staticBlack = Color(hex: "0C0E0F")
   
-  //MARK: - Static Text
+  // MARK: - Static Text
   
   static let textPrimary = Color(hex: "FFFFFF")
   static let textSecondary = Color(hex: "EAEAEA")
   static let textInactive = Color(hex: "70737C47").opacity(0.28)
   
-  //MARK: - Static backGround
+  // MARK: - Static backGround
   
   static let backGroundPrimary = Color(hex: "0C0E0F")
   static let backgroundInverse = Color(hex: "FFFFFF")
   
-  //MARK: - Static Border
+  // MARK: - Static Border
   
   static let borderInactive = Color(hex: "C6C6C6")
   static let borderDisabled = Color(hex: "323537")
   static let borderInverse = Color(hex: "202325")
   
-  //MARK: - Static Status
+  // MARK: - Static Status
   
   static let statusFocus = Color(hex: "0D82F9")
   static let statusCautionary = Color(hex: "FD5D08")
   static let statusError = Color(hex: "FD1008")
   
-  //MARK: - Primitives
+  // MARK: - Primitives
   
   static let grayBlack = Color(hex: "1A1A1A")
   static let gray80 = Color(hex: "323537")
@@ -49,7 +48,7 @@ public extension Color {
   static let grayWhite = Color(hex: "FFFFFF")
   static let grayPrimary = Color(hex: "0099FF")
   
-  //MARK: - Surface
+  // MARK: - Surface
   
   static let surfaceBackground = Color(hex: "1A1A1A")
   static let surfaceElevated = Color(hex: "4D4D4D").opacity(0.4)
@@ -59,14 +58,14 @@ public extension Color {
   static let surfaceEnable = Color(hex: "0099FF")
   static let surfaceError = Color(hex: "FF5050").opacity(0.2)
   
-  //MARK: - TextIcon
+  // MARK: - TextIcon
   
   static let onBackground = Color(hex: "FFFFFF")
   static let onNormal = Color(hex: "1A1A1A")
   static let onDisabled = Color(hex: "4D4D4D").opacity(0.4)
   static let onError = Color(hex: "FF5050")
   
-  //MARK: - netureBlue
+  // MARK: - netureBlue
   
   static let blue10 = Color(hex: "F5F8FF")
   static let blue20 = Color(hex: "E1EAFF")
@@ -79,7 +78,7 @@ public extension Color {
   static let blue90 = Color(hex: "063A70")
   static let blue100 = Color(hex: "052E57")
   
-  //MARK: - netureRed
+  // MARK: - netureRed
   
   static let red10 = Color(hex: "ffe7e6")
   static let red20 = Color(hex: "ffdbda")

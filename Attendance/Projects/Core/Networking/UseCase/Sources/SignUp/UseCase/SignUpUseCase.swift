@@ -6,8 +6,10 @@
 //
 
 import Model
-import ComposableArchitecture
+
 import DiContainer
+
+import ComposableArchitecture
 
 public struct SignUpUseCase: SignUpUseCaseProtocol {
   
@@ -19,19 +21,22 @@ public struct SignUpUseCase: SignUpUseCaseProtocol {
     self.repository = repository
   }
   
-  //MARK: -  초대코드 확인
+  // MARK: - 초대코드 확인
+  
   public func validateInviteCode(
     code: String
   ) async throws -> InviteDTOModel? {
     try await repository.validateInviteCode(code: code)
   }
   
-  //MARK: - 운영진 회원가입
+  // MARK: - 운영진 회원가입
+  
   public func signUpCoreMember(member: Member) async throws -> CoreMemberDTOSignUp? {
     try await repository.signUpCoreMember(member: member)
   }
   
-  //MARK: - 멤법 회원가입
+  // MARK: - 멤버 회원가입
+  
   public func signUpMember(
     member: Member
   ) async throws -> MemberDTOSignUp? {
@@ -40,10 +45,7 @@ public struct SignUpUseCase: SignUpUseCaseProtocol {
         member: member
       )
   }
-  
-  
 }
-
 
 extension SignUpUseCase: DependencyKey {
   static public var liveValue: SignUpUseCase = {

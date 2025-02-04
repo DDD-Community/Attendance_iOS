@@ -24,17 +24,17 @@ public extension Member {
   
   func toMemberDictionary() -> [String: Any]  {
     return [
-        "uid": uid ,
-        "memberid": memberid,
-        "email": email,
-        "name": name,
-        "role": role?.rawValue ?? "",
-        "memberType": memberType.rawValue,
-        "memberTeam": memberTeam?.rawValue ?? "",
-        "isAdmin": isAdmin ,
-        "createdAt": createdAt,
-        "updatedAt": updatedAt,
-        "generation": generation
+      "uid": uid ,
+      "memberid": memberid,
+      "email": email,
+      "name": name,
+      "role": role?.rawValue ?? "",
+      "memberType": memberType.rawValue,
+      "memberTeam": memberTeam?.rawValue ?? "",
+      "isAdmin": isAdmin ,
+      "createdAt": createdAt,
+      "updatedAt": updatedAt,
+      "generation": generation
     ]
   }
   
@@ -54,17 +54,17 @@ public extension Member {
   
   func toCoreMemberDictionary() -> [String: Any]  {
     return [
-        "uid": uid ,
-        "memberid": memberid,
-        "email": email,
-        "name": name,
-        "role": role?.rawValue ?? "",
-        "memberType": memberType.rawValue,
-        "manging": manging?.rawValue ?? "",
-        "isAdmin": isAdmin ,
-        "createdAt": createdAt,
-        "updatedAt": updatedAt,
-        "generation": generation
+      "uid": uid ,
+      "memberid": memberid,
+      "email": email,
+      "name": name,
+      "role": role?.rawValue ?? "",
+      "memberType": memberType.rawValue,
+      "manging": manging?.rawValue ?? "",
+      "isAdmin": isAdmin ,
+      "createdAt": createdAt,
+      "updatedAt": updatedAt,
+      "generation": generation
     ]
   }
   

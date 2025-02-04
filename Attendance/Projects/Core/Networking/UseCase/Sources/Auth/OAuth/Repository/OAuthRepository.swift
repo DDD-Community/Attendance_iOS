@@ -5,20 +5,21 @@
 //  Created by Wonji Suh  on 10/30/24.
 //
 
-import AsyncMoya
-import Model
 import AuthenticationServices
+import SwiftUI
+
+import Model
+
+import AsyncMoya
+import ComposableArchitecture
+import Firebase
 import FirebaseAuth
 import GoogleSignIn
-import Firebase
-import ComposableArchitecture
-import SwiftUI
 
 @Observable
 public class OAuthRepository: OAuthRepositoryProtocol {
-  let fireBaseDB = Firestore.firestore()
+  private let fireBaseDB = Firestore.firestore()
   public init() {}
-  
   
   public func handleAppleLogin(
     _ requestResult: Result<ASAuthorization, any Error>,
@@ -99,7 +100,8 @@ public class OAuthRepository: OAuthRepositoryProtocol {
     return oauthResponseModel.toDTOModel()
   }
   
-  //MARK: - 구글 로그인
+  // MARK: - 구글 로그인
+  
   public func googleLogin() async throws -> OAuthResponseDTOModel? {
     guard let clientID = FirebaseApp.app()?.options.clientID else { return nil }
     let config = GIDConfiguration(clientID: clientID)

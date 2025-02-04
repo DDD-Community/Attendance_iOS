@@ -6,17 +6,19 @@
 //
 
 import Model
+
 import AsyncMoya
 import FirebaseFirestore
 
 @Observable
 public class AuthRepository: AuthRepositoryProtocol {
   
-  let fireBaseDB = Firestore.firestore()
+  private let fireBaseDB = Firestore.firestore()
+  
   public init() {}
   
+  // MARK: - 회원가입한 유저 조회
   
-  //MARK: - 회원가입 한  유저 조회
   public func fetchUser(uid: String) async throws -> UserDTOMember? {
     let userRef = fireBaseDB.collection(FireBaseCollection.member.desc).whereField("email", isEqualTo: uid)
     

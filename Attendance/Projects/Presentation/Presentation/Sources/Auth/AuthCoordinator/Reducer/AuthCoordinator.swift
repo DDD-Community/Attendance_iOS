@@ -174,18 +174,14 @@ public struct AuthCoordinator {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
 }
 

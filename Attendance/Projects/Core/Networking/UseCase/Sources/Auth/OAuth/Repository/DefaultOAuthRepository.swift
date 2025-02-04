@@ -5,16 +5,15 @@
 //  Created by Wonji Suh  on 10/30/24.
 //
 
-import Model
-import ComposableArchitecture
 import AuthenticationServices
 
+import Model
+
+import ComposableArchitecture
+
 final public class DefaultOAuthRepository: OAuthRepositoryProtocol {
- 
-  
-  public init() {
-    
-  }
+
+  public init() {}
   
   public func handleAppleLogin(_ requestResult: Result<ASAuthorization, any Error>, nonce: String) async throws -> ASAuthorization {
     return try await withCheckedThrowingContinuation { continuation in
@@ -35,11 +34,7 @@ final public class DefaultOAuthRepository: OAuthRepositoryProtocol {
     return nil
   }
   
-  
   public func googleLogin() async throws -> OAuthResponseDTOModel? {
     return nil
   }
-  
-
-  
 }

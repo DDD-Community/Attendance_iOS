@@ -8,7 +8,7 @@
 import Foundation
 
 public struct Member: Codable, Hashable, Equatable {
-    /// Firebase Auth의 uid
+  /// Firebase Auth의 uid
   public var uid: String
   public var memberid: String
   public var email: String
@@ -21,8 +21,8 @@ public struct Member: Codable, Hashable, Equatable {
   public var createdAt: Date
   public var updatedAt: Date
   public var isAdmin: Bool
-    
-    /// 기수
+  
+  /// 기수
   public var generation: Int
   
   public init(

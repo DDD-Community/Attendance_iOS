@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
+
 import ComposableArchitecture
 import TCACoordinators
 
 public struct AuthCoordinatorView: View {
-  @Bindable var store: StoreOf<AuthCoordinator>
+  @Bindable private var store: StoreOf<AuthCoordinator>
   
   public init(
     store: StoreOf<AuthCoordinator>
@@ -58,4 +59,3 @@ public struct AuthCoordinatorView: View {
     }
   }
 }
-

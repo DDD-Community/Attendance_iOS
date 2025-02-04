@@ -15,5 +15,4 @@ public extension InviteModel {
       isAdmin: self.isAdmin ?? false
     )
   }
-  
 }

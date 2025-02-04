@@ -5,7 +5,6 @@
 //  Created by Wonji Suh  on 11/1/24.
 //
 
-
 import Foundation
 
 public enum CustomError: Error, Equatable {
@@ -85,8 +84,8 @@ extension CustomError: LocalizedError {
   public static func map(_ error: Error) -> CustomError {
     if let customError = error as? CustomError {
       return customError
-    } else {
-      return .unknownError(error.localizedDescription)
     }
+    
+    return .unknownError(error.localizedDescription)
   }
 }

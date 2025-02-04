@@ -8,9 +8,9 @@
 import SwiftUI
 
 public struct SignUpPartText: View {
-  var content: String
-  var title: String
-  var subtitle: String
+  private let content: String
+  private let title: String
+  private let subtitle: String
   
   public init(
     content: String,
@@ -22,28 +22,27 @@ public struct SignUpPartText: View {
     self.subtitle = subtitle
   }
   
-  
   public var body: some View {
-        VStack(alignment: .center) {
-            Spacer()
-                .frame(height: 40)
-            
-            Text(content)
-                .pretendardCustomFont(textStyle: .tilte1NormalBold)
-                .foregroundStyle(.staticWhite)
-            
-            Spacer()
-                .frame(height: 8)
-            
-          Text(title)
-                .pretendardCustomFont(textStyle: .body3NormalMedium)
-                .foregroundStyle(.staticWhite)
-          
-          if !subtitle.isEmpty {
-            Text(subtitle)
-                  .pretendardCustomFont(textStyle: .body3NormalMedium)
-                  .foregroundStyle(.staticWhite)
-          }
-        }
+    VStack(alignment: .center) {
+      Spacer()
+        .frame(height: 40)
+      
+      Text(content)
+        .pretendardCustomFont(textStyle: .tilte1NormalBold)
+        .foregroundStyle(.staticWhite)
+      
+      Spacer()
+        .frame(height: 8)
+      
+      Text(title)
+        .pretendardCustomFont(textStyle: .body3NormalMedium)
+        .foregroundStyle(.staticWhite)
+      
+      if !subtitle.isEmpty {
+        Text(subtitle)
+          .pretendardCustomFont(textStyle: .body3NormalMedium)
+          .foregroundStyle(.staticWhite)
+      }
     }
+  }
 }

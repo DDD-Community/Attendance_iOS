@@ -8,8 +8,8 @@
 import Foundation
 
 extension Task where Success == Never, Failure == Never {
-    static func sleep(seconds: Double) async {
-        let duration = UInt64(seconds * Double(NSEC_PER_SEC))
-        try? await Task.sleep(nanoseconds: duration)
-    }
+  static func sleep(seconds: Double) async {
+    let duration = UInt64(seconds * Double(NSEC_PER_SEC))
+    try? await Task.sleep(nanoseconds: duration)
+  }
 }

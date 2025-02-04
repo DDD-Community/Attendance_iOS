@@ -8,13 +8,13 @@
 import Foundation
 
 enum DDDOAuthProvider {
-    case APPLE
-    case GOOGLE
-    
-    var service: OAuthServiceProtocol {
-        switch self {
-        case .APPLE: return OAuthAppleService()
-        case .GOOGLE: return OAuthGoogleService()
-        }
+  case apple
+  case google
+  
+  var service: OAuthServiceProtocol {
+    switch self {
+    case .apple: return OAuthAppleService()
+    case .google: return OAuthGoogleService()
     }
+  }
 }

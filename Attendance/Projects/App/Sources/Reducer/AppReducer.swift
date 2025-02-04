@@ -68,7 +68,7 @@ struct AppReducer {
     action: View
   ) -> Effect<Action> {
     switch action {
-      //MARK: - 로그인 화면 으로
+    // MARK: - 로그인 화면으로
     case .presentAuth:
       state = .auth(.init())
       return .none

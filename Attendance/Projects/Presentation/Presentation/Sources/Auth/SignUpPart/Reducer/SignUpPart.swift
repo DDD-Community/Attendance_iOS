@@ -6,10 +6,11 @@
 //
 
 import Foundation
-import ComposableArchitecture
 
 import Utill
 import Networkings
+
+import ComposableArchitecture
 
 @Reducer
 public struct SignUpPart {
@@ -128,17 +129,13 @@ public struct SignUpPart {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
 }

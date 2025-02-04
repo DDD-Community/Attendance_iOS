@@ -34,7 +34,6 @@ public struct SplashView: View {
           .scaledToFit()
           .frame(width: 200, height: 200)
         
-        
         Spacer()
       }
     }

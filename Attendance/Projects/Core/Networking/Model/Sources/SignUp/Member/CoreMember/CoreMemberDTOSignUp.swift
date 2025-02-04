@@ -16,7 +16,7 @@ public struct CoreMemberDTOSignUp: Codable, Equatable {
   public var memberType: MemberType
   public var manging: Managing
   public var isAdmin: Bool
-    /// 기수
+  /// 기수
   public var generation: Int
   
   public init(
@@ -41,4 +41,3 @@ public struct CoreMemberDTOSignUp: Codable, Equatable {
     self.generation = generation
   }
 }
-

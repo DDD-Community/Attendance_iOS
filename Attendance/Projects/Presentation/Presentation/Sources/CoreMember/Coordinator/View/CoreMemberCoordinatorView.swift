@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
+
 import ComposableArchitecture
 import TCACoordinators
 
 public struct CoreMemberCoordinatorView: View {
-  @Bindable var store: StoreOf<CoreMemberCoordinator>
+  @Bindable private var store: StoreOf<CoreMemberCoordinator>
   
   public init(
     store: StoreOf<CoreMemberCoordinator>
