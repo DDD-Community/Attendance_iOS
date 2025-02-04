@@ -32,12 +32,15 @@ public struct AttandanceCheck {
     var lateCount: Int = .zero
     var absentCount: Int = .zero
     
+    @Presents var destination: Destination.State?
+    
     public init() {
       
     }
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
+    case destination(PresentationAction<Destination.Action>)
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
@@ -46,12 +49,19 @@ public struct AttandanceCheck {
     
   }
   
+  @Reducer(state: .equatable)
+  public enum Destination {
+    case selectDate(SelectDate)
+  }
+  
   //MARK: - ViewAction
   @CasePathable
   public enum View {
     case selectPartButton(selectPart: SelectTeam)
     case swipeNext
     case swipePrevious
+    case appearSelectDate
+    case closeModal
   }
   
   //MARK: - AsyncAction 비동기 처리 액션
@@ -90,6 +100,9 @@ public struct AttandanceCheck {
       case .binding(_):
         return .none
         
+      case .destination(_):
+        return .none
+        
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
         
@@ -103,6 +116,7 @@ public struct AttandanceCheck {
         return handleNavigationAction(state: &state, action: navigationAction)
       }
     }
+    .ifLet(\.$destination, action: \.destination)
   }
   
   private func handleViewAction(
@@ -129,6 +143,14 @@ public struct AttandanceCheck {
          currentIndex > 0 {
         state.selectPart = SelectTeam.allCases[currentIndex - 1]
       }
+      return .none
+      
+    case .appearSelectDate:
+      state.destination = .selectDate(.init())
+      return .none
+      
+    case .closeModal:
+      state.destination = nil
       return .none
     }
   }

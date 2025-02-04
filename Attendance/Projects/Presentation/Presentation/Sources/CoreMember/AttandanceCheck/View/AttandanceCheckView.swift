@@ -27,6 +27,12 @@ struct AttandanceCheckView: View {
       store.send(.async(.fetchAttenDance))
       store.send(.async(.observeAttendance))
     }
+    .sheet(item: $store.scope(state: \.destination?.selectDate, action: \.destination.selectDate)) { selectDateStore in
+      SelectDateView(store: selectDateStore)
+        .presentationDetents([.height(UIScreen.screenHeight * 0.6)])
+        .presentationCornerRadius(20)
+      
+    }
   }
 }
 
@@ -51,6 +57,9 @@ extension AttandanceCheckView {
           .foregroundStyle(.staticWhite)
         
         Spacer()
+      }
+      .onTapGesture {
+        store.send(.view(.appearSelectDate))
       }
     }
     .padding(.horizontal, 24)
@@ -164,9 +173,26 @@ extension AttandanceCheckView {
   fileprivate func selectPartAttandanceStatusCard() -> some View {
     LazyVStack {
       VStack {
-        ForEach(store.attendanceCheckInModel.filter { $0.memberTeam.desc == store.selectPart?.desc ?? "" }, id: \.id) { item in
+        ForEach(
+          store.attendanceCheckInModel
+            .filter { $0.memberTeam.desc == store.selectPart?.desc ?? "" }
+            .sorted { first, second in
+              // 정렬 우선순위 배열
+              let priority: [AttendanceType] = [
+                .present, .disease, .earlyLeave, .late, .absent, .run, .notAttendance
+              ]
+              
+              // 우선순위에 따른 비교 정렬
+              guard let firstPriority = priority.firstIndex(of: first.status ?? .notAttendance),
+                    let secondPriority = priority.firstIndex(of: second.status ?? .notAttendance) else {
+                return false
+              }
+              return firstPriority < secondPriority
+            },
+          id: \.id
+        ) { item in
           AttendanceCheckStatusCard(
-            attandanceType: item.status ?? .late,
+            attandanceType: item.status ?? .notAttendance,
             selectPart: item.roleType,
             selectTeam: item.memberTeam,
             name: item.name
@@ -175,16 +201,6 @@ extension AttandanceCheckView {
       }
       .padding(.horizontal, 24)
     }
-    
-    
-//    VStack {
-//      AttendanceCheckStatusCard(attandanceType: .present, selectPart: .design, selectTeam: store.selectPart ?? .ios1, name: "김디디")
-//      
-//      AttendanceCheckStatusCard(attandanceType: .present, selectPart: .design, selectTeam: store.selectPart ?? .ios1, name: "김디디")
-//      
-//      AttendanceCheckStatusCard(attandanceType: .present, selectPart: .design, selectTeam: store.selectPart ?? .ios1, name: "김디디")
-//    }
-//    .padding(.horizontal, 24)
   }
 }
 
