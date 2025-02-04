@@ -15,7 +15,7 @@ public struct Member: Codable, Hashable, Equatable {
   public var name: String
   public var role: SelectPart?
   public var memberType: MemberType
-  public var manging: Managing?
+  public var managing: Managing?
   public var memberTeam: SelectTeam?
   public var snsURL: String
   public var createdAt: Date
@@ -32,7 +32,7 @@ public struct Member: Codable, Hashable, Equatable {
     name: String = "",
     role: SelectPart? = .all,
     memberType: MemberType = .notYet,
-    manging: Managing? = nil,
+    managing: Managing? = nil,
     memberTeam: SelectTeam? = nil,
     snsURL: String? = nil,
     createdAt: Date = .now,
@@ -46,7 +46,7 @@ public struct Member: Codable, Hashable, Equatable {
     self.name = name
     self.role = role
     self.memberType = memberType
-    self.manging = manging
+    self.managing = managing
     self.memberTeam = memberTeam
     self.snsURL = snsURL ?? ""
     self.createdAt = createdAt

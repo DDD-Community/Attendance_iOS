@@ -26,8 +26,8 @@ public struct CoreMemberCoordinatorView: View {
         CoreMemberMainView(store: coreMember)
           .navigationBarBackButtonHidden()
         
-      case .mangeProfile(let mangerProfileStore):
-        MangerProfileView(store: mangerProfileStore) {
+      case .mangeProfile(let managerProfileStore):
+        ManagerProfileView(store: managerProfileStore) {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()

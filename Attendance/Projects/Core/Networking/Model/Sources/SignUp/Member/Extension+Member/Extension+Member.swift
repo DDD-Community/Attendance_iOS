@@ -46,7 +46,7 @@ public extension Member {
       name: self.name,
       role: self.role ?? .all,
       memberType: self.memberType,
-      manging: self.manging ?? .notManging,
+      managing: self.managing ?? .notManaging,
       isAdmin: self.isAdmin,
       generation: self.generation
     )
@@ -60,7 +60,7 @@ public extension Member {
       "name": name,
       "role": role?.rawValue ?? "",
       "memberType": memberType.rawValue,
-      "manging": manging?.rawValue ?? "",
+      "managing": managing?.rawValue ?? "",
       "isAdmin": isAdmin ,
       "createdAt": createdAt,
       "updatedAt": updatedAt,
@@ -76,7 +76,7 @@ public extension Member {
       email: self.email,
       role: self.role ?? .all,
       memberType: self.memberType,
-      manging: self.manging ?? .notManging,
+      managing: self.managing ?? .notManaging,
       memberTeam: self.memberTeam ?? .notTeam,
       isAdmin: self.isAdmin,
       generation: self.generation

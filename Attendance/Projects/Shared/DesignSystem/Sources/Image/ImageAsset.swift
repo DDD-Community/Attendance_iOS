@@ -9,7 +9,7 @@ import Foundation
 
 public enum ImageAsset: String {
   
-  case mangeMentProfile
+  case managementProfile
   case appLogo
   case qrCode
   case eventGenerate

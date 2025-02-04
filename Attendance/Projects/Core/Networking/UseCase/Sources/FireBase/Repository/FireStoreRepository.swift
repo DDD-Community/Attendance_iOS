@@ -274,14 +274,14 @@ public class FireStoreRepository: FireStoreRepositoryProtocol {
           let status: AttendanceType = AttendanceType(rawValue: data["status"] as? String ?? "") ?? .absent
           let generation: Int = data["generation"] as? Int ?? 0
           let memberType: MemberType = MemberType(rawValue: data["memberType"] as? String ?? "") ?? .member
-          let manging: Managing = Managing(rawValue: data["managing"] as? String ?? "") ?? .notManging
+          let managing: Managing = Managing(rawValue: data["managing"] as? String ?? "") ?? .notManaging
           let memberTeam: SelectTeam = SelectTeam(rawValue: data["memberTeam"] as? String ?? "") ?? .notTeam
           let roleType : SelectPart = SelectPart(rawValue:  data["roleType"] as? String ?? "") ?? .all
           return Attendance(
             id: id,
             memberId: memberId,
             memberType: memberType,
-            manging: manging,
+            managing: managing,
             memberTeam: memberTeam,
             name: data["name"] as? String ?? "",
             roleType: roleType,

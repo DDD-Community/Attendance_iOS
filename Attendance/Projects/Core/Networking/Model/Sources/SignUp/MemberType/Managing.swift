@@ -15,21 +15,21 @@ public enum Managing: String, CaseIterable, Codable {
   case venueManagement = "Venue_Management"
   case snsManagement = "SNS_Management"
   case attendanceCheck = "Attendance_Check"
-  case projectTeamManging = "Project_TeamManging"
-  case notManging = "NotManging"
+  case projectTeamManaging = "Project_TeamManaging"
+  case notManaging = "NotManaging"
   
   public init(from decoder: Decoder) throws {
     let container = try decoder.singleValueContainer()
     let rawValue = try container.decode(String.self)
     
     if rawValue.trimmingCharacters(in: .whitespaces).isEmpty {
-      self = .notManging
+      self = .notManaging
     } else {
-      self = Managing(rawValue: rawValue) ?? .notManging
+      self = Managing(rawValue: rawValue) ?? .notManaging
     }
   }
   
-  public var mangingDesc: String {
+  public var managingDesc: String {
     switch self {
     case .accountiConsulting:
       return "회계, MC"
@@ -41,18 +41,18 @@ public enum Managing: String, CaseIterable, Codable {
       return "SNS 관리"
     case .attendanceCheck:
       return "출석 체크"
-    case .projectTeamManging:
+    case .projectTeamManaging:
       return "팀매니징"
     case .scheduleReminder:
       return "일정 리마인드"
     case .venueManagement:
       return "장소 대관"
-    case .notManging:
+    case .notManaging:
       return ""
     }
   }
   
-  public static var mangingList: [Managing] {
-    return [.projectTeamManging, .scheduleManagement, .photographer, .scheduleReminder, .venueManagement, .snsManagement, .attendanceCheck]
+  public static var managingList: [Managing] {
+    return [.projectTeamManaging, .scheduleManagement, .photographer, .scheduleReminder, .venueManagement, .snsManagement, .attendanceCheck]
   }
 }

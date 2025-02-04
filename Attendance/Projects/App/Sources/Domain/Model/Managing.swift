@@ -1,5 +1,5 @@
 //
-//  Manging.swift
+//  Managing.swift
 //  DDDAttendance
 //
 //  Created by 서원지 on 7/19/24.
@@ -13,21 +13,21 @@ public enum Managing: String, CaseIterable, Codable {
   case scheduleManagement = "Schedule_Management"
   case instagramManagement = "Instagram_Management"
   case attendanceCheck = "Attendance_Check"
-  case projectTeamManging = "Project_TeamManging"
-  case notManging = "NotManging"
+  case projectTeamManaging = "Project_TeamManaging"
+  case notManaging = "NotManaging"
   
   public init(from decoder: Decoder) throws {
     let container = try decoder.singleValueContainer()
     let rawValue = try container.decode(String.self)
     
     if rawValue.trimmingCharacters(in: .whitespaces).isEmpty {
-      self = .notManging
+      self = .notManaging
     } else {
-      self = Managing(rawValue: rawValue) ?? .notManging
+      self = Managing(rawValue: rawValue) ?? .notManaging
     }
   }
   
-  var mangingDesc: String {
+  var managingDesc: String {
     switch self {
     case .accountiConsulting:
       return "회계, MC"
@@ -39,9 +39,9 @@ public enum Managing: String, CaseIterable, Codable {
       return "인스타그램"
     case .attendanceCheck:
       return "출석 체크"
-    case .projectTeamManging:
+    case .projectTeamManaging:
       return "팀매니징"
-    case .notManging:
+    case .notManaging:
       return ""
     }
   }

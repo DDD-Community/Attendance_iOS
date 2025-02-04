@@ -1,5 +1,5 @@
 //
-//  MangingTeam.swift
+//  ManagingTeam.swift
 //  DDDAttendance
 //
 //  Created by 서원지 on 7/19/24.
@@ -26,7 +26,7 @@ public enum ManagingTeam: String, CaseIterable, Codable {
     }
   }
   
-  var mangingTeamDesc: String {
+  var managingTeamDesc: String {
     switch self {
     case .ios1:
       return "iOS 1"

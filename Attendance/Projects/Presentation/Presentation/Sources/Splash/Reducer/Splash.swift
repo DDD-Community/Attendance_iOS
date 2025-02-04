@@ -134,7 +134,7 @@ public struct Splash {
         state.userUid = userDtoMemberData.uid
         state.userEmail = userDtoMemberData.email
       case .failure(let error):
-        #logError("유저 정보 가쟈오기", error.localizedDescription)
+        #logError("유저 정보 가져오기", error.localizedDescription)
       }
       return .none
     }

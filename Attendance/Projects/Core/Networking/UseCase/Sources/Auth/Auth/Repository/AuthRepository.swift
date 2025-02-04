@@ -37,7 +37,7 @@ public class AuthRepository: AuthRepositoryProtocol {
       let updatedAt: Date = (data["updatedAt"] as? Timestamp)?.dateValue() ?? Date()
       let generation: Int = data["generation"] as? Int ?? 0
       let memberType: MemberType = MemberType(rawValue: data["memberType"] as? String ?? "") ?? .member
-      let managing: Managing = Managing(rawValue: data["manging"] as? String ?? "") ?? .notManging
+      let managing: Managing = Managing(rawValue: data["managing"] as? String ?? "") ?? .notManaging
       let memberTeam: SelectTeam = SelectTeam(rawValue: data["memberTeam"] as? String ?? "") ?? .notTeam
       let roleType: SelectPart = SelectPart(rawValue: data["role"] as? String ?? "") ?? .all
       let isAdmin: Bool = data["isAdmin"] as? Bool ?? false
@@ -49,7 +49,7 @@ public class AuthRepository: AuthRepositoryProtocol {
         name: name,
         role: roleType,
         memberType: memberType,
-        manging: managing,
+        managing: managing,
         memberTeam: memberTeam,
         createdAt: createdAt,
         updatedAt: updatedAt,

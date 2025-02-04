@@ -1,5 +1,5 @@
 //
-//  GoogleLoginManger.swift
+//  GoogleLoginManager.swift
 //  UseCase
 //
 //  Created by Wonji Suh  on 11/1/24.
@@ -10,8 +10,8 @@ import SwiftUI
 
 import GoogleSignIn
 
-struct GoogleLoginManger {
-  static let shared = GoogleLoginManger()
+struct GoogleLoginManager {
+  static let shared = GoogleLoginManager()
   
   func getRootViewController()->UIViewController{
     guard let screen = UIApplication.shared.connectedScenes.first as? UIWindowScene else{

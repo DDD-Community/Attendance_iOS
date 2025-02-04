@@ -1,5 +1,5 @@
 //
-//  MangerProfile.swift
+//  ManagerProfile.swift
 //  DDDAttendance
 //
 //  Created by 서원지 on 7/17/24.
@@ -19,17 +19,17 @@ import FirebaseAuth
 import KeychainAccess
 
 @Reducer
-public struct MangerProfile {
+public struct ManagerProfile {
   public init() {}
   
   @ObservableState
   public struct State: Equatable {
     var user: User? =  nil
     var isLoading: Bool = false
-    var mangeProfileName: String = "의 프로필"
-    var mangerProfileRoleType: String = "직군"
-    var mangerProfileManging: String = "담당 업무"
-    var mangerProfileGeneration: String = "소속 기수"
+    var managerProfileName: String = "의 프로필"
+    var managerProfileRoleType: String = "직군"
+    var managerProfileManaging: String = "담당 업무"
+    var managerProfileGeneration: String = "소속 기수"
     var logoutText: String = "로그아웃"
     
     @Shared(.appStorage("UserEmail")) var userEmail: String = ""
@@ -144,7 +144,7 @@ public struct MangerProfile {
         state.userEmail = userDtoMemberData.email
         
       case .failure(let error):
-        #logError("유저 정보 가쟈오기", error.localizedDescription)
+        #logError("유저 정보 가져오기", error.localizedDescription)
       }
       return .none
       

@@ -34,7 +34,7 @@ public struct CoreMember {
     var isLoading: Bool = false
     var qrcodeImage: ImageAsset = .qrCode
     var eventImage: ImageAsset = .eventGenerate
-    var mangerProfilemage: ImageAsset = .mangeMentProfile
+    var managerProfilemage: ImageAsset = .managementProfile
     
     var user: User? =  nil
     var errorMessage: String?
@@ -114,7 +114,7 @@ public struct CoreMember {
   public enum NavigationAction: Equatable {
     case presentQrcode
     case presentSchedule
-    case presentMangerProfile
+    case presentManagerProfile
     
   }
   
@@ -437,7 +437,7 @@ public struct CoreMember {
             await send(.async(.fetchMember))
           }
           
-        case .presentMangerProfile:
+        case .presentManagerProfile:
           return .none
         }
         //            case .alert(.dismiss):

@@ -13,7 +13,7 @@ public struct Attendance: Codable, Hashable {
   public var id: String?
   public var memberId: String?
   public var memberType: MemberType?
-  public var manging: Managing?
+  public var managing: Managing?
   public var memberTeam: SelectTeam?
   public var name: String
   public var roleType: SelectPart
@@ -27,7 +27,7 @@ public struct Attendance: Codable, Hashable {
     id: String,
     memberId: String? = nil,
     memberType: MemberType? = nil,
-    manging: Managing? = nil,
+    managing: Managing? = nil,
     memberTeam: SelectTeam? = nil,
     name: String,
     roleType: SelectPart,
@@ -40,7 +40,7 @@ public struct Attendance: Codable, Hashable {
     self.id = id
     self.memberId = memberId
     self.memberType = memberType
-    self.manging = manging
+    self.managing = managing
     self.memberTeam = memberTeam
     self.name = name
     self.roleType = roleType
@@ -54,7 +54,7 @@ public struct Attendance: Codable, Hashable {
   enum CodingKeys: String, CodingKey {
     case id, memberId, name, roleType, eventId
     case createdAt, updatedAt, status, generation, memberType
-    case manging, memberTeam
+    case managing, memberTeam
   }
   
   public init(from decoder: Decoder) throws {
@@ -62,7 +62,7 @@ public struct Attendance: Codable, Hashable {
     self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? ""
     self.memberId = try container.decodeIfPresent(String.self, forKey: .memberId) ?? ""
     self.memberType = try container.decodeIfPresent(MemberType.self, forKey: .memberType) ?? .coreMember
-    self.manging = try container.decodeIfPresent(Managing.self, forKey: .manging) ?? .notManging
+    self.managing = try container.decodeIfPresent(Managing.self, forKey: .managing) ?? .notManaging
     self.memberTeam = try container.decodeIfPresent(SelectTeam.self, forKey: .memberTeam) ?? .notTeam
     self.name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
     self.roleType = try container.decodeIfPresent(SelectPart.self, forKey: .roleType) ?? .all
@@ -78,7 +78,7 @@ public struct Attendance: Codable, Hashable {
     self.id = document.documentID
     self.memberId = data["memberId"] as? String ?? ""
     self.memberType = MemberType(rawValue: data["memberType"] as? String ?? "") ?? .coreMember
-    self.manging = Managing(rawValue: data["manging"] as? String ?? "") ?? .notManging
+    self.managing = Managing(rawValue: data["managing"] as? String ?? "") ?? .notManaging
     self.memberTeam = SelectTeam(rawValue: data["memberTeam"] as? String ?? "") ?? .notTeam
     self.name = data["name"] as? String ?? ""
     self.roleType = SelectPart(rawValue: data["roleType"] as? String ?? "") ?? .all
@@ -169,7 +169,7 @@ public extension Attendance {
     return MemberDTO(
       memberId: self.memberId ?? "",
       memberType: self.memberType ?? .coreMember,
-      manging: self.manging ?? .notManging,
+      managing: self.managing ?? .notManaging,
       memberTeam: self.memberTeam ?? .notTeam,
       name: self.name,
       roleType: self.roleType,

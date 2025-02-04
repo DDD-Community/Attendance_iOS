@@ -55,7 +55,7 @@ public struct SignUpPart {
   // MARK: - NavigationAction
   
   public enum NavigationAction: Equatable {
-    case presentManging
+    case presentManaging
     case presentSelectTeam
     case presentNextStep
   }
@@ -110,14 +110,14 @@ public struct SignUpPart {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presentManging:
+    case .presentManaging:
       return .none
     case .presentSelectTeam:
       return .none
     case .presentNextStep:
       return .run { [isAdmin = state.userSignUpMember.isAdmin] send in
         if isAdmin == true {
-          await send(.navigation(.presentManging))
+          await send(.navigation(.presentManaging))
         } else {
           await send(.navigation(.presentSelectTeam))
         }

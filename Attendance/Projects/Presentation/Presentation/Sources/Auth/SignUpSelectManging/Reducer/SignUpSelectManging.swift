@@ -1,5 +1,5 @@
 //
-//  SignUpSelectManging.swift
+//  SignUpSelectManaging.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 11/3/24.
@@ -15,13 +15,13 @@ import Networkings
 import AsyncMoya
 
 @Reducer
-public struct SignUpSelectManging {
+public struct SignUpSelectManaging {
   public init() {}
   
   @ObservableState
   public struct State: Equatable {
     public init() {}
-    var selectMangingPart : Managing? = .notManging
+    var selectManagingPart : Managing? = .notManaging
     var activeButton: Bool = false
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     @Shared(.appStorage("UserUID")) var userUid: String = ""
@@ -41,7 +41,7 @@ public struct SignUpSelectManging {
   
   @CasePathable
   public enum View {
-    case selectMangingButton(selectManging: Managing)
+    case selectManagingButton(selectManaging: Managing)
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
@@ -63,7 +63,7 @@ public struct SignUpSelectManging {
     case presentCoreMember
   }
   
-  struct SignUpSelectMangingCancel: Hashable {}
+  struct SignUpSelectManagingCancel: Hashable {}
   
   @Dependency(SignUpUseCase.self) var signUpUseCase
   @Dependency(\.continuousClock) var clock
@@ -97,18 +97,18 @@ public struct SignUpSelectManging {
       action: View
   ) -> Effect<Action> {
       switch action {
-      case .selectMangingButton(let selectManging):
-        if state.selectMangingPart == selectManging {
-          state.selectMangingPart = nil
-          state.userSignUpMember.manging = nil
+      case .selectManagingButton(let selectManaging):
+        if state.selectManagingPart == selectManaging {
+          state.selectManagingPart = nil
+          state.userSignUpMember.managing = nil
           state.activeButton = false
           return .none
         }
-        state.selectMangingPart = selectManging
-        if let selectManging = Managing(rawValue: selectManging.mangingDesc) {
-          state.userSignUpMember.manging = selectManging
+        state.selectManagingPart = selectManaging
+        if let selectManaging = Managing(rawValue: selectManaging.managingDesc) {
+          state.userSignUpMember.managing = selectManaging
         }
-        state.userSignUpMember.manging = selectManging
+        state.userSignUpMember.managing = selectManaging
         state.activeButton = true
         return .none
       }
@@ -138,7 +138,7 @@ public struct SignUpSelectManging {
           name: member.name,
           role: SelectPart(rawValue: member.role?.rawValue ?? "") ?? .all,
           memberType: MemberType(rawValue: member.memberType.rawValue) ?? .notYet,
-          manging: Managing(rawValue: member.manging?.rawValue ?? "") ?? .notManging,
+          managing: Managing(rawValue: member.managing?.rawValue ?? "") ?? .notManaging,
           isAdmin: member.isAdmin,
           generation: member.generation
         )
@@ -160,7 +160,7 @@ public struct SignUpSelectManging {
           await send(.async(.signUpCoreMemberResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
         }
       }
-      .debounce(id: SignUpSelectMangingCancel(), for: 0.3, scheduler: mainQueue)
+      .debounce(id: SignUpSelectManagingCancel(), for: 0.3, scheduler: mainQueue)
       
     case .signUpCoreMemberResponse(let result):
       switch result {

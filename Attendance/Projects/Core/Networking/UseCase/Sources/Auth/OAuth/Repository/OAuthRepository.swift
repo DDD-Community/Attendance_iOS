@@ -109,7 +109,7 @@ public class OAuthRepository: OAuthRepositoryProtocol {
     
     return try await withCheckedThrowingContinuation { continuation in
       DispatchQueue.main.async {
-        GIDSignIn.sharedInstance.signIn(withPresenting: GoogleLoginManger.shared.getRootViewController()) { user, error in
+        GIDSignIn.sharedInstance.signIn(withPresenting: GoogleLoginManager.shared.getRootViewController()) { user, error in
           if let error = error {
             #logError("[🔥] 로그인에 실패하였습니다 \(error.localizedDescription)")
             continuation.resume(throwing: error)

@@ -28,7 +28,7 @@ public enum SelectTeam: String, CaseIterable, Codable {
     }
   }
   
-  var mangingTeamDesc: String {
+  var managingTeamDesc: String {
     switch self {
     case .ios1:
       return "iOS 1"

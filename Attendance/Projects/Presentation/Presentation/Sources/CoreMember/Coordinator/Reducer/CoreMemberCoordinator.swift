@@ -101,6 +101,7 @@ public struct CoreMemberCoordinator {
       
     // MARK: - 운영진 프로필
       
+    case .routeAction(id: _, action: .coreMember(.navigation(.presentManagerProfile))):
       state.routes.push(.mangeProfile(.init()))
       return .none
       
@@ -212,7 +213,7 @@ extension CoreMemberCoordinator {
     case coreMember(CoreMember)
     case qrCode(QrCode)
     case scheduleEvent(ScheduleEvent)
-    case mangeProfile(MangerProfile)
+    case mangeProfile(ManagerProfile)
     case createByApp(CreatByApp)
   }
 }
