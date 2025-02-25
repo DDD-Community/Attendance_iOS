@@ -20,6 +20,7 @@ public struct AttandanceCheck {
   public struct State: Equatable {
     
     var selectAttandanceDate: Date = .now
+    var selectAttandanceDateMonth: Date = .now
     var selectPart: SelectTeam? = .web1
     
     var dividerWidths: [SelectTeam: CGFloat] = [:]
