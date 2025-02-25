@@ -28,9 +28,16 @@ struct AttandanceCheckView: View {
       store.send(.async(.observeAttendance))
     }
     .sheet(item: $store.scope(state: \.destination?.selectDate, action: \.destination.selectDate)) { selectDateStore in
-      SelectDateView(store: selectDateStore)
-        .presentationDetents([.height(UIScreen.screenHeight * 0.6)])
-        .presentationCornerRadius(20)
+      VStack {
+        Spacer()
+          .frame(height: 20)
+        
+        CustomFSCalendarView(selectDate: $store.selectAttandanceDate, currentMonth: $store.selectAttandanceDateMonth)
+          .padding(.horizontal, 24)
+          .frame(height: 200)
+        
+        Spacer()
+      }
       
     }
   }

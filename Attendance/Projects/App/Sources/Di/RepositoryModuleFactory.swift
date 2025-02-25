@@ -14,23 +14,15 @@ struct RepositoryModuleFactory {
   private  let registerModule = RegisterModule()
   
   private var repositoryDefinitions: [() -> Module] {
-    [
-      { makeRepositoryModule(AuthRepositoryProtocol.self) { AuthRepository() } },
-      { makeRepositoryModule(FireStoreRepositoryProtocol.self) { FireStoreRepository() } },
-      { makeRepositoryModule(QrCodeRepositoryProtcool.self) { QrCodeRepository() } },
-      { makeRepositoryModule(OAuthRepositoryProtocol.self) { OAuthRepository() } },
-      { makeRepositoryModule(SignUpRepositoryProtcol.self) { SignUpRepository() } }
+    return [
+      registerModule.makeRepository(AuthRepositoryProtocol.self) { AuthRepository() },
+      registerModule.makeRepository(FireStoreRepositoryProtocol.self) { FireStoreRepository() },
+      registerModule.makeRepository(QrCodeRepositoryProtcool.self) { QrCodeRepository() },
+      registerModule.makeRepository(SignUpRepositoryProtcol.self) { SignUpRepository() }
     ]
   }
   
   func makeAllModules() -> [Module] {
     repositoryDefinitions.map { $0() }
-  }
-  
-  private func makeRepositoryModule<T>(
-    _ type: T.Type,
-    factory: @escaping () -> T
-  ) -> Module {
-    registerModule.makeModule(type, factory: factory)
   }
 }
