@@ -27,7 +27,7 @@ public class FireStoreRepository: FireStoreRepositoryProtocol {
     
   }
   
-  //MARK: - firebase 데이터 베이스에서 members 값 가지고 오기
+  // MARK: - firebase 데이터 베이스에서 members 값 가지고 오기
   public func fetchFireStoreData<T: Decodable>(
     from collection: FireBaseCollection,
     as type: T.Type,

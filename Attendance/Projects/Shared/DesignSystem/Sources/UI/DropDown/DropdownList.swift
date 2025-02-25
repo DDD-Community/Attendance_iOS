@@ -57,3 +57,8 @@ public struct DropdownList: View {
     .cornerRadius(12)
   }
 }
+
+
+func solution(_ income: [Int], _outlay: [Int], cash: Int) -> Int {
+  return 0
+}

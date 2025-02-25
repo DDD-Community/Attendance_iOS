@@ -30,22 +30,22 @@ public struct SelectDate {
     
   }
   
-  //MARK: - ViewAction
+  // MARK: - ViewAction
   @CasePathable
   public enum View {
     
   }
   
-  //MARK: - AsyncAction 비동기 처리 액션
+  // MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     
   }
   
-  //MARK: - 앱내에서 사용하는 액션
+  // MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
   }
   
-  //MARK: - NavigationAction
+  // MARK: - NavigationAction
   public enum NavigationAction: Equatable {
     
     

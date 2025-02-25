@@ -55,7 +55,7 @@ public struct AttandanceCheck {
     case selectDate(SelectDate)
   }
   
-  //MARK: - ViewAction
+  // MARK: - ViewAction
   @CasePathable
   public enum View {
     case selectPartButton(selectPart: SelectTeam)
@@ -65,7 +65,7 @@ public struct AttandanceCheck {
     case closeModal
   }
   
-  //MARK: - AsyncAction 비동기 처리 액션
+  // MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     case fetchMember
     case fetchAttenDance
@@ -80,11 +80,11 @@ public struct AttandanceCheck {
     
   }
   
-  //MARK: - 앱내에서 사용하는 액션
+  // MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
   }
   
-  //MARK: - NavigationAction
+  // MARK: - NavigationAction
   public enum NavigationAction: Equatable {
     
     
