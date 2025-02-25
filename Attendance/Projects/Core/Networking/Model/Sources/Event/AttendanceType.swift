@@ -32,6 +32,7 @@ public enum AttendanceType: String, Codable {
       return "RUN"
     case .notAttendance:
       return "NONE"
+    }
   }
   
   public var koreanDesc: String {

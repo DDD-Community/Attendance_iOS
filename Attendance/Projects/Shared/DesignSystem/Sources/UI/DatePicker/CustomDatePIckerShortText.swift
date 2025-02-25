@@ -25,15 +25,15 @@ public struct CustomDatePickerShortText: View {
   
   public var body: some View {
     HStack(alignment: .center) {
-        if isTimeDate {
-          Text(selectedDate.formattedTimes(date: selectedDate))
-            .pretendardFont(family: .Regular, size: 17)
-            .foregroundStyle(isDateSelected ? .staticWhite : .gray600)
-        } else {
-          Text(selectedDate.formattedDateTimeText(date: selectedDate))
-            .pretendardFont(family: .Regular, size: 17)
-            .foregroundStyle(isDateSelected ? .staticWhite : .gray600)
-        }
+      if isTimeDate {
+        Text(selectedDate.formattedTimes(date: selectedDate))
+          .pretendardFont(family: .Regular, size: 17)
+          .foregroundStyle(isDateSelected ? .staticWhite : .gray600)
+      } else {
+        Text(selectedDate.formattedDateTimeText(date: selectedDate))
+          .pretendardFont(family: .Regular, size: 17)
+          .foregroundStyle(isDateSelected ? .staticWhite : .gray600)
+      }
     }
     .padding(.horizontal, 11)
     .overlay {
@@ -46,20 +46,19 @@ public struct CustomDatePickerShortText: View {
         }), displayedComponents: [.hourAndMinute]) { }
           .environment(\.locale, Locale(identifier: "ko_KR"))
           .colorMultiply(.clear)
-//          .datePickerStyle(.automatic)
+        //          .datePickerStyle(.automatic)
           .labelsHidden()
-        } else {
-          DatePicker(selection: Binding(get: {
-            selectedDate
-          }, set: { newDate in
-            selectedDate = newDate
-            isDateSelected = true
-          }), displayedComponents: [.date]) { }
+      } else {
+        DatePicker(selection: Binding(get: {
+          selectedDate
+        }, set: { newDate in
+          selectedDate = newDate
+          isDateSelected = true
+        }), displayedComponents: [.date]) { }
           .environment(\.locale, Locale(identifier: "ko_KR"))
           .colorMultiply(.clear)
           .datePickerStyle(.automatic)
           .labelsHidden()
-        }
       }
     }
   }

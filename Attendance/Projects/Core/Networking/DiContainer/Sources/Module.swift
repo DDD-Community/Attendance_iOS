@@ -12,7 +12,7 @@ public struct Module {
   
   public init<T>(_ type: T.Type, factory: @escaping () -> T) {
     self.registrationClosure = {
-      await DependencyContainer.live.register(type, build: factory)
+      DependencyContainer.live.register(type, build: factory)
     }
   }
   

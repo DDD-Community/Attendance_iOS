@@ -7,10 +7,12 @@
 
 import Foundation
 
+import Model
+
 public struct MemberDTO: Codable, Equatable {
   var memberId: String
   var memberType: MemberType
-  var manging: Managing
+  var managing: Managing
   var memberTeam: SelectTeam
   var name: String
   var roleType: SelectPart
@@ -22,7 +24,7 @@ public struct MemberDTO: Codable, Equatable {
   init(
     memberId: String,
     memberType: MemberType = .coreMember,
-    manging: Managing = .notManging,
+    managing: Managing = .notManaging,
     memberTeam: SelectTeam = .notTeam,
     name: String,
     roleType: SelectPart = .all,
@@ -33,7 +35,7 @@ public struct MemberDTO: Codable, Equatable {
   ) {
     self.memberId = memberId
     self.memberType = memberType
-    self.manging = manging
+    self.managing = managing
     self.memberTeam = memberTeam
     self.name = name
     self.roleType = roleType
@@ -68,7 +70,7 @@ extension MemberDTO {
       MemberDTO(
         memberId: generateCustomMemberId(),
         memberType: .member,
-        manging: .projectTeamManging,
+        managing: .projectTeamManaging,
         memberTeam: .ios1,
         name: "DDD iOS",
         roleType: .iOS,
@@ -80,7 +82,7 @@ extension MemberDTO {
       MemberDTO(
         memberId: generateCustomMemberId(),
         memberType: .member,
-        manging: .instagramManagement,
+        managing: .instagramManagement,
         memberTeam: .notTeam,
         name: "DDD Android",
         roleType: .android,

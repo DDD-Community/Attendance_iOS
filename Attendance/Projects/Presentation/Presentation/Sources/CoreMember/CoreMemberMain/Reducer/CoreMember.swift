@@ -497,7 +497,7 @@ public struct CoreMember {
         await send(.async(.fetchMember))
       }
       
-    case .presentMangerProfile:
+    case .presentManagerProfile:
       return .none
     }
   }
