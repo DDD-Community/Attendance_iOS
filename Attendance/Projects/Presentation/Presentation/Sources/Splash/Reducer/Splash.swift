@@ -91,11 +91,9 @@ public struct Splash {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    switch action {
-  
-    }
-  }
     
+  }
+  
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
@@ -132,11 +130,11 @@ public struct Splash {
       switch result {
       case .success(let userDtoMemberData):
         state.userMember = userDtoMemberData
-        let email = state.userMember?.email ?? ""
+        let _ = state.userMember?.email ?? ""
         state.userUid = userDtoMemberData.uid
         state.userEmail = userDtoMemberData.email
       case .failure(let error):
-        #logError("유저 정보 가쟈오기", error.localizedDescription)
+        #logError("유저 정보 가져오기", error.localizedDescription)
       }
       return .none
     }
@@ -146,9 +144,7 @@ public struct Splash {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleNavigationAction(

@@ -104,9 +104,7 @@ public struct Login {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleAsyncAction(
@@ -219,7 +217,7 @@ public struct Login {
         state.userEmail = email
         
       case .failure(let error):
-        #logError("유저 정보 가쟈오기", error.localizedDescription)
+        #logError("유저 정보 가져오기", error.localizedDescription)
       }
       return .none
     }
@@ -229,9 +227,7 @@ public struct Login {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleNavigationAction(

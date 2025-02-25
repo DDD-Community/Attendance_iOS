@@ -8,21 +8,21 @@
 import Foundation
 
 public struct Member: Codable, Hashable, Equatable {
-    /// Firebase Auth의 uid
+  /// Firebase Auth의 uid
   public var uid: String
   public var memberid: String
   public var email: String
   public var name: String
   public var role: SelectPart?
   public var memberType: MemberType
-  public var manging: Managing?
+  public var managing: Managing?
   public var memberTeam: SelectTeam?
   public var snsURL: String
   public var createdAt: Date
   public var updatedAt: Date
   public var isAdmin: Bool
-    
-    /// 기수
+  
+  /// 기수
   public var generation: Int
   
   public init(
@@ -32,7 +32,7 @@ public struct Member: Codable, Hashable, Equatable {
     name: String = "",
     role: SelectPart? = .all,
     memberType: MemberType = .notYet,
-    manging: Managing? = nil,
+    managing: Managing? = nil,
     memberTeam: SelectTeam? = nil,
     snsURL: String? = nil,
     createdAt: Date = .now,
@@ -46,7 +46,7 @@ public struct Member: Codable, Hashable, Equatable {
     self.name = name
     self.role = role
     self.memberType = memberType
-    self.manging = manging
+    self.managing = managing
     self.memberTeam = memberTeam
     self.snsURL = snsURL ?? ""
     self.createdAt = createdAt

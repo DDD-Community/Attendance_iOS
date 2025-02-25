@@ -98,17 +98,21 @@ public struct CoreMemberCoordinator {
     action: IndexedRouterActionOf<CoreMemberScreen>
   ) -> Effect<Action> {
     switch action {
+      
     // MARK: - 운영진 프로필
-    case .routeAction(id: _, action: .coreMember(.navigation(.presentMangerProfile))):
+      
+    case .routeAction(id: _, action: .coreMember(.navigation(.presentManagerProfile))):
       state.routes.push(.mangeProfile(.init()))
       return .none
       
     // MARK: - 스케줄 화면
+      
     case .routeAction(id: _, action: .coreMember(.navigation(.presentSchedule))):
       state.routes.push(.scheduleEvent(.init(eventModel: state.eventModel, generation: 12)))
       return .none
       
     // MARK: - qrcode
+      
     case .routeAction(id: _, action: .coreMember(.navigation(.presentQrcode))):
       let userID = try? Keychain().get("userID")
       state.routes.push(.qrCode(.init(userID: userID)))
@@ -120,6 +124,7 @@ public struct CoreMemberCoordinator {
       }
       
     // MARK: - 로그아웃
+      
     case .routeAction(id: _, action: .mangeProfile(.navigation(.tapLogOut))):
       return .send(.navigation(.presentLogin))
      
@@ -198,9 +203,7 @@ public struct CoreMemberCoordinator {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
 }
 
@@ -210,7 +213,7 @@ extension CoreMemberCoordinator {
     case coreMember(CoreMember)
     case qrCode(QrCode)
     case scheduleEvent(ScheduleEvent)
-    case mangeProfile(MangerProfile)
+    case mangeProfile(ManagerProfile)
     case createByApp(CreatByApp)
   }
 }

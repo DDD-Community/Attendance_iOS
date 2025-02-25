@@ -10,10 +10,11 @@ import UIKit
 import RxSwift
 
 // MARK: - UIButton
+
 extension Reactive where Base: UIButton {
-    public var throttleTap: Observable<Void> {
-        return self.tap.throttle(RxTimeInterval.milliseconds(500), scheduler: MainScheduler.instance)
-    }
+  public var throttleTap: Observable<Void> {
+    return self.tap.throttle(RxTimeInterval.milliseconds(500), scheduler: MainScheduler.instance)
+  }
 }
 
 

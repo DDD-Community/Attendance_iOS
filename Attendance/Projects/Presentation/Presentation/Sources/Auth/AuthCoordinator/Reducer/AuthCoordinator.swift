@@ -120,11 +120,11 @@ public struct AuthCoordinator {
       
     // MARK: - 운영진 담당업무 선택
       
-    case .routeAction(id: _, action: .signUpPart(.navigation(.presentManging))):
-      state.routes.push(.signUpManging(.init()))
+    case .routeAction(id: _, action: .signUpPart(.navigation(.presentManaging))):
+      state.routes.push(.signUpManaging(.init()))
       return .none
       
-    case .routeAction(id: _, action: .signUpManging(.navigation(.presentCoreMember))):
+    case .routeAction(id: _, action: .signUpManaging(.navigation(.presentCoreMember))):
       return .send(.navigation(.presentCoreMember))
       
     // MARK: - 멤버 선택 할팀 선택
@@ -174,18 +174,14 @@ public struct AuthCoordinator {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
 }
 
@@ -196,7 +192,7 @@ extension AuthCoordinator {
     case signUpInviteCode(SignUpInviteCode)
     case signUpName(SignUpName)
     case signUpPart(SignUpPart)
-    case signUpManging(SignUpSelectManging)
+    case signUpManaging(SignUpSelectManaging)
     case signUpSelectTeam(SignUpSelectTeam)
   }
 }

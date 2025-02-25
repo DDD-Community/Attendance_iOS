@@ -90,13 +90,13 @@ extension CoreMemberMainView {
             HStack {
                 Spacer()
                 
-                Image(asset: store.mangerProfilemage)
+                Image(asset: store.managerProfilemage)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 20, height: 20)
                     .foregroundStyle(Color.gray400)
                     .onTapGesture {
-                        store.send(.navigation(.presentMangerProfile))
+                        store.send(.navigation(.presentManagerProfile))
                     }
                 
                 Spacer()

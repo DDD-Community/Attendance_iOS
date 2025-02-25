@@ -6,10 +6,11 @@
 //
 
 import Foundation
-import ComposableArchitecture
 
 import Utill
 import Networkings
+
+import ComposableArchitecture
 
 @Reducer
 public struct SignUpName {
@@ -33,25 +34,27 @@ public struct SignUpName {
     case navigation(NavigationAction)
   }
   
-  //MARK: - ViewAction
+  // MARK: - ViewAction
+  
   @CasePathable
   public enum View {
     case checkIsAvaliableName
   }
   
+  // MARK: - AsyncAction 비동기 처리 액션
   
-  
-  //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     
   }
   
-  //MARK: - 앱내에서 사용하는 액션
+  // MARK: - 앱내에서 사용하는 액션
+  
   public enum InnerAction: Equatable {
     
   }
   
-  //MARK: - NavigationAction
+  // MARK: - NavigationAction
+  
   public enum NavigationAction: Equatable {
     case presentSignUpPart
   }
@@ -62,7 +65,6 @@ public struct SignUpName {
       switch action {
       case .binding(_):
         return .none
-        
         
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
@@ -112,17 +114,13 @@ public struct SignUpName {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
 }

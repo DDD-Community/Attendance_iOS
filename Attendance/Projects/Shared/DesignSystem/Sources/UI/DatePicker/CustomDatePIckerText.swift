@@ -10,50 +10,47 @@ import SwiftUI
 import Utill
 
 public struct CustomDatePIckerText: View {
-    @Binding private var selectedDate: Date
-
-    public init(
-        selectedDate: Binding<Date>
-    ) {
-        self._selectedDate = selectedDate
+  @Binding private var selectedDate: Date
+  
+  public init(
+    selectedDate: Binding<Date>
+  ) {
+    self._selectedDate = selectedDate
+  }
+  
+  public var body: some View {
+    HStack {
+      Spacer()
+      
+      Text(Date.formattedDateTimeText(date: selectedDate))
+        .pretendardFont(family: .Regular, size: 16)
+        .foregroundStyle(.staticWhite)
+      
+      Spacer()
+        .frame(width: 8)
+      
+      VStack {
+        Image(asset: .arrow_down)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 10, height: 8)
+          .foregroundStyle(.gray600)
+      }
+      
+      Spacer()
     }
-
-    public var body: some View {
-        HStack {
-            Spacer()
-
-            Text(Date.formattedDateTimeText(date: selectedDate))
-                .pretendardFont(family: .Regular, size: 16)
-                .foregroundStyle(.staticWhite)
-
-            Spacer()
-                .frame(width: 8)
-
-            VStack {
-                Image(asset: .arrow_down)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 10, height: 8)
-                    .foregroundStyle(.gray600)
-            }
-
-            Spacer()
-        }
-        .overlay {
-            VStack {
-                DatePicker(
-                    selection: $selectedDate,
-                    displayedComponents: [.date]) { }
-                .environment(\.locale, Locale(identifier: "ko_KR"))
-                .datePickerStyle(.automatic)
-                .labelsHidden()
-                .colorMultiply(.clear)
-                .cornerRadius(8)
-                .transition(.opacity)
-            }
-        }
+    .overlay {
+      VStack {
+        DatePicker(
+          selection: $selectedDate,
+          displayedComponents: [.date]) { }
+          .environment(\.locale, Locale(identifier: "ko_KR"))
+          .datePickerStyle(.automatic)
+          .labelsHidden()
+          .colorMultiply(.clear)
+          .cornerRadius(8)
+          .transition(.opacity)
+      }
     }
+  }
 }
-
-
-

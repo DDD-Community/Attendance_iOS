@@ -24,17 +24,17 @@ public extension Member {
   
   func toMemberDictionary() -> [String: Any]  {
     return [
-        "uid": uid ,
-        "memberid": memberid,
-        "email": email,
-        "name": name,
-        "role": role?.rawValue ?? "",
-        "memberType": memberType.rawValue,
-        "memberTeam": memberTeam?.rawValue ?? "",
-        "isAdmin": isAdmin ,
-        "createdAt": createdAt,
-        "updatedAt": updatedAt,
-        "generation": generation
+      "uid": uid ,
+      "memberid": memberid,
+      "email": email,
+      "name": name,
+      "role": role?.rawValue ?? "",
+      "memberType": memberType.rawValue,
+      "memberTeam": memberTeam?.rawValue ?? "",
+      "isAdmin": isAdmin ,
+      "createdAt": createdAt,
+      "updatedAt": updatedAt,
+      "generation": generation
     ]
   }
   
@@ -46,7 +46,7 @@ public extension Member {
       name: self.name,
       role: self.role ?? .all,
       memberType: self.memberType,
-      manging: self.manging ?? .notManging,
+      managing: self.managing ?? .notManaging,
       isAdmin: self.isAdmin,
       generation: self.generation
     )
@@ -54,17 +54,17 @@ public extension Member {
   
   func toCoreMemberDictionary() -> [String: Any]  {
     return [
-        "uid": uid ,
-        "memberid": memberid,
-        "email": email,
-        "name": name,
-        "role": role?.rawValue ?? "",
-        "memberType": memberType.rawValue,
-        "manging": manging?.rawValue ?? "",
-        "isAdmin": isAdmin ,
-        "createdAt": createdAt,
-        "updatedAt": updatedAt,
-        "generation": generation
+      "uid": uid ,
+      "memberid": memberid,
+      "email": email,
+      "name": name,
+      "role": role?.rawValue ?? "",
+      "memberType": memberType.rawValue,
+      "managing": managing?.rawValue ?? "",
+      "isAdmin": isAdmin ,
+      "createdAt": createdAt,
+      "updatedAt": updatedAt,
+      "generation": generation
     ]
   }
   
@@ -76,7 +76,7 @@ public extension Member {
       email: self.email,
       role: self.role ?? .all,
       memberType: self.memberType,
-      manging: self.manging ?? .notManging,
+      managing: self.managing ?? .notManaging,
       memberTeam: self.memberTeam ?? .notTeam,
       isAdmin: self.isAdmin,
       generation: self.generation

@@ -8,9 +8,9 @@
 import SwiftUI
 
 public struct SelectTeamIteam: View {
-  let content: String
-  let isActive: Bool
-  let completion: () -> Void
+  private let content: String
+  private let isActive: Bool
+  private let completion: () -> Void
   
   public init(
     content: String,

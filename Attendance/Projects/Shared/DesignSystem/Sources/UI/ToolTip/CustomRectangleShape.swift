@@ -8,23 +8,23 @@
 import SwiftUI
 
 struct TooltipBody: View {
-    private var text: String
-    
-    public init(text: String) {
-        self.text = text
+  private let text: String
+  
+  public init(text: String) {
+    self.text = text
+  }
+  
+  var body: some View {
+    VStack {
+      Text(text)
+        .pretendardFont(family: .Regular, size: 14)
+        .foregroundStyle(.staticWhite)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .background(
+          RoundedRectangle(cornerRadius: 8)
+            .fill(.gray800)
+        )
     }
-    
-    var body: some View {
-            VStack {
-                Text(text)
-                    .pretendardFont(family: .Regular, size: 14)
-                    .foregroundStyle(.staticWhite)
-                    .padding(.vertical, 10)
-                    .padding(.horizontal, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(.gray800)
-                    )
-            }
-    }
+  }
 }

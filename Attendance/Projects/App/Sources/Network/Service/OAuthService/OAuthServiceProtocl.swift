@@ -5,10 +5,10 @@
 //  Created by 고병학 on 6/6/24.
 //
 
-import RxSwift
-
 import Foundation
 
+import RxSwift
+
 protocol OAuthServiceProtocol {
-    func authorize() -> Single<OAuthTokenResponse>
+  func authorize() -> Single<OAuthTokenResponse>
 }

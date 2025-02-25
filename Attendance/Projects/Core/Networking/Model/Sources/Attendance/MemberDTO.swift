@@ -5,13 +5,12 @@
 //  Created by 서원지 on 9/23/24.
 //
 
-
 import Foundation
 
 public struct MemberDTO: Codable, Equatable {
   public var memberId: String
   public var memberType: MemberType
-  public var manging: Managing
+  public var managing: Managing
   public var memberTeam: SelectTeam
   public var name: String
   public var roleType: SelectPart
@@ -23,7 +22,7 @@ public struct MemberDTO: Codable, Equatable {
   public init(
     memberId: String,
     memberType: MemberType = .coreMember,
-    manging: Managing = .notManging,
+    managing: Managing = .notManaging,
     memberTeam: SelectTeam = .notTeam,
     name: String,
     roleType: SelectPart = .all,
@@ -34,7 +33,7 @@ public struct MemberDTO: Codable, Equatable {
   ) {
     self.memberId = memberId
     self.memberType = memberType
-    self.manging = manging
+    self.managing = managing
     self.memberTeam = memberTeam
     self.name = name
     self.roleType = roleType
@@ -69,7 +68,7 @@ extension MemberDTO {
       MemberDTO(
         memberId: generateCustomMemberId(),
         memberType: .member,
-        manging: .projectTeamManging,
+        managing: .projectTeamManaging,
         memberTeam: .ios1,
         name: "DDD iOS",
         roleType: .iOS,
@@ -81,7 +80,7 @@ extension MemberDTO {
       MemberDTO(
         memberId: generateCustomMemberId(),
         memberType: .member,
-        manging: .snsManagement,
+        managing: .snsManagement,
         memberTeam: .notTeam,
         name: "DDD Android",
         roleType: .android,
@@ -92,5 +91,4 @@ extension MemberDTO {
       )
     ]
   }
-  
 }

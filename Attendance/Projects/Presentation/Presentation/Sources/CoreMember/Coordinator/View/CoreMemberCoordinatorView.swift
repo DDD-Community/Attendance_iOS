@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
+
 import ComposableArchitecture
 import TCACoordinators
 
 public struct CoreMemberCoordinatorView: View {
-  @Bindable var store: StoreOf<CoreMemberCoordinator>
+  @Bindable private var store: StoreOf<CoreMemberCoordinator>
   
   public init(
     store: StoreOf<CoreMemberCoordinator>
@@ -25,8 +26,8 @@ public struct CoreMemberCoordinatorView: View {
         CoreMemberMainView(store: coreMember)
           .navigationBarBackButtonHidden()
         
-      case .mangeProfile(let mangerProfileStore):
-        MangerProfileView(store: mangerProfileStore) {
+      case .mangeProfile(let managerProfileStore):
+        ManagerProfileView(store: managerProfileStore) {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()

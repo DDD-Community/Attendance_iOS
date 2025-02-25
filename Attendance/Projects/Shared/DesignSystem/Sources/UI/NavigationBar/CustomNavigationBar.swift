@@ -8,45 +8,45 @@
 import SwiftUI
 
 public struct CustomNavigationBar: View {
-    var backAction: () -> Void = { }
-    var addAction: () -> Void = { }
-    var image: ImageAsset
-    
-    public init(
-        backAction: @escaping () -> Void,
-        addAction: @escaping () -> Void,
-        image: ImageAsset
-    ) {
-        self.backAction = backAction
-        self.addAction = addAction
-        self.image = image
-    }
-    
-    public var body: some View {
-        HStack {
-            Image(asset: .arrowBack)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 12, height: 20)
-                .foregroundStyle(Color.gray400)
-                .onTapGesture {
-                    backAction()
-                }
-            
-            Spacer()
-            
-            HStack {
-                Image(asset: image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 24, height: 24)
-                    .foregroundStyle(Color.gray400)
-                    .onTapGesture {
-                        addAction()
-                    }
-            }
-            
+  private let backAction: () -> Void
+  private let addAction: () -> Void
+  private let image: ImageAsset
+  
+  public init(
+    backAction: @escaping () -> Void,
+    addAction: @escaping () -> Void,
+    image: ImageAsset
+  ) {
+    self.backAction = backAction
+    self.addAction = addAction
+    self.image = image
+  }
+  
+  public var body: some View {
+    HStack {
+      Image(asset: .arrowBack)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 12, height: 20)
+        .foregroundStyle(Color.gray400)
+        .onTapGesture {
+          backAction()
         }
-        .padding(.horizontal, 16)
+      
+      Spacer()
+      
+      HStack {
+        Image(asset: image)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 24, height: 24)
+          .foregroundStyle(Color.gray400)
+          .onTapGesture {
+            addAction()
+          }
+      }
+      
     }
+    .padding(.horizontal, 16)
+  }
 }
