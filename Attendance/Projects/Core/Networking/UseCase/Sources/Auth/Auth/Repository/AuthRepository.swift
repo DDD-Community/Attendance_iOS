@@ -6,17 +6,19 @@
 //
 
 import Model
+
 import AsyncMoya
 import FirebaseFirestore
 
 @Observable
 public class AuthRepository: AuthRepositoryProtocol {
   
-  let fireBaseDB = Firestore.firestore()
+  private let fireBaseDB = Firestore.firestore()
+  
   public init() {}
   
+  // MARK: - 회원가입한 유저 조회
   
-  //MARK: - 회원가입 한  유저 조회
   public func fetchUser(uid: String) async throws -> UserDTOMember? {
     let userRef = fireBaseDB.collection(FireBaseCollection.member.desc).whereField("email", isEqualTo: uid)
     
@@ -35,7 +37,7 @@ public class AuthRepository: AuthRepositoryProtocol {
       let updatedAt: Date = (data["updatedAt"] as? Timestamp)?.dateValue() ?? Date()
       let generation: Int = data["generation"] as? Int ?? 0
       let memberType: MemberType = MemberType(rawValue: data["memberType"] as? String ?? "") ?? .member
-      let managing: Managing = Managing(rawValue: data["manging"] as? String ?? "") ?? .notManging
+      let managing: Managing = Managing(rawValue: data["managing"] as? String ?? "") ?? .notManaging
       let memberTeam: SelectTeam = SelectTeam(rawValue: data["memberTeam"] as? String ?? "") ?? .notTeam
       let roleType: SelectPart = SelectPart(rawValue: data["role"] as? String ?? "") ?? .all
       let isAdmin: Bool = data["isAdmin"] as? Bool ?? false
@@ -47,7 +49,7 @@ public class AuthRepository: AuthRepositoryProtocol {
         name: name,
         role: roleType,
         memberType: memberType,
-        manging: managing,
+        managing: managing,
         memberTeam: memberTeam,
         createdAt: createdAt,
         updatedAt: updatedAt,

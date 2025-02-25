@@ -5,8 +5,10 @@
 //  Created by Wonji Suh  on 10/30/24.
 //
 
-import Foundation
 import AuthenticationServices
+
+import Foundation
+
 import Model
 
 public protocol OAuthUseCaseProtocol {

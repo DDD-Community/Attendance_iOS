@@ -14,10 +14,10 @@ public struct UserDTOMember: Codable, Equatable {
   public var email: String
   public var role: SelectPart
   public var memberType: MemberType
-  public var manging: Managing
+  public var managing: Managing
   public var memberTeam: SelectTeam?
   public var isAdmin: Bool
-    /// 기수
+  /// 기수
   public var generation: Int
   
   public init(
@@ -27,7 +27,7 @@ public struct UserDTOMember: Codable, Equatable {
     email: String,
     role: SelectPart,
     memberType: MemberType,
-    manging: Managing,
+    managing: Managing,
     memberTeam: SelectTeam? = nil,
     isAdmin: Bool,
     generation: Int
@@ -38,7 +38,7 @@ public struct UserDTOMember: Codable, Equatable {
     self.email = email
     self.role = role
     self.memberType = memberType
-    self.manging = manging
+    self.managing = managing
     self.memberTeam = memberTeam
     self.isAdmin = isAdmin
     self.generation = generation

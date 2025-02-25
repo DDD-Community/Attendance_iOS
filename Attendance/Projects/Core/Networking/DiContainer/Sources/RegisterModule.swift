@@ -11,6 +11,6 @@ public struct RegisterModule {
   public init() {}
   
   public func makeModule<T>(_ type: T.Type, factory: @escaping () -> T) -> Module {
-      Module(type, factory: factory)
+    Module(type, factory: factory)
   }
 }

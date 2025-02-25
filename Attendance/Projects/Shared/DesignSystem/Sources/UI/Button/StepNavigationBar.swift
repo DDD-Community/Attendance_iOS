@@ -8,8 +8,8 @@
 import SwiftUI
 
 public struct StepNavigationBar: View {
-  var activeStep: Int
-  var buttonAction: () -> Void
+  private let activeStep: Int
+  private let buttonAction: () -> Void
   
   public init(
     activeStep: Int,

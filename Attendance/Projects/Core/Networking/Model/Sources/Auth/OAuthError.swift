@@ -8,7 +8,7 @@
 import Foundation
 
 public enum OAuthError: Error {
-    case googleLoginError
-    case appleLoginError
-    case firebaseLoginError
+  case googleLoginError
+  case appleLoginError
+  case firebaseLoginError
 }

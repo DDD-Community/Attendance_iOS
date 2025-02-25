@@ -5,13 +5,14 @@
 //  Created by Wonji Suh  on 10/30/24.
 //
 
-import  Model
-import ComposableArchitecture
-import DiContainer
 import AuthenticationServices
 
+import DiContainer
+import Model
+
+import ComposableArchitecture
+
 public struct OAuthUseCase: OAuthUseCaseProtocol {
-  
   private let repository: OAuthRepositoryProtocol
   
   public init(
@@ -20,7 +21,8 @@ public struct OAuthUseCase: OAuthUseCaseProtocol {
     self.repository = repository
   }
   
-  //MARK: - 애플  일반  로그인
+  // MARK: - 애플 일반 로그인
+  
   public func handleAppleLogin(
     _ requestResult: Result<ASAuthorization, any Error>,
     nonce: String) async throws -> ASAuthorization {
@@ -29,9 +31,10 @@ public struct OAuthUseCase: OAuthUseCaseProtocol {
           requestResult,
           nonce: nonce
         )
-  }
+    }
   
-  //MARK: - firebase 애플 로그인
+  // MARK: - firebase 애플 로그인
+  
   public func appleLoginWithFireBase(
     withIDToken: String ,
     rawNonce: String,
@@ -44,12 +47,12 @@ public struct OAuthUseCase: OAuthUseCaseProtocol {
     )
   }
   
-  //MARK: - 구글 로그인
+  // MARK: - 구글 로그인
+  
   public func googleLogin() async throws -> OAuthResponseDTOModel? {
     try await repository.googleLogin()
   }
 }
-
 
 extension OAuthUseCase: DependencyKey {
   static public var liveValue: OAuthUseCase =  {
@@ -57,4 +60,3 @@ extension OAuthUseCase: DependencyKey {
     return OAuthUseCase(repository: oAuthRepository)
   }()
 }
-

@@ -16,7 +16,7 @@ public struct MemberDTOSignUp: Codable, Equatable {
   public var memberType: MemberType
   public var memberTeam: SelectTeam
   public var isAdmin: Bool
-    /// 기수
+  /// 기수
   public var generation: Int
   
   public init(

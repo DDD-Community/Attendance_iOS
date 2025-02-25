@@ -6,6 +6,7 @@
 //
 
 import Foundation
+
 import FirebaseAuth
 
 public extension OAuthResponseModel {

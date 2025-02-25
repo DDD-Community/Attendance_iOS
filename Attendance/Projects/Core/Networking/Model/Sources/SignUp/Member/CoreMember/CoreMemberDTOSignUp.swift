@@ -14,9 +14,9 @@ public struct CoreMemberDTOSignUp: Codable, Equatable {
   public var email: String
   public var role: SelectPart
   public var memberType: MemberType
-  public var manging: Managing
+  public var managing: Managing
   public var isAdmin: Bool
-    /// 기수
+  /// 기수
   public var generation: Int
   
   public init(
@@ -26,7 +26,7 @@ public struct CoreMemberDTOSignUp: Codable, Equatable {
     name: String,
     role: SelectPart,
     memberType: MemberType,
-    manging: Managing,
+    managing: Managing,
     isAdmin: Bool,
     generation: Int
   ) {
@@ -36,9 +36,8 @@ public struct CoreMemberDTOSignUp: Codable, Equatable {
     self.name = name
     self.role = role
     self.memberType = memberType
-    self.manging = manging
+    self.managing = managing
     self.isAdmin = isAdmin
     self.generation = generation
   }
 }
-

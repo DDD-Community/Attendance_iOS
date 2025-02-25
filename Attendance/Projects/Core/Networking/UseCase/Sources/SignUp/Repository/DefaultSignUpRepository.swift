@@ -8,9 +8,7 @@
 import Model
 
 final public class DefaultSignUpRepository: SignUpRepositoryProtcol {
-  public init() {
-    
-  }
+  public init() {}
   
   public func validateInviteCode(
     code: String

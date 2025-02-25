@@ -5,12 +5,11 @@
 //  Created by 서원지 on 6/11/24.
 //
 
-import Foundation
 import SwiftUI
 
-import ComposableArchitecture
-
 import DiContainer
+
+import ComposableArchitecture
 
 public struct QrCodeUseCase: QrCodeUseCaseProtocool {
   private let repository: QrCodeRepositoryProtcool
@@ -25,7 +24,6 @@ public struct QrCodeUseCase: QrCodeUseCaseProtocool {
     await repository.generateQRCode(from: string)
   }
 }
-
 
 extension QrCodeUseCase: DependencyKey {
   public static var liveValue: QrCodeUseCase = {

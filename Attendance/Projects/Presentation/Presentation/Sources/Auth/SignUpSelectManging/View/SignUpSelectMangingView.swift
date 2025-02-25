@@ -1,5 +1,5 @@
 //
-//  SignUpSelectMangingView.swift
+//  SignUpSelectManagingView.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 11/3/24.
@@ -10,12 +10,12 @@ import DesignSystem
 import ComposableArchitecture
 import Model
 
-public struct SignUpSelectMangingView: View {
-  @Bindable var store: StoreOf<SignUpSelectManging>
+public struct SignUpSelectManagingView: View {
+  @Bindable var store: StoreOf<SignUpSelectManaging>
   var backAction: () -> Void = {}
   
   public init(
-    store: StoreOf<SignUpSelectManging>,
+    store: StoreOf<SignUpSelectManaging>,
     backAction: @escaping () -> Void
   ) {
     self.store = store
@@ -33,9 +33,9 @@ public struct SignUpSelectMangingView: View {
         
         StepNavigationBar(activeStep: 3, buttonAction: backAction)
         
-        signUpSelectMangingText()
+        signUpSelectManagingText()
         
-        selectMangingList()
+        selectManagingList()
         
         signUpSelectMangeButton()
         
@@ -45,10 +45,10 @@ public struct SignUpSelectMangingView: View {
 }
 
 
-extension SignUpSelectMangingView {
+extension SignUpSelectManagingView {
   
   @ViewBuilder
-  private func signUpSelectMangingText() -> some View {
+  private func signUpSelectManagingText() -> some View {
     SignUpPartText(
       content: "담당 업무를 선택해주세요",
       title: "프로젝트 참여하시는 직무을 선택해 주세요.",
@@ -57,18 +57,18 @@ extension SignUpSelectMangingView {
   }
   
   @ViewBuilder
-  private func selectMangingList() -> some View {
+  private func selectManagingList() -> some View {
     VStack {
       Spacer()
         .frame(height: 40)
       
       ScrollView {
         VStack {
-          ForEach(Managing.mangingList, id: \.self) { item in
+          ForEach(Managing.managingList, id: \.self) { item in
             SelectPartItem(
-              content: item.mangingDesc,
-              isActive: item == store.selectMangingPart) {
-                store.send(.view(.selectMangingButton(selectManging: item)))
+              content: item.managingDesc,
+              isActive: item == store.selectManagingPart) {
+                store.send(.view(.selectManagingButton(selectManaging: item)))
               }
           }
         }

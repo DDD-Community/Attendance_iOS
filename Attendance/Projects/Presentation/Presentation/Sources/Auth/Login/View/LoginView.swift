@@ -5,13 +5,15 @@
 //  Created by Wonji Suh  on 10/29/24.
 //
 
-import SwiftUI
-import DesignSystem
-import ComposableArchitecture
 import AuthenticationServices
+import SwiftUI
+
+import DesignSystem
+
+import ComposableArchitecture
 
 public struct LoginView: View {
-  @Bindable var store: StoreOf<Login>
+  @Bindable private var store: StoreOf<Login>
   
   public init(store: StoreOf<Login>) {
     self.store = store
@@ -29,14 +31,12 @@ public struct LoginView: View {
         logoImageView()
         
         socailLoginButton()
-        
       }
     }
   }
 }
 
 extension LoginView {
-  
   @ViewBuilder
   private func logoImageView() -> some View {
     VStack {
@@ -58,21 +58,21 @@ extension LoginView {
         .frame(height: 48)
         .overlay {
           SignInWithAppleButton(.signIn) { request in
-              // 새 nonce 생성 및 설정
-              let rawNonce = AppleLoginManger.shared.randomNonceString()
-              store.nonce = rawNonce // `store.nonce`에 저장하여 일관성 유지
-
-              // 요청에 nonce의 SHA-256 해시 값을 설정
-              request.requestedScopes = [.email, .fullName]
-              request.nonce = AppleLoginManger.shared.sha256(rawNonce)
+            // 새 nonce 생성 및 설정
+            let rawNonce = AppleLoginManager.shared.randomNonceString()
+            store.nonce = rawNonce // `store.nonce`에 저장하여 일관성 유지
+            
+            // 요청에 nonce의 SHA-256 해시 값을 설정
+            request.requestedScopes = [.email, .fullName]
+            request.nonce = AppleLoginManager.shared.sha256(rawNonce)
           } onCompletion: { result in
-              // `store.nonce`를 액션에 전달
-              store.send(.async(.appleLogin(result, nonce: store.nonce)))
+            // `store.nonce`를 액션에 전달
+            store.send(.async(.appleLogin(result, nonce: store.nonce)))
           }
-            .blendMode(.overlay)
-            .signInWithAppleButtonStyle(.white)
-            .frame(height: 30)
-            .padding(.horizontal, 20)
+          .blendMode(.overlay)
+          .signInWithAppleButtonStyle(.white)
+          .frame(height: 30)
+          .padding(.horizontal, 20)
         }
       
       
@@ -93,4 +93,3 @@ extension LoginView {
     .padding(.horizontal, 20)
   }
 }
- 

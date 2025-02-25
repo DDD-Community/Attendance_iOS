@@ -8,20 +8,20 @@
 import UIKit
 
 class BaseView: UIView {
-    
-    init() {
-        super.init(frame: .zero)
-        configureViews()
-    }
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        configureViews()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    func configureViews() {}
+  
+  init() {
+    super.init(frame: .zero)
+    configureViews()
+  }
+  
+  override init(frame: CGRect) {
+    super.init(frame: frame)
+    configureViews()
+  }
+  
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+  
+  func configureViews() {}
 }

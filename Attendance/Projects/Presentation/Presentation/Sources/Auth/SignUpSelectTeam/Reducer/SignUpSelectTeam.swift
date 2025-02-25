@@ -6,10 +6,11 @@
 //
 
 import Foundation
-import ComposableArchitecture
 
 import Utill
 import Networkings
+
+import ComposableArchitecture
 
 @Reducer
 public struct SignUpSelectTeam {
@@ -35,29 +36,30 @@ public struct SignUpSelectTeam {
     case navigation(NavigationAction)
   }
   
-  //MARK: - ViewAction
+  // MARK: - ViewAction
+  
   @CasePathable
   public enum View {
     case selectTeamButton(selectTeam: SelectTeam)
   }
   
+  // MARK: - AsyncAction 비동기 처리 액션
   
-  
-  //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     case signUpMember
     case signUpMemberResponse(Result<MemberDTOSignUp, CustomError>)
   }
   
-  //MARK: - 앱내에서 사용하는 액션
+  // MARK: - 앱내에서 사용하는 액션
+  
   public enum InnerAction: Equatable {
     
   }
   
-  //MARK: - NavigationAction
+  // MARK: - NavigationAction
+  
   public enum NavigationAction: Equatable {
     case presentMember
-    
   }
   
   @Dependency(SignUpUseCase.self) var signUpUseCase
@@ -68,9 +70,8 @@ public struct SignUpSelectTeam {
     BindingReducer()
     Reduce { state, action in
       switch action {
-      case .binding(_):
+      case .binding:
         return .none
-        
         
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
@@ -89,27 +90,27 @@ public struct SignUpSelectTeam {
   }
   
   private func handleViewAction(
-      state: inout State,
-      action: View
+    state: inout State,
+    action: View
   ) -> Effect<Action> {
-      switch action {
-      case .selectTeamButton(let selectTeam):
-        if state.selectTeam == selectTeam {
-          state.selectTeam = nil
-          state.userSignUpMember.memberTeam = nil
-          state.activeButton = false
-          return .none
-        }
-        
-        state.selectTeam = selectTeam
-        state.userSignUpMember.memberTeam = selectTeam
-        if let selectTeam = SelectTeam(rawValue: selectTeam.selectTeamDesc) {
-          state.userSignUpMember.memberTeam = selectTeam
-        }
-        
-        state.activeButton = true
-                return .none
+    switch action {
+    case .selectTeamButton(let selectTeam):
+      if state.selectTeam == selectTeam {
+        state.selectTeam = nil
+        state.userSignUpMember.memberTeam = nil
+        state.activeButton = false
+        return .none
       }
+      
+      state.selectTeam = selectTeam
+      state.userSignUpMember.memberTeam = selectTeam
+      if let selectTeam = SelectTeam(rawValue: selectTeam.selectTeamDesc) {
+        state.userSignUpMember.memberTeam = selectTeam
+      }
+      
+      state.activeButton = true
+      return .none
+    }
   }
   
   private func handleNavigationAction(
@@ -174,8 +175,6 @@ public struct SignUpSelectTeam {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
 }

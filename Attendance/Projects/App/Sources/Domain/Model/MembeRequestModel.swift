@@ -8,13 +8,13 @@
 import Foundation
 
 struct MemberRequestModel: Codable {
-    var uid: String
-    var name: String?
-    var memberType: MemberType
-    var memberPart: SelectPart?
-    
-    /// 운영진이 아니면 nil
-    var coreMemberRole: Managing?
-    
-    var memberTeam: ManagingTeam?
+  var uid: String
+  var name: String?
+  var memberType: MemberType
+  var memberPart: SelectPart?
+  
+  /// 운영진이 아니면 nil
+  var coreMemberRole: Managing?
+  
+  var memberTeam: ManagingTeam?
 }

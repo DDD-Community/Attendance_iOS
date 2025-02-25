@@ -14,19 +14,18 @@ public enum MemberType: String, Codable {
   case run = "RUN"
   case notYet = "NOT_YET"
   
-  
   public var memberDesc: String {
-      switch self {
-      case .master:
-          return "회장"
-      case .coreMember:
-          return "운영진"
-      case .member:
-          return "멤버"
-      case .run:
-          return "탈주"
-      case .notYet:
-          return ""
-      }
+    switch self {
+    case .master:
+      return "회장"
+    case .coreMember:
+      return "운영진"
+    case .member:
+      return "멤버"
+    case .run:
+      return "탈주"
+    case .notYet:
+      return ""
+    }
   }
 }
