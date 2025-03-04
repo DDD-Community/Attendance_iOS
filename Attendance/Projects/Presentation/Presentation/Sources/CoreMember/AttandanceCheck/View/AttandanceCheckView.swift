@@ -6,7 +6,9 @@
 //
 
 import SwiftUI
+
 import Shareds
+
 import ComposableArchitecture
 
 struct AttandanceCheckView: View {

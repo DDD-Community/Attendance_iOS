@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
-import ComposableArchitecture
-import SDWebImageSwiftUI
 
 import DesignSystem
 import Model
+
+import ComposableArchitecture
+import SDWebImageSwiftUI
 
 struct CoreMemberMainView: View {
   @Bindable var store: StoreOf<CoreMember>
