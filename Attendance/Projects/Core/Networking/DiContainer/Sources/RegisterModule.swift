@@ -15,26 +15,12 @@ public struct RegisterModule {
     Module(type, factory: factory)
   }
   
-  /// 통합 모듈 생성 함수: Repository와 UseCase 모두 이 함수를 통해 생성하며, kind에 따라 추가 구성이 가능함.
-  public func makeModule<T, U>(
-    _ protocolType: T.Type,
-    kind: ModuleKind,
-    factory: @escaping () -> U
-  ) -> () -> Module {
-    return {
-      guard let instance = factory() as? T else {
-        fatalError("Failed to cast \(U.self) to \(T.self)")
-      }
-      // 기본 모듈 생성
-      var module = self.makeModule(protocolType, factory: { instance })
-      
-      // ModuleKind에 따른 추가 구성(필요 시)
-      #if DEBUG
-      #logDebug("Module created for \(protocolType) as \(kind)")
-      #endif
-      
-      return module
-    }
+  // MARK: - Repository/UseCase 공통 모듈 생성
+  private func makeDependencyModule<T>(
+    _ type: T.Type,
+    factory: @escaping () -> T
+  ) -> Module {
+    self.makeModule(type, factory: factory)
   }
   
   // MARK: - Repository 생성 (기존 API와의 호환성을 위한 래퍼)
@@ -42,7 +28,14 @@ public struct RegisterModule {
     _ protocolType: T.Type,
     factory: @escaping () -> U
   ) -> () -> Module {
-    return makeModule(protocolType, kind: .repository, factory: factory)
+    return {
+      self.makeDependencyModule(protocolType) {
+        guard let repository = factory() as? T else {
+          fatalError("Failed to cast \(U.self) to \(T.self)")
+        }
+        return repository
+      }
+    }
   }
   
   // MARK: - UseCase 생성 (기존 API와의 호환성을 위한 래퍼)
@@ -50,10 +43,17 @@ public struct RegisterModule {
     _ protocolType: T.Type,
     factory: @escaping () -> U
   ) -> () -> Module {
-    return makeModule(protocolType, kind: .useCase, factory: factory)
+    return {
+      self.makeDependencyModule(protocolType) {
+        guard let useCase = factory() as? T else {
+          fatalError("Failed to cast \(U.self) to \(T.self)")
+        }
+        return useCase
+      }
+    }
   }
   
-  // MARK: -  di에 등록
+  // MARK: - di에 등록
   public func resolveOrDefault<T>(
     _ type: T.Type,
     default defaultFactory: @autoclosure @escaping () -> T
