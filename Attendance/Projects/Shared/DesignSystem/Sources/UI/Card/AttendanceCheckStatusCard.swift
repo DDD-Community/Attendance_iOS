@@ -41,7 +41,7 @@ public struct AttendanceCheckStatusCard: View {
               Spacer()
             }
             
-            Text("\(selectTeam.attandanceCardDesc) / \(selectPart.attendanceListDesc) ")
+            Text("\(selectTeam.attandanceCardDescription) / \(selectPart.attendanceListDesc) ")
               .pretendardCustomFont(textStyle: .body2NormalBold)
               .foregroundStyle(attandanceType == .absent ? .borderDisabled : .staticWhite)
           }
