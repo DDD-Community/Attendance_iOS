@@ -11,7 +11,7 @@ import DiContainer
 
 import ComposableArchitecture
 
-public struct QrCodeUseCase: QrCodeUseCaseProtocool {
+public struct QrCodeUseCase: QrCodeUseCaseProtocol {
   private let repository: QrCodeRepositoryProtcol
   
   public init(
@@ -33,7 +33,7 @@ extension QrCodeUseCase: DependencyKey {
 }
 
 public extension DependencyValues {
-  var qrCodeUseCase: QrCodeUseCaseProtocool {
+  var qrCodeUseCase: QrCodeUseCaseProtocol {
     get { self[QrCodeUseCase.self] }
     set { self[QrCodeUseCase.self] = newValue as! QrCodeUseCase}
   }
