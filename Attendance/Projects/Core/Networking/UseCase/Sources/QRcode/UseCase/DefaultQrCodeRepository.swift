@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-final public class DefaultQrCodeRepository: QrCodeRepositoryProtcool {
+final public class DefaultQrCodeRepository: QrCodeRepositoryProtcol {
   public init() {}
   
   public func generateQRCode(from string: String) async -> Image? {

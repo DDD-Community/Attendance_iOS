@@ -15,10 +15,11 @@ struct RepositoryModuleFactory {
   
   private var repositoryDefinitions: [() -> Module] {
     return [
-      registerModule.makeRepository(AuthRepositoryProtocol.self) { AuthRepository() },
-      registerModule.makeRepository(FireStoreRepositoryProtocol.self) { FireStoreRepository() },
-      registerModule.makeRepository(QrCodeRepositoryProtcool.self) { QrCodeRepository() },
-      registerModule.makeRepository(SignUpRepositoryProtcol.self) { SignUpRepository() }
+      registerModule.makeDependency(
+        AuthRepositoryProtocol.self) { AuthRepository() },
+      registerModule.makeDependency(FireStoreRepositoryProtocol.self) { FireStoreRepository() },
+      registerModule.makeDependency(QrCodeRepositoryProtcol.self) { QrCodeRepository() },
+      registerModule.makeDependency(SignUpRepositoryProtcol.self) { SignUpRepository() }
     ]
   }
   

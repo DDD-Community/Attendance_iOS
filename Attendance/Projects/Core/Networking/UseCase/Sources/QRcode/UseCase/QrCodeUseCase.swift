@@ -12,10 +12,10 @@ import DiContainer
 import ComposableArchitecture
 
 public struct QrCodeUseCase: QrCodeUseCaseProtocool {
-  private let repository: QrCodeRepositoryProtcool
+  private let repository: QrCodeRepositoryProtcol
   
   public init(
-    repository: QrCodeRepositoryProtcool
+    repository: QrCodeRepositoryProtcol
   ) {
     self.repository = repository
   }
@@ -27,7 +27,7 @@ public struct QrCodeUseCase: QrCodeUseCaseProtocool {
 
 extension QrCodeUseCase: DependencyKey {
   public static var liveValue: QrCodeUseCase = {
-    let qrCodeRepository = DependencyContainer.live.resolve(QrCodeRepositoryProtcool.self) ?? DefaultQrCodeRepository()
+    let qrCodeRepository = DependencyContainer.live.resolve(QrCodeRepositoryProtcol.self) ?? DefaultQrCodeRepository()
     return QrCodeUseCase(repository: qrCodeRepository)
   }()
 }

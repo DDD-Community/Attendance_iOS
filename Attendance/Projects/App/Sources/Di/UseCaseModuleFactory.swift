@@ -15,47 +15,42 @@ struct UseCaseModuleFactory {
   
   private var useCaseDefinitions: [() -> Module] {
     return [
-      registerModule.makeUseCase(AuthUseCaseProtocol.self) {
-          AuthUseCase(
-            repository: registerModule
-              .resolveOrDefault(
-                AuthRepositoryProtocol.self,
-                default: DefaultAuthRepository())
-        )
+      registerModule.makeUseCaseWithRepository(
+        AuthUseCaseProtocol.self,
+        repositoryProtocol: AuthRepositoryProtocol.self,
+        repositoryFallback: DefaultAuthRepository()
+      ) { repo in
+        AuthUseCase(repository: repo)
       },
-      registerModule.makeUseCase(FireStoreUseCaseProtocol.self) {
-        FireStoreUseCase(
-            repository: registerModule
-              .resolveOrDefault(
-                FireStoreRepositoryProtocol.self,
-                default: DefaultFireStoreRepository())
-        )
+      registerModule.makeUseCaseWithRepository(
+        FireStoreUseCaseProtocol.self,
+        repositoryProtocol: FireStoreRepositoryProtocol.self,
+        repositoryFallback: DefaultFireStoreRepository()
+      ) { repo in
+        FireStoreUseCase(repository: repo)
       },
-      registerModule.makeUseCase(QrCodeUseCaseProtocool.self) {
-        QrCodeUseCase(
-            repository: registerModule
-              .resolveOrDefault(
-                QrCodeRepositoryProtcool.self,
-                default: DefaultQrCodeRepository())
-        )
+      registerModule.makeUseCaseWithRepository(
+        QrCodeUseCaseProtocool.self,
+        repositoryProtocol: QrCodeRepositoryProtcol.self,
+        repositoryFallback: DefaultQrCodeRepository()
+      ) { repo in
+        QrCodeUseCase(repository: repo)
       },
-      registerModule.makeUseCase(OAuthUseCaseProtocol.self) {
-        OAuthUseCase(
-            repository: registerModule
-              .resolveOrDefault(
-                OAuthRepositoryProtocol.self,
-                default: DefaultOAuthRepository())
-        )
+      registerModule.makeUseCaseWithRepository(
+        OAuthUseCaseProtocol.self,
+        repositoryProtocol: OAuthRepositoryProtocol.self,
+        repositoryFallback: DefaultOAuthRepository()
+      ) { repo in
+        OAuthUseCase(repository: repo)
       },
-      registerModule.makeUseCase(SignUpUseCaseProtocol.self) {
-        SignUpUseCase(
-            repository: registerModule
-              .resolveOrDefault(
-                SignUpRepositoryProtcol.self,
-                default: DefaultSignUpRepository())
-        )
-      },
-      ]
+      registerModule.makeUseCaseWithRepository(
+        SignUpUseCaseProtocol.self,
+        repositoryProtocol: SignUpRepositoryProtcol.self,
+        repositoryFallback: DefaultSignUpRepository()
+      ) { repo in
+        SignUpUseCase(repository: repo)
+      }
+    ]
   }
   
   func makeAllModules() -> [Module] {
