@@ -28,6 +28,7 @@ struct AttandanceCheckView: View {
     .task {
       store.send(.async(.fetchAttenDance))
       store.send(.async(.observeAttendance))
+//      store.send(.async(.filterAndSortAttendance))
     }
     .sheet(item: $store.scope(state: \.destination?.selectDate, action: \.destination.selectDate)) { selectDateStore in
       VStack {
@@ -105,7 +106,7 @@ extension AttandanceCheckView {
                     Spacer()
                       .frame(width: 16)
                     
-                    Text("\(item.attendanceListDesc)")
+                    Text("\(item.attendanceListDescription)")
                       .pretendardFont(family: .Bold, size: 16)
                       .foregroundColor(store.selectPart == item ? .staticWhite : .gray600)
                       .background(
@@ -160,45 +161,22 @@ extension AttandanceCheckView {
   
   @ViewBuilder
   fileprivate func selectPartAttandanceStatus() -> some View {
-    switch store.selectPart {
-    case .web1:
+    if let selectPart = store.selectPart,
+       [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart) {
       selectPartAttandanceStatusCard()
-    case .web2:
-      selectPartAttandanceStatusCard()
-    case .and1:
-      selectPartAttandanceStatusCard()
-    case .and2:
-      selectPartAttandanceStatusCard()
-    case .ios1:
-      selectPartAttandanceStatusCard()
-    case .ios2:
-      selectPartAttandanceStatusCard()
-    default:
+    } else {
       EmptyView()
     }
   }
-  
+
   @ViewBuilder
   fileprivate func selectPartAttandanceStatusCard() -> some View {
     LazyVStack {
       VStack {
         ForEach(
           store.attendanceCheckInModel
-            .filter { $0.memberTeam.desc == store.selectPart?.desc ?? "" }
-            .sorted { first, second in
-              // 정렬 우선순위 배열
-              let priority: [AttendanceType] = [
-                .present, .disease, .earlyLeave, .late, .absent, .run, .notAttendance
-              ]
-              
-              // 우선순위에 따른 비교 정렬
-              guard let firstPriority = priority.firstIndex(of: first.status ?? .notAttendance),
-                    let secondPriority = priority.firstIndex(of: second.status ?? .notAttendance) else {
-                return false
-              }
-              return firstPriority < secondPriority
-            },
-          id: \.id
+            .filter { $0.memberTeam.description == store.selectPart?.description }
+          ,id: \.id
         ) { item in
           AttendanceCheckStatusCard(
             attandanceType: item.status ?? .notAttendance,

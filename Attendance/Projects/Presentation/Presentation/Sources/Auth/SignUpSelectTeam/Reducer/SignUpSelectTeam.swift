@@ -104,7 +104,7 @@ public struct SignUpSelectTeam {
       
       state.selectTeam = selectTeam
       state.userSignUpMember.memberTeam = selectTeam
-      if let selectTeam = SelectTeam(rawValue: selectTeam.selectTeamDesc) {
+      if let selectTeam = SelectTeam(rawValue: selectTeam.selectTeamDescription) {
         state.userSignUpMember.memberTeam = selectTeam
       }
       

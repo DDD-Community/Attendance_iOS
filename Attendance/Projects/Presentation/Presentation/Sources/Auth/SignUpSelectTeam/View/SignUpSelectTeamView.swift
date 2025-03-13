@@ -64,7 +64,7 @@ extension SignUpSelectTeamView {
         VStack {
           ForEach(SelectTeam.teamList, id: \.self) { item in
             SelectTeamIteam(
-              content: item.selectTeamDesc,
+              content: item.selectTeamDescription,
               isActive:  item == store.selectTeam) {
                 store.send(.view(.selectTeamButton(selectTeam: item)))
               }

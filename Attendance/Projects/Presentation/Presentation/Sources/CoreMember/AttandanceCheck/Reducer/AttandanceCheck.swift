@@ -185,7 +185,10 @@ public struct AttandanceCheck {
       
       // MARK: - 실시간으로 데이터 가져오기 출석현황
     case .fetchAttenDance:
-      return .run {  [attendanceCount = state.attendanceCount , lateCount = state.lateCount , absentCount = state.absentCount, selectAttandanceDate = state.selectAttandanceDate] send in
+      return .run { [
+        selectAttandanceDate = state.selectAttandanceDate,
+        selectPart = state.selectPart
+      ] send in
         let fetchedDataResult = await Result {
           try await fireStoreUseCase.fetchFireStoreData(
             from: .attendance,
@@ -237,8 +240,6 @@ public struct AttandanceCheck {
           from: .attendance,
           as: Attendance.self
         ) {
-          //                            // Map each Attendance model to AttendanceDTO and send the result
-          
           switch result {
           case let .success(fetchedData):
   //          await send(.async(.fetchMember))
@@ -249,7 +250,6 @@ public struct AttandanceCheck {
           case .failure(let error):
             await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
           }
-          //                            await send(.async(.fetchAttendanceDataResponse(dtoResult)))
         }
       }
       
@@ -291,9 +291,25 @@ public struct AttandanceCheck {
     case let .fetchAttendanceDataResponse(fetchedData):
       switch fetchedData {
       case let .success(fetchedAttendanceData):
-        let filteredData = fetchedAttendanceData.filter {
-          ($0.id.isEmpty == false) && $0.memberType == .member && !$0.name.isEmpty && $0.updatedAt.formattedDateToString() == state.selectAttandanceDate.formattedDateToString()
+        let filteredData = fetchedAttendanceData
+          .filter {
+          ($0.id.isEmpty == false) &&
+            $0.memberType == .member &&
+            !$0.name.isEmpty &&
+            $0.updatedAt.formattedDateToString() == state.selectAttandanceDate.formattedDateToString()
         }
+          .sorted { first, second in
+            // 정렬 우선순위 배열
+            let priority: [AttendanceType] = [
+              .present, .disease, .earlyLeave, .late, .absent, .run, .notAttendance
+            ]
+            // 우선순위에 따른 비교 정렬
+            guard let firstPriority = priority.firstIndex(of: first.status ?? .notAttendance),
+                  let secondPriority = priority.firstIndex(of: second.status ?? .notAttendance) else {
+              return false
+            }
+            return firstPriority < secondPriority
+          }
         
         let selectedDate = state.selectAttandanceDate
         let selectedDay = Calendar.current.startOfDay(for: selectedDate)
@@ -317,6 +333,7 @@ public struct AttandanceCheck {
         
         if Calendar.current.isDate(selectedDate, inSameDayAs: today) {
           state.attendanceCheckInModel = updatedData
+          
         } else {
           state.attendanceCheckInModel = updatedData
         }

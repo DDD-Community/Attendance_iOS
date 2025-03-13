@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum SelectTeam: String, CaseIterable, Codable, Equatable {
+public enum SelectTeam: String, CaseIterable, Codable, Equatable, CustomStringConvertible {
   case web1 = "Web_1"
   case web2 = "Web_2"
   case and1 = "Android_1"
@@ -29,7 +29,7 @@ public enum SelectTeam: String, CaseIterable, Codable, Equatable {
     }
   }
   
-  public var desc: String {
+  public var description: String {
     switch self {
     case .ios1:
       return "iOS_1"
@@ -71,7 +71,7 @@ public enum SelectTeam: String, CaseIterable, Codable, Equatable {
     }
   }
   
-  public var selectTeamDesc: String {
+  public var selectTeamDescription: String {
     switch self {
     case .ios1:
       return "🍏 iOS 1팀"
@@ -102,7 +102,7 @@ public enum SelectTeam: String, CaseIterable, Codable, Equatable {
   }
   
   // MARK: - 출석 현황 팀 이름
-  public var attendanceListDesc: String {
+  public var attendanceListDescription: String {
     switch self {
     case .web1:
       return "Web 1팀"
@@ -121,11 +121,11 @@ public enum SelectTeam: String, CaseIterable, Codable, Equatable {
     }
   }
   
-  public var isDescEqualToAttendanceListDesc: Bool {
-    return desc == attendanceListDesc
+  public var isDescEqualToAttendanceListDescription: Bool {
+    return description == attendanceListDescription
   }
   
-  public var attandanceCardDesc: String {
+  public var attandanceCardDescription: String {
     switch self {
     case .web1:
       return "Web1팀"
