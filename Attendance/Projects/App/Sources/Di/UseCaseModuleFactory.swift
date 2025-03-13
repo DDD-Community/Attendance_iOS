@@ -30,7 +30,7 @@ struct UseCaseModuleFactory {
         FireStoreUseCase(repository: repo)
       },
       registerModule.makeUseCaseWithRepository(
-        QrCodeUseCaseProtocool.self,
+        QrCodeUseCaseProtocol.self,
         repositoryProtocol: QrCodeRepositoryProtcol.self,
         repositoryFallback: DefaultQrCodeRepository()
       ) { repo in
