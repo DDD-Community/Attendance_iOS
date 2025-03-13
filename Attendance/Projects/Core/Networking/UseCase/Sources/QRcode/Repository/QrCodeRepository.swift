@@ -9,7 +9,7 @@ import SwiftUI
 import CoreImage.CIFilterBuiltins
 
 @Observable
-public class QrCodeRepository: QrCodeRepositoryProtcool {
+public class QrCodeRepository: QrCodeRepositoryProtcol {
   
   public init() {}
   
