@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import AsyncMoya
 
 public struct RegisterModule {
   public init() {}
