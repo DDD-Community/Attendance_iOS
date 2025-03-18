@@ -163,7 +163,11 @@ extension AttandanceCheckView {
   fileprivate func selectPartAttandanceStatus() -> some View {
     if let selectPart = store.selectPart,
        [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart) {
-      selectPartAttandanceStatusCard()
+      if store.attendaceMemberModel.filter({ $0.memberTeam.description == store.selectPart?.description}).isEmpty {
+        noMemberAttandanceView()
+      } else {
+        selectPartAttandanceStatusCard()
+      }
     } else {
       EmptyView()
     }
@@ -187,6 +191,34 @@ extension AttandanceCheckView {
         }
       }
       .padding(.horizontal, 24)
+    }
+  }
+  
+  @ViewBuilder
+  fileprivate func noMemberAttandanceView() -> some View {
+    LazyVStack {
+      
+      Spacer()
+        .frame(height: 20)
+      
+      VStack {
+        Spacer()
+        
+        Image(asset: .stamp)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 100, height: 100)
+        
+        Spacer()
+          .frame(height: 12)
+        
+        Text("아직 출석 인원이 없어요.")
+          .pretendardCustomFont(textStyle: .body1NormalMedium)
+          .foregroundStyle(.textSecondary)
+        
+        Spacer()
+      }
+      
     }
   }
 }

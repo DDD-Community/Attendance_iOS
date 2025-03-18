@@ -119,9 +119,6 @@ public struct CustomFSCalendarView: UIViewRepresentable {
         self.parent.selectDate = date
         calendar.reloadData()
       }
-      
-      
-      
     }
     
     // MARK: - 오늘 날짜에 Dot
