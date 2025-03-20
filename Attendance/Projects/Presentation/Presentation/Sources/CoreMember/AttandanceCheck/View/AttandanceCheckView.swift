@@ -36,11 +36,12 @@ struct AttandanceCheckView: View {
           .frame(height: 20)
         
         CustomFSCalendarView(selectDate: $store.selectAttandanceDate, currentMonth: $store.selectAttandanceDateMonth)
-          .padding(.horizontal, 24)
-          .frame(height: 200)
+          .padding(.horizontal, 14)
+          .frame(height: 320)
         
         Spacer()
       }
+      .background(.staticWhite)
       
     }
   }
@@ -179,9 +180,7 @@ extension AttandanceCheckView {
       VStack {
         ForEach(
           store.attendanceCheckInModel
-            .filter { $0.memberTeam.description == store.selectPart?.description }
-          ,id: \.id
-        ) { item in
+            .filter { $0.memberTeam.description == store.selectPart?.description } ,id: \.id) { item in
           AttendanceCheckStatusCard(
             attandanceType: item.status ?? .notAttendance,
             selectPart: item.roleType,

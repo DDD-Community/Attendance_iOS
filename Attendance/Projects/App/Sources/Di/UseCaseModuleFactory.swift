@@ -10,10 +10,8 @@ import Foundation
 import DiContainer
 import Networkings
 
-struct UseCaseModuleFactory {
-  let registerModule = RegisterModule()
-  
-  private var useCaseDefinitions: [() -> Module] {
+extension UseCaseModuleFactory {
+  public var useCaseDefinitions: [() -> Module] {
     return [
       registerModule.makeUseCaseWithRepository(
         AuthUseCaseProtocol.self,
@@ -51,9 +49,5 @@ struct UseCaseModuleFactory {
         SignUpUseCase(repository: repo)
       }
     ]
-  }
-  
-  func makeAllModules() -> [Module] {
-    useCaseDefinitions.map { $0() }
   }
 }

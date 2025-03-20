@@ -1,4 +1,5 @@
 import UIKit
+import DiContainer
 
 import Firebase
 
@@ -28,7 +29,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   
   private func registerDependencies() {
     Task {
-      await AppDIContainer.shared.registerDependencies()
+      await AppDIContainer.shared.registerDefaultDependencies()
     }
   }
 }
