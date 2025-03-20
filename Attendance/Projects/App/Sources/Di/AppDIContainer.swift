@@ -10,23 +10,19 @@ import Foundation
 import DiContainer
 import UseCase
 
-public final class AppDIContainer {
-  public static let shared: AppDIContainer = .init()
-  
-  private init() {}
-  
-  public func registerDependencies() async {
-    let container = Container() // Container 초기화
-    let useCaseModuleFactory = UseCaseModuleFactory() // 팩토리 인스턴스 생성
-    let repositoryModuleFactory = RepositoryModuleFactory()
-    
-    await container {
-      repositoryModuleFactory.makeAllModules().forEach { module in
-        container.register(module)
+extension AppDIContainer {
+  public func registerDefaultDependencies() async {
+    await registerDependencies { container in
+      var repositoryFactory = RepositoryModuleFactory()
+      let useCaseFactory = UseCaseModuleFactory()
+      repositoryFactory.registerDefaultDefinitions()
+      
+      repositoryFactory.makeAllModules().forEach {
+        container.register($0)
       }
-      useCaseModuleFactory.makeAllModules().forEach { module in
-        container.register(module)
+      useCaseFactory.makeAllModules().forEach {
+        container.register($0)
       }
-    }.build() // 등록된 모든 의존성을 처리
+    }
   }
 }
