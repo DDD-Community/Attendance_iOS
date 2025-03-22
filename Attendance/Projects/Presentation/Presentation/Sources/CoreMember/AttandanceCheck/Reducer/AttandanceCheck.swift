@@ -250,6 +250,41 @@ public struct AttandanceCheck {
           var absentCount = filterData.filter { $0.status == .absent }.count
           #logDebug("카운트", attendanceCount, lateCount, absentCount)
           let filterDateData = filterData.filter { $0.updatedAt.formattedDateToString() == selectAttandanceDate.formattedDateToString() }
+          await send(.async(.fetchAttendanceDataResponse(.success(filterDateData))))
+          attendanceCount = attendanceCount
+          lateCount = lateCount
+          absentCount = absentCount
+          //          await send(.view(.updateAttendanceCountWithData(attendances: filterData)))
+          
+          
+        case let .failure(error):
+          await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
+        }
+      }
+      
+    case .filterAttandanceDate:
+      return .run { [
+        selectAttandanceDate = state.selectAttandanceDate
+      ] send in
+        let fetchedDataResult = await Result {
+          try await fireStoreUseCase.fetchFireStoreData(
+            from: .attendance,
+            as: Attendance.self,
+            shouldSave: false
+          )
+        }
+        switch fetchedDataResult {
+        case let .success(fetchedData):
+          await send(.view(.closeModal))
+//          await send(.async(.fetchMember))
+          
+          let filterData = fetchedData
+            .map { $0.toAttendanceDTO() }
+          var attendanceCount = filterData.filter { $0.status == .present }.count
+          var lateCount = filterData.filter { $0.status == .late  }.count
+          var absentCount = filterData.filter { $0.status == .absent }.count
+          #logDebug("카운트", attendanceCount, lateCount, absentCount)
+          let filterDateData = filterData.filter { $0.updatedAt.formattedDateToString() == selectAttandanceDate.formattedDateToString() }
           try await clock.sleep(for: .seconds(0.4))
           await send(.async(.fetchAttendanceDataResponse(.success(filterDateData))))
           attendanceCount = attendanceCount
