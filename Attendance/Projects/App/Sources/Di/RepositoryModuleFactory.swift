@@ -16,6 +16,7 @@ extension RepositoryModuleFactory {
     repositoryDefinitions = {
       return [
         registerModuleCopy.makeDependency(AuthRepositoryProtocol.self) { AuthRepository() },
+        registerModuleCopy.makeDependency(OAuthRepositoryProtocol.self) { OAuthRepository() },
         registerModuleCopy.makeDependency(FireStoreRepositoryProtocol.self) { FireStoreRepository() },
         registerModuleCopy.makeDependency(QrCodeRepositoryProtcol.self) { QrCodeRepository() },
         registerModuleCopy.makeDependency(SignUpRepositoryProtcol.self) { SignUpRepository() }

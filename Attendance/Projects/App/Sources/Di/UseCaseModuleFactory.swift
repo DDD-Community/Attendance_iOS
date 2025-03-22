@@ -21,6 +21,13 @@ extension UseCaseModuleFactory {
         AuthUseCase(repository: repo)
       },
       registerModule.makeUseCaseWithRepository(
+        OAuthUseCaseProtocol.self,
+        repositoryProtocol: OAuthRepositoryProtocol.self,
+        repositoryFallback: DefaultOAuthRepository()
+      ) { repo in
+        OAuthUseCase(repository: repo)
+      },
+      registerModule.makeUseCaseWithRepository(
         FireStoreUseCaseProtocol.self,
         repositoryProtocol: FireStoreRepositoryProtocol.self,
         repositoryFallback: DefaultFireStoreRepository()
@@ -33,13 +40,6 @@ extension UseCaseModuleFactory {
         repositoryFallback: DefaultQrCodeRepository()
       ) { repo in
         QrCodeUseCase(repository: repo)
-      },
-      registerModule.makeUseCaseWithRepository(
-        OAuthUseCaseProtocol.self,
-        repositoryProtocol: OAuthRepositoryProtocol.self,
-        repositoryFallback: DefaultOAuthRepository()
-      ) { repo in
-        OAuthUseCase(repository: repo)
       },
       registerModule.makeUseCaseWithRepository(
         SignUpUseCaseProtocol.self,
