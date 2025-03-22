@@ -14,6 +14,7 @@ public enum ImageAsset: String {
   case qrCode
   case eventGenerate
   case arrowBack
+  case arrowBackWhite
   case plus
   case logo
   case pet
@@ -49,4 +50,7 @@ public enum ImageAsset: String {
   case Late_icons
   case Present_icons
   case stamp
+  
+  //MARK: - Profile
+  case profileBack
 }
