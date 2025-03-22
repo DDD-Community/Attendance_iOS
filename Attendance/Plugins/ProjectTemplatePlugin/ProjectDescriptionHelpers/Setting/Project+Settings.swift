@@ -9,11 +9,35 @@ import Foundation
 import ProjectDescription
 
 extension Settings {
+  private static func commonSettings(
+    appName: String,
+    displayName: String,
+    provisioningProfile: String,
+    setSkipInstall: Bool
+  ) -> SettingsDictionary {
+    return SettingsDictionary()
+      .setProductName(appName)
+      .setCFBundleDisplayName(displayName)
+      .setOtherLdFlags("-ObjC -all_load")
+      .setDebugInformationFormat("non-global")
+      .setProvisioningProfileSpecifier(provisioningProfile)
+      .setSkipInstall(setSkipInstall)
+  }
+  
+  private static func commonBaseSettings(
+    appName: String
+  ) -> SettingsDictionary {
+    return SettingsDictionary()
+      .setProductName(appName)
+      .setOtherLdFlags("-ObjC -all_load")
+      .setStripStyle()
+  }
+  
   public static let appMainSetting: Settings = .settings(
     base: SettingsDictionary()
       .setProductName(Project.Environment.appName)
       .setCFBundleDisplayName(Project.Environment.appName)
-      .setMarketingVersion(.appVersion(version: "1.0.0"))
+      .setMarketingVersion(.appVersion())
       .setASAuthenticationServicesEnabled()
       .setPushNotificationsEnabled()
       .setEnableBackgroundModes()
@@ -23,39 +47,46 @@ extension Settings {
       .setCodeSignIdentity()
       .setCodeSignStyle()
       .setVersioningSystem()
-      .setProvisioningProfileSpecifier("match Development io.DDD.Attendance")
+      .setProvisioningProfileSpecifier("match Development \(Project.Environment.bundlePrefix)")
       .setDevelopmentTeam(Project.Environment.organizationTeamId)
       .setExplicitlyBuiltModules(true)
       .setDebugInformationFormat(),
-    
-    
     configurations: [
-      .debug(name: .debug, settings: SettingsDictionary()
-        .setProductName(Project.Environment.appName)
-        .setCFBundleDisplayName(Project.Environment.appName)
-        .setOtherLdFlags("-ObjC -all_load")
-        .setDebugInformationFormat("non-global")
-        .setProvisioningProfileSpecifier("match Development io.DDD.Attendance")
-        .setSkipInstall(false)
-        .setExplicitlyBuiltModules(true)
+      .debug(
+        name: .debug,
+        settings:
+          commonSettings(
+            appName: Project.Environment.appName,
+            displayName: Project.Environment.appName,
+            provisioningProfile: "match Development \(Project.Environment.bundlePrefix)",
+            setSkipInstall: false
+          ),
+        xcconfig:
+            .relativeToRoot("./Config/dev.xcconfig")
       ),
-      .debug(name: "QA", settings: SettingsDictionary()
-        .setProductName(Project.Environment.appDevName)
-        .setCFBundleDisplayName(Project.Environment.appDevName)
-        .setOtherLdFlags("-ObjC -all_load")
-        .setDebugInformationFormat("non-global")
-        .setProvisioningProfileSpecifier("match AppStore \(Project.Environment.mainBundleId)")
-        .setSkipInstall(false)
-        .setExplicitlyBuiltModules(true)
+      .debug(
+        name: "QA",
+        settings:
+          commonSettings(
+            appName: Project.Environment.appName,
+            displayName: Project.Environment.appName,
+            provisioningProfile: "match Development \(Project.Environment.bundlePrefix)",
+            setSkipInstall: false
+          ),
+        xcconfig:
+            .relativeToRoot("./Config/qa.xcconfig")
       ),
-      .release(name: .release, settings: SettingsDictionary()
-        .setProductName(Project.Environment.appName)
-        .setCFBundleDisplayName(Project.Environment.appName)
-        .setOtherLdFlags("-ObjC -all_load")
-        .setDebugInformationFormat("non-global")
-        .setProvisioningProfileSpecifier("match AppStore \(Project.Environment.mainBundleId)")
-        .setSkipInstall(false)
-        .setExplicitlyBuiltModules(true)
+      .release(
+        name: .release,
+        settings:
+          commonSettings(
+            appName: Project.Environment.appName,
+            displayName: Project.Environment.appName,
+            provisioningProfile: "match Development \(Project.Environment.bundlePrefix)",
+            setSkipInstall: false
+          ),
+        xcconfig:
+            .relativeToRoot("./Config/realse.xcconfig")
       )
     ], defaultSettings: .recommended
   )
@@ -71,31 +102,32 @@ extension Settings {
         .setVersioningSystem()
         .setDebugInformationFormat(),
       configurations: [
-        .debug(name: .debug, settings: SettingsDictionary()
-          .setProductName(appName)
-          .setOtherLdFlags("-ObjC -all_load")
-          .setStripStyle()
-          .setExplicitlyBuiltModules(true)
+        .debug(
+          name: .debug,
+          settings:
+            commonBaseSettings(
+              appName: appName
+            ),
+          xcconfig:
+              .relativeToRoot("./Config/dev.xcconfig")
         ),
-        .debug(name: "QA", settings: SettingsDictionary()
-          .setProductName("\(appName)-QA")
-          .setOtherLdFlags("-ObjC -all_load")
-          .setStripStyle()
-          .setExplicitlyBuiltModules(true)
-               
+        .debug(
+          name: "QA",
+          settings: commonBaseSettings(
+            appName: appName
+          ),
+          xcconfig:
+              .relativeToRoot("./Config/qa.xcconfig")
         ),
-        .release(name: .release, settings: SettingsDictionary()
-          .setProductName(appName)
-          .setOtherLdFlags("-ObjC -all_load")
-          .setStripStyle()
-          .setExplicitlyBuiltModules(true)
-                 
+        .release(
+          name: .release,
+          settings: commonBaseSettings(
+            appName: appName
+          ),
+          xcconfig: .relativeToRoot("./Config/realse.xcconfig")
         )
-      ], defaultSettings: .recommended)
-    
+      ], defaultSettings: .recommended
+    )
     return appBaseSetting
-    
   }
-  
-  
 }
