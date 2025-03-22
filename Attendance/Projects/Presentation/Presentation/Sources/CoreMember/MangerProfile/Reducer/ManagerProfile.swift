@@ -49,7 +49,8 @@ public struct ManagerProfile {
   // MARK: - View action
   
   public enum View {
-    
+    case startLoading
+    case stopLoading
   }
   
   // MARK: - 비동기 처리 액션
@@ -70,12 +71,16 @@ public struct ManagerProfile {
   // MARK: - 네비게이션 연결 액션
   
   public enum NavigationAction: Equatable {
-    case tapLogOut
+    case presentLogOut
     case presentCreatByApp
   }
   
+  fileprivate struct MangerProfileCancel: Hashable {}
+  
   @Dependency(FireStoreUseCase.self) var fireStoreUseCase
   @Dependency(AuthUseCase.self) var authUseCase
+  @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.continuousClock) var clock
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
@@ -111,7 +116,15 @@ public struct ManagerProfile {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    
+    switch action {
+    case .startLoading:
+      state.isLoading = true
+      return .none
+      
+    case .stopLoading:
+      state.isLoading = false
+      return .none
+    }
   }
   
   private func handleAsyncAction(
@@ -129,6 +142,13 @@ public struct ManagerProfile {
         switch fetchUserResult {
         case .success(let fetchUserData):
           if let fetchUserData = fetchUserData {
+            await send(.view(.startLoading))
+            
+            try await clock.sleep(for: .seconds(1.5))
+            
+            
+            await send(.view(.stopLoading))
+            
             await send(.async(.fetchUserResponse(.success(fetchUserData))))
             
           }
@@ -136,6 +156,7 @@ public struct ManagerProfile {
           await send(.async(.fetchUserResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
         }
       }
+      .debounce(id: MangerProfileCancel(), for: 0.01, scheduler: mainQueue)
       
     case .fetchUserResponse(let result):
       switch result {
@@ -190,9 +211,10 @@ public struct ManagerProfile {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .tapLogOut:
+    case .presentLogOut:
       state.userEmail = ""
       return .run {  send in
+        try await clock.sleep(for: .seconds(2))
         await send(.async(.signOut))
       }
       

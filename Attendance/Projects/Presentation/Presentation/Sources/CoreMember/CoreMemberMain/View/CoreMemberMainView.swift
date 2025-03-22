@@ -141,6 +141,9 @@ extension CoreMemberMainView {
               .frame(width: 20, height: 20)
               .foregroundStyle(.staticWhite)
           }
+          .onTapGesture {
+            store.send(.navigation(.presentManagerProfile))
+          }
       }
     }
     .padding(.trailing, 24)
