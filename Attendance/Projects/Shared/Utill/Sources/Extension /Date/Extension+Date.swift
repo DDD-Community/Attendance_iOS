@@ -56,7 +56,7 @@ public extension Date {
   func formattedDateTimeText(date: Date) -> String {
     let dateFormatter = DateFormatter()
     dateFormatter.locale = Locale(identifier: "ko_KR")
-    dateFormatter.dateFormat = "yyyy.M.dd"
+    dateFormatter.dateFormat = "yyyy.MM.dd"
     return dateFormatter.string(from: date)
   }
   
@@ -104,5 +104,11 @@ public extension Date {
       let eventFormattedDate = eventStartTime.formattedDate(date: eventStartTime)
       return currentFormattedDate == eventFormattedDate
     }
+  }
+  
+  func toFormattedString() -> String {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy년 MM월"
+    return dateFormatter.string(from: self)
   }
 }

@@ -18,4 +18,5 @@ public extension UIColor {
   static let error = UIColor(hex: "FF5050")
   static let basicBlue = UIColor(hex: "0099FF")
   static let primaryBlue = UIColor(hex: "0D82F9")
+  static let statusError = UIColor(hex: "FD1008")
 }

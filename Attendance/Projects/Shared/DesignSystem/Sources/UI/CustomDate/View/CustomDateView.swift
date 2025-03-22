@@ -25,13 +25,21 @@ public struct CustomDateView: View {
     self.selectAction = selectAction
   }
   
-  
-  
   public var body: some View {
     LazyView {
       ZStack {
         Color.staticWhite
           .edgesIgnoringSafeArea(.all)
+        
+        VStack {
+          customDateHeaderTitle()
+          
+          monthDateView()
+          
+          customCalanderVIew()
+          
+          selectDateButton()
+        }
       }
     }
   }
@@ -52,44 +60,75 @@ extension CustomDateView {
     }
   }
   
-//  @ViewBuilder
-//  private func monthDateView() -> some View {
-//    HStack {
-//      Spacer()
-//        .frame(width: 20)
-//      
-//      Image(systemName: "chevron.left")
-//        .resizable()
-//        .scaledToFit()
-//        .frame(width: 20, height: 15)
-//        .foregroundStyle(.basicBlack)
-//        .onTapGesture {
-//          store.send(.view(.movePreviousMonth))
-//        }
-//      
-//      Spacer()
-//        .frame(width: 5)
-//      
-//      Text(store.nowDate.toFormattedString()) // 현재 날짜를 보여줌
-//        .pretendardFont(family: .SemiBold, size: 14)
-//        .foregroundStyle(.basicBlack)
-//      
-//      Spacer()
-//        .frame(width: 5)
-//      
-//      Image(systemName: "chevron.right")
-//        .resizable()
-//        .scaledToFit()
-//        .frame(width: 20, height: 15)
-//        .foregroundStyle(.basicBlack)
-//        .onTapGesture {
-//          store.send(.view(.moveNextMonth))
-//        }
-//      
-//      Spacer()
-//    }
-//    .padding(.horizontal, 20)
-//    
-//  }
+  @ViewBuilder
+  fileprivate func monthDateView() -> some View {
+    LazyVStack {
+      Spacer()
+        .frame(height: 16)
+      
+      HStack {
+        Image(systemName: "chevron.left")
+          .resizable()
+          .scaledToFit()
+          .frame(width: 20, height: 15)
+          .foregroundStyle(.basicBlack)
+          .onTapGesture {
+            store.send(.view(.movePreviousMonth))
+          }
+        
+        Spacer()
+
+        
+        Text(store.nowDate.toFormattedString()) // 현재 날짜를 보여줌
+          .pretendardCustomFont(textStyle: .body1NormalMedium)
+          .foregroundStyle(.basicBlack)
+        
+        Spacer()
+        
+        Image(systemName: "chevron.right")
+          .resizable()
+          .scaledToFit()
+          .frame(width: 20, height: 15)
+          .foregroundStyle(.basicBlack)
+          .onTapGesture {
+            store.send(.view(.moveNextMonth))
+          }
+      }
+      .padding(.horizontal, 20)
+    }
+  }
+  
+  @ViewBuilder
+  fileprivate func customCalanderVIew() -> some View {
+    LazyVStack {
+      Spacer()
+        .frame(height: 10)
+      
+      CustomFSCalendarView(
+        selectDate: $selectDate,
+        currentMonth: $store.nowDate,
+        isDateSelected: $store.dateSelected)
+        .frame(height: 310)
+    }
+  }
+  
+  @ViewBuilder
+  fileprivate func selectDateButton() -> some  View {
+    LazyVStack {
+      Spacer()
+        .frame(height: 20)
+      
+      CustomButton(
+        action: selectAction,
+        title: "확인",
+        config: CustomButtonConfig.createDateButton(),
+        isEnable: store.dateSelected
+      )
+      .padding(.horizontal, 20)
+      
+      Spacer()
+        .frame(height: 40)
+    }
+  }
   
 }

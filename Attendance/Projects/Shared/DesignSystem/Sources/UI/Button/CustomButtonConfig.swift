@@ -20,4 +20,17 @@ public class CustomButtonConfig: DDDCustomButtonConfig {
     
     return config
   }
+  
+  static public func createDateButton() -> DDDCustomButtonConfig {
+    let config = DDDCustomButtonConfig(
+      cornerRadius: 30,
+      enableFontColor: .grayWhite,
+      enableBackgroundColor: .statusFocus,
+      frameHeight: 58,
+      disableFontColor: .grayWhite,
+      disableBackgroundColor: .blue20
+    )
+    return config
+  }
+  
 }

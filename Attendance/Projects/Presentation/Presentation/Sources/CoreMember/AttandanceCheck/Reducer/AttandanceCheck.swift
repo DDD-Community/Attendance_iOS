@@ -6,10 +6,11 @@
 //
 
 import Foundation
-import ComposableArchitecture
 
-import Utill
+import Shareds
 import Networkings
+
+import ComposableArchitecture
 import FirebaseAuth
 
 @Reducer
@@ -52,7 +53,7 @@ public struct AttandanceCheck {
   
   @Reducer(state: .equatable)
   public enum Destination {
-    case selectDate(SelectDate)
+    case selectDate(CustomDate)
   }
   
   // MARK: - ViewAction
@@ -77,7 +78,7 @@ public struct AttandanceCheck {
     case fetchAttendanceDataResponse(Result<[AttendanceDTO], CustomError>)
     
     case upDateFetchAttandanceMember(selectPart: SelectTeam)
-    
+    case filterAttandanceDate
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -93,6 +94,8 @@ public struct AttandanceCheck {
   private struct AttendanceCheckCancel: Hashable {}
   
   @Dependency(FireStoreUseCase.self) var fireStoreUseCase
+  @Dependency(\.continuousClock) var clock
+  @Dependency(\.mainQueue) var mainQueue
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
@@ -118,6 +121,12 @@ public struct AttandanceCheck {
       }
     }
     .ifLet(\.$destination, action: \.destination)
+    .onChange(of: \.attendanceCheckInModel) { oldValue, newValue in
+      Reduce { state, action in
+        state.attendanceCheckInModel = newValue
+        return .none
+      }
+    }
   }
   
   private func handleViewAction(
@@ -127,6 +136,8 @@ public struct AttandanceCheck {
     switch action {
     case .selectPartButton(let selectPart):
       state.selectPart = selectPart
+      #logDebug("출석 데이터", state.attendanceCheckInModel.filter { state.selectPart?
+        .description == $0.memberTeam.description})
       return .none
       
     case .swipeNext:
@@ -186,8 +197,7 @@ public struct AttandanceCheck {
       // MARK: - 실시간으로 데이터 가져오기 출석현황
     case .fetchAttenDance:
       return .run { [
-        selectAttandanceDate = state.selectAttandanceDate,
-        selectPart = state.selectPart
+        selectAttandanceDate = state.selectAttandanceDate
       ] send in
         let fetchedDataResult = await Result {
           try await fireStoreUseCase.fetchFireStoreData(
@@ -206,8 +216,45 @@ public struct AttandanceCheck {
           var lateCount = filterData.filter { $0.status == .late  }.count
           var absentCount = filterData.filter { $0.status == .absent }.count
           #logDebug("카운트", attendanceCount, lateCount, absentCount)
-          await send(.async(.fetchAttendanceDataResponse(.success(filterData))))
-          attendanceCount = attendanceCount 
+          let filterDateData = filterData.filter { $0.updatedAt.formattedDateToString() == selectAttandanceDate.formattedDateToString() }
+          await send(.async(.fetchAttendanceDataResponse(.success(filterDateData))))
+          attendanceCount = attendanceCount
+          lateCount = lateCount
+          absentCount = absentCount
+          //          await send(.view(.updateAttendanceCountWithData(attendances: filterData)))
+          
+          
+        case let .failure(error):
+          await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
+        }
+      }
+      
+    case .filterAttandanceDate:
+      return .run { [
+        selectAttandanceDate = state.selectAttandanceDate
+      ] send in
+        let fetchedDataResult = await Result {
+          try await fireStoreUseCase.fetchFireStoreData(
+            from: .attendance,
+            as: Attendance.self,
+            shouldSave: false
+          )
+        }
+        switch fetchedDataResult {
+        case let .success(fetchedData):
+          await send(.view(.closeModal))
+//          await send(.async(.fetchMember))
+          
+          let filterData = fetchedData
+            .map { $0.toAttendanceDTO() }
+          var attendanceCount = filterData.filter { $0.status == .present }.count
+          var lateCount = filterData.filter { $0.status == .late  }.count
+          var absentCount = filterData.filter { $0.status == .absent }.count
+          #logDebug("카운트", attendanceCount, lateCount, absentCount)
+          let filterDateData = filterData.filter { $0.updatedAt.formattedDateToString() == selectAttandanceDate.formattedDateToString() }
+          try await clock.sleep(for: .seconds(0.4))
+          await send(.async(.fetchAttendanceDataResponse(.success(filterDateData))))
+          attendanceCount = attendanceCount
           lateCount = lateCount
           absentCount = absentCount
           //          await send(.view(.updateAttendanceCountWithData(attendances: filterData)))

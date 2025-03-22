@@ -28,21 +28,14 @@ struct AttandanceCheckView: View {
     .task {
       store.send(.async(.fetchAttenDance))
       store.send(.async(.observeAttendance))
-//      store.send(.async(.filterAndSortAttendance))
     }
     .sheet(item: $store.scope(state: \.destination?.selectDate, action: \.destination.selectDate)) { selectDateStore in
-      VStack {
-        Spacer()
-          .frame(height: 20)
-        
-        CustomFSCalendarView(selectDate: $store.selectAttandanceDate, currentMonth: $store.selectAttandanceDateMonth)
-          .padding(.horizontal, 14)
-          .frame(height: 320)
-        
-        Spacer()
+      CustomDateView(store: selectDateStore, selectDate: $store.selectAttandanceDate) {
+        store.send(.async(.filterAttandanceDate))
       }
-      .background(.staticWhite)
-      
+        .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
+        .presentationCornerRadius(20)
+        .presentationDragIndicator(.hidden)
     }
   }
 }
@@ -164,11 +157,7 @@ extension AttandanceCheckView {
   fileprivate func selectPartAttandanceStatus() -> some View {
     if let selectPart = store.selectPart,
        [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart) {
-      if store.attendaceMemberModel.filter({ $0.memberTeam.description == store.selectPart?.description}).isEmpty {
-        noMemberAttandanceView()
-      } else {
-        selectPartAttandanceStatusCard()
-      }
+      selectPartAttandanceStatusCard()
     } else {
       EmptyView()
     }
@@ -176,21 +165,26 @@ extension AttandanceCheckView {
 
   @ViewBuilder
   fileprivate func selectPartAttandanceStatusCard() -> some View {
-    LazyVStack {
-      VStack {
-        ForEach(
-          store.attendanceCheckInModel
-            .filter { $0.memberTeam.description == store.selectPart?.description } ,id: \.id) { item in
-          AttendanceCheckStatusCard(
-            attandanceType: item.status ?? .notAttendance,
-            selectPart: item.roleType,
-            selectTeam: item.memberTeam,
-            name: item.name
-          )
+    if store.attendanceCheckInModel
+      .filter({ $0.memberTeam.description == store.selectPart?.description }).isEmpty {
+      noMemberAttandanceView()
+      } else {
+        LazyVStack {
+          VStack {
+            ForEach(
+              store.attendanceCheckInModel
+                .filter { $0.memberTeam.description == store.selectPart?.description } ,id: \.id) { item in
+              AttendanceCheckStatusCard(
+                attandanceType: item.status ?? .notAttendance,
+                selectPart: item.roleType,
+                selectTeam: item.memberTeam,
+                name: item.name
+              )
+            }
+          }
+          .padding(.horizontal, 24)
         }
       }
-      .padding(.horizontal, 24)
-    }
   }
   
   @ViewBuilder
@@ -198,7 +192,7 @@ extension AttandanceCheckView {
     LazyVStack {
       
       Spacer()
-        .frame(height: 20)
+        .frame(height: UIScreen.screenHeight * 0.08)
       
       VStack {
         Spacer()
