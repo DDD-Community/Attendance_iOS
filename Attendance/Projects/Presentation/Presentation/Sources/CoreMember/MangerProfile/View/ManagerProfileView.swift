@@ -238,12 +238,13 @@ extension ManagerProfileView {
   private func logoutButton() -> some View {
     VStack {
       Spacer()
+        .frame(height: 12)
       
       HStack(alignment: .center) {
         Text(store.logoutText)
-          .pretendardFont(family: .Regular, size: 16)
-          .foregroundStyle(.gray300)
-          .underline(true, color: Color.gray300)
+          .pretendardCustomFont(textStyle: .body2NormalMedium)
+          .foregroundStyle(.staticWhite)
+          .underline(true, color: .staticWhite)
       }
       .onTapGesture {
         store.send(.navigation(.presentLogOut))
