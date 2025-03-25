@@ -53,13 +53,13 @@ public enum AttendanceType: String, Codable {
   public var imageDesc: String {
     switch self {
     case .present:
-      return "Present_icons"
+      return "present_icons"
     case .absent:
-      return "Abesent_icons"
+      return "abesent_icons"
     case .late:
-      return "Late_icons"
+      return "late_icons"
     default:
-      return "Present_icons"
+      return "present_icons"
     }
   }
 }
