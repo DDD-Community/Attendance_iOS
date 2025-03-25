@@ -11,8 +11,7 @@ public final actor AppDIContainer {
   
   private init() {}
 
-  @MainActor public static let shared: AppDIContainer = .init()
-  
+  public static let shared: AppDIContainer = .init()
   private let container = Container()
   
   /// registerDependencies 메서드는 비동기 클로저를 받아, 해당 클로저에서 의존성 모듈들을 등록하도록 합니다.
