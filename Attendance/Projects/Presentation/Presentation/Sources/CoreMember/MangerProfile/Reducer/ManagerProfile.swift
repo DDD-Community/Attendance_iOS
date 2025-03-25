@@ -162,7 +162,7 @@ public struct ManagerProfile {
       switch result {
       case .success(let userDtoMemberData):
         state.userMember = userDtoMemberData
-        state.userEmail = userDtoMemberData.email
+        state.$userEmail.withLock { $0 = userDtoMemberData.email}
         
       case .failure(let error):
         #logError("유저 정보 가져오기", error.localizedDescription)
@@ -211,8 +211,8 @@ public struct ManagerProfile {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presentLogOut:
-      state.userEmail = ""
+    case .tapLogOut:
+      state.$userEmail.withLock { $0 = "" }
       return .run {  send in
         try await clock.sleep(for: .seconds(2))
         await send(.async(.signOut))

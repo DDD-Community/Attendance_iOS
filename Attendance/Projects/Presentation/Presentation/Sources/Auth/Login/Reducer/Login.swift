@@ -139,12 +139,12 @@ public struct Login {
           }
           state.appleAccessToken = identityToken
           state.appleLoginFullName = appleIDCredential
-          state.userSignUpMember.email = appleIDCredential.email ?? ""
+          state.$userSignUpMember.withLock { $0.email = appleIDCredential.email ?? "" }
           let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
           let uid = UserDefaults.standard.string(forKey: "UserUID") ?? ""
-          state.userSignUpMember.email = email
-          state.userSignUpMember.uid = uid
-          state.userEmail = email
+          state.$userSignUpMember.withLock { $0.email = email }
+          state.$userSignUpMember.withLock { $0.uid = uid }
+          state.$userEmail.withLock { $0 = email}
         default:
           break
         }
@@ -175,8 +175,8 @@ public struct Login {
       switch result {
       case .success(let resultData):
         state.oAuthResponseModel = resultData
-        state.userSignUpMember.email = resultData.email
-        state.userSignUpMember.uid = resultData.uid
+        state.$userSignUpMember.withLock { $0.email = resultData.email }
+        state.$userSignUpMember.withLock { $0.uid = resultData.uid }
       case .failure(let error):
         #logError("소셜 로그인 실패", error.localizedDescription)
       }
@@ -214,7 +214,7 @@ public struct Login {
       case .success(let userDtoMemberData):
         state.userMember = userDtoMemberData
         let email = state.userMember?.email ?? ""
-        state.userEmail = email
+        state.$userEmail.withLock { $0 = email }
         
       case .failure(let error):
         #logError("유저 정보 가져오기", error.localizedDescription)

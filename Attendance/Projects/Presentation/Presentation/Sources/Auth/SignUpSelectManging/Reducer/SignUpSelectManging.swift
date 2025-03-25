@@ -100,15 +100,14 @@ public struct SignUpSelectManaging {
       case .selectManagingButton(let selectManaging):
         if state.selectManagingPart == selectManaging {
           state.selectManagingPart = nil
-          state.userSignUpMember.managing = nil
+          state.$userSignUpMember.withLock { $0.managing = nil }
           state.activeButton = false
           return .none
         }
         state.selectManagingPart = selectManaging
         if let selectManaging = Managing(rawValue: selectManaging.managingDesc) {
-          state.userSignUpMember.managing = selectManaging
+          state.$userSignUpMember.withLock { $0.managing = selectManaging }
         }
-        state.userSignUpMember.managing = selectManaging
         state.activeButton = true
         return .none
       }
@@ -166,8 +165,8 @@ public struct SignUpSelectManaging {
       switch result {
       case .success(let signUpCoreMemberData):
         state.signUpCoreMemberModel = signUpCoreMemberData
-        state.userUid = signUpCoreMemberData.uid
-        state.userEmail = signUpCoreMemberData.email
+        state.$userUid.withLock { $0 = signUpCoreMemberData.uid }
+        state.$userEmail.withLock { $0 = signUpCoreMemberData.email} 
       case .failure(let error):
         #logError("회원가입 실패", error.localizedDescription)
       }

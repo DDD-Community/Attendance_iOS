@@ -7,15 +7,11 @@
 
 import Foundation
 
-public final class AppDIContainer {
-  /// 전역 싱글턴 인스턴스입니다.
-  @MainActor public static let shared: AppDIContainer = .init()
+public final actor AppDIContainer {
   
-  /// 외부에서 생성하지 못하도록 private으로 생성자를 감춥니다.
   private init() {}
-  
-  /// 내부에 DI 모듈을 관리하는 Container 인스턴스를 보관합니다.
-  /// Container는 개별 모듈들을 등록(register)하고, build()를 통해 모든 등록된 모듈의 의존성 등록을 수행합니다.
+
+  public static let shared: AppDIContainer = .init()
   private let container = Container()
   
   /// registerDependencies 메서드는 비동기 클로저를 받아, 해당 클로저에서 의존성 모듈들을 등록하도록 합니다.

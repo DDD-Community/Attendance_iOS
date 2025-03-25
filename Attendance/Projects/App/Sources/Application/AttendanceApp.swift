@@ -8,7 +8,6 @@
 import SwiftUI
 
 import ComposableArchitecture
-import Networkings
 
 @main
 struct AttendanceApp: App {
