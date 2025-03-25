@@ -37,10 +37,10 @@ let package = Package(
         .package(url: "https://github.com/kishikawakatsumi/KeychainAccess", from: "4.2.2"),
         .package(url: "https://github.com/exyte/PopupView.git", from: "2.10.4"),
         
-          .package(url: "http://github.com/pointfreeco/swift-composable-architecture", from: "1.16.0"),
+          .package(url: "http://github.com/pointfreeco/swift-composable-architecture", from: "1.18.0"),
         .package(url: "https://github.com/pointfreeco/swift-concurrency-extras.git", from: "1.1.0"),
         .package(url: "https://github.com/apple/swift-collections.git", branch: "main"),
-        .package(url: "https://github.com/johnpatrickmorgan/TCACoordinators.git", from: "0.10.0"),
+        .package(url: "https://github.com/johnpatrickmorgan/TCACoordinators.git", from: "0.11.0"),
         .package(url: "https://github.com/Roy-wonji/AsyncMoya",  from: "1.0.9"),
         .package(url: "https://github.com/SwiftUIX/SwiftUIX.git", from: "0.2.3"),
         .package(url: "https://github.com/WenchaoD/FSCalendar.git", from: "2.8.3")

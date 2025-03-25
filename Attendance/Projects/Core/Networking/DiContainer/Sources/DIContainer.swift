@@ -9,10 +9,10 @@ import Foundation
 
 import AsyncMoya
 
-/// DependencyContainer는 애플리케이션 내 의존성을 등록, 조회 및 해제하는 역할을 하며,
-/// 내부적으로 의존성을 String(타입 이름) 키로 관리합니다.
-/// 동기화를 위해 concurrent queue와 barrier 플래그를 사용해 thread safe하게 구현되었습니다.
-@Observable
+/// DependencyContainer는 애플리케이션 내 의존성(또는 팩토리 클로저)을 등록, 조회 및 해제하는 역할을 합니다.
+/// 내부적으로 의존성을 ObjectIdentifier를 키로 관리하며, 이를 통해 타입 기반 의존성 주입을 구현합니다.
+/// 
+ @Observable
 public final class DependencyContainer: @unchecked Sendable {
   
   // 의존성(또는 팩토리 클로저)을 저장하는 딕셔너리.
@@ -110,7 +110,6 @@ public final class DependencyContainer: @unchecked Sendable {
     #logDebug("Registered instance for", key)
   }
 }
-
 /// DependencyContainer의 공용(live) 인스턴스를 제공하는 extension입니다.
 public extension DependencyContainer {
   static let live = DependencyContainer()
