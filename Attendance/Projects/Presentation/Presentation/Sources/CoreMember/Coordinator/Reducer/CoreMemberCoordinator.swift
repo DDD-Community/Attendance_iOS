@@ -134,10 +134,7 @@ public struct CoreMemberCoordinator {
         await send(.navigation(.presentLogin))
       }
      
-    case .routeAction(id: _, action: .mangeProfile(.navigation(.presentCreatByApp))):
-      state.routes.push(.createByApp(.init()))
-      return .none
-      
+  
     default:
       return .none
     }
@@ -221,6 +218,5 @@ extension CoreMemberCoordinator {
     case qrCode(QrCode)
     case scheduleEvent(ScheduleEvent)
     case mangeProfile(ManagerProfile)
-    case createByApp(CreatByApp)
   }
 }

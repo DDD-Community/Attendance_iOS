@@ -110,7 +110,7 @@ public struct CustomFSCalendarView: UIViewRepresentable {
     ) {
       if Calendar.current.isDate(date, inSameDayAs: parent.selectDate) {
         calendar.deselect(date)
-        parent.selectDate = Date.distantPast
+        parent.selectDate = Date.now
         parent.isDateSelected = false
         calendar.reloadData()
         return
