@@ -2,6 +2,7 @@ import Foundation
 import ProjectDescription
 import DependencyPlugin
 import ProjectTemplatePlugin
+import DependencyPackagePlugin
 
 let project = Project.makeAppModule(
     name: "Networkings",
@@ -13,7 +14,7 @@ let project = Project.makeAppModule(
         .Networking(implements: .Service),
         .Networking(implements: .ThirdPartys),
         .Networking(implements: .Model),
-        .Networking(implements: .DiContainer),
+//        .SPM.diContainer,
         .Networking(implements: .Foundations),
         .Networking(implements: .UseCase),
     ],

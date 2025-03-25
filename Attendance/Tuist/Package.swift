@@ -43,7 +43,8 @@ let package = Package(
         .package(url: "https://github.com/johnpatrickmorgan/TCACoordinators.git", from: "0.11.0"),
         .package(url: "https://github.com/Roy-wonji/AsyncMoya",  from: "1.0.9"),
         .package(url: "https://github.com/SwiftUIX/SwiftUIX.git", from: "0.2.3"),
-        .package(url: "https://github.com/WenchaoD/FSCalendar.git", from: "2.8.3")
+        .package(url: "https://github.com/WenchaoD/FSCalendar.git", from: "2.8.3"),
+        .package(url: "https://github.com/Roy-wonji/DiContainer.git", from: "1.0.7")
         
     ]
 )

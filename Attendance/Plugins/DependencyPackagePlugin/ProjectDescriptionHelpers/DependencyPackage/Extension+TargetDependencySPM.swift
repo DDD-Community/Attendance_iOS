@@ -17,6 +17,7 @@ public extension TargetDependency.SPM {
   static let sdwebImage = TargetDependency.external(name: "SDWebImageSwiftUI", condition: .none)
   static let swiftUIX = TargetDependency.external(name: "SwiftUIX", condition: .none)
   static let fsCalendar = TargetDependency.external(name: "FSCalendar", condition: .none)
+  static let diContainer = TargetDependency.external(name: "DiContainer", condition: .none)
   
   static let gifu = TargetDependency.external(name: "Gifu", condition: .none)
   static let then = TargetDependency.external(name: "Then", condition: .none)
