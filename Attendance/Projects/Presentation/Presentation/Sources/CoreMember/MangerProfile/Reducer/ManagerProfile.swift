@@ -211,7 +211,7 @@ public struct ManagerProfile {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .tapLogOut:
+    case .presentLogOut:
       state.$userEmail.withLock { $0 = "" }
       return .run {  send in
         try await clock.sleep(for: .seconds(2))
