@@ -117,6 +117,7 @@ public struct CustomFSCalendarView: UIViewRepresentable {
       }
       
       calendar.deselect(parent.selectDate)
+      parent.selectDate = date
       parent.isDateSelected = true
       
       DispatchQueue.main.async {
