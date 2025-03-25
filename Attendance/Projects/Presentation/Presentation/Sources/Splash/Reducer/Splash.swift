@@ -131,8 +131,8 @@ public struct Splash {
       case .success(let userDtoMemberData):
         state.userMember = userDtoMemberData
         let _ = state.userMember?.email ?? ""
-        state.userUid = userDtoMemberData.uid
-        state.userEmail = userDtoMemberData.email
+        state.$userUid.withLock { $0 = userDtoMemberData.uid}
+        state.$userEmail.withLock { $0 = userDtoMemberData.email}
       case .failure(let error):
         #logError("유저 정보 가져오기", error.localizedDescription)
       }

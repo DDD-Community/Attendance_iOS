@@ -15,14 +15,24 @@ extension AppDIContainer {
     await registerDependencies { container in
       var repositoryFactory = RepositoryModuleFactory()
       let useCaseFactory = UseCaseModuleFactory()
+      
       repositoryFactory.registerDefaultDefinitions()
       
-      repositoryFactory.makeAllModules().forEach {
-        container.register($0)
+      // asyncForEach를 사용하여 각 모듈을 비동기적으로 등록합니다.
+      await repositoryFactory.makeAllModules().asyncForEach { module in
+        await container.register(module)
       }
-      useCaseFactory.makeAllModules().forEach {
-        container.register($0)
+      await useCaseFactory.makeAllModules().asyncForEach { module in
+        await container.register(module)
       }
+    }
+  }
+}
+
+extension Sequence {
+  func asyncForEach(_ body: (Element) async throws -> Void) async rethrows {
+    for element in self {
+      try await body(element)
     }
   }
 }

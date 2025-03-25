@@ -97,7 +97,7 @@ public struct SignUpSelectTeam {
     case .selectTeamButton(let selectTeam):
       if state.selectTeam == selectTeam {
         state.selectTeam = nil
-        state.userSignUpMember.memberTeam = nil
+        state.$userSignUpMember.withLock { $0.memberTeam = nil}
         state.activeButton = false
         return .none
       }
@@ -105,7 +105,7 @@ public struct SignUpSelectTeam {
       state.selectTeam = selectTeam
       
       if let selectTeam = SelectTeam(rawValue: selectTeam.selectTeamDescription) {
-        state.userSignUpMember.memberTeam = selectTeam
+        state.$userSignUpMember.withLock { $0.memberTeam = selectTeam}
       }
       
       state.activeButton = true
@@ -162,8 +162,8 @@ public struct SignUpSelectTeam {
       switch result {
       case .success(let signUpMemberData):
         state.signUpMemberModel = signUpMemberData
-        state.userUid = signUpMemberData.uid
-        state.userEmail = signUpMemberData.email
+        state.$userUid.withLock { $0  = signUpMemberData.uid}
+        state.$userEmail.withLock { $0 = signUpMemberData.email } 
       case .failure(let error):
         #logError("회원가입 실패", error.localizedDescription)
       }

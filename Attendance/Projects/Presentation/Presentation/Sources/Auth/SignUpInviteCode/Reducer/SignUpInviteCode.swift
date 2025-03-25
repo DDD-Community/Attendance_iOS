@@ -143,20 +143,20 @@ public struct SignUpInviteCode {
       switch result {
       case .success(let validateCodeData):
         state.inviteCodeModel = validateCodeData
-        state.userSignUp.isAdmin = validateCodeData.isAdmin
+        state.$userSignUp.withLock { $0.isAdmin = validateCodeData.isAdmin }
         
         if validateCodeData.isAdmin == true {
-          state.userSignUp.memberType = .coreMember
+          state.$userSignUp.withLock { $0.memberType = .coreMember }
           
           // `memberDesc`를 `MemberType`의 `rawValue`로 변환하여 유효성을 확인한 후 할당
           if let part = MemberType(rawValue: state.userSignUp.memberType.rawValue) {
-            state.userSignUp.memberType = part
+            state.$userSignUp.withLock { $0.memberType = part }
           }
         } else {
-          state.userSignUp.memberType = .member
+          state.$userSignUp.withLock { $0.memberType = .member }
           
           if let part = MemberType(rawValue: state.userSignUp.memberType.rawValue) {
-            state.userSignUp.memberType = part
+            state.$userSignUp.withLock { $0.memberType = part }
           }
         }
       case .failure(let error):
