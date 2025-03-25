@@ -95,7 +95,7 @@ public struct CustomFSCalendarView: UIViewRepresentable {
   
   public class Coordinator: NSObject, FSCalendarDelegate, FSCalendarDataSource, FSCalendarDelegateAppearance {
     let parent: CustomFSCalendarView
-    var calendar: FSCalendar!
+    weak var calendar: FSCalendar!
     
     public init(
       parent: CustomFSCalendarView
@@ -114,7 +114,6 @@ public struct CustomFSCalendarView: UIViewRepresentable {
       }
       
       calendar.deselect(parent.selectDate)
-      parent.selectDate = date
       
       DispatchQueue.main.async {
         calendar.select(date, scrollToDate: true)

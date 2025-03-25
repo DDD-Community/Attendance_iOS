@@ -45,8 +45,8 @@ public enum ImageAsset: String {
   
   
   // MARK: - attandance
-  case Abesent_icons
-  case Late_icons
-  case Present_icons
+  case abesent_icons
+  case late_icons
+  case present_icons
   case stamp
 }
