@@ -28,7 +28,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   }
   
   private func registerDependencies() {
-    _Concurrency.Task {
+    Task {
       await AppDIContainer.shared.registerDefaultDependencies()
     }
   }
