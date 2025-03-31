@@ -7,14 +7,13 @@
 
 import Foundation
 
-import DesignSystem
 import Model
 
 public struct MemberDTO: Codable, Equatable {
   var memberId: String
   var memberType: MemberType
   var managing: Managing
-  var memberTeam: ManagingTeam
+  var memberTeam: SelectTeam
   var name: String
   var roleType: SelectPart
   var createdAt: Date
@@ -26,7 +25,7 @@ public struct MemberDTO: Codable, Equatable {
     memberId: String,
     memberType: MemberType = .coreMember,
     managing: Managing = .notManaging,
-    memberTeam: ManagingTeam = .notTeam,
+    memberTeam: SelectTeam = .notTeam,
     name: String,
     roleType: SelectPart = .all,
     createdAt: Date = Date(),

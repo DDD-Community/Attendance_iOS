@@ -17,8 +17,8 @@ let project = Project.makeAppModule(
     .SPM.collections,
     .SPM.popupView,
     .SPM.collections,
-    .SPM.asyncMoya,
-    
+    .SPM.swiftUIX,
+    .SPM.fsCalendar,
     
     //MARK: - 제거 하고 SWIFTUI 로 변경
     .SPM.gifu,

@@ -38,7 +38,6 @@ public extension Date {
     return dateFormatter.string(from: date)
   }
   
-  
   func formattedDateToString() -> String {
     let dateFormatter = DateFormatter()
     dateFormatter.locale = Locale(identifier: "ko_KR")
@@ -54,11 +53,10 @@ public extension Date {
     return dateFormatter.string(from: date)
   }
   
-  static func formattedDateTimeText(date: Date) -> String {
+  func formattedDateTimeText(date: Date) -> String {
     let dateFormatter = DateFormatter()
     dateFormatter.locale = Locale(identifier: "ko_KR")
-    dateFormatter.dateFormat = "yyyy.MM.dd"
-    dateFormatter.dateStyle = .short
+    dateFormatter.dateFormat = "yyyy.M.dd"
     return dateFormatter.string(from: date)
   }
   
@@ -82,7 +80,6 @@ public extension Date {
     dateFormatter.dateFormat = "yyyy년 MM월 dd일 a h시 mm분 ss초 'UTC'Z"
     return dateFormatter.date(from: dateString) ?? Date()
   }
-  
   
   func dateFromTimeToString(dateString: String) -> Date {
     let dateFormatter = DateFormatter()

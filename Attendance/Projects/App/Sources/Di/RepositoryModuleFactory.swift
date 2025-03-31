@@ -10,27 +10,16 @@ import Foundation
 import DiContainer
 import Networkings
 
-struct RepositoryModuleFactory {
-  private  let registerModule = RegisterModule()
-  
-  private var repositoryDefinitions: [() -> Module] {
-    [
-      { makeRepositoryModule(AuthRepositoryProtocol.self) { AuthRepository() } },
-      { makeRepositoryModule(FireStoreRepositoryProtocol.self) { FireStoreRepository() } },
-      { makeRepositoryModule(QrCodeRepositoryProtcool.self) { QrCodeRepository() } },
-      { makeRepositoryModule(OAuthRepositoryProtocol.self) { OAuthRepository() } },
-      { makeRepositoryModule(SignUpRepositoryProtcol.self) { SignUpRepository() } }
-    ]
-  }
-  
-  func makeAllModules() -> [Module] {
-    repositoryDefinitions.map { $0() }
-  }
-  
-  private func makeRepositoryModule<T>(
-    _ type: T.Type,
-    factory: @escaping () -> T
-  ) -> Module {
-    registerModule.makeModule(type, factory: factory)
+extension RepositoryModuleFactory {
+  public mutating func registerDefaultDefinitions() {
+    let registerModuleCopy = registerModule  // self를 직접 캡처하지 않고 복사
+    repositoryDefinitions = {
+      return [
+        registerModuleCopy.makeDependency(AuthRepositoryProtocol.self) { AuthRepository() },
+        registerModuleCopy.makeDependency(FireStoreRepositoryProtocol.self) { FireStoreRepository() },
+        registerModuleCopy.makeDependency(QrCodeRepositoryProtcol.self) { QrCodeRepository() },
+        registerModuleCopy.makeDependency(SignUpRepositoryProtcol.self) { SignUpRepository() }
+      ]
+    }()
   }
 }

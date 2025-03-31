@@ -17,4 +17,5 @@ public extension UIColor {
   static let gray800 = UIColor(hex: "4D4D4D")
   static let error = UIColor(hex: "FF5050")
   static let basicBlue = UIColor(hex: "0099FF")
+  static let primaryBlue = UIColor(hex: "0D82F9")
 }

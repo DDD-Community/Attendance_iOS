@@ -10,72 +10,44 @@ import Foundation
 import DiContainer
 import Networkings
 
-struct UseCaseModuleFactory {
-  let registerModule = RegisterModule()
-  
-  private var useCaseDefinitions: [() -> Module] {
-    [
-      {
-        self.makeModule(AuthUseCaseProtocol.self) {
-          AuthUseCase(
-            repository: self.resolveOrDefault(
-              AuthRepositoryProtocol.self,
-              default: DefaultAuthRepository())
-          )}
+extension UseCaseModuleFactory {
+  public var useCaseDefinitions: [() -> Module] {
+    return [
+      registerModule.makeUseCaseWithRepository(
+        AuthUseCaseProtocol.self,
+        repositoryProtocol: AuthRepositoryProtocol.self,
+        repositoryFallback: DefaultAuthRepository()
+      ) { repo in
+        AuthUseCase(repository: repo)
       },
-      
-      {
-        self.makeModule(FireStoreUseCaseProtocol.self) {
-          FireStoreUseCase(
-            repository: self.resolveOrDefault(
-              FireStoreRepositoryProtocol.self,
-              default: DefaultFireStoreRepository())
-          )}
+      registerModule.makeUseCaseWithRepository(
+        FireStoreUseCaseProtocol.self,
+        repositoryProtocol: FireStoreRepositoryProtocol.self,
+        repositoryFallback: DefaultFireStoreRepository()
+      ) { repo in
+        FireStoreUseCase(repository: repo)
       },
-      
-      {
-        self.makeModule(QrCodeUseCaseProtocool.self) {
-          QrCodeUseCase(
-            repository: self.resolveOrDefault(
-              QrCodeRepositoryProtcool.self,
-              default: DefaultQrCodeRepository())
-          )}
+      registerModule.makeUseCaseWithRepository(
+        QrCodeUseCaseProtocol.self,
+        repositoryProtocol: QrCodeRepositoryProtcol.self,
+        repositoryFallback: DefaultQrCodeRepository()
+      ) { repo in
+        QrCodeUseCase(repository: repo)
       },
-      
-      {
-        self.makeModule(OAuthUseCaseProtocol.self) {
-          OAuthUseCase(
-            repository: self.resolveOrDefault(
-              OAuthRepositoryProtocol.self,
-              default: DefaultOAuthRepository())
-          )}
+      registerModule.makeUseCaseWithRepository(
+        OAuthUseCaseProtocol.self,
+        repositoryProtocol: OAuthRepositoryProtocol.self,
+        repositoryFallback: DefaultOAuthRepository()
+      ) { repo in
+        OAuthUseCase(repository: repo)
       },
-      {
-        self.makeModule(SignUpUseCaseProtocol.self) {
-          SignUpUseCase(
-            repository: self.resolveOrDefault(
-              SignUpRepositoryProtcol.self,
-              default: DefaultSignUpRepository())
-          )}
-      },
+      registerModule.makeUseCaseWithRepository(
+        SignUpUseCaseProtocol.self,
+        repositoryProtocol: SignUpRepositoryProtcol.self,
+        repositoryFallback: DefaultSignUpRepository()
+      ) { repo in
+        SignUpUseCase(repository: repo)
+      }
     ]
-  }
-  
-  func makeAllModules() -> [Module] {
-    useCaseDefinitions.map { $0() }
-  }
-  
-  private func makeModule<T>(
-    _ type: T.Type,
-    factory: @escaping () -> T
-  ) -> Module {
-    registerModule.makeModule(type, factory: factory)
-  }
-  
-  private func resolveOrDefault<T>(
-    _ type: T.Type,
-    default defaultFactory: @autoclosure @escaping () -> T
-  ) -> T {
-    DependencyContainer.live.resolveOrDefault(type, default: defaultFactory())
   }
 }

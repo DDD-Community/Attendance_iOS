@@ -20,6 +20,7 @@ public enum ImageAsset: String {
   case arrow_down
   case arrow_up
   case editEvent
+  case user
   
   // MARK: - 소셜로그인 버튼
   
@@ -41,4 +42,11 @@ public enum ImageAsset: String {
   // MARK: - 멤버 출석 현황
   
   case danger
+  
+  
+  // MARK: - attandance
+  case abesent_icons
+  case late_icons
+  case present_icons
+  case stamp
 }

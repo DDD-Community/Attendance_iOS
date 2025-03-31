@@ -22,7 +22,7 @@ public struct CustomDatePIckerText: View {
     HStack {
       Spacer()
       
-      Text(Date.formattedDateTimeText(date: selectedDate))
+      Text(selectedDate.formattedDateTimeText(date: selectedDate))
         .pretendardFont(family: .Regular, size: 16)
         .foregroundStyle(.staticWhite)
       

@@ -9,10 +9,8 @@ import Foundation
 import SwiftUI
 
 import DesignSystem
-import Model
 import Networkings
 import Utill
-import Service
 
 import ComposableArchitecture
 import KeychainAccess
@@ -25,6 +23,14 @@ public struct CoreMember {
   @ObservableState
   public struct State: Equatable {
     
+    var isExpandedDropDown: Bool = false
+    var selectedIDropDownItem = "출석"
+    var dropDownItem: [String] = SelectDropDownItem.item
+    var selectDropDownItem: SelectDropDownItem = .attandance
+    
+    var attandanceCheck = AttandanceCheck.State()
+    
+    //TODO: -  예전 코드 리펙 예정
     var headerTitle: String = "출석 현황"
     var selectPart: SelectPart? = .all
     var attendaceMemberModel : [MemberDTO] = []
@@ -52,6 +58,8 @@ public struct CoreMember {
     var selectDate: Date = Date.now
     var selectDatePicker: Bool = false
     var isDateSelected: Bool = false
+    
+    
     //        @Presents var alert: AlertState<Action.Alert>?
     
     public init(
@@ -71,6 +79,7 @@ public struct CoreMember {
     case async(AsyncAction)
     case inner(InnerAction)
     case navigation(NavigationAction)
+    case attandanceCheck(AttandanceCheck.Action)
   }
   
   // MARK: - View action
@@ -133,6 +142,9 @@ public struct CoreMember {
       case .binding(_):
         return .none
         
+      case .binding(\.isExpandedDropDown):
+        return .none
+        
       case .selectDate(let date):
         if state.selectDate == date {
           //                    state.selectDatePicker.toggle()
@@ -173,286 +185,29 @@ public struct CoreMember {
         //            case .alert(.presented(.presentAlert)):
         //                return .none
         
-      // MARK: - ViewAction
-        
+        // MARK: - ViewAction
       case .view(let viewAction):
-        switch viewAction {
-        case .swipeNext:
-          guard let selectPart = state.selectPart else { return .none }
-          if let currentIndex = SelectPart.allCases.firstIndex(of: selectPart),
-             currentIndex < SelectPart.allCases.count - 1 {
-            let nextPart = SelectPart.allCases[currentIndex + 1]
-            if nextPart.isDescEqualToAttendanceListDesc {
-              state.selectPart = nextPart
-            }
-          }
-          return .none
-          
-        case .swipePrevious:
-          guard let selectPart = state.selectPart else { return .none }
-          if let currentIndex = SelectPart.allCases.firstIndex(of: selectPart),
-             currentIndex > 0 {
-            state.selectPart = SelectPart.allCases[currentIndex - 1]
-          }
-          return .none
-          
-        case let .appearSelectPart(selectPart):
-          state.selectPart = selectPart
-          return .none
-          
-        case let .selectPartButton(selectPart):
-          state.selectPart = selectPart
-          state.isActiveBoldText = (selectPart != nil)  // selectPart가 선택된 경우 bold text 활성화
-          return .none
-          
-        case let .updateAttendanceCountWithData(attendances):
-          let today = Calendar.current.startOfDay(for: Date())  // 현재 날짜
-          let selectedDay = Calendar.current.startOfDay(for: state.selectDate)  // 선택된 날짜의 시작 시각 (년/월/일 기준으로)
-          
-          // 모든 attendance의 updatedAt과 선택된 날짜를 출력
-          attendances.forEach { attendance in
-            #logDebug("Attendance ID: \(attendance.id ?? "N/A") - updatedAt: \(attendance.updatedAt), selectedDay: \(selectedDay)")
-          }
-          
-          // 선택된 날짜와 attendance의 updatedAt의 **년/월/일**이 같은 경우만 처리
-          let filteredAttendances = attendances.filter { attendance in
-            let isSameDay = Calendar.current.isDate(attendance.updatedAt, inSameDayAs: selectedDay)  // 년/월/일 기준 비교
-            #logDebug("Attendance ID: \(attendance.id ?? "N/A") - isSameDay: \(isSameDay) - Status: \(attendance.status ?? .absent)")
-            return isSameDay && (attendance.status == .present || attendance.status == .late)
-          }
-          
-          // 필터링된 출석 상태를 기준으로 카운트 계산
-          let presentCount = filteredAttendances.count
-          state.attendanceCount = max(0, presentCount)  // 최소 0 이상으로 설정
-          
-          // 디버그 로그 추가
-          #logDebug("Filtered Attendance Count: \(presentCount)")
-          
-          return .none
-        }
+        return handleViewAction(state: &state, action: viewAction)
         
-      // MARK: - AsyncAction
-      case .async(let AsyncAction):
-        switch AsyncAction {
-        case .fetchMember:
-          return .run {  send in
-            let fetchedDataResult = await Result {
-              try await fireStoreUseCase.fetchFireStoreData(
-                from: .member,
-                as: Attendance.self,
-                shouldSave: false
-              )
-            }
-            
-            switch fetchedDataResult {
-            case let .success(fetchedData):
-              let filterData = fetchedData
-                .filter { $0.memberType == .member || !$0.name.isEmpty }
-                .map { $0.toMemberDTO() }
-              await send(.async(.fetchMemberDataResponse(.success(filterData))))
-              
-            case let .failure(error):
-              await send(.async(.fetchMemberDataResponse(.failure(CustomError.map(error)))))
-            }
-          }
-          
-        // MARK: - 실시간으로 데이터 가져오기 출석현황
-        case .fetchAttenDance:
-          return .run {  send in
-            let fetchedDataResult = await Result {
-              try await fireStoreUseCase.fetchFireStoreData(
-                from: .attendance,
-                as: Attendance.self,
-                shouldSave: false
-              )
-            }
-            switch fetchedDataResult {
-            case let .success(fetchedData):
-              await send(.async(.fetchMember))
-              let filterData = fetchedData
-                .map { $0.toAttendanceDTO() }
-              await send(.async(.fetchAttendanceDataResponse(.success(filterData))))
-              await send(.view(.updateAttendanceCountWithData(attendances: filterData)))
-              
-              
-            case let .failure(error):
-              await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
-            }
-          }
-          
-        case let .fetchAttendanceHistory(uid):
-          return .run { send in
-            for await result in try await fireStoreUseCase.fetchAttendanceHistory(uid, from: .attendance) {
-              await send(.async(.fetchAttendanceHistoryResponse(result)))
-            }
-          }
-          
-        case let .fetchAttendanceHistoryResponse(result):
-          return .run { send in
-            switch result {
-            case .success(let attendances):
-              let filteredData = attendances
-                .filter { (($0.id?.isEmpty) != nil) && $0.memberType == .member && !$0.name.isEmpty }
-                .map { $0.toAttendanceDTO() }
-              await send(.async(.fetchAttendanceDataResponse(.success(filteredData))))
-              await send(.view(.updateAttendanceCountWithData(attendances: filteredData)))
-              
-            case .failure(let error):
-              await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.encodingError(error.localizedDescription)))))
-            }
-          }
-          
-        case .fetchCurrentUser:
-          return .run {  send in
-            let fetchUserResult = await Result {
-              try await fireStoreUseCase.getCurrentUser()
-            }
-            
-            switch fetchUserResult {
-            case let .success(user):
-              if let user = user {
-                await send(.async(.fetchUserDataResponse(.success(user))))
-              }
-            case let .failure(error):
-              await send(.async(.fetchUserDataResponse(.failure(CustomError.map(error)))))
-            }
-          }
-          
-        case .observeAttendance:
-          return .run { send in
-            for await result in try await fireStoreUseCase.observeFireBaseChanges(
-              from: .attendance,
-              as: Attendance.self
-            ) {
-              //                            // Map each Attendance model to AttendanceDTO and send the result
-              //                            let dtoResult = result.map { $0.toAttendanceDTO() }
-              //                            await send(.async(.fetchAttendanceDataResponse(dtoResult)))
-            }
-          }
-          
-        case let .upDateFetchAttandanceMember(selectPart: selectPart):
-          let selectData = state.selectDate
-          return .run {  send in
-            let fetchedAttandanceResult = await Result {
-              try await fireStoreUseCase.fetchFireStoreData(
-                from: .attendance,
-                as: Attendance.self,
-                shouldSave: false
-              )
-            }
-            
-            switch fetchedAttandanceResult {
-            case let .success(fetchedData):
-              if selectPart == .all {
-                await send(.async(.fetchMember))
-              } else {
-                let filteredData = fetchedData
-                  .filter {$0.roleType == selectPart  && $0.updatedAt.formattedDateToString() == selectData.formattedDateToString() }
-                  .map { $0.toAttendanceDTO() }
-                await send(.async(.fetchAttendanceDataResponse(.success(filteredData))))
-              }
-              
-            case let .failure(error):
-              await
-              send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
-            }
-          }
-          
-        case let .fetchUserDataResponse(fetchUser):
-          switch fetchUser {
-          case let .success(fetchUser):
-            state.user = fetchUser
-            #logDebug("fetching data", fetchUser.uid)
-          case let .failure(error):
-            #logError("Error fetching User", error)
-            state.user = nil
-          }
-          return .none
-          
-        case let .fetchAttendanceDataResponse(fetchedData):
-          switch fetchedData {
-          case let .success(fetchedAttendanceData):
-            let filteredData = fetchedAttendanceData.filter {
-              ($0.id.isEmpty == false) && $0.memberType == .member && !$0.name.isEmpty
-            }
-            
-            let selectedDate = state.selectDate
-            let selectedDay = Calendar.current.startOfDay(for: selectedDate)
-            let today = Calendar.current.startOfDay(for: Date())
-            
-            let updatedData = filteredData.map { attendance -> AttendanceDTO in
-              if !Calendar.current.isDate(attendance.updatedAt, inSameDayAs: selectedDay) {
-                var modifiedAttendance = attendance
-                modifiedAttendance.status = .notAttendance
-                return modifiedAttendance
-              }
-              return attendance
-            }
-            
-            if Calendar.current.isDate(selectedDate, inSameDayAs: today) {
-              state.attendanceCheckInModel = updatedData
-            } else {
-              state.attendanceCheckInModel = updatedData
-            }
-            
-          case let .failure(error):
-            #logError("출석  정보 데이터 에러", error.localizedDescription)
-            state.isLoading = true
-          }
-          return .none
-          
-        case let .fetchMemberDataResponse(fetchedData):
-          switch fetchedData {
-          case let .success(fetchedData):
-            state.isLoading = false
-            let filteredData = fetchedData.filter { $0.memberType == .member && !$0.name.isEmpty }
-            state.attendaceMemberModel = filteredData
-            
-          case let .failure(error):
-            #logError("Error fetching data", error)
-            state.isLoading = true
-          }
-          return .none
-        }
+        // MARK: - AsyncAction
+      case .async(let asyncAction):
+        return handleAsyncAction(state: &state, action: asyncAction)
         
-      // MARK: - InnerAction
-        
+        // MARK: - InnerAction
       case .inner(let InnerAction):
-        switch InnerAction {
-          
-        }
+        return handleInnerAction(state: &state, action: InnerAction)
         
-      // MARK: - NavigationAction
-        
+        // MARK: - NavigationAction
       case .navigation(let NavigationAction):
-        switch NavigationAction {
-        case .presentQrcode:
-          state.destination = .qrcode(.init(userID: state.user?.uid ?? ""))
-          try? Keychain().set(state.user?.uid ?? "" , key: "userID")
-          return .none
-          
-        case .presentSchedule:
-          state.destination = .scheduleEvent(.init(generation: state.attendaceMemberModel.first?.generation ?? .zero))
-          return .run {  send in
-            await send(.async(.fetchMember))
-          }
-          
-        case .presentManagerProfile:
-          return .none
-        }
+        return handleNavigationAction(state: &state, action: NavigationAction)
         //            case .alert(.dismiss):
         //                state.alert = nil
         //                return .none
+      default:
+        return .none
       }
     }
     .ifLet(\.$destination, action: \.destination)
-    //        .ifLet(\.$alert, action: \.alert)
-    //        .onChange(of: \.attendaceMemberModel) { oldValue, newValue in
-    //            Reduce { state, action in
-    //                state.attendaceMemberModel = newValue
-    //                return .none
-    //            }
-    //        }
     .onChange(of: \.attendanceCheckInModel) { oldValue, newValue in
       Reduce { state, action in
         state.attendanceCheckInModel = newValue
@@ -464,6 +219,284 @@ public struct CoreMember {
         state.attendanceCount = newValue
         return .none
       }
+    }
+    Scope(state: \.attandanceCheck, action: \.attandanceCheck) {
+      AttandanceCheck()
+    }
+  }
+  
+  private func handleViewAction(
+    state: inout State,
+    action: View
+  ) -> Effect<Action> {
+    switch action {
+    case .swipeNext:
+      guard let selectPart = state.selectPart else { return .none }
+      if let currentIndex = SelectPart.allCases.firstIndex(of: selectPart),
+         currentIndex < SelectPart.allCases.count - 1 {
+        let nextPart = SelectPart.allCases[currentIndex + 1]
+        if nextPart.isDescEqualToAttendanceListDesc {
+          state.selectPart = nextPart
+        }
+      }
+      return .none
+      
+    case .swipePrevious:
+      guard let selectPart = state.selectPart else { return .none }
+      if let currentIndex = SelectPart.allCases.firstIndex(of: selectPart),
+         currentIndex > 0 {
+        state.selectPart = SelectPart.allCases[currentIndex - 1]
+      }
+      return .none
+      
+    case let .appearSelectPart(selectPart):
+      state.selectPart = selectPart
+      return .none
+      
+    case let .selectPartButton(selectPart):
+      state.selectPart = selectPart
+      state.isActiveBoldText = (selectPart != nil)  // selectPart가 선택된 경우 bold text 활성화
+      return .none
+      
+    case let .updateAttendanceCountWithData(attendances):
+      let today = Calendar.current.startOfDay(for: Date())  // 현재 날짜
+      let selectedDay = Calendar.current.startOfDay(for: state.selectDate)  // 선택된 날짜의 시작 시각 (년/월/일 기준으로)
+      
+      // 모든 attendance의 updatedAt과 선택된 날짜를 출력
+      attendances.forEach { attendance in
+        #logDebug("Attendance ID: \(attendance.id ?? "N/A") - updatedAt: \(attendance.updatedAt), selectedDay: \(selectedDay)")
+      }
+      
+      // 선택된 날짜와 attendance의 updatedAt의 **년/월/일**이 같은 경우만 처리
+      let filteredAttendances = attendances.filter { attendance in
+        let isSameDay = Calendar.current.isDate(attendance.updatedAt, inSameDayAs: selectedDay)  // 년/월/일 기준 비교
+        #logDebug("Attendance ID: \(attendance.id ?? "N/A") - isSameDay: \(isSameDay) - Status: \(attendance.status ?? .absent)")
+        return isSameDay && (attendance.status == .present || attendance.status == .late)
+      }
+      
+      // 필터링된 출석 상태를 기준으로 카운트 계산
+      let presentCount = filteredAttendances.count
+      state.attendanceCount = max(0, presentCount)  // 최소 0 이상으로 설정
+      
+      // 디버그 로그 추가
+      #logDebug("Filtered Attendance Count: \(presentCount)")
+      
+      return .none
+    }
+  }
+  
+  private func handleAsyncAction(
+    state: inout State,
+    action: AsyncAction
+  ) -> Effect<Action> {
+    switch action {
+    case .fetchMember:
+      return .run {  send in
+        let fetchedDataResult = await Result {
+          try await fireStoreUseCase.fetchFireStoreData(
+            from: .member,
+            as: Attendance.self,
+            shouldSave: false
+          )
+        }
+        
+        switch fetchedDataResult {
+        case let .success(fetchedData):
+          let filterData = fetchedData
+            .filter { $0.memberType == .member || !$0.name.isEmpty }
+            .map { $0.toMemberDTO() }
+          await send(.async(.fetchMemberDataResponse(.success(filterData))))
+          
+        case let .failure(error):
+          await send(.async(.fetchMemberDataResponse(.failure(CustomError.map(error)))))
+        }
+      }
+      
+      // MARK: - 실시간으로 데이터 가져오기 출석현황
+    case .fetchAttenDance:
+      return .run {  send in
+        let fetchedDataResult = await Result {
+          try await fireStoreUseCase.fetchFireStoreData(
+            from: .attendance,
+            as: Attendance.self,
+            shouldSave: false
+          )
+        }
+        switch fetchedDataResult {
+        case let .success(fetchedData):
+          await send(.async(.fetchMember))
+          let filterData = fetchedData
+            .map { $0.toAttendanceDTO() }
+          await send(.async(.fetchAttendanceDataResponse(.success(filterData))))
+          await send(.view(.updateAttendanceCountWithData(attendances: filterData)))
+          
+          
+        case let .failure(error):
+          await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
+        }
+      }
+      
+    case let .fetchAttendanceHistory(uid):
+      return .run { send in
+        for await result in try await fireStoreUseCase.fetchAttendanceHistory(uid, from: .attendance) {
+          await send(.async(.fetchAttendanceHistoryResponse(result)))
+        }
+      }
+      
+    case let .fetchAttendanceHistoryResponse(result):
+      return .run { send in
+        switch result {
+        case .success(let attendances):
+          let filteredData = attendances
+            .filter { (($0.id?.isEmpty) != nil) && $0.memberType == .member && !$0.name.isEmpty }
+            .map { $0.toAttendanceDTO() }
+          await send(.async(.fetchAttendanceDataResponse(.success(filteredData))))
+          await send(.view(.updateAttendanceCountWithData(attendances: filteredData)))
+          
+        case .failure(let error):
+          await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.encodingError(error.localizedDescription)))))
+        }
+      }
+      
+    case .fetchCurrentUser:
+      return .run {  send in
+        let fetchUserResult = await Result {
+          try await fireStoreUseCase.getCurrentUser()
+        }
+        
+        switch fetchUserResult {
+        case let .success(user):
+          if let user = user {
+            await send(.async(.fetchUserDataResponse(.success(user))))
+          }
+        case let .failure(error):
+          await send(.async(.fetchUserDataResponse(.failure(CustomError.map(error)))))
+        }
+      }
+      
+    case .observeAttendance:
+      return .run { send in
+        for await result in try await fireStoreUseCase.observeFireBaseChanges(
+          from: .attendance,
+          as: Attendance.self
+        ) {
+          //                            // Map each Attendance model to AttendanceDTO and send the result
+          //                            let dtoResult = result.map { $0.toAttendanceDTO() }
+          //                            await send(.async(.fetchAttendanceDataResponse(dtoResult)))
+        }
+      }
+      
+    case let .upDateFetchAttandanceMember(selectPart: selectPart):
+      let selectData = state.selectDate
+      return .run {  send in
+        let fetchedAttandanceResult = await Result {
+          try await fireStoreUseCase.fetchFireStoreData(
+            from: .attendance,
+            as: Attendance.self,
+            shouldSave: false
+          )
+        }
+        
+        switch fetchedAttandanceResult {
+        case let .success(fetchedData):
+          if selectPart == .all {
+            await send(.async(.fetchMember))
+          } else {
+            let filteredData = fetchedData
+              .filter {$0.roleType == selectPart  && $0.updatedAt.formattedDateToString() == selectData.formattedDateToString() }
+              .map { $0.toAttendanceDTO() }
+            await send(.async(.fetchAttendanceDataResponse(.success(filteredData))))
+          }
+          
+        case let .failure(error):
+          await
+          send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
+        }
+      }
+      
+    case let .fetchUserDataResponse(fetchUser):
+      switch fetchUser {
+      case let .success(fetchUser):
+        state.user = fetchUser
+        #logDebug("fetching data", fetchUser.uid)
+      case let .failure(error):
+        #logError("Error fetching User", error)
+        state.user = nil
+      }
+      return .none
+      
+    case let .fetchAttendanceDataResponse(fetchedData):
+      switch fetchedData {
+      case let .success(fetchedAttendanceData):
+        let filteredData = fetchedAttendanceData.filter {
+          ($0.id.isEmpty == false) && $0.memberType == .member && !$0.name.isEmpty
+        }
+        
+        let selectedDate = state.selectDate
+        let selectedDay = Calendar.current.startOfDay(for: selectedDate)
+        let today = Calendar.current.startOfDay(for: Date())
+        
+        let updatedData = filteredData.map { attendance -> AttendanceDTO in
+          if !Calendar.current.isDate(attendance.updatedAt, inSameDayAs: selectedDay) {
+            var modifiedAttendance = attendance
+            modifiedAttendance.status = .notAttendance
+            return modifiedAttendance
+          }
+          return attendance
+        }
+        
+        if Calendar.current.isDate(selectedDate, inSameDayAs: today) {
+          state.attendanceCheckInModel = updatedData
+        } else {
+          state.attendanceCheckInModel = updatedData
+        }
+        
+      case let .failure(error):
+        #logError("출석  정보 데이터 에러", error.localizedDescription)
+        state.isLoading = true
+      }
+      return .none
+      
+    case let .fetchMemberDataResponse(fetchedData):
+      switch fetchedData {
+      case let .success(fetchedData):
+        state.isLoading = false
+        let filteredData = fetchedData.filter { $0.memberType == .member && !$0.name.isEmpty }
+        state.attendaceMemberModel = filteredData
+        
+      case let .failure(error):
+        #logError("Error fetching data", error)
+        state.isLoading = true
+      }
+      return .none
+    }
+  }
+  
+  private func handleInnerAction(
+    state: inout State,
+    action: InnerAction
+  ) -> Effect<Action> {
+    
+  }
+  
+  private func handleNavigationAction(
+    state: inout State,
+    action: NavigationAction
+  ) -> Effect<Action> {
+    switch action {
+    case .presentQrcode:
+      state.destination = .qrcode(.init(userID: state.user?.uid ?? ""))
+      try? Keychain().set(state.user?.uid ?? "" , key: "userID")
+      return .none
+      
+    case .presentSchedule:
+      state.destination = .scheduleEvent(.init(generation: state.attendaceMemberModel.first?.generation ?? .zero))
+      return .run {  send in
+        await send(.async(.fetchMember))
+      }
+      
+    case .presentManagerProfile:
+      return .none
     }
   }
 }

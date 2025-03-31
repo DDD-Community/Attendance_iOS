@@ -30,7 +30,7 @@ public struct CustomDatePickerShortText: View {
           .pretendardFont(family: .Regular, size: 17)
           .foregroundStyle(isDateSelected ? .staticWhite : .gray600)
       } else {
-        Text(Date.formattedDateTimeText(date: selectedDate))
+        Text(selectedDate.formattedDateTimeText(date: selectedDate))
           .pretendardFont(family: .Regular, size: 17)
           .foregroundStyle(isDateSelected ? .staticWhite : .gray600)
       }
@@ -46,7 +46,7 @@ public struct CustomDatePickerShortText: View {
         }), displayedComponents: [.hourAndMinute]) { }
           .environment(\.locale, Locale(identifier: "ko_KR"))
           .colorMultiply(.clear)
-        //                .datePickerStyle(.automatic)
+        //          .datePickerStyle(.automatic)
           .labelsHidden()
       } else {
         DatePicker(selection: Binding(get: {

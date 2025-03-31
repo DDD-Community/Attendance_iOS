@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum SelectPart: String, CaseIterable, Codable {
+public enum SelectPart: String, CaseIterable, Codable, Equatable {
   case all
   case pm = "PM"
   case design = "Designer"
@@ -37,10 +37,8 @@ public enum SelectPart: String, CaseIterable, Codable {
   
   public var attendanceListDesc: String {
     switch self {
-    case .all:
-      return "전체"
     case .pm:
-      return "PM"
+      return "Product Manager"
     case .design:
       return "Designer"
     case .android:
@@ -48,9 +46,11 @@ public enum SelectPart: String, CaseIterable, Codable {
     case .iOS:
       return "iOS"
     case .web:
-      return "FE"
+      return "Frontend"
     case .server:
-      return "BE"
+      return "Backend"
+    default:
+      return ""
     }
   }
   

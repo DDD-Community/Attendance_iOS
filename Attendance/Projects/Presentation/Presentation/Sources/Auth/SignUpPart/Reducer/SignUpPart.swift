@@ -91,14 +91,14 @@ public struct SignUpPart {
     case .selectPartButton(let selectPart):
       if state.selectPart == selectPart {
         state.selectPart = nil
-        state.userSignUpMember.role = nil
+        state.$userSignUpMember.withLock { $0.role = nil }
         state.activeSelectPart = false
         return .none
       }
       
       state.selectPart = selectPart
       if let part = SelectPart(rawValue: selectPart.desc) {
-        state.userSignUpMember.role = part
+        state.$userSignUpMember.withLock { $0.role = part}
       }
       state.activeSelectPart = true
       return .none
