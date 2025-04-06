@@ -31,12 +31,7 @@ public struct CoreMemberCoordinatorView: View {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()
-        
-      case .qrCode(let qrCodeStore):
-        QrCodeView(store: qrCodeStore) {
-          store.send(.view(.backAction))
-        }
-        .navigationBarBackButtonHidden()
+    
         
       case .scheduleEvent(let scheduleEventStore):
         ScheduleEventView(store: scheduleEventStore) {
