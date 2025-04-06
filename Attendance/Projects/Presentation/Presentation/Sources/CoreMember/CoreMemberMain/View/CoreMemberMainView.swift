@@ -16,7 +16,7 @@ import SDWebImageSwiftUI
 struct CoreMemberMainView: View {
   @Bindable var store: StoreOf<CoreMember>
   @State var isExpanded: Bool = false
-  @State private var selectedItem = "출석"
+  @State var test: Bool = false
   
   init(store: StoreOf<CoreMember>) {
     self.store = store
@@ -49,21 +49,7 @@ struct CoreMemberMainView: View {
         }
       }
     }
-    
-    .task {
-//      store.send(.attandanceCheck(.async(.fetchMember)))
-//      store.send(.async(.fetchCurrentUser))
-    }
-    
-    .onAppear {
-//      store.send(.attandanceCheck(.async(.fetchAttenDance)))
-//      store.send(.view(.appearSelectPart(selectPart: .all)))
-    }
-//    
-//    .onChange(of: store.attendanceCheckInModel) { oldValue, newValue in
-//      store.send(.async(.fetchAttendanceDataResponse(.success(newValue))))
-//    }
-//    
+  
     .gesture(
       DragGesture()
         .onEnded { value in
@@ -78,6 +64,15 @@ struct CoreMemberMainView: View {
           }
         }
     )
+    .sheet(item: $store.scope(state: \.destination?.qrcode, action: \.destination.qrcode)) { qrCodeStore in
+      QRScannerView(store: qrCodeStore) {
+        store.send(.view(.closeModal))
+      }
+      .presentationDetents([.height(UIScreen.screenHeight * 0.85)])
+      .presentationCornerRadius(20)
+      .presentationDragIndicator(.hidden)
+      
+    }
   }
 }
 
@@ -125,7 +120,7 @@ extension CoreMemberMainView {
               .foregroundStyle(.staticWhite)
           }
           .onTapGesture {
-            store.send(.navigation(.presentQrcode))
+            store.send(.view(.presentQrcode))
           }
         
         Spacer()
@@ -194,3 +189,4 @@ extension CoreMemberMainView {
   }
   
 }
+

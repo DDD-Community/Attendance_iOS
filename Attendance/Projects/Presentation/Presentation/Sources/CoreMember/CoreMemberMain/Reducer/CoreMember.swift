@@ -56,7 +56,8 @@ public struct CoreMember {
   
   @CasePathable
   public enum View: Equatable {
-   
+   case presentQrcode
+  case closeModal
   }
   
   // MARK: - 비동기 처리 액션
@@ -72,7 +73,6 @@ public struct CoreMember {
   
   // MARK: - 네비게이션 연결 액션
   public enum NavigationAction: Equatable {
-    case presentQrcode
     case presentSchedule
     case presentManagerProfile
     
@@ -129,7 +129,15 @@ public struct CoreMember {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    
+    switch action {
+    case .presentQrcode:
+      state.destination = .qrcode(.init())
+      return .none
+      
+    case .closeModal:
+      state.destination = nil
+      return .none
+    }
   }
   
   private func handleAsyncAction(
@@ -151,11 +159,6 @@ public struct CoreMember {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presentQrcode:
-      state.destination = .qrcode(.init(userID: state.user?.uid ?? ""))
-      try? Keychain().set(state.user?.uid ?? "" , key: "userID")
-      return .none
-      
     case .presentSchedule:
       return .run {  send in
         
