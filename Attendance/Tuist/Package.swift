@@ -41,3 +41,4 @@ let package = Package(
     .package(url: "https://github.com/Roy-wonji/DiContainer.git", from: "1.0.8")
   ]
 )
+
