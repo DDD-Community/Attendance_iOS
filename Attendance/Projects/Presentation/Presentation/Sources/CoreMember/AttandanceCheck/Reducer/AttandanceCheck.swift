@@ -209,7 +209,6 @@ public struct AttandanceCheck {
         }
         switch fetchedDataResult {
         case let .success(fetchedData):
-          
           let filterData = fetchedData
             .map { $0.toAttendanceDTO() }
           var attendanceCount = filterData.filter { $0.status == .present }.count
@@ -254,8 +253,6 @@ public struct AttandanceCheck {
           attendanceCount = attendanceCount
           lateCount = lateCount
           absentCount = absentCount
-          //          await send(.view(.updateAttendanceCountWithData(attendances: filterData)))
-          
           
         case let .failure(error):
           await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
