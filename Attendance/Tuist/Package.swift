@@ -27,7 +27,7 @@ let package = Package(
     .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "10.27.0"),
     .package(url: "https://github.com/google/GoogleSignIn-iOS", from: "7.1.0"),
     .package(url: "https://github.com/EFPrefix/EFQRCode.git", exact: "6.2.1"),
-     .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "2.0.0"),
+    .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "2.0.0"),
     .package(url: "https://github.com/kaishin/Gifu.git", from: "3.4.0"),
     .package(url: "https://github.com/kishikawakatsumi/KeychainAccess", from: "4.2.2"),
     .package(url: "https://github.com/exyte/PopupView.git", from: "2.10.4"),
