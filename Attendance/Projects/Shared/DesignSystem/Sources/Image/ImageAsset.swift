@@ -22,6 +22,7 @@ public enum ImageAsset: String {
   case arrow_up
   case editEvent
   case user
+  case info
   
   // MARK: - 소셜로그인 버튼
   

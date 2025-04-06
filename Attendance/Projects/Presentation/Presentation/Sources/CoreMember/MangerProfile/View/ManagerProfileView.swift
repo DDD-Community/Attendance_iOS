@@ -35,6 +35,21 @@ public struct ManagerProfileView: View {
       .task {
         store.send(.async(.fetchUser))
       }
+      
+      if store.destination?.createApp != nil {
+        VisualEffectBlur(blurStyle: .systemChromeMaterialDark)
+          .edgesIgnoringSafeArea(.top)
+           .transition(.opacity)
+           .animation(.easeInOut(duration: 0.25), value: store.destination?.createApp != nil)
+       }
+    }
+    .sheet(item: $store.scope(state: \.destination?.createApp, action: \.destination.createApp)) { crateAppStore in
+      CreateAppView(store: crateAppStore) {
+        store.send(.view(.closeModal))
+      }
+      .presentationDetents([.height(UIScreen.screenHeight * 0.6)])
+      .presentationCornerRadius(20)
+      .presentationDragIndicator(.visible)
     }
   }
 }
@@ -56,9 +71,11 @@ extension ManagerProfileView {
   fileprivate func mangerProfileData() -> some View {
     VStack {
       Spacer()
-        .frame(height: 16)
+        .frame(height: 12)
       
-      CustomNavigationBackBar(buttonAction: backAction)
+      CustomNavigationBar(backAction: backAction, addAction: {
+        store.send(.view(.appearModal))
+      }, image: .info)
       
       mangerCardImage()
       
@@ -77,23 +94,27 @@ extension ManagerProfileView {
         Spacer()
           .frame(height: 24)
         
-        HStack {
-          Text("운영진")
-            .pretendardCustomFont(textStyle: .body3NormalBold)
-            .foregroundStyle(.statusFocus)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 5)
-            .overlay {
-              RoundedRectangle(cornerRadius: 20)
-                .stroke(.statusFocus, lineWidth: 1)
-                .background(.clear)
-            }
+        if store.userMember?.memberType == .coreMember {
+          HStack {
+            Text("운영진")
+              .pretendardCustomFont(textStyle: .body3NormalBold)
+              .foregroundStyle(.statusFocus)
+              .padding(.horizontal, 14)
+              .padding(.vertical, 5)
+              .overlay {
+                RoundedRectangle(cornerRadius: 20)
+                  .stroke(.statusFocus, lineWidth: 1)
+                  .background(.clear)
+              }
+            
+            Spacer()
+          }
           
           Spacer()
+            .frame(height: 8)
         }
         
-        Spacer()
-          .frame(height: 8)
+       
         
         Text("\(store.userMember?.name ?? "")님")
           .pretendardCustomFont(textStyle: .headline5Bold)
@@ -112,18 +133,29 @@ extension ManagerProfileView {
         Spacer()
           .frame(height: 20)
         
-        if store.userMember?.managing == .projectTeamManaging {
+        if store.userMember?.memberType == .coreMember {
+          if store.userMember?.managing == .projectTeamManaging {
+            managerTextComponent(
+              title: store.managerProfileManaging,
+              subTitle: store.userMember?.managing.managingDesc ?? "",
+              managingTeam: store.userMember?.memberTeam?.attendanceListDescription ?? "",
+              isManaging: false,
+              isGeneration: false
+            )
+          } else {
+            managerTextComponent(
+              title: store.managerProfileManaging,
+              subTitle: store.userMember?.managing.managingDesc ?? "",
+              managingTeam: "",
+              isManaging: false,
+              isGeneration: false
+            )
+          }
+        }
+        else {
           managerTextComponent(
-            title: store.managerProfileManaging,
-            subTitle: store.userMember?.managing.managingDesc ?? "",
-            managingTeam: store.userMember?.memberTeam?.attendanceListDescription ?? "",
-            isManaging: false,
-            isGeneration: false
-          )
-        } else {
-          managerTextComponent(
-            title: store.managerProfileManaging,
-            subTitle: store.userMember?.managing.managingDesc ?? "",
+            title: store.memberSelectTeam,
+            subTitle: store.userMember?.memberTeam?.attendanceListDescription ?? "",
             managingTeam: "",
             isManaging: false,
             isGeneration: false
@@ -238,7 +270,7 @@ extension ManagerProfileView {
   private func logoutButton() -> some View {
     VStack {
       Spacer()
-        .frame(height: 12)
+        .frame(height: 23)
       
       HStack(alignment: .center) {
         Text(store.logoutText)
@@ -251,7 +283,7 @@ extension ManagerProfileView {
       }
       
       Spacer()
-        .frame(height: 24)
+        
     }
     .padding(.horizontal, 24)
   }
