@@ -13,7 +13,7 @@ import AsyncMoya
 import FirebaseFirestore
 
 @Observable
-public class SignUpRepository: SignUpRepositoryProtcol {
+public class SignUpRepository: SignUpRepositoryProtocol {
   private let fireBaseDB = Firestore.firestore()
   
   public init() {}

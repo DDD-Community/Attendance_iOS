@@ -26,10 +26,44 @@ public struct AuthUseCase: AuthUseCaseProtocol {
   }
 }
 
+extension DependencyContainer {
+  var authUseCase: AuthRepositoryProtocol? {
+    resolve(AuthRepositoryProtocol.self)
+  }
+}
+
+
 extension AuthUseCase: DependencyKey {
   static public var liveValue: AuthUseCase = {
-    let authRepository = DependencyContainer.live.resolve(AuthRepositoryProtocol.self)
-    ?? DefaultAuthRepository() // 기본값 사용
+    let authRepository = ContainerResgister(\.authUseCase).wrappedValue
     return AuthUseCase(repository: authRepository)
   }()
+}
+
+public extension DependencyValues {
+  var authUseCase: AuthUseCase {
+    get { self[AuthUseCase.self] }
+    set { self[AuthUseCase.self] = newValue }
+  }
+}
+
+public extension RegisterModule {
+  
+  var authUseCaseModule: () -> Module {
+    makeUseCaseWithRepository(
+      AuthUseCaseProtocol.self,
+      repositoryProtocol: AuthRepositoryProtocol.self,
+      repositoryFallback: DefaultAuthRepository(),
+      factory: { repo in
+        AuthUseCase(repository: repo)
+      }
+    )
+  }
+  
+  var authRepositoryModule: () -> Module {
+    makeDependency(AuthRepositoryProtocol.self) {
+      AuthRepository()
+    }
+  }
+  
 }
