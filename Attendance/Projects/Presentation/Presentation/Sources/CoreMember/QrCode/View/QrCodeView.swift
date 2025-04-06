@@ -100,7 +100,11 @@ extension QrCodeView {
       } else {
         RoundedRectangle(cornerRadius: 8)
           .fill(Color.gray800.opacity(0.4))
+<<<<<<< HEAD
           .frame(width: 200, height: 200)
+=======
+          .frame(width:  200, height: 200)
+>>>>>>> 90285c0 (✨[feat]:  프로피에서 유저 정보 화면구현  #45)
           .overlay {
             VStack {
               Spacer()
@@ -118,7 +122,11 @@ extension QrCodeView {
   
   @ViewBuilder
   fileprivate func qrCodeReaderText() -> some View {
+<<<<<<< HEAD
     if store.eventModel.isEmpty == false {
+=======
+    if store.eventModel != [ ] {
+>>>>>>> 90285c0 (✨[feat]:  프로피에서 유저 정보 화면구현  #45)
       VStack {
         Spacer()
           .frame(height: UIScreen.screenHeight * 0.1)
