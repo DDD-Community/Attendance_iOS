@@ -208,7 +208,6 @@ public struct AttandanceCheck {
         }
         switch fetchedDataResult {
         case let .success(fetchedData):
-//          await send(.async(.fetchMember))
           
           let filterData = fetchedData
             .map { $0.toAttendanceDTO() }
@@ -221,8 +220,6 @@ public struct AttandanceCheck {
           attendanceCount = attendanceCount
           lateCount = lateCount
           absentCount = absentCount
-          //          await send(.view(.updateAttendanceCountWithData(attendances: filterData)))
-          
           
         case let .failure(error):
           await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
@@ -257,9 +254,7 @@ public struct AttandanceCheck {
           attendanceCount = attendanceCount
           lateCount = lateCount
           absentCount = absentCount
-          //          await send(.view(.updateAttendanceCountWithData(attendances: filterData)))
-          
-          
+       
         case let .failure(error):
           await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
         }
@@ -289,7 +284,6 @@ public struct AttandanceCheck {
         ) {
           switch result {
           case let .success(fetchedData):
-  //          await send(.async(.fetchMember))
             let filterData = fetchedData
               .map { $0.toAttendanceDTO() }
             await send(.async(.fetchAttendanceDataResponse(.success(filterData))))
