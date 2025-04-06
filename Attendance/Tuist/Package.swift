@@ -19,7 +19,7 @@ let packageSettings = PackageSettings(
 let package = Package(
   name: "DDDAttendance",
   dependencies: [
-    ..package(url: "https://github.com/SnapKit/SnapKit", from: "5.7.0"),
+    .package(url: "https://github.com/SnapKit/SnapKit", from: "5.7.0"),
     .package(url: "https://github.com/layoutBox/FlexLayout", from: "2.0.10"),
     .package(url: "https://github.com/layoutBox/PinLayout", from: "1.10.5"),
     .package(url: "https://github.com/ReactorKit/ReactorKit", from: "3.2.0"),
