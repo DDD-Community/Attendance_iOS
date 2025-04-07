@@ -19,9 +19,10 @@ extension Settings {
       .setProductName(appName)
       .setCFBundleDisplayName(displayName)
       .setOtherLdFlags("-ObjC -all_load")
-      .setDebugInformationFormat("non-global")
+      .setDebugInformationFormat("dwarf-with-dsym")
       .setProvisioningProfileSpecifier(provisioningProfile)
       .setSkipInstall(setSkipInstall)
+      .setAllowNonModularIncludesInFrameworkModules(true)
   }
   
   private static func commonBaseSettings(
@@ -46,10 +47,11 @@ extension Settings {
       .setCurrentProjectVersion(.appBuildVersion())
       .setCodeSignIdentity()
       .setCodeSignStyle()
+      .setSwiftVersion("6.0")
       .setVersioningSystem()
       .setProvisioningProfileSpecifier("match Development \(Project.Environment.bundlePrefix)")
       .setDevelopmentTeam(Project.Environment.organizationTeamId)
-      .setExplicitlyBuiltModules(true)
+      .setCFBundleDevelopmentRegion()
       .setDebugInformationFormat(),
     configurations: [
       .debug(
@@ -98,7 +100,9 @@ extension Settings {
         .setMarketingVersion(.appVersion())
         .setCurrentProjectVersion(.appBuildVersion())
         .setCodeSignIdentity()
+        .setASAuthenticationServicesEnabled()
         .setArchs()
+        .setSwiftVersion("6.0")
         .setVersioningSystem()
         .setDebugInformationFormat(),
       configurations: [
@@ -126,8 +130,9 @@ extension Settings {
           ),
           xcconfig: .relativeToRoot("./Config/realse.xcconfig")
         )
-      ], defaultSettings: .recommended
-    )
+      ], defaultSettings: .recommended)
+    
     return appBaseSetting
+    
   }
 }

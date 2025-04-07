@@ -73,6 +73,10 @@ public extension SettingsDictionary {
     return self.merging(["PROVISIONING_PROFILE_SPECIFIER": SettingValue(stringLiteral: value)]) { (_, new) in new }
   }
   
+  func setSwiftVersion(_ value: String) -> SettingsDictionary {
+    return self.merging(["SWIFT_VERSION": SettingValue(stringLiteral: value)]) { (_, new) in new }
+  }
+  
   func setDevelopmentTeam(_ value: String) -> SettingsDictionary {
     return self.merging(["DEVELOPMENT_TEAM": SettingValue(stringLiteral: value)]) { (_, new) in new }
   }
@@ -83,6 +87,17 @@ public extension SettingsDictionary {
   
   func setExplicitlyBuiltModules(_ value: Bool = true) -> SettingsDictionary {
     return self.merging(["EXPLICITLY_BUILT_MODULES": SettingValue(stringLiteral: value ? "YES" : "NO")])
+  }
+  
+  func setCFBundleDevelopmentRegion(_ value: String = "ko") -> SettingsDictionary {
+    return self.merging(["CFBundleDevelopmentRegion": SettingValue(stringLiteral: value)]) { (_, new) in new }
+  }
+  
+  func setAllowNonModularIncludesInFrameworkModules(_ value: Bool) -> SettingsDictionary {
+    let stringValue = value ? "YES" : "NO"
+    return merging([
+      "CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES": SettingValue(stringLiteral: stringValue)
+    ]) { _, new in new }
   }
 }
 
