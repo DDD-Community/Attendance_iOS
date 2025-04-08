@@ -15,14 +15,6 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
-### ios custom_lane
-
-```sh
-[bundle exec] fastlane ios custom_lane
-```
-
-Description of what the lane does
-
 ### ios build_ipa
 
 ```sh
@@ -37,7 +29,7 @@ Install Profiles and Build My App
 [bundle exec] fastlane ios QA
 ```
 
-Push to TestFlight
+Upload to TestFlight
 
 ----
 

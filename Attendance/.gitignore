@@ -9,7 +9,7 @@ fastlane/output/unpacked/
 fastlane/output/**/*.DS_Store
 fastlane/output/**/._*
 fastlane/output/
-
+Gemfile.lock
 # Icon must end with two
 Icon
 
