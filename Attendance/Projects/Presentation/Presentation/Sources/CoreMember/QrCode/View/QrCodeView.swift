@@ -42,95 +42,20 @@ struct QRScannerView: View {
         let rectX = (width - store.scannerSize) / 2
         let rectY = (height - store.scannerSize) / 2
         
-        NavigationBackButton(buttonAction: backAction)
-        
-        if store.loadingQRImage == true {
-          TooltipShape(tooltipText: store.qrCodeReaderText)
-            .offset(y: UIScreen.screenHeight * 0.2)
-        } else {
-          TooltipShape(tooltipText: store.qrCodeReaderText)
-            .offset(y: UIScreen.screenHeight * 0.2)
-        }
-        
-        Spacer()
-          .frame(height: 24)
-        
-        //              generateQrImage()
-        
-        creatEventButton()
-        
-        Spacer()
-      }
-      .navigationBarBackButtonHidden()
-      .task {
-        store.send(.view(.appearLoading))
-        store.send(.async(.fetchEvent))
-        store.send(.async(.observeEvent))
-      }
-    }
-    .onChange(of: store.eventModel) { oldValue , newValue in
-      store.send(.async(.updateEventModel(newValue)))
-    }
-    
-    .sheet(item: $store.scope(state: \.destination?.makeEvent, action: \.destination.makeEvent)) { makeEventStore in
-      MakeEventView(store: makeEventStore, completion: {
-        store.send(.view(.closeMakeEventModal))
-      })
-      .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
-      .presentationCornerRadius(20)
-      .presentationDragIndicator(.hidden)
-    }
-  }
-}
-
-extension QrCodeView {
-  
-  @ViewBuilder
-  fileprivate func generateQrImage() -> some View {
-    VStack {
-      
-      Spacer()
-        .frame(height: UIScreen.screenHeight * 0.2)
-      
-      if ((store.eventID?.isEmpty) != nil) {
-        if let qrCodeImage = store.qrCodeImage {
-          qrCodeImage
-            .interpolation(.none)
-            .resizable()
-            .scaledToFit()
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .frame(width: 200, height: 200)
-        } else {
-          Image(asset: .appLogo)
-            .resizable()
-            .scaledToFit()
-            .frame(width: 200, height: 200)
-        }
-      } else {
-        RoundedRectangle(cornerRadius: 8)
-          .fill(Color.gray800.opacity(0.4))
-          .frame(width: 200, height: 200)
-          .overlay {
-            VStack {
-              Spacer()
-              Image(asset: .qrCode)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 96, height: 96)
-              Spacer()
+        // (A) 반투명 오버레이 + 중앙 네모 영역은 투명하게
+        Color.black.opacity(0.5)
+          .mask(
+            ZStack {
+              Rectangle()  // 전체 화면 채움
+              RoundedRectangle(cornerRadius: 12)
+                .frame(width: store.scannerSize, height: store.scannerSize)
+                .position(x: rectX + store.scannerSize / 2,
+                          y: rectY + store.scannerSize / 2)
+                .blendMode(.destinationOut)
             }
-            
-          }
-      }
-    }
-  }
-  
-  @ViewBuilder
-  fileprivate func qrCodeReaderText() -> some View {
-    if store.eventModel.isEmpty == false {
-      VStack {
-        Spacer()
-          .frame(height: UIScreen.screenHeight * 0.1)
+          )
+          .compositingGroup()
+          .ignoresSafeArea()
         
         // (B) 안내 문구 (네모 영역 위쪽에 배치)
         Text("QR 코드를 스캔해 주세요")
