@@ -21,7 +21,7 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 [bundle exec] fastlane ios build_ipa
 ```
 
-Install Profiles and Build My App
+IPA 빌드 및 ._Symbols 제거
 
 ### ios QA
 
@@ -29,7 +29,7 @@ Install Profiles and Build My App
 [bundle exec] fastlane ios QA
 ```
 
-Upload to TestFlight
+TestFlight 업로드
 
 ----
 
