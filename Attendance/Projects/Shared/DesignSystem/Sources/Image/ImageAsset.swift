@@ -49,4 +49,9 @@ public enum ImageAsset: String {
   case late_icons
   case present_icons
   case stamp
+
+  // MARK: - 일정표
+
+  case late_stamp
+  case present_stamp
 }
