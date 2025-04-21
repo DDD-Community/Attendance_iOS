@@ -24,6 +24,10 @@ public struct MemberMain {
     @Shared(.appStorage("UserEmail")) var userEmail: String = ""
     var member: UserDTOMember? = nil
     var showWarningAlert: Bool = false
+
+    // 출석 현황
+    var shouldShowAttendanceWarningIcon: Bool = false
+    var isPresentAttendanceWarningAlert: Bool = false
   }
   
   public enum Action: BindableAction, FeatureAction {
@@ -82,7 +86,19 @@ public struct MemberMain {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    
+    switch action {
+    case .didTapAbesentButton:
+      guard state.shouldShowAttendanceWarningIcon else {
+        return .none
+      }
+
+      state.isPresentAttendanceWarningAlert = true
+      return .none
+
+    case .didTapDismissAlertButton:
+      state.isPresentAttendanceWarningAlert = false
+      return .none
+    }
   }
   
   private func handleInnerAction(

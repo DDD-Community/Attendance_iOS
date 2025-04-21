@@ -11,20 +11,20 @@ public struct AttendanceCard: View {
   private let attendanceCount: Int
   private let lateCount: Int
   private let absentCount: Int
-  private let isManager: Bool
+  private let showWarning: Bool
   private let onTapAbsentButton: (() -> Void)?
   
   public init(
     attendanceCount: Int,
     lateCount: Int,
     absentCount: Int,
-    isManager: Bool,
+    showWarning: Bool,
     onTapAbsentButton: (() -> Void)? = nil
   ) {
     self.attendanceCount = attendanceCount
     self.lateCount = lateCount
     self.absentCount = absentCount
-    self.isManager = isManager
+    self.showWarning = showWarning
     self.onTapAbsentButton = onTapAbsentButton
   }
   
@@ -49,7 +49,7 @@ public struct AttendanceCard: View {
       CardItem(
         status: .absent,
         count: absentCount,
-        showWarningIcon: isManager == false && absentCount > 0,
+        showWarning: showWarning,
         onTap: onTapAbsentButton
       )
     }
@@ -68,18 +68,18 @@ public struct AttendanceCard: View {
 private struct CardItem: View {
   private let status: AttendanceStatus
   private let count: Int
-  private let showWarningIcon: Bool
+  private let showWarning: Bool
   private let onTap: (() -> Void)?
   
   init(
     status: AttendanceStatus,
     count: Int,
-    showWarningIcon: Bool = false,
+    showWarning: Bool = false,
     onTap: (() -> Void)? = nil
   ) {
     self.status = status
     self.count = count
-    self.showWarningIcon = showWarningIcon
+    self.showWarning = showWarning
     self.onTap = onTap
   }
   
@@ -94,7 +94,7 @@ private struct CardItem: View {
           .pretendardFont(family: .Medium, size: 16)
           .foregroundStyle(.textSecondary)
         
-        if showWarningIcon {
+        if showWarning {
           Image(asset: .danger)
         }
       }

@@ -29,6 +29,14 @@ struct MemberMainView: View {
         .padding(.horizontal, 24)
       }
     }
+    .customAlert(
+      isPresented: store.isPresentAttendanceWarningAlert,
+      title: "주의해주세요!",
+      message: "2번 지각 시 노쇼비를 돌려받을 수 없습니다.",
+      onConfirm: {
+        store.send(.view(.didTapDismissAlertButton))
+      }
+    )
     .task {
       store.send(.async(.fetchCurrentUser))
     }
@@ -101,7 +109,7 @@ struct MemberMainView: View {
             attendanceCount: 8,
             lateCount: 1,
             absentCount: 2,
-            isManager: false,
+            showWarning: store.shouldShowAttendanceWarningIcon,
             onTapAbsentButton: {
               store.send(.view(.didTapAbesentButton))
             }
