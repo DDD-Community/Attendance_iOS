@@ -11,12 +11,11 @@ import DiContainer
 import UseCase
 
 extension AppDIContainer {
-   func registerDefaultDependencies() async {
+  func registerDefaultDependencies() async {
     await registerDependencies { container in
-      var repositoryFactory = self.repositoryFactory
+      self.repositoryFactory.registerDefaultDefinitions()
+      let repositoryFactory = self.repositoryFactory
       let useCaseFactory = self.useCaseFactory
-      
-      repositoryFactory.registerDefaultDefinitions()
       
       // asyncForEach를 사용하여 각 모듈을 비동기적으로 등록합니다.
       await repositoryFactory.makeAllModules().asyncForEach { module in

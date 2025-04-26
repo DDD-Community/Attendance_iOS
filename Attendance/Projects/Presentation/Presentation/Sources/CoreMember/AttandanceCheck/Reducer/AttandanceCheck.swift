@@ -35,6 +35,7 @@ public struct AttandanceCheck {
     var absentCount: Int = .zero
     
     @Presents var destination: Destination.State?
+    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     
     public init() {
       

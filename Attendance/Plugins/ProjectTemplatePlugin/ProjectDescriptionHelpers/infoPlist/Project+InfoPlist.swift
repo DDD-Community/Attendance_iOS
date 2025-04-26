@@ -31,7 +31,6 @@ public extension InfoPlist {
           "UIWindowSceneSessionRoleApplication": [
             [
               "UISceneConfigurationName": "Default Configuration",
-              "UISceneDelegateClassName": "$(PRODUCT_MODULE_NAME).SceneDelegate"
             ]
           ]
         ]

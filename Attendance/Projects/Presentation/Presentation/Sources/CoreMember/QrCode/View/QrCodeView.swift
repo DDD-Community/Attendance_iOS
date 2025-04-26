@@ -57,12 +57,6 @@ struct QrCodeView: View {
         store.send(.view(.appearLoading))
         store.send(.async(.fetchEvent))
         store.send(.async(.observeEvent))
-        
-        Task {
-          
-          store.send(.async(.generateQRCode))
-          
-        }
       }
     }
     .onChange(of: store.eventModel) { oldValue , newValue in

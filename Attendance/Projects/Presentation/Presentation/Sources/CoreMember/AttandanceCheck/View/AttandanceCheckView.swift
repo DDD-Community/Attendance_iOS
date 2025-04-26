@@ -26,8 +26,10 @@ struct AttandanceCheckView: View {
       selectPartAttandanceStatus()
     }
     .task {
-      store.send(.async(.fetchAttenDance))
-      store.send(.async(.observeAttendance))
+      if !store.userSignUpMember.uid.isEmpty {
+        store.send(.async(.fetchAttenDance))
+        store.send(.async(.observeAttendance))
+      }
     }
     .sheet(item: $store.scope(state: \.destination?.selectDate, action: \.destination.selectDate)) { selectDateStore in
       CustomDateView(store: selectDateStore, selectDate: $store.selectAttandanceDate) {
