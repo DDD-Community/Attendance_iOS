@@ -23,7 +23,7 @@ struct MemberMainView: View {
     VStack(alignment: .leading, spacing: .zero) {
       navigationBar
 
-      ScrollView {
+      ScrollView(showsIndicators: false) {
         VStack(alignment: .leading, spacing: 56) {
           attendanceStatus
 
