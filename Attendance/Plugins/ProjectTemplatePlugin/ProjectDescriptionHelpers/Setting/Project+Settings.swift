@@ -58,7 +58,7 @@ extension Settings {
           commonSettings(
             appName: Project.Environment.appName,
             displayName: Project.Environment.appName,
-            provisioningProfile: "match AppStore \(Project.Environment.bundlePrefix)",
+            provisioningProfile: "match Development \(Project.Environment.bundlePrefix)",
             setSkipInstall: false
           ),
         xcconfig:

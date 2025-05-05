@@ -39,7 +39,7 @@ public extension InfoPlist {
       .setUISupportedInterfaceOrientations(["UIInterfaceOrientationPortrait"])
       .setNSCameraUsageDescription("QR 코드 인식을 위해 카메라 접근 권한이 필요합니다")
       .setUILaunchScreens()
-      .setCalenderUsage("캘린더의 정보를 가져오기 위해서 접근권할을 허용해주세요")
+      .setCalenderUsage("캘린더의 정보를 가져오기 위해서 접근 권한을 허용해주세요")
       .setCFBundleDevelopmentRegion()
       .setGoogleReversedClientID("${REVERSED_CLIENT_ID}")
       .setGoogleClientID("${GOOGLE_CLIENT_ID}")

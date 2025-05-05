@@ -100,7 +100,7 @@ extension QrCodeView {
       } else {
         RoundedRectangle(cornerRadius: 8)
           .fill(Color.gray800.opacity(0.4))
-          .frame(width:  200, height: 200)
+          .frame(width: 200, height: 200)
           .overlay {
             VStack {
               Spacer()
@@ -118,7 +118,7 @@ extension QrCodeView {
   
   @ViewBuilder
   fileprivate func qrCodeReaderText() -> some View {
-    if store.eventModel != [ ] {
+    if store.eventModel.isEmpty == false {
       VStack {
         Spacer()
           .frame(height: UIScreen.screenHeight * 0.1)
