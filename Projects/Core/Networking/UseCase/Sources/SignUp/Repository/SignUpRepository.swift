@@ -50,4 +50,30 @@ public class SignUpRepository: SignUpRepositoryProtocol {
     let checkEmailModel = try await provider.requestAsync(.checkEmail(email: email), decodeTo: CheckEmailModel.self)
     return checkEmailModel.toCheckEmailDTOModel()
   }
+  
+  // Mark : -  API 회원가입
+  
+  public func registerAccount(
+    userName: String,
+    email: String,
+    password: String
+  ) async throws -> SignUpDTOModel? {
+    let signUpModel = try await provider.requestAsync(
+      .registerAccount(
+        username: userName,
+        email: email,
+        password1: password,
+        password2: password),
+      decodeTo: SignUpModel.self)
+    return signUpModel.toSIgnUpDTOModel()
+  }
+  
+  // Mark : - 초대 코드 검증
+  public func validateInviteCode(
+    inviteCode: String
+  ) async throws -> SignUPInviteDTOModel? {
+    let validateInviteCodeModel = try await provider.requestAsync(
+      .verifyInviteCode(inviteCode: inviteCode), decodeTo: SignUpInviteCodeModel.self)
+    return validateInviteCodeModel.toSignUpDTOInviteCodeModel()
+  }
 }

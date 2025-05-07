@@ -359,6 +359,44 @@ public struct Login {
         #logNetwork("프로필 조회 실패", error.localizedDescription)
       }
       return .none
+      
+    case .registerUser:
+      return .run { [userEntity = state.userEntity] send in
+        let registerUserResult = await Result {
+          try await signUpUseCase.registerAccount(
+            userName: userEntity.userName,
+            email: userEntity.userEmail,
+            password: userEntity.userUid
+          )
+        }
+        
+        switch registerUserResult {
+        case .success(let registerUserData):
+          if let registerUserData = registerUserData {
+            await send(.async(.registerUserResponse(.success(registerUserData))))
+            
+            if !registerUserData.data.accessToken.isEmpty {
+              await send(.navigation(.presentSignUpInviteView))
+            }
+          }
+          
+        case .failure(let error):
+          await send(.async(.registerUserResponse(.failure(.encodingError("회원 가입 실패 \(error.localizedDescription)")))))
+        }
+      }
+      
+    case .registerUserResponse(let result):
+      switch result {
+      case .success(let registerDTO):
+        state.$userEntity.withLock {
+          $0.accessToken = registerDTO.data.accessToken
+          $0.refreshToken = registerDTO.data.refreshToken
+        }
+        
+      case .failure(let error):
+        #logNetwork("회원가입 실패", error.localizedDescription)
+      }
+      return .none
     }
     
   }
