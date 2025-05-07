@@ -20,7 +20,7 @@ public struct Login {
   
   @ObservableState
   public struct State: Equatable {
-    public init() {}
+   
     
     var nonce: String = ""
     var appleAccessToken: String = ""
@@ -30,6 +30,16 @@ public struct Login {
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     var userMember: UserDTOMember? = nil
     @Shared(.appStorage("UserEmail")) var userEmail: String = ""
+    @Shared var userEntity: UserEntity
+    
+    var signUpDTOModel: SignUpDTOModel?
+    
+    public init(
+      userEntity: UserEntity = .init()
+    ) {
+      self._userEntity = Shared(wrappedValue: userEntity, .inMemory("UserEntity"))
+    }
+    
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -58,6 +68,8 @@ public struct Login {
     case oAuthResponse(Result<OAuthResponseDTOModel, CustomError>)
     case fetchUser
     case fetchUserResponse(Result<UserDTOMember, CustomError>)
+    case registerUser
+    case registerUserResponse(Result<SignUpDTOModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -75,6 +87,7 @@ public struct Login {
   
   @Dependency(OAuthUseCase.self) var oAuthUseCase
   @Dependency(AuthUseCase.self) var authUseCase
+  @Dependency(SignUpUseCase.self) var signUpUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
@@ -118,7 +131,8 @@ public struct Login {
           let result = try await oAuthUseCase.handleAppleLogin(authData, nonce: nonce)
           await send(.async(.appleRespose(.success(result))))
           try await clock.sleep(for: .seconds(0.4))
-          await send(.async(.fetchUser))
+          await send(.async(.registerUser))
+//          await send(.async(.fetchUser))
         } catch {
           #logDebug("애플 로그인 에러", error.localizedDescription)
         }
@@ -132,19 +146,24 @@ public struct Login {
         case let appleIDCredential as ASAuthorizationAppleIDCredential:
           guard let tokenData = appleIDCredential.identityToken,
                 let identityToken = String(data: tokenData, encoding: .utf8),
-                let authorizationCode = appleIDCredential.authorizationCode
+                let _ = appleIDCredential.authorizationCode
           else {
             #logError("Identity token is missing")
             return .none
           }
           state.appleAccessToken = identityToken
           state.appleLoginFullName = appleIDCredential
-          state.$userSignUpMember.withLock { $0.email = appleIDCredential.email ?? "" }
+
           let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
           let uid = UserDefaults.standard.string(forKey: "UserUID") ?? ""
-          state.$userSignUpMember.withLock { $0.email = email }
-          state.$userSignUpMember.withLock { $0.uid = uid }
-          state.$userEmail.withLock { $0 = email}
+          let userName = UserDefaults.standard.string(forKey: "APPLE_USER_FULL_NAME") ?? ""
+          let compactName = userName.replacingOccurrences(of: " ", with: "")
+
+          state.$userEntity.withLock {
+            $0.userEmail = email
+            $0.userUid = uid
+            $0.userName = compactName
+          }
         default:
           break
         }
@@ -175,8 +194,13 @@ public struct Login {
       switch result {
       case .success(let resultData):
         state.oAuthResponseModel = resultData
-        state.$userSignUpMember.withLock { $0.email = resultData.email }
-        state.$userSignUpMember.withLock { $0.uid = resultData.uid }
+        let userName = UserDefaults.standard.string(forKey: "GOOGLE_USER_FULL_NAME") ?? ""
+        let compactName = userName.replacingOccurrences(of: " ", with: "")
+        state.$userEntity.withLock{
+          $0.userUid = resultData.uid
+          $0.userEmail = resultData.email
+          $0.userName = compactName
+        }
       case .failure(let error):
         #logError("소셜 로그인 실패", error.localizedDescription)
       }
@@ -220,7 +244,46 @@ public struct Login {
         #logError("유저 정보 가져오기", error.localizedDescription)
       }
       return .none
+      
+    case .registerUser:
+      return .run { [userEntity = state.userEntity] send in
+        let registerUserResult = await Result {
+          try await signUpUseCase.registerAccount(
+            userName: userEntity.userName,
+            email: userEntity.userEmail,
+            password: userEntity.userUid
+          )
+        }
+        
+        switch registerUserResult {
+        case .success(let registerUserData):
+          if let registerUserData = registerUserData {
+            await send(.async(.registerUserResponse(.success(registerUserData))))
+            
+            if !registerUserData.data.accessToken.isEmpty {
+              await send(.navigation(.presentSignUpInviteView))
+            }
+          }
+          
+        case .failure(let error):
+          await send(.async(.registerUserResponse(.failure(.encodingError("회원 가입 실패 \(error.localizedDescription)")))))
+        }
+      }
+      
+    case .registerUserResponse(let result):
+      switch result {
+      case .success(let registerDTO):
+        state.$userEntity.withLock {
+          $0.accessToken = registerDTO.data.accessToken
+          $0.refreshToken = registerDTO.data.refreshToken
+        }
+        
+      case .failure(let error):
+        #logNetwork("회원가입 실패", error.localizedDescription)
+      }
+      return .none
     }
+    
   }
   
   private func handleInnerAction(

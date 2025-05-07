@@ -23,4 +23,18 @@ final public class DefaultSignUpRepository: SignUpRepositoryProtocol {
   public func signUpCoreMember(member: Member) async throws -> CoreMemberDTOSignUp? {
     return nil
   }
+  
+  public func registerAccount(
+    userName: String,
+    email: String,
+    password: String
+  ) async throws -> SignUpDTOModel? {
+    return nil
+  }
+  
+  public func validateInviteCode(
+    inviteCode: String
+  ) async throws -> SignUPInviteDTOModel? {
+    return nil
+  }
 }

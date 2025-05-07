@@ -23,6 +23,7 @@ public struct SignUpPart {
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     var activeSelectPart: Bool = false
     var selectPart: SelectPart? = .all
+    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -115,8 +116,8 @@ public struct SignUpPart {
     case .presentSelectTeam:
       return .none
     case .presentNextStep:
-      return .run { [isAdmin = state.userSignUpMember.isAdmin] send in
-        if isAdmin == true {
+      return .run { [isAdmin = state.userEntity.userRole] send in
+        if isAdmin == .moderator {
           await send(.navigation(.presentManaging))
         } else {
           await send(.navigation(.presentSelectTeam))

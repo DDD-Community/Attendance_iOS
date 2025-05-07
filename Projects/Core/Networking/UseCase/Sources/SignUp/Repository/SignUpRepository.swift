@@ -9,12 +9,17 @@ import Combine
 
 import Model
 
+import Service
+
 import AsyncMoya
+import Moya
 import FirebaseFirestore
 
 @Observable
 public class SignUpRepository: SignUpRepositoryProtocol {
+  
   private let fireBaseDB = Firestore.firestore()
+  private let provider = MoyaProvider<SignUpService>(plugins: [MoyaLoggingPlugin()])
   
   public init() {}
   
@@ -86,5 +91,31 @@ public class SignUpRepository: SignUpRepositoryProtocol {
       #logError("멤버 회원가입 실패 \(error)")
       throw CustomError.unknownError("Error adding document: \(error.localizedDescription)")
     }
+  }
+  
+  // Mark : -  API 회원가입
+  
+  public func registerAccount(
+    userName: String,
+    email: String,
+    password: String
+  ) async throws -> SignUpDTOModel? {
+    let signUpModel = try await provider.requestAsync(
+      .registerAccount(
+        username: userName,
+        email: email,
+        password1: password,
+        password2: password),
+      decodeTo: SignUpModel.self)
+    return signUpModel.toSIgnUpDTOModel()
+  }
+  
+  // Mark : - 초대 코드 검증
+  public func validateInviteCode(
+    inviteCode: String
+  ) async throws -> SignUPInviteDTOModel? {
+    let validateInviteCodeModel = try await provider.requestAsync(
+      .verifyInviteCode(inviteCode: inviteCode), decodeTo: SignUpInviteCodeModel.self)
+    return validateInviteCodeModel.toSignUpDTOInviteCodeModel()
   }
 }

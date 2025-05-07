@@ -45,6 +45,26 @@ public struct SignUpUseCase: SignUpUseCaseProtocol {
         member: member
       )
   }
+  
+  // Mark : - 회원가입 API
+  public func registerAccount(
+    userName: String,
+    email: String,
+    password: String
+  ) async throws -> SignUpDTOModel? {
+    return try await repository.registerAccount(
+      userName: userName,
+      email: email,
+      password: password
+    )
+  }
+  
+  // Mark : - 초대코드 확인
+  public func validateInviteCode(
+    inviteCode: String
+  ) async throws -> SignUPInviteDTOModel? {
+    return try await repository.validateInviteCode(inviteCode: inviteCode)
+  }
 }
 
 extension DependencyContainer {

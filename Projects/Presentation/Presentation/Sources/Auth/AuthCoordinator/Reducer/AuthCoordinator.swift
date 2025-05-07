@@ -24,7 +24,8 @@ public struct AuthCoordinator {
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     
     public init() {
-      self.routes = [.root(.login(.init()), embedInNavigationView: true)]
+      @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
+      self.routes = [.root(.login(.init(userEntity: userEntity)), embedInNavigationView: true)]
     }
   }
   

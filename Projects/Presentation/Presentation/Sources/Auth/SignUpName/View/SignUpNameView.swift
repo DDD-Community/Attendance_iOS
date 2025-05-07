@@ -89,17 +89,22 @@ extension SignUpNameView {
             Spacer()
               .frame(width: 20)
             
-            TextField("이름을 입력해주세요.", text: $store.userSignUpMember.name)
-              .pretendardCustomFont(textStyle: .body2NormalMedium)
-              .foregroundStyle(.grayWhite)
-              .multilineTextAlignment(.leading)
-              .frame(maxWidth: .infinity)
-              .onChange(of: store.userSignUpMember.name) { newValue, oldValue in
-                if newValue.count > 5 {
-                  store.userSignUpMember.name = String(newValue.prefix(5))
-                  store.isNotAvaliableName = false
-                }
+            TextField(
+              "",
+              text: $store.userSignUpMember.name,
+              prompt: Text("이름을 입력해주세요.")
+                .font(.pretendardFontFamily(family: .Medium, size: 16))
+                .foregroundColor(.white.opacity(0.6))   // placeholder 색
+            )
+            .pretendardCustomFont(textStyle: .body2NormalMedium)  // 입력 글자 스타일
+            .foregroundStyle(.staticWhite)                        // 입력 글자 색
+            .frame(maxWidth: .infinity)
+            .onChange(of: store.userSignUpMember.name) { new, _ in
+              if new.count > 5 {
+                store.userSignUpMember.name = String(new.prefix(5))
+                store.isNotAvaliableName = false
               }
+            }
               .onSubmit {
                 
               }
