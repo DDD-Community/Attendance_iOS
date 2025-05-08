@@ -22,8 +22,8 @@ public struct MemberCoordinatorView: View {
   public var body: some View {
     TCARouter(store.scope(state: \.routes, action: \.router)) { screens in
       switch screens.case {
-      case .member(let member):
-        MemberMainView()
+      case .member(let store):
+        MemberMainView(store: store)
           .navigationBarBackButtonHidden()
       }
     }

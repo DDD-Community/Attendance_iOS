@@ -11,22 +11,22 @@ import Networkings
 import Utill
 
 import ComposableArchitecture
-import KeychainAccess
 import TCACoordinators
 
 @Reducer
 public struct MemberCoordinator {
   public init() {}
-  
+
   @ObservableState
   public struct State: Equatable {
+    @Shared(.appStorage("UserUID")) var userUid: String = ""
     var routes: [Route<MemberScreen.State>]
-    
+
     public init() {
       routes = [.root(.member(.init()), embedInNavigationView: true)]
     }
   }
- 
+
   public enum Action: ViewAction, BindableAction, FeatureAction {
     case binding(BindingAction<State>)
     case router(IndexedRouterActionOf<MemberScreen>)
@@ -35,87 +35,91 @@ public struct MemberCoordinator {
     case async(AsyncAction)
     case navigation(NavigationAction)
   }
-  
+
   @CasePathable
   public enum View {
-    
+
   }
-  
+
   public enum AsyncAction: Equatable {
-    
+
   }
 
   public enum InnerAction: Equatable {
-    
+
   }
-  
+
   public enum NavigationAction: Equatable {
-    
+
   }
-  
+
   public var body: some ReducerOf<Self> {
     BindingReducer()
-    
+
     Reduce { state, action in
       switch action {
       case .binding:
         return .none
-        
+
       case .router(let action):
         return handleRouterAction(state: &state, action: action)
-        
+
       case .view(let action):
         return handleViewAction(state: &state, action: action)
-        
+
       case .inner(let action):
         return handleInnerAction(state: &state, action: action)
-        
+
       case .async(let action):
         return handleAsyncAction(state: &state, action: action)
-        
+
       case .navigation(let action):
         return handleNavigationAction(state: &state, action: action)
       }
     }
+    .forEachRoute(\.routes, action: \.router)
   }
-  
+
   private func handleRouterAction(
     state: inout State,
     action: IndexedRouterActionOf<MemberScreen>
   ) -> Effect<Action> {
-//    switch action {
-//    case .routeAction(id: _, action: .)
-//      state.routes.push()
+    switch action {
+    case .routeAction(id: _, action: .member(.navigation(.routeToProfile))):
+      // TODO: - navigate to profile View
       return .none
-//    }
+
+    default:
+      return .none
+    }
   }
-  
+
   private func handleViewAction(
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    return .none
+
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    return .none
+
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    return .none
+
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
-    return .none
+
   }
 }
 
