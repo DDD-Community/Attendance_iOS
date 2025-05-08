@@ -7,92 +7,185 @@
 
 import Foundation
 
+import Networkings
+import Model
 import Utill
 
 import ComposableArchitecture
+import FirebaseAuth
 
 @Reducer
 public struct MemberMain {
   public init() {}
-  
+
   @ObservableState
   public struct State: Equatable {
-    
+    @Shared(.appStorage("UserUID")) var userUid: String = ""
+    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
+    var member: UserDTOMember? = nil
+
+    @ObservationStateIgnored
+    var didAppear: Bool = false
+
+    // 출석 현황
+    var startDate: String = "2025.03.12"
+    var endDate: String = "2025.08.12"
+    var attendanceCount: Int = .zero
+    var lateCount: Int = .zero
+    var absentCount: Int = .zero
+    var shouldShowAttendanceWarningIcon: Bool = false
+    var isPresentAttendanceWarningAlert: Bool = false
+
+    // 일정표
+    var generation: Int = 12
+    var schedules: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
   }
-  
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+
+  public enum Action: BindableAction, FeatureAction {
     case binding(BindingAction<State>)
     case view(View)
     case inner(InnerAction)
     case async(AsyncAction)
     case navigation(NavigationAction)
   }
-  
+
   @CasePathable
   public enum View {
-    
+    case onAppear
+    case didTapAbesentButton
+    case didTapDismissAlertButton
   }
-  
+
   public enum AsyncAction: Equatable {
-    
+    case fetchCurrentUser
   }
 
   public enum InnerAction: Equatable {
-    
+    case onFetchUserResponse(Result<UserDTOMember, CustomError>)
   }
-  
+
   public enum NavigationAction: Equatable {
-    
+    case presentQRCode
+    case routeToProfile
   }
-  
+
+  @Dependency(FireStoreUseCase.self) var fireStoreUseCase
+  @Dependency(AuthUseCase.self) var authUseCase
+
   public var body: some ReducerOf<Self> {
     BindingReducer()
-    
+
     Reduce { state, action in
       switch action {
       case .binding:
         return .none
-        
+
       case .view(let action):
         return handleViewAction(state: &state, action: action)
-        
+
       case .inner(let action):
         return handleInnerAction(state: &state, action: action)
-        
+
       case .async(let action):
         return handleAsyncAction(state: &state, action: action)
-        
+
       case .navigation(let action):
         return handleNavigationAction(state: &state, action: action)
       }
     }
   }
-  
+
   private func handleViewAction(
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    
+    switch action {
+    case .onAppear:
+      guard !state.didAppear else {
+        return .none
+      }
+
+      state.didAppear = true
+
+      return .run { send in
+        await send(.async(.fetchCurrentUser))
+        // TODO: - 1. 스케줄 목록 조회
+        // TODO: - 2. 각 스케줄 별 출석 상세 조회
+        // TODO: - 3. 출석 현황 출석, 지각, 결석 횟수 카운트
+        // TODO: - 4. 결석 횟수가 1이상이면 warning 표시
+      }
+
+    case .didTapAbesentButton:
+      guard state.shouldShowAttendanceWarningIcon else {
+        return .none
+      }
+
+      state.isPresentAttendanceWarningAlert = true
+      return .none
+
+    case .didTapDismissAlertButton:
+      state.isPresentAttendanceWarningAlert = false
+      return .none
+    }
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    
+    switch action {
+    case .onFetchUserResponse(let result):
+      switch result {
+      case .success(let member):
+        state.member = member
+        #logDebug("fetching data", member.uid)
+        return .none
+
+      case .failure(let error):
+        state.member = nil
+        #logError("Error fetching User", error)
+        return .none
+      }
+    }
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    
+    switch action {
+    case .fetchCurrentUser:
+      return .run { [userEmail = state.userEmail] send in
+        let result = await Result {
+          try await authUseCase.fetchUser(uid: userEmail)
+        }
+
+        switch result {
+        case .success(let member):
+          if let member {
+            await send(.inner(.onFetchUserResponse(.success(member))))
+          }
+
+        case .failure(let error):
+          let error = CustomError.map(error)
+          await send(.inner(.onFetchUserResponse(.failure(error))))
+        }
+      }
+    }
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
-    
+    switch action {
+    case .presentQRCode:
+      // TODO: - present to profile View
+      return .none
+
+    case .routeToProfile:
+      // TODO: - navigate to profile View
+      return .none
+    }
   }
 }

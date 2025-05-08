@@ -18,7 +18,8 @@ extension RepositoryModuleFactory {
         registerModuleCopy.makeDependency(AuthRepositoryProtocol.self) { AuthRepository() },
         registerModuleCopy.makeDependency(FireStoreRepositoryProtocol.self) { FireStoreRepository() },
         registerModuleCopy.makeDependency(QrCodeRepositoryProtcol.self) { QrCodeRepository() },
-        registerModuleCopy.makeDependency(SignUpRepositoryProtcol.self) { SignUpRepository() }
+        registerModuleCopy.makeDependency(SignUpRepositoryProtcol.self) { SignUpRepository() },
+        registerModuleCopy.makeDependency(OAuthRepositoryProtocol.self) { OAuthRepository() }
       ]
     }()
   }
