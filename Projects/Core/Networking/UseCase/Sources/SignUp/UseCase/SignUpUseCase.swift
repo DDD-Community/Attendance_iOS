@@ -57,11 +57,16 @@ public struct SignUpUseCase: SignUpUseCaseProtocol {
     )
   }
   
-  // Mark : - 초대코드 확인
+  // MARK: -초대코드 확인
   public func validateInviteCode(
     inviteCode: String
   ) async throws -> SignUPInviteDTOModel? {
     return try await repository.validateInviteCode(inviteCode: inviteCode)
+  }
+  
+  // MARK: - 이메일 검증
+  public func checkEmail(email: String) async throws -> CheckEmailDTO? {
+    return try await repository.checkEmail(email: email)
   }
 }
 

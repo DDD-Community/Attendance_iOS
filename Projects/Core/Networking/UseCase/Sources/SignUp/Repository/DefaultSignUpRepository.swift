@@ -40,4 +40,8 @@ final public class DefaultSignUpRepository: SignUpRepositoryProtocol {
   ) async throws -> SignUPInviteDTOModel? {
     return nil
   }
+  
+  public func checkEmail(email: String) async throws -> CheckEmailDTO? {
+    return nil
+  }
 }

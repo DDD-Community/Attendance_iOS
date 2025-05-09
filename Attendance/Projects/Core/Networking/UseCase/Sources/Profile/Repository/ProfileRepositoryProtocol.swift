@@ -15,5 +15,6 @@ public protocol ProfileRepositoryProtocol {
     inviteCode: String,
     role: String,
     team: String
-  ) async throws -> ProfiledDTO?
+  ) async throws -> ProfileDTOModel?
+  func getProfile() async throws -> ProfileDTOModel?
 }

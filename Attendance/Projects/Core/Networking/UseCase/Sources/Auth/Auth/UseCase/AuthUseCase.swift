@@ -24,6 +24,28 @@ public struct AuthUseCase: AuthUseCaseProtocol {
   public func fetchUser(uid: String) async throws -> UserDTOMember? {
     try await repository.fetchUser(uid: uid)
   }
+  
+  // MARK: - API로 통해서 로그인
+  public func loginUser(
+    email: String,
+    password: String
+  ) async throws -> LoginDTOModel? {
+    return try await repository
+      .loginUser(
+        email: email,
+        password: password
+      )
+  }
+  
+  // MARK: - 세션 시작시 jwt check
+  public func sessionCheckJWT(
+    token: String
+  ) async throws -> LoginDTOModel? {
+    return try await repository
+      .sessionCheckJWT(
+        token: token
+      )
+  }
 }
 
 extension DependencyContainer {

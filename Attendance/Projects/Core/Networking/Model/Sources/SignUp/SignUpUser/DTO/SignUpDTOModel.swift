@@ -35,17 +35,13 @@ public struct SignUpResponseDTOModel: Equatable, Codable {
 
 
 public struct UserDTO: Equatable, Codable {
-  public let username, email, firstName, lastName: String
+  public let username, email: String
   
   public init(
     username: String,
-    email: String,
-    firstName: String,
-    lastName: String
+    email: String
   ) {
     self.username = username
     self.email = email
-    self.firstName = firstName
-    self.lastName = lastName
   }
 }

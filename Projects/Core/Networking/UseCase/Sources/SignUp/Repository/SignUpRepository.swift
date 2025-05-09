@@ -52,7 +52,6 @@ public class SignUpRepository: SignUpRepositoryProtocol {
   }
   
   // Mark : -  API 회원가입
-  
   public func registerAccount(
     userName: String,
     email: String,
@@ -75,5 +74,11 @@ public class SignUpRepository: SignUpRepositoryProtocol {
     let validateInviteCodeModel = try await provider.requestAsync(
       .verifyInviteCode(inviteCode: inviteCode), decodeTo: SignUpInviteCodeModel.self)
     return validateInviteCodeModel.toSignUpDTOInviteCodeModel()
+  }
+  
+  // MARK: - 이메일 검증
+  public func checkEmail(email: String) async throws -> CheckEmailDTO? {
+    let checkEmailModel = try await provider.requestAsync(.checkEmail(email: email), decodeTo: CheckEmailModel.self)
+    return checkEmailModel.toCheckEmailDTOModel()
   }
 }

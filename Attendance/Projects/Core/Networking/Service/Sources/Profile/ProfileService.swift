@@ -19,6 +19,7 @@ public enum ProfileService{
     role: String,
     team: String
   )
+  case getProfile
 }
 
 
@@ -31,6 +32,9 @@ extension ProfileService: BaseTargetType {
     switch self {
     case .editProfile:
       return ProfileAPI.editProfile.profileDescription
+      
+    case .getProfile:
+      return ProfileAPI.getProfile.profileDescription
     }
   }
   
@@ -42,6 +46,9 @@ extension ProfileService: BaseTargetType {
     switch self {
     case .editProfile:
       return .patch
+      
+    case .getProfile:
+      return .get
     }
   }
   
@@ -61,6 +68,9 @@ extension ProfileService: BaseTargetType {
       ]
       
       return parameters
+      
+    case .getProfile:
+      return nil
     }
   }
    

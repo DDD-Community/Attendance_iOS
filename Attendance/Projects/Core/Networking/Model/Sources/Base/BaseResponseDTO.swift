@@ -10,12 +10,12 @@ import Foundation
 public struct BaseResponseDTO<DataDTO: Codable>: Codable {
   public let code: Int
   public let message: String
-  public let data: DataDTO?
+  public let data: DataDTO
 
   public init(
     code: Int,
     message: String,
-    data: DataDTO?
+    data: DataDTO
   ) {
     self.code    = code
     self.message = message

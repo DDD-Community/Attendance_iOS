@@ -19,12 +19,13 @@ public class ProfileRepository: ProfileRepositoryProtocol {
   
   private let provider = MoyaProvider<ProfileService>(plugins: [MoyaLoggingPlugin()])
   
+  // MARK: - 프로필 수정
   public func editProfile(
     name: String,
     inviteCode: String,
     role: String,
     team: String
-  ) async throws -> ProfiledDTO? {
+  ) async throws -> ProfileDTOModel? {
     let profileModel = try await provider.requestAsync(.editProfile(
         username: name,
         inviteCodeId: inviteCode,
@@ -33,4 +34,9 @@ public class ProfileRepository: ProfileRepositoryProtocol {
     return profileModel.toProfileDTOModel()
   }
   
+  // MARK: - 프로필 조회
+  public func getProfile() async throws -> ProfileDTOModel? {
+    let profileModel  = try await provider.requestAsync(.getProfile, decodeTo: ProfileModel.self)
+    return profileModel.toProfileDTOModel()
+  }
 }

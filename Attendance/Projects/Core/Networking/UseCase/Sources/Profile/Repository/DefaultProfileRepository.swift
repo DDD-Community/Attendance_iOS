@@ -19,7 +19,11 @@ public final class DefaultProfileRepository: ProfileRepositoryProtocol {
     inviteCode: String,
     role: String,
     team: String
-  ) async throws -> ProfiledDTO? {
+  ) async throws -> ProfileDTOModel? {
+    return nil
+  }
+  
+  public func getProfile() async throws -> ProfileDTOModel? {
     return nil
   }
 }
