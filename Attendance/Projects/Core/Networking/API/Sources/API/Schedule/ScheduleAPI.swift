@@ -1,5 +1,5 @@
 //
-//  SceduleAPI.swift
+//  ScheduleAPI.swift
 //  API
 //
 //  Created by Wonji Suh  on 5/9/25.
@@ -7,12 +7,12 @@
 
 import Foundation
 
-public enum SceduleAPI: String , CaseIterable {
-  case getScedule
+public enum ScheduleAPI: String , CaseIterable {
+  case scedules
   
-  public var sceduleDescription: String {
+  public var scheduleDescription: String {
     switch self {
-    case .getScedule:
+    case .scedules:
       return ""
     }
   }

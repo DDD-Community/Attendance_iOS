@@ -18,7 +18,9 @@ extension UseCaseModuleFactory {
       registerModule.fireStoreUseCaseModule,
       registerModule.qrCodeUseCaseModule,
       registerModule.signUpUseCaseModoule,
-      registerModule.profileUseCaseModule
+      registerModule.profileUseCaseModule,
+      registerModule.scheduleUseCaseModule,
+      registerModule.attendanceUseCaseModule
     ]
   }
 }
