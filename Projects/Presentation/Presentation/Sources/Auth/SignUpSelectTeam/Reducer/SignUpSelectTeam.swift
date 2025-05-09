@@ -26,6 +26,9 @@ public struct SignUpSelectTeam {
     @Shared(.appStorage("UserUID")) var userUid: String = ""
     @Shared(.appStorage("UserEmail")) var userEmail: String = ""
     var signUpMemberModel: MemberDTOSignUp? = nil
+    
+    var editProfileDTO: ProfiledDTO?
+    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -48,6 +51,8 @@ public struct SignUpSelectTeam {
   public enum AsyncAction: Equatable {
     case signUpMember
     case signUpMemberResponse(Result<MemberDTOSignUp, CustomError>)
+    case editProfile
+    case editProfileResponse(Result<ProfiledDTO, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -60,10 +65,15 @@ public struct SignUpSelectTeam {
   
   public enum NavigationAction: Equatable {
     case presentMember
+    case presentCoreMember
   }
+  
+  
+  private struct SignUpSelectTeamCancel: Hashable {}
   
   @Dependency(SignUpUseCase.self) var signUpUseCase
   @Dependency(\.continuousClock) var clock
+  @Dependency(ProfileUseCase.self) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
   
   public var body: some ReducerOf<Self> {
@@ -95,18 +105,13 @@ public struct SignUpSelectTeam {
   ) -> Effect<Action> {
     switch action {
     case .selectTeamButton(let selectTeam):
-      if state.selectTeam == selectTeam {
-        state.selectTeam = nil
-        state.$userSignUpMember.withLock { $0.memberTeam = nil}
+      if state.userEntity.memberTeam == selectTeam {
+        state.$userEntity.withLock { $0.memberTeam = nil}
         state.activeButton = false
         return .none
       }
       
-      state.selectTeam = selectTeam
-      
-      if let selectTeam = SelectTeam(rawValue: selectTeam.selectTeamDescription) {
-        state.$userSignUpMember.withLock { $0.memberTeam = selectTeam}
-      }
+      state.$userEntity.withLock { $0.memberTeam = selectTeam }
       
       state.activeButton = true
       return .none
@@ -119,6 +124,9 @@ public struct SignUpSelectTeam {
   ) -> Effect<Action> {
     switch action {
     case .presentMember:
+      return .none
+      
+    case .presentCoreMember:
       return .none
     }
   }
@@ -166,6 +174,52 @@ public struct SignUpSelectTeam {
         state.$userEmail.withLock { $0 = signUpMemberData.email } 
       case .failure(let error):
         #logError("회원가입 실패", error.localizedDescription)
+      }
+      return .none
+      
+    case .editProfile:
+      return .run { [
+        userEntity = state.userEntity,
+      ] send in
+        let isStaff = userEntity.userRole
+        let memberTeam = userEntity.memberTeam?.managingTeamDesc ?? ""
+        let isAdminRole =   "\(userEntity.managing?.managingDesc ?? "") / \(memberTeam)"
+        let editProfileResult = await Result {
+          try await profileUseCase.editProfile(
+            name: userEntity.signUpName,
+            inviteCode: userEntity.inviteCodeId ?? "",
+            role: isStaff == .moderator ? isAdminRole : memberTeam,
+            team: userEntity.role?.desc ??  ""
+          )
+        }
+        
+        switch editProfileResult {
+        case .success(let profileDTOData):
+          if let profileDTOData = profileDTOData {
+            await send(.async(.editProfileResponse(.success(profileDTOData))))
+            
+            if profileDTOData.code == 200 {
+              if profileDTOData.data?.isStaff == true {
+                await send(.navigation(.presentCoreMember))
+              } else {
+                await send(.navigation(.presentMember))
+              }
+            }
+          }
+          
+        case .failure(let error):
+          await send(.async(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
+        }
+      }
+      .debounce(id: SignUpSelectTeamCancel(), for: 0.3, scheduler: mainQueue)
+      
+    case .editProfileResponse(let result):
+      switch result {
+      case .success(let profileDT0):
+        state.editProfileDTO = profileDT0
+        
+      case .failure(let error):
+        #logNetwork("회원가입 프로핍 변경  에러", error.localizedDescription)
       }
       return .none
     }

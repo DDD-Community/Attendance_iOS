@@ -61,7 +61,7 @@ public struct SignUpInviteCode {
   
   @CasePathable
   public enum View {
-    
+    case initInviteCode
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
@@ -115,7 +115,14 @@ public struct SignUpInviteCode {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    
+    switch action {
+    case .initInviteCode:
+      state.firstInviteCode = ""
+      state.secondInviteCode = ""
+      state.thirdInviteCode = ""
+      state.lastInviteCode = ""
+      return .none
+    }
   }
   
   private func handleAsyncAction(
@@ -148,7 +155,9 @@ public struct SignUpInviteCode {
       switch result {
       case .success(let validateCodeData):
         state.validateInviteCodeDTOModel = validateCodeData
-        state.$userEntity.withLock{ $0.userRole = UserRole(rawValue: state.validateInviteCodeDTOModel?.data.inviteType ?? "")}
+        state.$userEntity.withLock{ $0.userRole = UserRole(rawValue: state.validateInviteCodeDTOModel?.data.inviteType ?? "")
+          $0.inviteCodeId = state.validateInviteCodeDTOModel?.data.inviteCodeID ?? ""
+        }
         
       case .failure(let error):
         #logError("코드에러", error.localizedDescription)

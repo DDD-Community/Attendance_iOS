@@ -182,7 +182,7 @@ public struct Login {
         case .success(let googleLoginData):
           if let googleLoginData = googleLoginData {
             await send(.async(.oAuthResponse(.success(googleLoginData))))
-            await send(.async(.fetchUser))
+            await send(.async(.registerUser))
           }
         case .failure(let error):
           await send(.async(.oAuthResponse(.failure(CustomError.firestoreError("구글 로그인 실패 \(error.localizedDescription)")))))

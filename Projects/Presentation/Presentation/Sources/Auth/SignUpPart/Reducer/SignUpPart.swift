@@ -20,7 +20,6 @@ public struct SignUpPart {
   public struct State: Equatable {
     public init() {}
     
-    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     var activeSelectPart: Bool = false
     var selectPart: SelectPart? = .all
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
@@ -92,14 +91,14 @@ public struct SignUpPart {
     case .selectPartButton(let selectPart):
       if state.selectPart == selectPart {
         state.selectPart = nil
-        state.$userSignUpMember.withLock { $0.role = nil }
+        state.$userEntity.withLock { $0.role = nil }
         state.activeSelectPart = false
         return .none
       }
       
       state.selectPart = selectPart
       if let part = SelectPart(rawValue: selectPart.desc) {
-        state.$userSignUpMember.withLock { $0.role = part}
+        state.$userEntity.withLock { $0.role = part }
       }
       state.activeSelectPart = true
       return .none

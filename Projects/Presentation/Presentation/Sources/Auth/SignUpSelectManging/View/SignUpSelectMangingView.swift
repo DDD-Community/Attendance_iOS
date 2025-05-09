@@ -40,6 +40,9 @@ public struct SignUpSelectManagingView: View {
         signUpSelectMangeButton()
         
       }
+      .onAppear {
+        store.userEntity.managing = nil
+      }
     }
   }
 }
@@ -67,7 +70,8 @@ extension SignUpSelectManagingView {
           ForEach(Managing.managingList, id: \.self) { item in
             SelectPartItem(
               content: item.managingDesc,
-              isActive: item == store.selectManagingPart) {
+              isActive: item == store.userEntity.managing) {
+                
                 store.send(.view(.selectManagingButton(selectManaging: item)))
               }
           }
@@ -78,6 +82,7 @@ extension SignUpSelectManagingView {
     }
   }
   
+  
   @ViewBuilder
   private func signUpSelectMangeButton() -> some View {
     VStack {
@@ -85,9 +90,13 @@ extension SignUpSelectManagingView {
       
       CustomButton(
         action: {
-          store.send(.async(.signUpCoreMember))
+          if store.userEntity.managing == .projectTeamManaging {
+            store.send(.navigation(.presentSelectTeam))
+          } else {
+            store.send(.async(.editProfile))
+          }
         },
-        title: "가입 완료",
+        title: store.userEntity.managing == .projectTeamManaging ? "다음" : "가입완료",
         config: CustomButtonConfig.create(),
         isEnable: store.activeButton
       )

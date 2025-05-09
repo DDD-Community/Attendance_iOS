@@ -125,11 +125,18 @@ public struct AuthCoordinator {
       state.routes.push(.signUpManaging(.init()))
       return .none
       
+      // MARK: -  운영진 매니징 업무선택시  팀매니징 선택시 팀선택
+    case .routeAction(id: _, action: .signUpManaging(.navigation(.presentSelectTeam))):
+      state.routes.push(.signUpSelectTeam(.init()))
+      return .none
+      
     case .routeAction(id: _, action: .signUpManaging(.navigation(.presentCoreMember))):
       return .send(.navigation(.presentCoreMember))
       
-    // MARK: - 멤버 선택 할팀 선택
+    case .routeAction(id: _, action: .signUpSelectTeam(.navigation(.presentCoreMember))):
+      return .send(.navigation(.presentCoreMember))
       
+    // MARK: - 멤버 선택 할팀 선택
     case .routeAction(id: _, action: .signUpPart(.navigation(.presentSelectTeam))):
       state.routes.push(.signUpSelectTeam(.init()))
       return .none
