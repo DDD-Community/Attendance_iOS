@@ -10,6 +10,7 @@ import Foundation
 public enum SignUpAPI: String , CaseIterable {
   case registerAccount
   case verifyInviteCode
+  case checkEmail
   
   
   public var signUpDescription: String {
@@ -19,6 +20,9 @@ public enum SignUpAPI: String , CaseIterable {
       
     case .verifyInviteCode:
       return "validate/"
+      
+    case .checkEmail:
+      return "check-email/"
     }
   }
   

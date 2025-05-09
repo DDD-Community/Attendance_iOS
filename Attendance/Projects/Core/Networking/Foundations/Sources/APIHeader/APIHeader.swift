@@ -52,7 +52,7 @@ extension APIHeader {
   public static var baseHeader: Dictionary<String, String> {
     [
       contentType : APIHeaderManger.shared.contentType,
-      accessToken : accessTokenKeyChain,
+      accessToken : "Bearer \(accessTokenKeyChain)",
       accept: APIHeaderManger.shared.contentType
     ]
   }

@@ -15,7 +15,6 @@ public extension SignUpInviteCodeModel {
       inviteType: self.data?.inviteType ?? "",
       oneTimeUse: self.data?.oneTimeUse ?? false,
       errorMessage: self.data?.error ?? ""
-      
     )
     
     return SignUPInviteDTOModel(
