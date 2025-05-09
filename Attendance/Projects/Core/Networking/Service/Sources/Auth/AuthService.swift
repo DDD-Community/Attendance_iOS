@@ -65,4 +65,13 @@ extension AuthService: BaseTargetType {
       return parameters
     }
   }
+  
+  public var headers: [String : String]? {
+    switch self {
+    case .sessionToJwt:
+      return APIHeader.baseHeader
+    default:
+      return APIHeader.notAccessTokenHeader
+    }
+  }
 }

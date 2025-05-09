@@ -34,7 +34,7 @@ public struct APIHeader {
   public static func updateAccessToken(_ token: String?) {
     guard let newToken = token, !newToken.isEmpty else { return }
     UserDefaults.standard.set(newToken, forKey:  "ACCESS_TOKEN")
-//    self.$userEntity.withLock {  $0.accessToken = newToken }
+    self.$userEntity.withLock {  $0.accessToken = newToken }
   }
 
   public init() {}
