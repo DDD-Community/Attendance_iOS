@@ -27,9 +27,9 @@ extension AttandanceDomain {
     case .invite:
       return "api/v1/invites/"
     case .profile:
-      return "api/v1/profiles"
+      return "api/v1/profiles/"
     case .qr:
-      return "api/v1/qrcodes"
+      return "api/v1/qrcodes/"
     case .schedule:
       return "api/v1/schedules/"
     }
