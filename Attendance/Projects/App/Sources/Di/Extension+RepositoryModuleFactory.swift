@@ -20,7 +20,9 @@ extension RepositoryModuleFactory {
         registerModuleCopy.fireStoreRepositoryModule,
         registerModuleCopy.qrCodeRepositoryModule,
         registerModuleCopy.signUpRepositoryModoule,
-        registerModuleCopy.profileRepositoryModule
+        registerModuleCopy.profileRepositoryModule,
+        registerModuleCopy.scheduleRepositoryModule,
+        registerModuleCopy.attendanceRepositoryModule
       ]
     }()
   }

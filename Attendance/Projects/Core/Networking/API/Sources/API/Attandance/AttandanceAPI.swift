@@ -6,3 +6,14 @@
 //
 
 import Foundation
+
+public enum AttandanceAPI: String, CaseIterable {
+  case getAttandances
+   
+  public var attandanceDescription: String {
+    switch self {
+    case .getAttandances:
+      return ""
+    }
+  }
+}
