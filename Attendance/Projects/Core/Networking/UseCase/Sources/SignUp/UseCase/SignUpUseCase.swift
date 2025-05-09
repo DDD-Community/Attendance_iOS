@@ -13,10 +13,10 @@ import ComposableArchitecture
 
 public struct SignUpUseCase: SignUpUseCaseProtocol {
   
-  private let repository: SignUpRepositoryProtcol
+  private let repository: SignUpRepositoryProtocol
   
   public init(
-    repository: SignUpRepositoryProtcol
+    repository: SignUpRepositoryProtocol
   ) {
     self.repository = repository
   }
@@ -47,9 +47,42 @@ public struct SignUpUseCase: SignUpUseCaseProtocol {
   }
 }
 
+extension DependencyContainer {
+  var signUpUseCase: SignUpRepositoryProtocol? {
+    resolve(SignUpRepositoryProtocol.self)
+  }
+}
+
+
 extension SignUpUseCase: DependencyKey {
   static public var liveValue: SignUpUseCase = {
-    let signUpRepository = DependencyContainer.live.resolve(SignUpRepositoryProtcol.self) ?? DefaultSignUpRepository()
+    let signUpRepository = ContainerResgister(\.signUpUseCase).wrappedValue
     return SignUpUseCase(repository: signUpRepository)
   }()
+}
+
+public extension DependencyValues {
+  var signUpUseCase: SignUpUseCase {
+    get { self[SignUpUseCase.self] }
+    set { self[SignUpUseCase.self] = newValue  }
+  }
+}
+
+public extension RegisterModule {
+  var signUpUseCaseModoule: () -> Module {
+    makeUseCaseWithRepository(
+      SignUpUseCaseProtocol.self,
+      repositoryProtocol: SignUpRepositoryProtocol.self,
+      repositoryFallback: DefaultSignUpRepository(),
+      factory: { repo in
+        SignUpUseCase(repository: repo)
+      }
+    )
+  }
+  
+  var signUpRepositoryModoule: () -> Module {
+    makeDependency(SignUpRepositoryProtocol.self) {
+      SignUpRepository()
+    }
+  }
 }

@@ -24,7 +24,7 @@ public struct CustomNavigationBar: View {
   
   public var body: some View {
     HStack {
-      Image(asset: .arrowBack)
+      Image(asset: .arrowBackWhite)
         .resizable()
         .scaledToFit()
         .frame(width: 12, height: 20)

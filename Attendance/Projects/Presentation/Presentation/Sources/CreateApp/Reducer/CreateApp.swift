@@ -1,23 +1,21 @@
 //
-//  SelectDate.swift
+//  CreateApp.swift
 //  Presentation
 //
-//  Created by Wonji Suh  on 1/31/25.
+//  Created by Wonji Suh  on 4/6/25.
 //
 
 import Foundation
+import ComposableArchitecture
 
 import Utill
 
-import ComposableArchitecture
-
 @Reducer
-public struct SelectDate {
+public struct CreateApp {
   public init() {}
   
   @ObservableState
   public struct State: Equatable {
-    var selectDate: Date? = nil
     
     public init() {}
   }
@@ -31,22 +29,24 @@ public struct SelectDate {
     
   }
   
-  // MARK: - ViewAction
+  //MARK: - ViewAction
   @CasePathable
   public enum View {
     
   }
   
-  // MARK: - AsyncAction 비동기 처리 액션
+  
+  
+  //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     
   }
   
-  // MARK: - 앱내에서 사용하는 액션
+  //MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
   }
   
-  // MARK: - NavigationAction
+  //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
     
     
@@ -111,3 +111,4 @@ public struct SelectDate {
     }
   }
 }
+

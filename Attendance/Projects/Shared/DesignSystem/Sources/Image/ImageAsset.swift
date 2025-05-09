@@ -14,6 +14,7 @@ public enum ImageAsset: String {
   case qrCode
   case eventGenerate
   case arrowBack
+  case arrowBackWhite
   case plus
   case logo
   case pet
@@ -21,6 +22,7 @@ public enum ImageAsset: String {
   case arrow_up
   case editEvent
   case user
+  case info
   
   // MARK: - 소셜로그인 버튼
   
@@ -49,9 +51,7 @@ public enum ImageAsset: String {
   case late_icons
   case present_icons
   case stamp
-
-  // MARK: - 일정표
-
   case late_stamp
   case present_stamp
+  case profileBack
 }

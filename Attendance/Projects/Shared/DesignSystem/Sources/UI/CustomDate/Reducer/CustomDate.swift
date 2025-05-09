@@ -14,6 +14,9 @@ public struct CustomDate {
   
   @ObservableState
   public struct State: Equatable {
+    var nowDate: Date  = .now
+    var dateSelected: Bool = false
+    
     public init() {}
   }
   
@@ -41,12 +44,25 @@ public struct CustomDate {
     }
   }
   
-  fileprivate func handleViewAction(state: inout State, action: View) -> Effect<Action> {
+  fileprivate func handleViewAction(
+    state: inout State,
+    action: View
+  ) -> Effect<Action> {
     switch action {
     case .movePreviousMonth:
+      let calendar = Calendar.current
+      if let previousMonth = calendar.date(byAdding: .month, value: -1, to: state.nowDate) {
+        state.nowDate = previousMonth
+      }
       return .none
+      
     case .moveNextMonth:
+      let calendar = Calendar.current
+      if let nextMonth = calendar.date(byAdding: .month, value: 1, to: state.nowDate) {
+        state.nowDate = nextMonth
+      }
       return .none
+      
     }
   }
 }

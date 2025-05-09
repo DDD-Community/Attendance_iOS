@@ -12,65 +12,68 @@ import FSCalendar
 public struct CustomFSCalendarView: UIViewRepresentable {
   @Binding var selectDate: Date
   @Binding var currentMonth: Date
+  @Binding var isDateSelected: Bool
   
   public init(
     selectDate: Binding<Date>,
-    currentMonth: Binding<Date>
+    currentMonth: Binding<Date>,
+    isDateSelected: Binding<Bool>
   ) {
     self._selectDate = selectDate
     self._currentMonth = currentMonth
+    self._isDateSelected = isDateSelected
   }
   
   public func makeCoordinator() -> Coordinator {
     Coordinator(parent: self)
   }
   
-  // MARK: - ui 그리기
   public func makeUIView(context: Context) -> UIView {
     let containerView = UIView()
     
-    // FSCalendar 인스턴스 생성 및 설정
     let calendar = FSCalendar()
     calendar.delegate = context.coordinator
     calendar.dataSource = context.coordinator
     context.coordinator.calendar = calendar
+    
+    // FSCalendar 페이징 설정
     calendar.scrollDirection = .horizontal
     calendar.scrollEnabled = true
-    calendar.allowsMultipleSelection = false
-    calendar.appearance.selectionColor = .primaryBlue
-    calendar.appearance.titleSelectionColor = .white
+    calendar.pagingEnabled = true
+    calendar.placeholderType = .none
+    calendar.scope = .month
+    
+    // (선택) 감속 속도 빠르게
+    calendar.collectionView?.decelerationRate = .fast
     
     // 외관 설정
+    calendar.appearance.selectionColor = .primaryBlue
+    calendar.appearance.titleSelectionColor = .white
     calendar.appearance.headerDateFormat = " "
     calendar.appearance.weekdayTextColor = .black
     calendar.appearance.headerTitleAlignment = .center
     calendar.appearance.borderRadius = 20
     calendar.appearance.todayColor = .white
     calendar.appearance.titleTodayColor = .black
-    calendar.placeholderType = .none
-    calendar.swipeToChooseGesture.isEnabled = false
-    calendar.locale = Locale(identifier: "ko_KR")
     calendar.appearance.headerMinimumDissolvedAlpha = 0.0
     calendar.headerHeight = 20
     calendar.backgroundColor = .white
-    
     calendar.layer.cornerRadius = 20
     calendar.layer.masksToBounds = true
     
     containerView.addSubview(calendar)
     calendar.translatesAutoresizingMaskIntoConstraints = false
-    
     NSLayoutConstraint.activate([
       calendar.topAnchor.constraint(equalTo: containerView.topAnchor),
-      calendar.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 20),
-      calendar.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -20),
+      calendar.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
+      calendar.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
       calendar.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
     ])
     
-    // 오늘 날짜 선택하지 않고, 현재 페이지만 설정
+    // 초기 페이지 설정 (자동 선택 제거)
     DispatchQueue.main.async {
-      context.coordinator.calendar.setCurrentPage(selectDate, animated: true)
-      context.coordinator.calendar.reloadData()
+      calendar.setCurrentPage(self.selectDate, animated: true)
+      calendar.reloadData()
     }
     
     return containerView
@@ -79,79 +82,85 @@ public struct CustomFSCalendarView: UIViewRepresentable {
   public func updateUIView(_ uiView: UIView, context: Context) {
     if let calendar = context.coordinator.calendar {
       calendar.reloadData()
-      // 자동 업데이트된 날짜에도 텍스트 컬러 적용을 위해 다시 선택 상태로 만듭니다.
-      calendar.select(selectDate)
       updateHeaderTitle(coordinator: context.coordinator)
     }
   }
   
-  // 헤더 제목 업데이트 메서드
   public func updateHeaderTitle(coordinator: Coordinator) {
     guard let calendar = coordinator.calendar else { return }
     DispatchQueue.main.async {
-      calendar.currentPage =  coordinator.parent.currentMonth
+      calendar.currentPage = coordinator.parent.currentMonth
     }
   }
   
   public class Coordinator: NSObject, FSCalendarDelegate, FSCalendarDataSource, FSCalendarDelegateAppearance {
     let parent: CustomFSCalendarView
     weak var calendar: FSCalendar!
+    var calendarDataProvider = CalendarEventDataProvider()
     
-    public init(
-      parent: CustomFSCalendarView
-    ) {
+    public init(parent: CustomFSCalendarView) {
       self.parent = parent
     }
     
-    // MARK: - 날짜 선택시 호출 되는 함수
+    // MARK: - 날짜 선택
     public func calendar(
       _ calendar: FSCalendar,
       didSelect date: Date,
       at monthPosition: FSCalendarMonthPosition
     ) {
       if Calendar.current.isDate(date, inSameDayAs: parent.selectDate) {
+        calendar.deselect(date)
+        parent.selectDate = Date.now
+        parent.isDateSelected = false
+        calendar.reloadData()
         return
       }
       
       calendar.deselect(parent.selectDate)
+      parent.selectDate = date
+      parent.isDateSelected = true
       
       DispatchQueue.main.async {
         calendar.select(date, scrollToDate: true)
-        self.parent.selectDate = date
         calendar.reloadData()
       }
     }
     
-    // MARK: - 오늘 날짜에 Dot
-    //    public func calendar(_ calendar: FSCalendar, numberOfEventsFor date: Date) -> Int {
-    //      // 오늘 날짜에만 이벤트(dot)를 추가
-    //      if Calendar.current.isDateInToday(date) {
-    //        return 1
-    //      }
-    //      return 0
-    //    }
-    
-    //    // 오늘 날짜의 dot 색상을 설정하는 메서드
-    //    public func calendar(_ calendar: FSCalendar, appearance: FSCalendarAppearance, eventDefaultColorsFor date: Date) -> [UIColor]? {
-    //      if Calendar.current.isDateInToday(date) {
-    //        return [UIColor.blue]  // 오늘 날짜 dot 색상: 초록색
-    //      }
-    //      return nil
-    //    }
-    
-    
-    // 선택된 날짜의 배경을 커스터마이징하는 메서드
-    public func calendar(_ calendar: FSCalendar, appearance: FSCalendarAppearance, fillDefaultColorFor date: Date) -> UIColor? {
-      if Calendar.current.isDate(date, inSameDayAs: parent.selectDate) {
-        return .primaryBlue // 선택된 날짜의 배경을 파란색으로 처리
+    // MARK: - 날짜 배경 색상
+    public func calendar(
+      _ calendar: FSCalendar,
+      appearance: FSCalendarAppearance,
+      fillDefaultColorFor date: Date
+    ) -> UIColor? {
+      if Calendar.current.isDate(date, inSameDayAs: parent.selectDate),
+         !Calendar.current.isDateInToday(date) {
+        return .primaryBlue
       }
-      return nil // 그 외의 날짜는 기본색 유지
+      return nil
     }
     
-    // 현재 페이지 변경 시 호출되는 메서드
+    // MARK: - 날짜 텍스트 색상
+    public func calendar(
+      _ calendar: FSCalendar,
+      appearance: FSCalendarAppearance,
+      titleDefaultColorFor date: Date
+    ) -> UIColor? {
+      let cal = Calendar.current
+      let weekday = cal.component(.weekday, from: date)
+      if date == parent.selectDate {
+        return .white
+      } else if calendarDataProvider.isHoliday(date: date) {
+        return .red
+      } else if weekday == 1 || weekday == 7 {
+        return .gray
+      }
+      return .black
+    }
+    
+    // MARK: - 페이지 변경
     public func calendarCurrentPageDidChange(_ calendar: FSCalendar) {
-      calendar.currentPage = parent.currentMonth
+      parent.currentMonth = calendar.currentPage
+      
     }
-    
   }
 }

@@ -84,14 +84,21 @@ public struct FireStoreUseCase: FireStoreUseCaseProtocol {
   }
 }
 
+extension DependencyContainer {
+  var fireStoreUseCase: FireStoreRepositoryProtocol? {
+    resolve(FireStoreRepositoryProtocol.self)
+  }
+}
+
+
 extension FireStoreUseCase: DependencyKey {
   public static var liveValue: FireStoreUseCase = {
-    let fireStoreRepository = DependencyContainer.live.resolve(FireStoreRepositoryProtocol.self) ?? DefaultFireStoreRepository()
+    let fireStoreRepository = ContainerResgister(\.fireStoreUseCase).wrappedValue
     return FireStoreUseCase(repository: fireStoreRepository)
   }()
   
   public static var testValue: FireStoreUseCase = {
-    let fireStoreRepository = DependencyContainer.live.resolve(FireStoreRepositoryProtocol.self) ?? DefaultFireStoreRepository()
+    let fireStoreRepository = ContainerResgister(\.fireStoreUseCase).wrappedValue
     return FireStoreUseCase(repository: fireStoreRepository)
   }()
 }
@@ -100,5 +107,27 @@ public extension DependencyValues {
   var fireStoreUseCase: FireStoreUseCaseProtocol {
     get { self[FireStoreUseCase.self] }
     set { self[FireStoreUseCase.self] = newValue as! FireStoreUseCase}
+  }
+}
+
+
+public extension RegisterModule {
+  
+  var fireStoreUseCaseModule: () -> Module {
+    makeUseCaseWithRepository(
+      FireStoreUseCaseProtocol.self,
+      repositoryProtocol: FireStoreRepositoryProtocol.self,
+      repositoryFallback: DefaultFireStoreRepository(),
+      factory: { repo in
+        FireStoreUseCase(repository: repo)
+      }
+    )
+  }
+  
+  
+  var fireStoreRepositoryModule: () -> Module {
+    makeDependency(FireStoreRepositoryProtocol.self) {
+      FireStoreRepository()
+    }
   }
 }

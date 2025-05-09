@@ -13,7 +13,6 @@ let project = Project.makeAppModule(
         .Networking(implements: .Service),
         .Networking(implements: .ThirdPartys),
         .Networking(implements: .Model),
-        .Networking(implements: .DiContainer),
         .Networking(implements: .Foundations),
         .Networking(implements: .UseCase),
     ],
