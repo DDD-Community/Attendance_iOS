@@ -18,6 +18,7 @@ public extension ShapeStyle where Self == Color {
   
   static var textPrimary: Color { .init(hex: "FFFFFF") }
   static var textSecondary: Color { .init(hex: "EAEAEA") }
+  static var textSecondary100: Color { .init(hex: "525252") }
   static var textInactive: Color { .init(hex: "70737C47").opacity(0.28) }
   
   // MARK: - Static Background

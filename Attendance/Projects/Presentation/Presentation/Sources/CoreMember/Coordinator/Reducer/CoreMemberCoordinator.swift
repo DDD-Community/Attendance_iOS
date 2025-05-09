@@ -66,6 +66,8 @@ public struct CoreMemberCoordinator {
   }
   
   @Dependency(FireStoreUseCase.self) var fireStoreUseCase
+  @Dependency(\.continuousClock) var clock
+  
   public var body: some ReducerOf<Self> {
     BindingReducer()
     Reduce { state, action in
@@ -111,6 +113,7 @@ public struct CoreMemberCoordinator {
       state.routes.push(.scheduleEvent(.init(eventModel: state.eventModel, generation: 12)))
       return .none
       
+      
     // MARK: - qrcode
       
     case .routeAction(id: _, action: .coreMember(.navigation(.presentQrcode))):
@@ -125,17 +128,18 @@ public struct CoreMemberCoordinator {
       
     // MARK: - 로그아웃
       
-    case .routeAction(id: _, action: .mangeProfile(.navigation(.tapLogOut))):
-      return .send(.navigation(.presentLogin))
+    case .routeAction(id: _, action: .mangeProfile(.navigation(.presentLogOut))):
+      return .run { send in
+        try await clock.sleep(for: .seconds(0.5))
+        await send(.navigation(.presentLogin))
+      }
      
-    case .routeAction(id: _, action: .mangeProfile(.navigation(.presentCreatByApp))):
-      state.routes.push(.createByApp(.init()))
-      return .none
-      
+  
     default:
       return .none
     }
   }
+  
   
   private func handleViewAction(
       state: inout State,
@@ -214,6 +218,5 @@ extension CoreMemberCoordinator {
     case qrCode(QrCode)
     case scheduleEvent(ScheduleEvent)
     case mangeProfile(ManagerProfile)
-    case createByApp(CreatByApp)
   }
 }

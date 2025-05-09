@@ -32,12 +32,6 @@ public struct CoreMemberCoordinatorView: View {
         }
         .navigationBarBackButtonHidden()
         
-      case .createByApp(let createByAppStore):
-        CreatByAppView(store: createByAppStore) {
-          store.send(.view(.backAction))
-        }
-        .navigationBarBackButtonHidden()
-        
       case .qrCode(let qrCodeStore):
         QrCodeView(store: qrCodeStore) {
           store.send(.view(.backAction))

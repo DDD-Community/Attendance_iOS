@@ -18,7 +18,7 @@ final public class DefaultOAuthRepository: OAuthRepositoryProtocol {
   public func handleAppleLogin(_ requestResult: Result<ASAuthorization, any Error>, nonce: String) async throws -> ASAuthorization {
     return try await withCheckedThrowingContinuation { continuation in
       switch requestResult {
-      case .success(let request):
+      case .success(_):
         break
       case .failure(let error):
         continuation.resume(throwing: error)

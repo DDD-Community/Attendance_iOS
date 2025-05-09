@@ -25,16 +25,43 @@ public struct QrCodeUseCase: QrCodeUseCaseProtocol {
   }
 }
 
+
+extension DependencyContainer {
+  var qrCodeUseCase: QrCodeRepositoryProtcol? {
+    resolve(QrCodeRepositoryProtcol.self)
+  }
+}
+
 extension QrCodeUseCase: DependencyKey {
   public static var liveValue: QrCodeUseCase = {
-    let qrCodeRepository = DependencyContainer.live.resolve(QrCodeRepositoryProtcol.self) ?? DefaultQrCodeRepository()
+    let qrCodeRepository = ContainerResgister(\.qrCodeUseCase).wrappedValue
     return QrCodeUseCase(repository: qrCodeRepository)
   }()
 }
 
 public extension DependencyValues {
-  var qrCodeUseCase: QrCodeUseCaseProtocol {
+  var qrCodeUseCase: QrCodeUseCase {
     get { self[QrCodeUseCase.self] }
-    set { self[QrCodeUseCase.self] = newValue as! QrCodeUseCase}
+    set { self[QrCodeUseCase.self] = newValue  }
+  }
+}
+
+
+public extension RegisterModule {
+  var qrCodeUseCaseModule: () -> Module {
+    makeUseCaseWithRepository(
+      QrCodeUseCaseProtocol.self,
+      repositoryProtocol: QrCodeRepositoryProtcol.self,
+      repositoryFallback: DefaultQrCodeRepository(),
+      factory: { repo in
+        QrCodeUseCase(repository: repo)
+      }
+    )
+  }
+  
+  var qrCodeRepositoryModule: () -> Module {
+    makeDependency(QrCodeRepositoryProtcol.self) {
+      QrCodeRepository()
+    }
   }
 }

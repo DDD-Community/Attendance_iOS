@@ -20,7 +20,7 @@ ENV["FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT"] = "600"
 default_platform(:ios)
 
 APP_NAME = "DDDAttendance"
-SCHEME = "DDDAttendance-QA"
+SCHEME = "DDDAttendance"
 
 platform :ios do
   desc "Description of what the lane does"

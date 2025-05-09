@@ -109,7 +109,7 @@ public struct QrCode {
       case .destination(_):
         return .none
         
-      // MARK: - ViewAction
+        // MARK: - ViewAction
       case .view(let View):
         switch View {
           
@@ -140,7 +140,7 @@ public struct QrCode {
           return .none
         }
         
-      // MARK: - AsyncAction
+        // MARK: - AsyncAction
         
       case .async(let AsyncAction):
         switch AsyncAction {
@@ -228,14 +228,14 @@ public struct QrCode {
           }
         }
         
-      // MARK: - InnerAction
+        // MARK: - InnerAction
         
       case .inner(let InnerAction):
         switch InnerAction {
           
         }
         
-      // MARK: - NavigationAction
+        // MARK: - NavigationAction
         
       case .navigation(let NavigationAction):
         switch NavigationAction {

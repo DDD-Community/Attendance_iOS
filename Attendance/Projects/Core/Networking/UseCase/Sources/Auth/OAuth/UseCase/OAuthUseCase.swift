@@ -54,9 +54,43 @@ public struct OAuthUseCase: OAuthUseCaseProtocol {
   }
 }
 
+extension DependencyContainer {
+  var oAuthUseCase: OAuthRepositoryProtocol? {
+    resolve(OAuthRepositoryProtocol.self)
+  }
+}
+
 extension OAuthUseCase: DependencyKey {
   static public var liveValue: OAuthUseCase =  {
-    let oAuthRepository = DependencyContainer.live.resolve(OAuthRepositoryProtocol.self) ?? DefaultOAuthRepository()
+    let oAuthRepository =  ContainerResgister(\.oAuthUseCase).wrappedValue
     return OAuthUseCase(repository: oAuthRepository)
   }()
+}
+
+public extension DependencyValues {
+  var oAuthUseCase: OAuthUseCase {
+    get { self[OAuthUseCase.self] }
+    set { self[OAuthUseCase.self] = newValue }
+  }
+}
+
+
+public extension RegisterModule {
+  
+  var oAuthUseCaseModule: () -> Module {
+    makeUseCaseWithRepository(
+      OAuthUseCaseProtocol.self,
+      repositoryProtocol: OAuthRepositoryProtocol.self,
+      repositoryFallback: DefaultOAuthRepository(),
+      factory: { repo in
+        OAuthUseCase(repository: repo)
+      }
+    )
+  }
+  
+  var oAuthRepositoryModule: () -> Module {
+    makeDependency(OAuthRepositoryProtocol.self) {
+      OAuthRepository()
+    }
+  }
 }
