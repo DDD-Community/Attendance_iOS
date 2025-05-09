@@ -10,5 +10,5 @@ import Model
 public protocol AuthUseCaseProtocol {
   func fetchUser(uid: String) async throws -> UserDTOMember?
   func loginUser(email: String, password: String) async throws -> LoginDTOModel?
-  func sessionCheckJWT(token: String) async throws -> LoginDTOModel?
+  func sessionCheckJWT(token: String) async throws -> RefreshTokenDTOModel?
 }

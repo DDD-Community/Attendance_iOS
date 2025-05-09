@@ -40,7 +40,7 @@ public struct AuthUseCase: AuthUseCaseProtocol {
   // MARK: - 세션 시작시 jwt check
   public func sessionCheckJWT(
     token: String
-  ) async throws -> LoginDTOModel? {
+  ) async throws -> RefreshTokenDTOModel? {
     return try await repository
       .sessionCheckJWT(
         token: token

@@ -22,12 +22,11 @@ public struct Splash {
    
     
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
-    var checkSessionJWTDTOModel: LoginDTOModel?
+    var checkSessionJWTDTOModel: RefreshTokenDTOModel?
     var profileDTOModel: ProfileDTOModel?
+    var aceessToken = UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? ""
     public init() {
-      self.$userEntity.withLock{
-        $0.accessToken = UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? ""
-      }
+
     }
   }
   
@@ -50,7 +49,7 @@ public struct Splash {
   
   public enum AsyncAction: Equatable {
     case sessionCheckJWT
-    case checkJwtResponse(Result<LoginDTOModel, CustomError>)
+    case checkJwtResponse(Result<RefreshTokenDTOModel, CustomError>)
     case fetchUser
     case fetchUserResponse(Result<ProfileDTOModel, CustomError>)
   }

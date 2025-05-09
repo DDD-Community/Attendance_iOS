@@ -24,7 +24,7 @@ final public class DefaultAuthRepository: AuthRepositoryProtocol {
   
   public func sessionCheckJWT(
     token: String
-  ) async throws -> LoginDTOModel? {
+  ) async throws -> RefreshTokenDTOModel? {
     return nil
   }
 }
