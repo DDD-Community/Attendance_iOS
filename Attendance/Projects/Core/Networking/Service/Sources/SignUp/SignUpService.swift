@@ -15,7 +15,6 @@ import AsyncMoya
 public enum SignUpService {
   // Mark : - 회원가입
   case registerAccount(
-    username: String,
     email: String,
     password1: String,
     password2: String
@@ -65,13 +64,11 @@ extension SignUpService: BaseTargetType {
   public var parameters: [String : Any]? {
     switch self {
     case .registerAccount(
-      let username,
       let email,
       let password1,
       let password2
     ):
       let parameters: [String: Any] = [
-        "username" : username,
         "email" : email,
         "password1" : password1,
         "password2" : password2

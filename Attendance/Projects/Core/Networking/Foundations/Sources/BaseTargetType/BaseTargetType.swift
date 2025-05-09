@@ -16,6 +16,7 @@ public enum AttandanceDomain {
   case profile
   case qr
   case schedule
+  case attendances
   
 }
 
@@ -32,6 +33,8 @@ extension AttandanceDomain {
       return "api/v1/qrcodes/"
     case .schedule:
       return "api/v1/schedules/"
+    case .attendances:
+      return "api/v1/schedules/now/attendances/"
     }
   }
 }
