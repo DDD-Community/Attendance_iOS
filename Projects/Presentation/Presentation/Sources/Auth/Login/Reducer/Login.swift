@@ -140,7 +140,7 @@ public struct Login {
           let result = try await oAuthUseCase.handleAppleLogin(authData, nonce: nonce)
           await send(.async(.appleRespose(.success(result))))
           try await clock.sleep(for: .seconds(0.4))
-          await send(.async(.checkEmail))
+//          await send(.async(.checkEmail))
         } catch {
           #logDebug("애플 로그인 에러", error.localizedDescription)
         }

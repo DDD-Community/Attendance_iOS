@@ -11,7 +11,9 @@ let project = Project.makeAppModule(
   settings:  .settings(),
   dependencies: [
     .SPM.asyncMoya,
-    .SPM.firebaseFirestore
+    .SPM.firebaseFirestore,
+    .SPM.composableArchitecture
+    
   ],
   sources: ["Sources/**"]
 )
