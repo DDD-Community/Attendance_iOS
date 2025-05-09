@@ -58,7 +58,7 @@ extension ManagerProfileView {
   
   @ViewBuilder
   fileprivate func mangerProfileLoadingData() -> some View {
-    if store.userMember?.name ==  nil {
+    if store.profileDTOModel == nil {
       if store.isLoading  {
         profileLoadingView()
       }
@@ -94,7 +94,7 @@ extension ManagerProfileView {
         Spacer()
           .frame(height: 24)
         
-        if store.userMember?.memberType == .coreMember {
+        if store.profileDTOModel?.data.isStaff == true {
           HStack {
             Text("운영진")
               .pretendardCustomFont(textStyle: .body3NormalBold)
@@ -116,7 +116,7 @@ extension ManagerProfileView {
         
        
         
-        Text("\(store.userMember?.name ?? "")님")
+        Text("\(store.profileDTOModel?.data.name ?? "")님")
           .pretendardCustomFont(textStyle: .headline5Bold)
           .foregroundStyle(.borderInverse)
         
@@ -124,7 +124,7 @@ extension ManagerProfileView {
         
         managerTextComponent(
           title: store.managerProfileRoleType,
-          subTitle: store.userMember?.role.attendanceListDesc ?? "",
+          subTitle: store.profileDTOModel?.data.team.desc ?? "",
           managingTeam: "",
           isManaging: false,
           isGeneration: false
@@ -133,29 +133,19 @@ extension ManagerProfileView {
         Spacer()
           .frame(height: 20)
         
-        if store.userMember?.memberType == .coreMember {
-          if store.userMember?.managing == .projectTeamManaging {
-            managerTextComponent(
-              title: store.managerProfileManaging,
-              subTitle: store.userMember?.managing.managingDesc ?? "",
-              managingTeam: store.userMember?.memberTeam?.attendanceListDescription ?? "",
-              isManaging: false,
-              isGeneration: false
-            )
-          } else {
-            managerTextComponent(
-              title: store.managerProfileManaging,
-              subTitle: store.userMember?.managing.managingDesc ?? "",
-              managingTeam: "",
-              isManaging: false,
-              isGeneration: false
-            )
-          }
+        if store.profileDTOModel?.data.isStaff == true {
+          managerTextComponent(
+            title: store.managerProfileManaging,
+            subTitle: store.profileDTOModel?.data.role ?? "",
+            managingTeam: "",
+            isManaging: false,
+            isGeneration: false
+          )
         }
         else {
           managerTextComponent(
             title: store.memberSelectTeam,
-            subTitle: store.userMember?.memberTeam?.attendanceListDescription ?? "",
+            subTitle: store.profileDTOModel?.data.role ?? "",
             managingTeam: "",
             isManaging: false,
             isGeneration: false
@@ -167,7 +157,7 @@ extension ManagerProfileView {
         
         managerTextComponent(
           title: store.managerProfileGeneration,
-          subTitle: store.userMember?.generation.description ?? "",
+          subTitle: "12",
           managingTeam: "",
           isManaging: false,
           isGeneration: true
