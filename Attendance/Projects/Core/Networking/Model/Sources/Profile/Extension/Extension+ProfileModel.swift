@@ -8,7 +8,7 @@
 import Foundation
 
 public extension ProfileModel {
-  func toProfileDTOModel() -> ProfiledDTO {
+  func toProfileDTOModel() -> ProfileDTOModel {
     let data = ProfileResponseDTO(
       id: self.data?.id ?? "",
       name: self.data?.name ?? "",
@@ -18,7 +18,7 @@ public extension ProfileModel {
       isStaff: self.data?.isStaff ?? false
     )
     
-    return ProfiledDTO(
+    return ProfileDTOModel(
       code: self.code ?? .zero,
       message: self.message ?? "",
       data: data

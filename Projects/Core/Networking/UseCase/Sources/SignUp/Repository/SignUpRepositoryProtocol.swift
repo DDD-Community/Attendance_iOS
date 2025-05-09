@@ -10,9 +10,11 @@ import Foundation
 import Model
 
 public protocol SignUpRepositoryProtocol {
-  func validateInviteCode(code: String) async throws -> InviteDTOModel?
-  func signUpMember(member: Member) async throws -> MemberDTOSignUp?
-  func signUpCoreMember(member: Member) async throws -> CoreMemberDTOSignUp?
-  func registerAccount(userName: String, email: String, password: String) async throws -> SignUpDTOModel?
+  func registerAccount(
+    userName: String,
+    email: String,
+    password: String
+  ) async throws -> SignUpDTOModel?
   func validateInviteCode(inviteCode: String) async throws -> SignUPInviteDTOModel?
+  func checkEmail(email: String)  async throws -> CheckEmailDTO?
 }

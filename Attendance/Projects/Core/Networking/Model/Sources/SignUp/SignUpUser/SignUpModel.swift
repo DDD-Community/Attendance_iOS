@@ -16,11 +16,9 @@ public struct SignUpModel: Decodable {
 // MARK: - User
 struct User: Decodable {
   let pk: Int?
-  let username, email, firstName, lastName: String?
+  let username, email: String?
   
   enum CodingKeys: String, CodingKey {
     case pk, username, email
-    case firstName = "first_name"
-    case lastName = "last_name"
   }
 }

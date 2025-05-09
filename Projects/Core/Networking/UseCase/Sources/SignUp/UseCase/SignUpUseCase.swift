@@ -21,32 +21,7 @@ public struct SignUpUseCase: SignUpUseCaseProtocol {
     self.repository = repository
   }
   
-  // MARK: - 초대코드 확인
-  
-  public func validateInviteCode(
-    code: String
-  ) async throws -> InviteDTOModel? {
-    try await repository.validateInviteCode(code: code)
-  }
-  
-  // MARK: - 운영진 회원가입
-  
-  public func signUpCoreMember(member: Member) async throws -> CoreMemberDTOSignUp? {
-    try await repository.signUpCoreMember(member: member)
-  }
-  
-  // MARK: - 멤버 회원가입
-  
-  public func signUpMember(
-    member: Member
-  ) async throws -> MemberDTOSignUp? {
-    return try await repository
-      .signUpMember(
-        member: member
-      )
-  }
-  
-  // Mark : - 회원가입 API
+  // MARK: - 회원가입 API
   public func registerAccount(
     userName: String,
     email: String,
@@ -59,11 +34,16 @@ public struct SignUpUseCase: SignUpUseCaseProtocol {
     )
   }
   
-  // Mark : - 초대코드 확인
+  // MARK: -초대코드 확인
   public func validateInviteCode(
     inviteCode: String
   ) async throws -> SignUPInviteDTOModel? {
     return try await repository.validateInviteCode(inviteCode: inviteCode)
+  }
+  
+  // MARK: - 이메일 검증
+  public func checkEmail(email: String) async throws -> CheckEmailDTO? {
+    return try await repository.checkEmail(email: email)
   }
 }
 

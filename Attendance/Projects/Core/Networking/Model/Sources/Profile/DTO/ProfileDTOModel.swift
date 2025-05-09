@@ -9,7 +9,7 @@ import Foundation
 
 import Foundation
 
-public typealias ProfiledDTO = BaseResponseDTO<ProfileResponseDTO>
+public typealias ProfileDTOModel = BaseResponseDTO<ProfileResponseDTO>
 
 public struct ProfileResponseDTO: Codable, Equatable {
   public let id, name, inviteCodeID, role: String

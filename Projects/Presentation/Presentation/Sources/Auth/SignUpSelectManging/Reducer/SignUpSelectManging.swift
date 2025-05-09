@@ -21,10 +21,10 @@ public struct SignUpSelectManaging {
   @ObservableState
   public struct State: Equatable {
     public init() {}
-    var selectManagingPart : Managing? = .notManaging
-    var activeButton: Bool = false
     
-    var editProfileDTO: ProfiledDTO?
+    
+    var activeButton: Bool = false
+    var editProfileDTO: ProfileDTOModel?
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
     
   }
@@ -48,7 +48,7 @@ public struct SignUpSelectManaging {
   
   public enum AsyncAction: Equatable {
     case editProfile
-    case editProfileResponse(Result<ProfiledDTO, CustomError>)
+    case editProfileResponse(Result<ProfileDTOModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션

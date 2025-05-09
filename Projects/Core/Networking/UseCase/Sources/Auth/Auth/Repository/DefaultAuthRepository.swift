@@ -14,4 +14,17 @@ final public class DefaultAuthRepository: AuthRepositoryProtocol {
   public func fetchUser(uid: String) async throws -> UserDTOMember? {
     return nil
   }
+  
+  public func loginUser(
+    email: String,
+    password: String
+  ) async throws -> LoginDTOModel? {
+    return nil
+  }
+  
+  public func sessionCheckJWT(
+    token: String
+  ) async throws -> LoginDTOModel? {
+    return nil
+  }
 }

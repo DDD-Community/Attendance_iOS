@@ -12,7 +12,7 @@ import Foundations
 
 import AsyncMoya
 
- public enum SignUpService {
+public enum SignUpService {
   // Mark : - 회원가입
   case registerAccount(
     username: String,
@@ -20,17 +20,19 @@ import AsyncMoya
     password1: String,
     password2: String
   )
-   case verifyInviteCode(inviteCode: String)
+  case verifyInviteCode(inviteCode: String)
+  case checkEmail(email: String)
 }
 
 extension SignUpService: BaseTargetType {
   public var domain: AttandanceDomain {
     switch self {
-    case .registerAccount:
+    case .registerAccount, .checkEmail:
       return .auth
       
     case .verifyInviteCode:
       return .invite
+      
       
     }
   }
@@ -42,17 +44,20 @@ extension SignUpService: BaseTargetType {
       
     case .verifyInviteCode:
       return SignUpAPI.verifyInviteCode.signUpDescription
+      
+    case .checkEmail:
+      return SignUpAPI.checkEmail.signUpDescription
     }
   }
   
   public var method: Moya.Method {
     switch self {
-    case .registerAccount, .verifyInviteCode:
+    case .registerAccount, .verifyInviteCode, .checkEmail:
       return .post
       
     }
   }
-
+  
   public var error: [Int : Foundations.NetworkError]? {
     return nil
   }
@@ -65,7 +70,6 @@ extension SignUpService: BaseTargetType {
       let password1,
       let password2
     ):
-      
       let parameters: [String: Any] = [
         "username" : username,
         "email" : email,
@@ -79,6 +83,13 @@ extension SignUpService: BaseTargetType {
         "invite_code" : inviteCode
       ]
       return parameters
+      
+    case .checkEmail(let email):
+      let parameters: [String: Any] = [
+        "email": email
+      ]
+      return parameters
     }
   }
 }
+

@@ -20,14 +20,8 @@ public struct SignUpSelectTeam {
   public struct State: Equatable {
     public init() {}
     
-    var selectTeam: SelectTeam? = .notTeam
     var activeButton: Bool = false
-    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
-    @Shared(.appStorage("UserUID")) var userUid: String = ""
-    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
-    var signUpMemberModel: MemberDTOSignUp? = nil
-    
-    var editProfileDTO: ProfiledDTO?
+    var editProfileDTO: ProfileDTOModel?
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
   }
   
@@ -49,10 +43,8 @@ public struct SignUpSelectTeam {
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
-    case signUpMember
-    case signUpMemberResponse(Result<MemberDTOSignUp, CustomError>)
     case editProfile
-    case editProfileResponse(Result<ProfiledDTO, CustomError>)
+    case editProfileResponse(Result<ProfileDTOModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -136,47 +128,6 @@ public struct SignUpSelectTeam {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-      
-    case .signUpMember:
-      return .run { [member = state.userSignUpMember] send in
-        let member: Member = Member(
-          uid: member.uid,
-          memberid: member.uid,
-          email: member.email,
-          name: member.name,
-          role: SelectPart(rawValue: member.role?.rawValue ?? "") ?? .all,
-          memberType: MemberType(rawValue: member.memberType.rawValue) ?? .notYet,
-          memberTeam: SelectTeam(rawValue: member.memberTeam?.rawValue ?? "") ?? .notTeam,
-          isAdmin: member.isAdmin,
-          generation: member.generation
-        )
-        let signUpCoreMemberResult = await Result {
-          try await signUpUseCase.signUpMember(member: member)
-        }
-        
-        switch signUpCoreMemberResult {
-        case .success(let signUpMemberData):
-          if let signUpMemberData = signUpMemberData {
-            await send(.async(.signUpMemberResponse(.success(signUpMemberData))))
-            try await clock.sleep(for: .seconds(1))
-            await send(.navigation(.presentMember))
-          }
-        case .failure(let error):
-          await send(.async(.signUpMemberResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
-        }
-      }
-      
-    case .signUpMemberResponse(let result):
-      switch result {
-      case .success(let signUpMemberData):
-        state.signUpMemberModel = signUpMemberData
-        state.$userUid.withLock { $0  = signUpMemberData.uid}
-        state.$userEmail.withLock { $0 = signUpMemberData.email } 
-      case .failure(let error):
-        #logError("회원가입 실패", error.localizedDescription)
-      }
-      return .none
-      
     case .editProfile:
       return .run { [
         userEntity = state.userEntity,
@@ -199,7 +150,7 @@ public struct SignUpSelectTeam {
             await send(.async(.editProfileResponse(.success(profileDTOData))))
             
             if profileDTOData.code == 200 {
-              if profileDTOData.data?.isStaff == true {
+              if profileDTOData.data.isStaff == true {
                 await send(.navigation(.presentCoreMember))
               } else {
                 await send(.navigation(.presentMember))

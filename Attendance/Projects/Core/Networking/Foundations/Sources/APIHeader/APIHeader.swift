@@ -23,8 +23,7 @@ public struct APIHeader {
   static var userEntity: UserEntity = .init()
   
   private static var _accessTokenKeyChain: String {
-    // now this compiles, because $userEntity is also static
-    return self.$userEntity.withLock { $0.accessToken }
+    return  UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? "" // Returns an empty string if nil
   }
   
   public static var accessTokenKeyChain: String {
@@ -34,6 +33,7 @@ public struct APIHeader {
 
   public static func updateAccessToken(_ token: String?) {
     guard let newToken = token, !newToken.isEmpty else { return }
+    UserDefaults.standard.set(newToken, forKey:  "ACCESS_TOKEN")
     self.$userEntity.withLock {  $0.accessToken = newToken }
   }
 

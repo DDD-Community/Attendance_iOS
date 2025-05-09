@@ -13,8 +13,6 @@ public extension SignUpModel {
     let user = UserDTO(
       username: self.user?.username ?? "",
       email: self.user?.email ?? "",
-      firstName: self.user?.firstName ?? "",
-      lastName: self.user?.lastName ?? ""
     )
     
     let data = SignUpResponseDTOModel(
