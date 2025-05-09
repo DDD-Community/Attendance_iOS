@@ -34,7 +34,9 @@ public struct ManagerProfile {
     var logoutText: String = "로그아웃"
     
     @Shared(.appStorage("UserEmail")) var userEmail: String = ""
+    
     var userMember: UserDTOMember? = nil
+    var profileDTOModel: ProfileDTOModel?
     
     @Presents var destination: Destination.State?
     public init() {}
@@ -70,7 +72,7 @@ public struct ManagerProfile {
     case signOut
     case fetchUserDataResponse(Result<User, CustomError>)
     case fetchUser
-    case fetchUserResponse(Result<UserDTOMember, CustomError>)
+    case fetchUserResponse(Result<ProfileDTOModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -90,6 +92,7 @@ public struct ManagerProfile {
   
   @Dependency(FireStoreUseCase.self) var fireStoreUseCase
   @Dependency(AuthUseCase.self) var authUseCase
+  @Dependency(ProfileUseCase.self) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.continuousClock) var clock
   
@@ -157,21 +160,21 @@ public struct ManagerProfile {
     switch action {
       
     case .fetchUser:
-      return .run { [userEmail = state.userEmail] send in
+      return .run { send in
         let fetchUserResult = await Result {
-          try await authUseCase.fetchUser(uid: userEmail)
+          try await profileUseCase.getProfile()
         }
         
         switch fetchUserResult {
-        case .success(let fetchUserData):
-          if let fetchUserData = fetchUserData {
+        case .success(let profileUserDTOData):
+          if let profileUserDTOData = profileUserDTOData {
             await send(.view(.startLoading))
             
             try await clock.sleep(for: .seconds(1.5))
             
             await send(.view(.stopLoading))
             
-            await send(.async(.fetchUserResponse(.success(fetchUserData))))
+            await send(.async(.fetchUserResponse(.success(profileUserDTOData))))
             
           }
         case .failure(let error):
@@ -182,9 +185,8 @@ public struct ManagerProfile {
       
     case .fetchUserResponse(let result):
       switch result {
-      case .success(let userDtoMemberData):
-        state.userMember = userDtoMemberData
-        state.$userEmail.withLock { $0 = userDtoMemberData.email}
+      case .success(let profileDTOData):
+        state.profileDTOModel = profileDTOData
         
       case .failure(let error):
         #logError("유저 정보 가져오기", error.localizedDescription)
