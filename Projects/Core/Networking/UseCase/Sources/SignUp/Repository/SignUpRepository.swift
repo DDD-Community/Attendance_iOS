@@ -59,7 +59,6 @@ public class SignUpRepository: SignUpRepositoryProtocol {
   ) async throws -> SignUpDTOModel? {
     let signUpModel = try await provider.requestAsync(
       .registerAccount(
-        username: userName,
         email: email,
         password1: password,
         password2: password),

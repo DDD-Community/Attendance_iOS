@@ -51,7 +51,6 @@ public struct SignUpUseCase: SignUpUseCaseProtocol {
     password: String
   ) async throws -> SignUpDTOModel? {
     return try await repository.registerAccount(
-      userName: userName,
       email: email,
       password: password
     )

@@ -54,18 +54,6 @@ public class OAuthRepository: OAuthRepositoryProtocol {
             UserDefaults.standard.set(acessToken, forKey: "APPLE_ACCESS_TOKEN")
             
             _ = try await self.appleLoginWithFireBase(withIDToken: acessToken, rawNonce: nonce, fullName: appleIDCredential)
-            // 2) 이름 추출
-            // 이름 추출
-            let givenName  = appleIDCredential.fullName?.givenName  ?? ""
-            let familyName = appleIDCredential.fullName?.familyName ?? ""
-            let displayName = [familyName, givenName]
-              .filter { !$0.isEmpty }
-              .joined(separator: " ")
-
-            if !displayName.isEmpty {
-              // 이름이 있을 때만 저장 및 파라미터로 넘김
-              UserDefaults.standard.set(displayName, forKey: "APPLE_USER_FULL_NAME")
-            }
             
           } catch {
             throw error
