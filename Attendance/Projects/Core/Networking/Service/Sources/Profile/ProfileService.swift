@@ -64,7 +64,8 @@ extension ProfileService: BaseTargetType {
         "name":  username,
         "invite_code_id": inviteCodeId,
         "role":  role,
-        "team":  team
+        "team":  team,
+        "cohort": "12"
       ]
       
       return parameters

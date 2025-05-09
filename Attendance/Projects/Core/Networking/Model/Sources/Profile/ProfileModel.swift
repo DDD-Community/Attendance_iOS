@@ -13,7 +13,7 @@ public struct ProfileResponseModel: Decodable {
   let id, name, inviteCodeID, role: String
   let team: String
   let isStaff: Bool
-  let createdAt, updatedAt: String
+  let createdAt, updatedAt, cohort: String
   
   enum CodingKeys: String, CodingKey {
     case id, name
@@ -22,6 +22,7 @@ public struct ProfileResponseModel: Decodable {
     case isStaff = "is_staff"
     case createdAt = "created_at"
     case updatedAt = "updated_at"
+    case cohort
   }
 }
 

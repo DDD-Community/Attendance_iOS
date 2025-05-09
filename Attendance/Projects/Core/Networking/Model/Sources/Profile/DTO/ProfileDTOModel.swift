@@ -15,6 +15,7 @@ public struct ProfileResponseDTO: Codable, Equatable {
   public let id, name, inviteCodeID, role: String
   public let team: SelectPart
   public let isStaff: Bool
+  public let generation: String
   
   public init(
     id: String,
@@ -22,7 +23,8 @@ public struct ProfileResponseDTO: Codable, Equatable {
     inviteCodeID: String,
     role: String,
     team: SelectPart,
-    isStaff: Bool
+    isStaff: Bool,
+    generation: String
   ) {
     self.id = id
     self.name = name
@@ -30,6 +32,7 @@ public struct ProfileResponseDTO: Codable, Equatable {
     self.role = role
     self.team = team
     self.isStaff = isStaff
+    self.generation = generation
   }
 }
 

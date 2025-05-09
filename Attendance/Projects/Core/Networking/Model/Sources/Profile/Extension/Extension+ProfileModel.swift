@@ -15,7 +15,8 @@ public extension ProfileModel {
       inviteCodeID: self.data?.inviteCodeID ?? "",
       role: self.data?.role ?? "",
       team: SelectPart(rawValue: self.data?.team ?? "") ?? .all,
-      isStaff: self.data?.isStaff ?? false
+      isStaff: self.data?.isStaff ?? false,
+      generation: self.data?.cohort ?? ""
     )
     
     return ProfileDTOModel(
