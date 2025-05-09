@@ -54,18 +54,6 @@ public class OAuthRepository: OAuthRepositoryProtocol {
             UserDefaults.standard.set(acessToken, forKey: "APPLE_ACCESS_TOKEN")
             
             _ = try await self.appleLoginWithFireBase(withIDToken: acessToken, rawNonce: nonce, fullName: appleIDCredential)
-            // 2) 이름 추출
-            // 이름 추출
-            let givenName  = appleIDCredential.fullName?.givenName  ?? ""
-            let familyName = appleIDCredential.fullName?.familyName ?? ""
-            let displayName = [familyName, givenName]
-              .filter { !$0.isEmpty }
-              .joined(separator: " ")
-
-            if !displayName.isEmpty {
-              // 이름이 있을 때만 저장 및 파라미터로 넘김
-              UserDefaults.standard.set(displayName, forKey: "APPLE_USER_FULL_NAME")
-            }
             
           } catch {
             throw error
@@ -97,7 +85,6 @@ public class OAuthRepository: OAuthRepositoryProtocol {
     )
     
     let accessToken = UserDefaults.standard.string(forKey: "APPLE_ACCESS_TOKEN") ?? ""
-    @Shared(.inMemory("UseEntity")) var userEntity: UserEntity = .init()
     // 비동기 로그인 시 오류 처리를 위해 async/await를 사용
     let authResult: User? = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<User?, Error>) in
       Auth.auth().signIn(with: firebaseCredential) { result, error in
@@ -153,15 +140,7 @@ public class OAuthRepository: OAuthRepositoryProtocol {
             continuation.resume(throwing: NSError(domain: "GoogleLoginError", code: -1, userInfo: [NSLocalizedDescriptionKey: "User is nil"]))
             return
           }
-          // 🌟 1) 이름 추출
-          let gidUser = user.user
-          
-          // 🌟 1) 이름 추출
-          let displayName = gidUser.profile?.name ?? ""
-          if !displayName.isEmpty {
-            UserDefaults.standard.set(displayName, forKey: "GOOGLE_USER_FULL_NAME")
-          }
-
+         
           let accessToken: String = user.user.idToken?.tokenString ?? ""
           let firebaseCredential = GoogleAuthProvider.credential(
             withIDToken: accessToken,

@@ -13,12 +13,10 @@ import Service
 
 import AsyncMoya
 import Moya
-import FirebaseFirestore
 
 @Observable
 public class SignUpRepository: SignUpRepositoryProtocol {
   
-  private let fireBaseDB = Firestore.firestore()
   private let provider = MoyaProvider<SignUpService>(plugins: [MoyaLoggingPlugin()])
   
   public init() {}
@@ -26,13 +24,11 @@ public class SignUpRepository: SignUpRepositoryProtocol {
 
   // Mark : -  API 회원가입
   public func registerAccount(
-    userName: String,
     email: String,
     password: String
   ) async throws -> SignUpDTOModel? {
     let signUpModel = try await provider.requestAsync(
       .registerAccount(
-        username: userName,
         email: email,
         password1: password,
         password2: password),

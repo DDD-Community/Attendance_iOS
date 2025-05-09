@@ -11,7 +11,6 @@ import Model
 
 public protocol SignUpRepositoryProtocol {
   func registerAccount(
-    userName: String,
     email: String,
     password: String
   ) async throws -> SignUpDTOModel?

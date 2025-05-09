@@ -8,77 +8,181 @@ APP_NAME = "DDDAttendance"
 SCHEME = "DDDAttendance"
 BUNDLE_ID = "io.DDD.Attendance"
 OUTPUT_DIR = "./fastlane/output"
+IPA_FILENAME = "#{APP_NAME}.ipa"
 
 platform :ios do
 
-  desc "IPA 빌드 및 ._Symbols 제거"
-  lane :build_ipa do
-    clear_derived_data
-
-    match(type: "appstore", readonly: true)
-
-    version = get_version_number(xcodeproj: "#{APP_NAME}.xcodeproj")
-    build = latest_testflight_build_number(bundle_id: BUNDLE_ID) + 1 rescue 1
-    increment_build_number(build_number: build.to_s)
-
+  # 🧹 output 폴더 정리
+  private_lane :cleanup_output_folder do
+    sh "rm -rf #{OUTPUT_DIR}"
     sh "mkdir -p #{OUTPUT_DIR}"
+    UI.message("🧹 기존 output 폴더 초기화 완료")
+  end
+
+  # 🧼 ._ 파일 및 .DS_Store 제거
+  private_lane :clean_symbols_from_ipa do |options|
+    ipa_path = options[:ipa_path] || File.expand_path("#{OUTPUT_DIR}/#{IPA_FILENAME}")
+    extract_dir = "#{OUTPUT_DIR}/extracted"
+
+    unless File.exist?(ipa_path)
+      UI.user_error!("⚠️ IPA 파일이 존재하지 않습니다: #{ipa_path}")
+    end
+
+    UI.message("✅ .ipa 생성 완료. ._Symbols 제거 작업 시작...")
+
+    sh "rm -rf '#{extract_dir}'"
+    sh "unzip -q '#{ipa_path}' -d '#{extract_dir}'"
+    sh "find '#{extract_dir}' -name '._*' -delete"
+    sh "find '#{extract_dir}' -name '.DS_Store' -delete"
+
+    cleaned_ipa = ipa_path.sub(".ipa", "_clean.ipa")
+
+    Dir.chdir(extract_dir) do
+      sh "zip -rX '#{cleaned_ipa}' Payload"
+    end
+
+    sh "mv '#{ipa_path}' '#{ipa_path.sub('.ipa', '_original.ipa')}'"
+    sh "mv '#{cleaned_ipa}' '#{ipa_path}'"
+    sh "rm -rf '#{extract_dir}'"
+
+    UI.success("🎉 ._Symbols 제거 완료! 최종 IPA 준비 완료.")
+  end
+
+  # 📦 Debug 빌드 + 정리
+  desc "Build Debug IPA and clean ._Symbols"
+  lane :build_ipa_debug_and_strip do
+    clear_derived_data
+   #cleanup_output_folder
+    match(type: "appstore", readonly: true)
 
     ipa_path = build_app(
       workspace: "#{APP_NAME}.xcworkspace",
       scheme: "#{SCHEME}",
+      output_directory: OUTPUT_DIR,
+      output_name: IPA_FILENAME,
+      export_method: "app-store",
       silent: true,
       clean: true,
-      output_directory: OUTPUT_DIR,
-      output_name: "#{APP_NAME}.ipa",
-      export_method: "app-store",
       export_options: {
         signingStyle: "manual",
         uploadBitcode: false,
-        stripSwiftSymbols: true,
-        manageAppVersionAndBuildNumber: true,
         provisioningProfiles: {
           "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
         }
-      },
-      xcargs: "MARKETING_VERSION=#{version} CURRENT_PROJECT_VERSION=#{build}"
+      }
     )
 
-    if File.exist?(ipa_path)
-      UI.message("✅ .ipa 생성 완료. ._Symbols 제거 작업 시작...")
-
-      Dir.chdir(File.dirname(ipa_path)) do
-        sh "unzip -q #{File.basename(ipa_path)} -d temp_unpack"
-        sh "rm -rf temp_unpack/._Symbols"
-        sh "cd temp_unpack && zip -rX ../#{APP_NAME}_clean.ipa Payload"
-        sh "mv #{File.basename(ipa_path)} #{APP_NAME}_original.ipa"
-        sh "mv #{APP_NAME}_clean.ipa #{File.basename(ipa_path)}"
-        FileUtils.rm_rf("temp_unpack")
-      end
-
-      UI.message("🎉 ._Symbols 제거 완료! 최종 IPA 준비 완료.")
-    else
-      UI.important("⚠️ IPA 파일이 생성되지 않았습니다. 로그를 확인하세요.")
-    end
+  #clean_symbols_from_ipa(ipa_path: ipa_path)
   end
 
-  desc "TestFlight 업로드"
-  lane :QA do
-    app_store_connect_api_key(
-      is_key_content_base64: true,
-      in_house: false
-    )
-
+  # 📦 Release 빌드 + 정리
+  desc "Build Release IPA and clean ._Symbols"
+  lane :build_ipa_release_and_strip do
+    clear_derived_data
     match(type: "appstore", readonly: true)
 
-    build_ipa
+    ipa_path = build_app(
+      workspace: "#{APP_RELEASE_NAME}.xcworkspace",
+      scheme: "#{APP_RELEASE_SCHEME}",
+      output_directory: OUTPUT_DIR,
+      output_name: IPA_FILENAME,
+      export_method: "app-store",
+      silent: true,
+      clean: true,
+      export_options: {
+        signingStyle: "manual",
+        uploadBitcode: false,
+        provisioningProfiles: {
+          "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
+        }
+      }
+    )
+
+    #clean_symbols_from_ipa(ipa_path: ipa_path)
+  end
+
+  # 🚀 TestFlight 업로드 (Debug)
+  desc "Upload to TestFlight (Debug)"
+  lane :QA do
+    app_store_connect_api_key(is_key_content_base64: true, in_house: false)
+    match(type: "appstore", readonly: true)
+
+    ipa_path = build_app(
+      workspace: "#{APP_NAME}.xcworkspace",
+      scheme: "#{SCHEME}",
+      output_directory: OUTPUT_DIR,
+      output_name: IPA_FILENAME,
+      export_method: "app-store",
+      silent: true,
+      clean: true,
+      export_options: {
+        signingStyle: "manual",
+        uploadBitcode: false,
+        provisioningProfiles: {
+          "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
+        }
+      }
+    )
+
+  #clean_symbols_from_ipa(ipa_path: ipa_path)
 
     upload_to_testflight(
-      ipa: "#{OUTPUT_DIR}/#{APP_NAME}.ipa",
+      ipa: ipa_path,
       changelog: "변경사항",
-      beta_app_description: "DDDAttendance 앱입니다.",
-      skip_waiting_for_build_processing: true,
-     distribute_external: true,  # 외부 배포 옵션 꼭 넣기
-     groups: ["DDD"]
+      groups: ["DDD"],
+      beta_app_description: "DDD 출석 앱입니다.",
+      notify_external_testers: true,
+      skip_waiting_for_build_processing: true
     )
+  end
+
+  # 🚀 App Store 배포
+  desc "Submit to App Store"
+  lane :release do |options|
+    if options[:version]
+      app_store_connect_api_key(is_key_content_base64: true, in_house: false)
+      match(type: "appstore", readonly: true)
+
+      ipa_path = build_app(
+        workspace: "#{APP_RELEASE_NAME}.xcworkspace",
+        scheme: "#{APP_RELEASE_SCHEME}",
+        output_directory: OUTPUT_DIR,
+        output_name: IPA_FILENAME,
+        export_method: "app-store",
+        silent: true,
+        clean: true,
+        export_options: {
+          signingStyle: "manual",
+          uploadBitcode: false,
+          provisioningProfiles: {
+            "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
+          }
+        }
+      )
+
+      #clean_symbols_from_ipa(ipa_path: ipa_path)
+
+      upload_to_app_store(
+        app_version: options[:version],
+        username: "shuwj81@daum.net",
+        team_id: "KL4Y9PB9B8",
+        ipa: ipa_path,
+        skip_metadata: false,
+        metadata_path: "./fastlane/metadata",
+        skip_screenshots: true,
+        force: true,
+        submit_for_review: true,
+        automatic_release: false,
+        precheck_include_in_app_purchases: false,
+        submission_information: {
+          add_id_info_uses_idfa: false,
+          export_compliance_encryption_updated: false,
+          export_compliance_uses_encryption: false,
+          content_rights_contains_third_party_content: false
+        }
+      )
+    else
+      UI.user_error!("⚠️ version 옵션을 지정해주세요: fastlane submit version:'1.0.0'")
+    end
   end
 end

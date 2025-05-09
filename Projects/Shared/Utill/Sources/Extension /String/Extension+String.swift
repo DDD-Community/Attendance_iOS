@@ -40,4 +40,22 @@ public extension String {
     dateFormatter.dateFormat = "yyyy년 MM월 dd일 a hh시 mm분 ss초 'UTC'Z"
     return dateFormatter.date(from: dateString)
   }
+  
+  static func extractMonth(from isoDate: String) -> String {
+    let components = isoDate.split(separator: "T").first?.split(separator: "-")
+    return components?.count == 3 ? String(components![1]) : ""
+  }
+  
+  static func extractDay(from isoDate: String) -> String {
+    let components = isoDate.split(separator: "T").first?.split(separator: "-")
+    return components?.count == 3 ? String(components![2]) : ""
+  }
+  
+  static func extractMonthString(from isoDate: String) -> String {
+      let comps = isoDate.split(separator: "T").first?.split(separator: "-")
+      if let month = comps?[1] {
+        return "\(Int(month) ?? 0)월"
+      }
+      return ""
+    }
 }

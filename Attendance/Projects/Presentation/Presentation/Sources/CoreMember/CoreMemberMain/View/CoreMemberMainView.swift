@@ -151,7 +151,7 @@ extension CoreMemberMainView {
       AttandanceCheckView(store: self.store.scope(state: \.attandanceCheck, action: \.attandanceCheck))
       
     case .schedule:
-      EmptyView()
+      ScheduleView(store: self.store.scope(state: \.schedule, action: \.schedule))
       
     }
   }

@@ -11,7 +11,6 @@ final public class DefaultSignUpRepository: SignUpRepositoryProtocol {
   public init() {}
   
   public func registerAccount(
-    userName: String,
     email: String,
     password: String
   ) async throws -> SignUpDTOModel? {

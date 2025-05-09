@@ -23,12 +23,10 @@ public struct SignUpUseCase: SignUpUseCaseProtocol {
   
   // MARK: - 회원가입 API
   public func registerAccount(
-    userName: String,
     email: String,
     password: String
   ) async throws -> SignUpDTOModel? {
     return try await repository.registerAccount(
-      userName: userName,
       email: email,
       password: password
     )

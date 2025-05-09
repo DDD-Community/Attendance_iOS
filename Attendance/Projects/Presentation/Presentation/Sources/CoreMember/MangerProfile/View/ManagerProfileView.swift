@@ -157,7 +157,7 @@ extension ManagerProfileView {
         
         managerTextComponent(
           title: store.managerProfileGeneration,
-          subTitle: "12",
+          subTitle: store.profileDTOModel?.data.generation ?? "",
           managingTeam: "",
           isManaging: false,
           isGeneration: true

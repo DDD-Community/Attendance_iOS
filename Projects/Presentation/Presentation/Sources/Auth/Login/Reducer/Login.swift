@@ -163,13 +163,10 @@ public struct Login {
 
           let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
           let uid = UserDefaults.standard.string(forKey: "UserUID") ?? ""
-          let userName = UserDefaults.standard.string(forKey: "APPLE_USER_FULL_NAME") ?? ""
-          let compactName = userName.replacingOccurrences(of: " ", with: "")
-
+          
           state.$userEntity.withLock {
             $0.userEmail = email
             $0.userUid = uid
-            $0.userName = compactName
           }
         default:
           break
@@ -201,12 +198,9 @@ public struct Login {
       switch result {
       case .success(let resultData):
         state.oAuthResponseModel = resultData
-        let userName = UserDefaults.standard.string(forKey: "GOOGLE_USER_FULL_NAME") ?? ""
-        let compactName = userName.replacingOccurrences(of: " ", with: "")
         state.$userEntity.withLock{
           $0.userUid = resultData.uid
           $0.userEmail = resultData.email
-          $0.userName = compactName
         }
       case .failure(let error):
         #logError("소셜 로그인 실패", error.localizedDescription)
@@ -217,7 +211,6 @@ public struct Login {
       return .run { [userEntity = state.userEntity] send in
         let registerUserResult = await Result {
           try await signUpUseCase.registerAccount(
-            userName: userEntity.userName,
             email: userEntity.userEmail,
             password: userEntity.userUid
           )

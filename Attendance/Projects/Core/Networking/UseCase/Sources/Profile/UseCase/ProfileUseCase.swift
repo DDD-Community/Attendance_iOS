@@ -50,8 +50,8 @@ extension DependencyContainer {
 
 extension ProfileUseCase: DependencyKey {
   static public var liveValue: ProfileUseCase = {
-    let authRepository = ContainerResgister(\.profileUseCase).wrappedValue
-    return ProfileUseCase(repository: authRepository)
+    let profileRepository = ContainerResgister(\.profileUseCase).wrappedValue
+    return ProfileUseCase(repository: profileRepository)
   }()
 }
 
