@@ -81,7 +81,8 @@ extension AttandanceCheckView {
         attendanceCount: store.attendanceCount,
         lateCount: store.lateCount,
         absentCount: store.absentCount,
-        isManager: true)
+        showWarning: false
+      )
     }
     .padding(.horizontal, 24)
   }

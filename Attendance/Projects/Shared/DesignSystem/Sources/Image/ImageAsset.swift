@@ -51,7 +51,7 @@ public enum ImageAsset: String {
   case late_icons
   case present_icons
   case stamp
-  
-  //MARK: - Profile
+  case late_stamp
+  case present_stamp
   case profileBack
 }
