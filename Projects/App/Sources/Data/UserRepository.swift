@@ -16,7 +16,7 @@ final class UserRepository: UserRepositoryProtocol {
   /// Firestore에서 uid를 이용하여 Member를 가져온다.
   func fetchMember() -> Single<Member> {
     return firebaseService.fetchUID()
-      .flatMap { [weak self] uid in
+      .flatMap { [weak self] uid in	
         guard let self else { throw UserRepositoryError.fetchMember }
         return self.firebaseService.fetchMember(uid)
       }
