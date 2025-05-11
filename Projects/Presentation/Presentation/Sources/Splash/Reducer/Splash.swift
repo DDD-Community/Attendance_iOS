@@ -121,7 +121,6 @@ public struct Splash {
         case .success(let checkJwtDTOData):
           if let checkJwtDTOData = checkJwtDTOData {
             await send(.async(.checkJwtResponse(.success(checkJwtDTOData))))
-            await send(.async(.fetchUser))
           }
           
         case .failure(let error):
