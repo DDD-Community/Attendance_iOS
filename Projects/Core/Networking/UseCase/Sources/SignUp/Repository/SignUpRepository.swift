@@ -39,9 +39,9 @@ public class SignUpRepository: SignUpRepositoryProtocol {
   // Mark : - 초대 코드 검증
   public func validateInviteCode(
     inviteCode: String
-  ) async throws -> SignUPInviteDTOModel? {
+  ) async throws -> InviteDTOModel? {
     let validateInviteCodeModel = try await provider.requestAsync(
-      .verifyInviteCode(inviteCode: inviteCode), decodeTo: SignUpInviteCodeModel.self)
+      .verifyInviteCode(inviteCode: inviteCode), decodeTo: InviteCodeModel.self)
     return validateInviteCodeModel.toSignUpDTOInviteCodeModel()
   }
   

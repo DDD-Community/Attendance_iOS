@@ -9,7 +9,7 @@ import Foundation
 
 public typealias CheckEmailDTO = BaseResponseDTO<CheckEmailResponseDTO>
 
-public struct CheckEmailResponseDTO: Codable, Equatable {
+public struct CheckEmailResponseDTO: Decodable, Equatable {
   public let emailUsed: Bool
   
   public init(

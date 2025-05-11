@@ -126,7 +126,7 @@ public struct Splash {
           
         case .failure(let error):
           await send(.async(.checkJwtResponse(.failure(.encodingError(error.localizedDescription)))))
-          
+          await send(.navigation(.presentLogin))
         }
         
       }

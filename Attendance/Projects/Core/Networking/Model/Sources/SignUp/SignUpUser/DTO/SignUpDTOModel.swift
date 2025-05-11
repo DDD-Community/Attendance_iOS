@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct SignUpDTOModel: Equatable, Codable {
+public struct SignUpDTOModel: Equatable, Decodable {
   public let data: SignUpResponseDTOModel
   
   public init(data: SignUpResponseDTOModel) {
@@ -16,7 +16,7 @@ public struct SignUpDTOModel: Equatable, Codable {
   
 }
 
-public struct SignUpResponseDTOModel: Equatable, Codable {
+public struct SignUpResponseDTOModel: Equatable, Decodable {
   public let accessToken: String
   public let refreshToken: String
   public let user: UserDTO
@@ -34,7 +34,7 @@ public struct SignUpResponseDTOModel: Equatable, Codable {
 }
 
 
-public struct UserDTO: Equatable, Codable {
+public struct UserDTO: Equatable, Decodable {
   public let username, email: String
   
   public init(

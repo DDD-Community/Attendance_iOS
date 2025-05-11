@@ -7,15 +7,10 @@
 
 import Foundation
 
-// MARK: - Welcome
-public struct SignUpInviteCodeModel: Decodable {
-  let code: Int?
-  let message: String?
-  let data: SignUpInviteCodeResponseModel?
-}
+public typealias InviteCodeModel = BaseResponse<InviteCodeResponseModel>
 
 // MARK: - DataClass
-struct SignUpInviteCodeResponseModel: Decodable {
+public struct InviteCodeResponseModel: Decodable {
   let valid: Bool?
   let inviteCodeID, inviteType: String?
   let expireTime: String?

@@ -14,6 +14,6 @@ public protocol SignUpRepositoryProtocol {
     email: String,
     password: String
   ) async throws -> SignUpDTOModel?
-  func validateInviteCode(inviteCode: String) async throws -> SignUPInviteDTOModel?
+  func validateInviteCode(inviteCode: String) async throws -> InviteDTOModel?
   func checkEmail(email: String)  async throws -> CheckEmailDTO?
 }

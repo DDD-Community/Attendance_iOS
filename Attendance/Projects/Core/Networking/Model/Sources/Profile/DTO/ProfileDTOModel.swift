@@ -11,7 +11,7 @@ import Foundation
 
 public typealias ProfileDTOModel = BaseResponseDTO<ProfileResponseDTO>
 
-public struct ProfileResponseDTO: Codable, Equatable {
+public struct ProfileResponseDTO: Decodable, Equatable {
   public let id, name, inviteCodeID, role: String
   public let team: SelectPart
   public let isStaff: Bool

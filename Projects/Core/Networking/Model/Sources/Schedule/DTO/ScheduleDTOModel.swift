@@ -11,7 +11,7 @@ import Foundation
 public typealias ScheduleDTOModel = BaseResponseDTO<[ScheduleDTOResponseModel]>
 
 // MARK: - Datum
-public struct ScheduleDTOResponseModel: Codable, Equatable {
+public struct ScheduleDTOResponseModel: Decodable, Equatable {
     public let id, title, description: String
     public let startTime, endTime: String
   

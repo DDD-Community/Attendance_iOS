@@ -19,7 +19,7 @@ final public class DefaultSignUpRepository: SignUpRepositoryProtocol {
   
   public func validateInviteCode(
     inviteCode: String
-  ) async throws -> SignUPInviteDTOModel? {
+  ) async throws -> InviteDTOModel? {
     return nil
   }
   
