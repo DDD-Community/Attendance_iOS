@@ -19,21 +19,10 @@ let project = Project.makeAppModule(
     .SPM.collections,
     .SPM.swiftUIX,
     .SPM.fsCalendar,
-    
-    //MARK: - 제거 하고 SWIFTUI 로 변경
-    .SPM.gifu,
-    .SPM.then,
     .SPM.firebaseAuth,
-    .SPM.flexLayout,
-    .SPM.pinLayout,
-    .SPM.reactorKit,
-    .SPM.rxCocoa,
-    .SPM.snapKit,
-    .SPM.qrCodeSwift,
     .SPM.googleSignIn,
     .SPM.keychainAccess,
-    
-      .SPM.firebaseAuth,
+    .SPM.firebaseAuth,
     .SPM.firebaseFirestore,
     .SPM.firebaseAnalytics,
     .SPM.firebaseCrashlytics,
