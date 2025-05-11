@@ -6,25 +6,10 @@
 //
 
 import Foundation
+ 
+public typealias InviteDTOModel = BaseResponseDTO<InviteResponseDTOModel>
 
-public struct SignUPInviteDTOModel: Codable, Equatable {
-  public let code: Int
-  public let message: String
-  public let data: SignUPInviteResponseDTOModel
-  
-  public init(
-    code: Int,
-    message: String,
-    data: SignUPInviteResponseDTOModel
-  ) {
-    self.code = code
-    self.message = message
-    self.data = data
-  }
-  
-}
-
-public struct SignUPInviteResponseDTOModel: Codable, Equatable {
+public struct InviteResponseDTOModel: Decodable, Equatable {
   public let valid: Bool
   public let inviteCodeID, inviteType: String
   public  let oneTimeUse: Bool

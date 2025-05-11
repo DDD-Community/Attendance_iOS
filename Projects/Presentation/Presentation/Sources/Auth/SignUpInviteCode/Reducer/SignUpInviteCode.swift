@@ -67,7 +67,7 @@ public struct SignUpInviteCode {
   
   public enum AsyncAction: Equatable {
     case validataInviteCode(code: String)
-    case validataInviteCodeResponse(Result<SignUPInviteDTOModel, CustomError>)
+    case validataInviteCodeResponse(Result<InviteDTOModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션

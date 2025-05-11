@@ -71,7 +71,7 @@ public class SignUpRepository: SignUpRepositoryProtocol {
     inviteCode: String
   ) async throws -> SignUPInviteDTOModel? {
     let validateInviteCodeModel = try await provider.requestAsync(
-      .verifyInviteCode(inviteCode: inviteCode), decodeTo: SignUpInviteCodeModel.self)
+      .verifyInviteCode(inviteCode: inviteCode), decodeTo: InviteCodeModel.self)
     return validateInviteCodeModel.toSignUpDTOInviteCodeModel()
   }
   

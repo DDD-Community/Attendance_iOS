@@ -10,7 +10,7 @@ import Foundation
 public typealias LoginDTOModel = BaseResponseDTO<LoginResponseDTOModel>
 
 // MARK: - Welcome
-public struct LoginResponseDTOModel: Codable, Equatable {
+public struct LoginResponseDTOModel: Decodable, Equatable {
   public let accessToken, refreshToken: String
   public let user: UserDTO
   public let accessExpiration, refreshExpiration: String
