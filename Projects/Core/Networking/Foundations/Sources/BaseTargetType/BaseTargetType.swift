@@ -34,7 +34,7 @@ extension AttandanceDomain {
     case .schedule:
       return "api/v1/schedules/"
     case .attendances:
-      return "api/v1/schedules/now/attendances/"
+      return "api/v1/attendances/"
     }
   }
 }
