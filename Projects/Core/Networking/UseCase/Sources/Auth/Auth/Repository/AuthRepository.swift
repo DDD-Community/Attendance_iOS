@@ -70,12 +70,10 @@ public class AuthRepository: AuthRepositoryProtocol {
   // MARK: - 로그인 API
   public func loginUser(
     email: String,
-    password: String
   ) async throws -> LoginDTOModel? {
     let loginModel = try await provider.requestAsync(
       .login(
-        email: email,
-        password: password), decodeTo: LoginModel.self)
+        email: email), decodeTo: LoginModel.self)
     return loginModel.toLoginDTOModel()
   }
   

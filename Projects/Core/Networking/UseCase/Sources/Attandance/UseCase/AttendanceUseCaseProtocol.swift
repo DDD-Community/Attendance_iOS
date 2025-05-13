@@ -8,5 +8,5 @@
 import Model
 
 public protocol AttendanceUseCaseProtocol {
-  
+  func attendanceCount(startDate: String) async throws -> AttendanceCountDTOModel?
 }

@@ -16,8 +16,7 @@ final public class DefaultAuthRepository: AuthRepositoryProtocol {
   }
   
   public func loginUser(
-    email: String,
-    password: String
+    email: String
   ) async throws -> LoginDTOModel? {
     return nil
   }

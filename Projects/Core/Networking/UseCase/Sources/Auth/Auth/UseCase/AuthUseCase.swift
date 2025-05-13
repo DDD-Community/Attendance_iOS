@@ -27,13 +27,11 @@ public struct AuthUseCase: AuthUseCaseProtocol {
   
   // MARK: - API로 통해서 로그인
   public func loginUser(
-    email: String,
-    password: String
+    email: String
   ) async throws -> LoginDTOModel? {
     return try await repository
       .loginUser(
-        email: email,
-        password: password
+        email: email
       )
   }
   

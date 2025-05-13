@@ -8,7 +8,7 @@
 import Model
 
 public protocol AttendanceRepositoryProtocol {
-  
+  func attendanceCount(startDate: String) async throws -> AttendanceCountDTOModel?
 }
 
 

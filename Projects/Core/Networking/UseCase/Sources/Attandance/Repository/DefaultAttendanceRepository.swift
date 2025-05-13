@@ -10,4 +10,10 @@ import Model
 final public class DefaultAttendanceRepository: AttendanceRepositoryProtocol  {
   
   public init() {}
+  
+  public func attendanceCount(
+    startDate: String
+  ) async throws -> AttendanceCountDTOModel? {
+    return nil
+  }
 }
