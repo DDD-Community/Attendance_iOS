@@ -31,14 +31,7 @@ public struct CoreMemberCoordinatorView: View {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()
-        
-      case .scheduleEvent(let scheduleEventStore):
-        ScheduleEventView(store: scheduleEventStore) {
-          store.send(.view(.backAction))
-        }
-        .navigationBarBackButtonHidden()
       }
     }
   }
 }
-

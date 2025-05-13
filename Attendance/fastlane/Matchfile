@@ -1,3 +1,0 @@
-git_url("git@github.com:Roy-wonji/Fastalne.git")
-storage_mode("git")
-app_identifier(["io.DDD.Attendance"])
