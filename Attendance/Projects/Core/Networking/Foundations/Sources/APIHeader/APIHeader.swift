@@ -60,7 +60,7 @@ extension APIHeader {
   public static var notAccessTokenHeader: Dictionary<String, String> {
     [
       contentType : APIHeaderManger.shared.contentType,
-      xcsrftoken :APIHeaderManger.shared.csrf,
+//      xcsrftoken :APIHeaderManger.shared.csrf,
       //          accessToken : "Bearer \(accessTokenKeyChain ?? "")",
       accept: APIHeaderManger.shared.contentType
     ]

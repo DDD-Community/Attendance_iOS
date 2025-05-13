@@ -16,5 +16,5 @@ public struct APIHeaderManger {
   let contentType: String = "application/json"
   let multipartContentType: String = "multipart/form-data"
   let contentAppleType: String = "application/x-www-form-urlencoded"
-  let csrf: String = "rXHHaia6Liv46KrAA8V1h1pqFVgymoPw"
+  let csrf: String = "BNazqxDLBzmlYFKCwAMMJYNcmkAq6kAt"
 }
