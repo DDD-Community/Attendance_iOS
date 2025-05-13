@@ -240,7 +240,7 @@ public struct AttendanceCheck {
         switch fetchedDataResult {
         case let .success(fetchedData):
           await send(.view(.closeModal))
-//          await send(.async(.fetchMember))
+          //          await send(.async(.fetchMember))
           
           let filterData = fetchedData
             .map { $0.toAttendanceDTO() }
@@ -273,7 +273,7 @@ public struct AttendanceCheck {
         switch fetchedDataResult {
         case let .success(fetchedData):
           await send(.view(.closeModal))
-//          await send(.async(.fetchMember))
+          //          await send(.async(.fetchMember))
           
           let filterData = fetchedData
             .map { $0.toAttendanceDTO() }
@@ -287,7 +287,7 @@ public struct AttendanceCheck {
           attendanceCount = attendanceCount
           lateCount = lateCount
           absentCount = absentCount
-       
+          
         case let .failure(error):
           await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
         }
@@ -367,11 +367,11 @@ public struct AttendanceCheck {
       case let .success(fetchedAttendanceData):
         let filteredData = fetchedAttendanceData
           .filter {
-          ($0.id.isEmpty == false) &&
+            ($0.id.isEmpty == false) &&
             $0.memberType == .member &&
             !$0.name.isEmpty &&
             $0.updatedAt.formattedDateToString() == state.selectAttandanceDate.formattedDateToString()
-        }
+          }
           .sorted { first, second in
             // 정렬 우선순위 배열
             let priority: [AttendanceType] = [

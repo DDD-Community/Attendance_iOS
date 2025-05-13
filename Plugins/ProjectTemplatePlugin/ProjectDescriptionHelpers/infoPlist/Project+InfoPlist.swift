@@ -44,6 +44,7 @@ public extension InfoPlist {
       .setGoogleReversedClientID("${REVERSED_CLIENT_ID}")
       .setGoogleClientID("${GOOGLE_CLIENT_ID}")
       .setGIDClientID("${GOOGLE_CLIENT_ID}")
+      .setBaseURL("$(BASE_URL)")
   )
   
   static let moduleInfoPlist: Self = .extendingDefault(
@@ -55,5 +56,6 @@ public extension InfoPlist {
       .setCFBundleInfoDictionaryVersion("6.0")
       .setCFBundlePackageType("APPL")
       .setCFBundleShortVersionString(.appVersion())
+      .setBaseURL("$(BASE_URL)")
   )
 }

@@ -109,6 +109,7 @@ public final class DependencyContainer: @unchecked Sendable {
     #logDebug("Registered instance for", key)
   }
 }
+
 /// DependencyContainer의 공용(live) 인스턴스를 제공하는 extension입니다.
 public extension DependencyContainer {
   static let live = DependencyContainer()
