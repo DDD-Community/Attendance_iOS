@@ -1,0 +1,85 @@
+# Fastlane 기본 설정
+update_fastlane
+default_platform(:ios)
+
+ENV["FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT"] = "600"
+
+APP_NAME = "DDDAttendance"
+SCHEME = "DDDAttendance"
+BUNDLE_ID = "io.DDD.Attendance"
+OUTPUT_DIR = "./fastlane/output"
+
+platform :ios do
+
+  desc "IPA 빌드 및 ._Symbols 제거"
+  lane :build_ipa do
+    clear_derived_data
+
+    match(type: "appstore", readonly: true)
+
+    version = get_version_number(xcodeproj: "#{APP_NAME}.xcodeproj")
+    build = latest_testflight_build_number(bundle_id: BUNDLE_ID) + 1 rescue 1
+    increment_build_number(build_number: build.to_s)
+
+    sh "mkdir -p #{OUTPUT_DIR}"
+
+    ipa_path = build_app(
+      workspace: "#{APP_NAME}.xcworkspace",
+      scheme: "#{SCHEME}",
+      silent: true,
+      clean: true,
+      output_directory: OUTPUT_DIR,
+      output_name: "#{APP_NAME}.ipa",
+      export_method: "app-store",
+      export_options: {
+        signingStyle: "manual",
+        uploadBitcode: false,
+        stripSwiftSymbols: true,
+        manageAppVersionAndBuildNumber: true,
+        provisioningProfiles: {
+          "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
+        }
+      },
+      xcargs: "MARKETING_VERSION=#{version} CURRENT_PROJECT_VERSION=#{build}"
+    )
+
+    if File.exist?(ipa_path)
+      UI.message("✅ .ipa 생성 완료. ._Symbols 제거 작업 시작...")
+
+      Dir.chdir(File.dirname(ipa_path)) do
+        sh "unzip -q #{File.basename(ipa_path)} -d temp_unpack"
+        sh "rm -rf temp_unpack/._Symbols"
+        sh "cd temp_unpack && zip -rX ../#{APP_NAME}_clean.ipa Payload"
+        sh "mv #{File.basename(ipa_path)} #{APP_NAME}_original.ipa"
+        sh "mv #{APP_NAME}_clean.ipa #{File.basename(ipa_path)}"
+        FileUtils.rm_rf("temp_unpack")
+      end
+
+      UI.message("🎉 ._Symbols 제거 완료! 최종 IPA 준비 완료.")
+    else
+      UI.important("⚠️ IPA 파일이 생성되지 않았습니다. 로그를 확인하세요.")
+    end
+  end
+
+  desc "TestFlight 업로드"
+  lane :QA do
+    app_store_connect_api_key(
+      is_key_content_base64: true,
+      in_house: false
+    )
+
+    match(type: "appstore", readonly: true)
+
+    build_ipa
+
+    upload_to_testflight(
+      ipa: "#{OUTPUT_DIR}/#{APP_NAME}.ipa",
+      changelog: "변경사항",
+      beta_app_description: "DDDAttendance 앱입니다.",
+      skip_waiting_for_build_processing: true,
+     distribute_external: true,  # 외부 배포 옵션 꼭 넣기
+     groups: ["DDD"]
+    )
+  end
+
+end

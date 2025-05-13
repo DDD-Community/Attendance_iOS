@@ -1,0 +1,136 @@
+//
+//  Project+Settings.swift
+//  MyPlugin
+//
+//  Created by 서원지 on 1/6/24.
+//
+
+import Foundation
+import ProjectDescription
+
+extension Settings {
+  private static func commonSettings(
+    appName: String,
+    displayName: String,
+    provisioningProfile: String,
+    setSkipInstall: Bool
+  ) -> SettingsDictionary {
+    return SettingsDictionary()
+      .setProductName(appName)
+      .setCFBundleDisplayName(displayName)
+      .setOtherLdFlags("-ObjC -all_load")
+      .setDebugInformationFormat("dwarf-with-dsym")
+      .setProvisioningProfileSpecifier(provisioningProfile)
+      .setSkipInstall(setSkipInstall)
+  }
+  
+  private static func commonBaseSettings(
+    appName: String
+  ) -> SettingsDictionary {
+    return SettingsDictionary()
+      .setProductName(appName)
+      .setOtherLdFlags("-ObjC -all_load")
+      .setStripStyle()
+  }
+  
+  public static let appMainSetting: Settings = .settings(
+    base: SettingsDictionary()
+      .setProductName(Project.Environment.appName)
+      .setCFBundleDisplayName(Project.Environment.appName)
+      .setMarketingVersion(.appVersion())
+      .setASAuthenticationServicesEnabled()
+      .setPushNotificationsEnabled()
+      .setEnableBackgroundModes()
+      .setArchs()
+      .setOtherLdFlags()
+      .setCurrentProjectVersion(.appBuildVersion())
+      .setCodeSignIdentity()
+      .setCodeSignStyle()
+      .setSwiftVersion("6.0")
+      .setVersioningSystem()
+      .setProvisioningProfileSpecifier("match Development \(Project.Environment.bundlePrefix)")
+      .setDevelopmentTeam(Project.Environment.organizationTeamId)
+      .setCFBundleDevelopmentRegion()
+      .setDebugInformationFormat(),
+    configurations: [
+      .debug(
+        name: .debug,
+        settings:
+          commonSettings(
+            appName: Project.Environment.appName,
+            displayName: Project.Environment.appName,
+            provisioningProfile: "match Development \(Project.Environment.bundlePrefix)",
+            setSkipInstall: false
+          ),
+        xcconfig:
+            .relativeToRoot("./Config/dev.xcconfig")
+      ),
+      .debug(
+        name: "QA",
+        settings:
+          commonSettings(
+            appName: Project.Environment.appName,
+            displayName: Project.Environment.appName,
+            provisioningProfile: "match Development \(Project.Environment.bundlePrefix)",
+            setSkipInstall: false
+          ),
+        xcconfig:
+            .relativeToRoot("./Config/qa.xcconfig")
+      ),
+      .release(
+        name: .release,
+        settings:
+          commonSettings(
+            appName: Project.Environment.appName,
+            displayName: Project.Environment.appName,
+            provisioningProfile: "match AppStore \(Project.Environment.bundlePrefix)",
+            setSkipInstall: false
+          ),
+        xcconfig:
+            .relativeToRoot("./Config/realse.xcconfig")
+      )
+    ], defaultSettings: .recommended
+  )
+  
+  public static func appBaseSetting(appName: String) -> Settings {
+    let appBaseSetting: Settings = .settings(
+      base: SettingsDictionary()
+        .setProductName(appName)
+        .setMarketingVersion(.appVersion())
+        .setCurrentProjectVersion(.appBuildVersion())
+        .setCodeSignIdentity()
+        .setArchs()
+        .setSwiftVersion("6.0")
+        .setVersioningSystem()
+        .setDebugInformationFormat(),
+      configurations: [
+        .debug(
+          name: .debug,
+          settings:
+            commonBaseSettings(
+              appName: appName
+            ),
+          xcconfig:
+              .relativeToRoot("./Config/dev.xcconfig")
+        ),
+        .debug(
+          name: "QA",
+          settings: commonBaseSettings(
+            appName: appName
+          ),
+          xcconfig:
+              .relativeToRoot("./Config/qa.xcconfig")
+        ),
+        .release(
+          name: .release,
+          settings: commonBaseSettings(
+            appName: appName
+          ),
+          xcconfig: .relativeToRoot("./Config/realse.xcconfig")
+        )
+      ], defaultSettings: .recommended)
+    
+    return appBaseSetting
+    
+  }
+}
