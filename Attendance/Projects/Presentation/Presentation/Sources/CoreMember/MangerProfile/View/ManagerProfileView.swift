@@ -86,6 +86,10 @@ extension ManagerProfileView {
   
   @ViewBuilder
   fileprivate func mangerCardImage() -> some View {
+    let (team, platform) =  String.splitBySlash(store.profileDTOModel?.data.role ?? "")
+    let memberTeam = store.profileDTOModel?.data.role ?? ""
+    let isTeamManging = store.profileDTOModel?.data.role.contains("팀매니징") ?? false
+    
     LazyVStack {
       Spacer()
         .frame(height: 17)
@@ -136,16 +140,16 @@ extension ManagerProfileView {
         if store.profileDTOModel?.data.isStaff == true {
           managerTextComponent(
             title: store.managerProfileManaging,
-            subTitle: store.profileDTOModel?.data.role ?? "",
-            managingTeam: "",
-            isManaging: false,
+            subTitle: isTeamManging ? team : store.profileDTOModel?.data.role ?? "",
+            managingTeam: SelectTeam(rawValue: platform)?.managingTeamDesc ?? "",
+            isManaging: store.profileDTOModel?.data.role.contains("팀매니징") ?? false ? true : false,
             isGeneration: false
           )
         }
         else {
           managerTextComponent(
             title: store.memberSelectTeam,
-            subTitle: store.profileDTOModel?.data.role ?? "",
+            subTitle: SelectTeam(rawValue: memberTeam)?.attendanceListDescription ?? "",
             managingTeam: "",
             isManaging: false,
             isGeneration: false
