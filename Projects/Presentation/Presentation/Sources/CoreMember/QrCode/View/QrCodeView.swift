@@ -28,7 +28,7 @@ struct QRScannerView: View {
   var body: some View {
     ZStack {
       // 1. 카메라 미리보기 + 데이터 스캐너
-      QrsccannerRepresentable(
+      QRScannerRepresentable(
         shouldStartScanning: $store.isScanning,
         scannedText: $store.scannedText,
         dataToScanFor: [.barcode(symbologies: [.qr])]
