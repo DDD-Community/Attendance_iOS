@@ -37,6 +37,9 @@ public struct AttendanceCheck {
     @Presents var destination: Destination.State?
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     
+    var attendanceCountDTOModel: AttendanceCountDTOModel?
+    
+    
     public init() {
       
     }
@@ -69,6 +72,10 @@ public struct AttendanceCheck {
   
   // MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
+    case fetchAttendanceCount
+    case filterAttendanceCount(startDate: String)
+    case attendanceCountResponse(Result<AttendanceCountDTOModel, CustomError>)
+    
     case fetchMember
     case fetchAttenDance
     case fetchCurrentUser
@@ -95,6 +102,7 @@ public struct AttendanceCheck {
   private struct AttendanceCheckCancel: Hashable {}
   
   @Dependency(FireStoreUseCase.self) var fireStoreUseCase
+  @Dependency(AttendanceUseCase.self) var attendanceUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
@@ -173,6 +181,56 @@ public struct AttendanceCheck {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
+    case .fetchAttendanceCount:
+      return .run { [nowDate = state.selectAttandanceDate] send in
+        let attendanceCountResult = await Result {
+          try await attendanceUseCase.attendanceCount(startDate: nowDate.formattedDates())
+        }
+        
+        switch attendanceCountResult {
+        case .success(let attendanceCountDTOData):
+          if let attendanceCountDTOData = attendanceCountDTOData {
+            await send(.async(.attendanceCountResponse(.success(attendanceCountDTOData))))
+          }
+          
+        case .failure(let error):
+          await send(.async(.attendanceCountResponse(.failure(.encodingError(error.localizedDescription)))))
+        }
+        
+      }
+      .debounce(id: AttendanceCheckCancel(), for: 0.3, scheduler: mainQueue)
+      
+      
+    case .filterAttendanceCount(let startDate):
+      return .run {  send in
+        let attendanceCountResult = await Result {
+          try await attendanceUseCase.attendanceCount(startDate: startDate)
+        }
+        
+        switch attendanceCountResult {
+        case .success(let attendanceCountDTOData):
+          if let attendanceCountDTOData = attendanceCountDTOData {
+            await send(.async(.attendanceCountResponse(.success(attendanceCountDTOData))))
+            
+            await send(.view(.closeModal))
+          }
+          
+        case .failure(let error):
+          await send(.async(.attendanceCountResponse(.failure(.encodingError(error.localizedDescription)))))
+        }
+        
+      }
+      .debounce(id: AttendanceCheckCancel(), for: 0.3, scheduler: mainQueue)
+      
+    case .attendanceCountResponse(let result):
+      switch result {
+      case .success(let attendanceCountDTO):
+        state.attendanceCountDTOModel = attendanceCountDTO
+      case .failure(let error):
+        #logNetwork("출석 카운트 조회 에러", error.localizedDescription)
+      }
+      return .none
+      
     case .fetchMember:
       return .run {  send in
         let fetchedDataResult = await Result {

@@ -284,7 +284,7 @@ public struct Login {
         useEntity = state.userEntity
       ]  send in
         let loginResult = await Result {
-          try await authUseCase.loginUser(email: useEntity.userEmail, password: useEntity.userUid)
+          try await authUseCase.loginUser(email: useEntity.userEmail)
         }
         
         switch loginResult {
@@ -308,8 +308,7 @@ public struct Login {
         state.loginDTOModel = loginDTOData
         UserDefaults.standard.set(loginDTOData.data.accessToken, forKey: "ACCESS_TOKEN")
         state.$userEntity.withLock {
-          $0.userName = loginDTOData.data.user.username
-          $0.userEmail = loginDTOData.data.user.email
+          $0.userEmail = loginDTOData.data.email
           $0.accessToken = loginDTOData.data.accessToken
           $0.refreshToken = loginDTOData.data.refreshToken
         }

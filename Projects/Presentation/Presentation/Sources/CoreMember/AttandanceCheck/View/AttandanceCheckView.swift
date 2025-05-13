@@ -26,14 +26,11 @@ struct AttendanceCheckView: View {
       selectPartAttandanceStatus()
     }
     .task {
-      if !store.userSignUpMember.uid.isEmpty {
-        store.send(.async(.fetchAttenDance))
-        store.send(.async(.observeAttendance))
-      }
+      store.send(.async(.fetchAttendanceCount))
     }
     .sheet(item: $store.scope(state: \.destination?.selectDate, action: \.destination.selectDate)) { selectDateStore in
       CustomDateView(store: selectDateStore, selectDate: $store.selectAttandanceDate) {
-        store.send(.async(.filterAttandanceDate))
+        store.send(.async(.filterAttendanceCount(startDate: store.selectAttandanceDate.formattedDates())))
       }
       .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
       .presentationCornerRadius(20)
@@ -73,14 +70,15 @@ extension AttendanceCheckView {
 
   @ViewBuilder
   fileprivate func attandanceStatusView() -> some View {
+    let attendanceCountDTOData = store.attendanceCountDTOModel?.data
     LazyVStack {
       Spacer()
         .frame(height: 14)
 
       AttendanceCard(
-        attendanceCount: store.attendanceCount,
-        lateCount: store.lateCount,
-        absentCount: store.absentCount,
+        attendanceCount: attendanceCountDTOData?.attendanceCount ?? .zero,
+        lateCount: attendanceCountDTOData?.lateCount ?? .zero,
+        absentCount: attendanceCountDTOData?.absentCount ?? .zero,
         showWarning: false
       )
     }

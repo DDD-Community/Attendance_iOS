@@ -13,7 +13,7 @@ import Foundations
 import AsyncMoya
 
 public enum AuthService {
-  case login(email: String, password: String)
+  case login(email: String)
   case sessionToJwt(token: String)
 }
 
@@ -50,11 +50,9 @@ extension AuthService: BaseTargetType {
   public var parameters: [String : Any]? {
     switch self {
     case .login(
-      let email,
-      let password):
+      let email):
       let parameters: [String: Any] = [
         "email": email,
-        "password": password
       ]
       return parameters
       
