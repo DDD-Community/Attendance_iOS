@@ -11,22 +11,20 @@ public typealias LoginDTOModel = BaseResponseDTO<LoginResponseDTOModel>
 
 // MARK: - Welcome
 public struct LoginResponseDTOModel: Decodable, Equatable {
+  public let email: String
+  public let id: Int
   public let accessToken, refreshToken: String
-  public let user: UserDTO
-  public let accessExpiration, refreshExpiration: String
+  
   
   public init(
+    id: Int,
+    email: String,
     accessToken: String,
     refreshToken: String,
-    user: UserDTO,
-    accessExpiration: String,
-    refreshExpiration: String
   ) {
+    self.id = id
+    self.email = email
     self.accessToken = accessToken
     self.refreshToken = refreshToken
-    self.user = user
-    self.accessExpiration = accessExpiration
-    self.refreshExpiration = refreshExpiration
   }
-  
 }

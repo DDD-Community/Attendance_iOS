@@ -7,8 +7,11 @@
 
 import Foundation
 
+
+public typealias CheckEmailModel = BaseResponse<CheckEmailResponseModel>
+
 // MARK: - Welcome
-public struct CheckEmailModel: Decodable {
+public struct CheckEmailResponseModel: Decodable {
   let emailUsed: Bool?
   
   enum CodingKeys: String, CodingKey {

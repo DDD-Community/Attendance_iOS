@@ -7,14 +7,10 @@
 
 import Foundation
 
-public struct LoginModel: Decodable {
-  let access, refresh: String?
-  let user: User?
-  let accessExpiration, refreshExpiration: String?
+public typealias LoginModel = BaseResponse<LoginResponseModel>
+
+public struct LoginResponseModel: Decodable {
+  let id: Int
+  let email, refresh, access: String
   
-  enum CodingKeys: String, CodingKey {
-    case access, refresh, user
-    case accessExpiration = "access_expiration"
-    case refreshExpiration = "refresh_expiration"
-  }
 }

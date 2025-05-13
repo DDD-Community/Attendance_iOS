@@ -9,19 +9,17 @@ import Foundation
 
 public extension LoginModel {
   func toLoginDTOModel() -> LoginDTOModel {
-    let userDTO = UserDTO(username: self.user?.username ?? "", email: self.user?.email ?? "")
     
     let data = LoginResponseDTOModel(
-      accessToken: self.access ?? "",
-      refreshToken: self.refresh ?? "",
-      user: userDTO,
-      accessExpiration: self.accessExpiration ?? "",
-      refreshExpiration: self.refreshExpiration ?? ""
+      id: self.data?.id ?? .zero,
+      email:  self.data?.email ?? "",
+      accessToken: self.data?.access ?? "",
+      refreshToken: self.data?.refresh ?? "",
     )
     
     return LoginDTOModel(
-      code: .zero,
-      message: "",
+      code: self.code ?? .zero,
+      message: self.message ?? "",
       data: data
     )
   }
