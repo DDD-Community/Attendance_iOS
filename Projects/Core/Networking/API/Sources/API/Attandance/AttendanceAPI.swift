@@ -7,13 +7,17 @@
 
 import Foundation
 
-public enum AttandanceAPI: String, CaseIterable {
+public enum AttendanceAPI: String, CaseIterable {
   case getAttandances
+  case attendanceCount
    
-  public var attandanceDescription: String {
+  public var attendanceDescription: String {
     switch self {
     case .getAttandances:
       return ""
+      
+    case .attendanceCount:
+      return "count/"
     }
   }
 }
