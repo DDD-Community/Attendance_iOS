@@ -39,7 +39,8 @@ Temporary Items
 **/.plist
 *contents.xcworkspacedata
 *.p8
-
+Gemfile.loc
+*.ipa
 ## User settings
 xcuserdata/
 
@@ -109,6 +110,12 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+fastlane/output/**/*.ipa
+fastlane/output/unpacked/
+fastlane/output/**/*.DS_Store
+fastlane/output/**/._*
+fastlane/Fastfile.swp
+fastlane/output/
 
 # Code Injection
 # After new code Injection tools there's a generated folder /iOSInjectionProject
@@ -133,7 +140,7 @@ Derived/
 # Tuist managed dependencies
 **/Tuist/.build
 **/Tuist/Package.resolved
-**/DDDAttendance/Resources/GoogleService-Info.plist
+**/Resources/GoogleService-Info.plist
 **/Plugins/ProjectTemplatePlugin/.build
 
 # Config
