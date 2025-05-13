@@ -58,4 +58,11 @@ public extension String {
       }
       return ""
     }
+  
+  static func splitBySlash(_ input: String) -> (left: String, right: String) {
+    let components = input.components(separatedBy: " / ")
+    let left = components.first ?? ""
+    let right = components.count > 1 ? components[1] : ""
+    return (left, right)
+  }
 }
