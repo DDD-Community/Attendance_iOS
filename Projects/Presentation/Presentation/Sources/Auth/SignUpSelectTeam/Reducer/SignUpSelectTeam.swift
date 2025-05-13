@@ -133,7 +133,7 @@ public struct SignUpSelectTeam {
         userEntity = state.userEntity,
       ] send in
         let isStaff = userEntity.userRole
-        let memberTeam = userEntity.memberTeam?.managingTeamDesc ?? ""
+        let memberTeam = userEntity.memberTeam?.rawValue ?? ""
         let isAdminRole =   "\(userEntity.managing?.managingDesc ?? "") / \(memberTeam)"
         let editProfileResult = await Result {
           try await profileUseCase.editProfile(
@@ -149,13 +149,12 @@ public struct SignUpSelectTeam {
           if let profileDTOData = profileDTOData {
             await send(.async(.editProfileResponse(.success(profileDTOData))))
             
-            if profileDTOData.code == 200 {
-              if profileDTOData.data.isStaff == true {
-                await send(.navigation(.presentCoreMember))
-              } else {
-                await send(.navigation(.presentMember))
-              }
+            if profileDTOData.data.isStaff == true {
+              await send(.navigation(.presentCoreMember))
+            } else {
+              await send(.navigation(.presentMember))
             }
+            
           }
           
         case .failure(let error):
