@@ -1,5 +1,5 @@
 //
-//  QrsccannerRepresentable.swift
+//  QRScannerRepresentable.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 4/6/25.
@@ -10,7 +10,7 @@ import VisionKit
 
 import LogMacro
 
-struct QrsccannerRepresentable: UIViewControllerRepresentable {
+struct QRScannerRepresentable: UIViewControllerRepresentable {
   @Binding var shouldStartScanning: Bool
   @Binding var scannedText: String
   
@@ -18,9 +18,9 @@ struct QrsccannerRepresentable: UIViewControllerRepresentable {
   
   // MARK: - Coordinator
   class Coordinator: NSObject, DataScannerViewControllerDelegate {
-    var parent: QrsccannerRepresentable
+    var parent: QRScannerRepresentable
     
-    init(_ parent: QrsccannerRepresentable) {
+    init(_ parent: QRScannerRepresentable) {
       self.parent = parent
     }
     
@@ -71,15 +71,14 @@ struct QrsccannerRepresentable: UIViewControllerRepresentable {
   }
   
   func updateUIViewController(_ uiViewController: DataScannerViewController, context: Context) {
-    if shouldStartScanning {
-      Task {
-        do {
-          try await startScanningAsync(uiViewController)
-        } catch {
-          #logDebug("Failed to start scanning: \(error)")
-        }
+    let isScanning = uiViewController.isScanning
+    if shouldStartScanning, !isScanning {
+      do {
+        try uiViewController.startScanning()
+      } catch {
+        #logDebug("Failed to start scanning: \(error)")
       }
-    } else {
+    } else if !shouldStartScanning, isScanning {
       uiViewController.stopScanning()
     }
   }

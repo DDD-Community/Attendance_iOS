@@ -28,7 +28,7 @@ public struct CoreMember {
     var dropDownItem: [String] = SelectDropDownItem.item
     var selectDropDownItem: SelectDropDownItem = .attandance
     
-    var attandanceCheck = AttandanceCheck.State()
+    var attendanceCheck = AttendanceCheck.State()
     
     var qrcodeImage: ImageAsset = .qrCode
     var eventImage: ImageAsset = .eventGenerate
@@ -49,7 +49,7 @@ public struct CoreMember {
     case async(AsyncAction)
     case inner(InnerAction)
     case navigation(NavigationAction)
-    case attandanceCheck(AttandanceCheck.Action)
+    case attendanceCheck(AttendanceCheck.Action)
   }
   
   // MARK: - View action
@@ -120,8 +120,8 @@ public struct CoreMember {
       }
     }
     .ifLet(\.$destination, action: \.destination)
-    Scope(state: \.attandanceCheck, action: \.attandanceCheck) {
-      AttandanceCheck()
+    Scope(state: \.attendanceCheck, action: \.attendanceCheck) {
+      AttendanceCheck()
     }
   }
   

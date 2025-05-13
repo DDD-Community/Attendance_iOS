@@ -16,7 +16,6 @@ import SDWebImageSwiftUI
 struct CoreMemberMainView: View {
   @Bindable var store: StoreOf<CoreMember>
   @State var isExpanded: Bool = false
-  @State var test: Bool = false
   
   init(store: StoreOf<CoreMember>) {
     self.store = store
@@ -54,11 +53,11 @@ struct CoreMemberMainView: View {
       DragGesture()
         .onEnded { value in
           if value.translation.width < -UIScreen.screenWidth * 0.02 {
-            store.send(.attandanceCheck(.view(.swipeNext)))
+            store.send(.attendanceCheck(.view(.swipeNext)))
             
             
           } else if value.translation.width > UIScreen.screenWidth * 0.02 {
-            store.send(.attandanceCheck(.view(.swipePrevious)))
+            store.send(.attendanceCheck(.view(.swipePrevious)))
             
             
           }
@@ -148,7 +147,7 @@ extension CoreMemberMainView {
   fileprivate func switchSelectDropDownView() -> some View {
     switch store.selectDropDownItem {
     case .attandance:
-      AttandanceCheckView(store: self.store.scope(state: \.attandanceCheck, action: \.attandanceCheck))
+      AttendanceCheckView(store: self.store.scope(state: \.attendanceCheck, action: \.attendanceCheck))
       
     case .schedule:
       EmptyView()

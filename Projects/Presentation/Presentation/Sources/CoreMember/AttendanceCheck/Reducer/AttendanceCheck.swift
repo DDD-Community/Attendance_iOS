@@ -1,5 +1,5 @@
 //
-//  AttandanceCheck.swift
+//  AttendanceCheck.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 1/16/25.
@@ -14,7 +14,7 @@ import ComposableArchitecture
 import FirebaseAuth
 
 @Reducer
-public struct AttandanceCheck {
+public struct AttendanceCheck {
   public init() {}
   
   @ObservableState

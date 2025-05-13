@@ -22,7 +22,6 @@ extension Settings {
       .setDebugInformationFormat("dwarf-with-dsym")
       .setProvisioningProfileSpecifier(provisioningProfile)
       .setSkipInstall(setSkipInstall)
-      .setAllowNonModularIncludesInFrameworkModules(true)
   }
   
   private static func commonBaseSettings(
@@ -100,7 +99,6 @@ extension Settings {
         .setMarketingVersion(.appVersion())
         .setCurrentProjectVersion(.appBuildVersion())
         .setCodeSignIdentity()
-        .setASAuthenticationServicesEnabled()
         .setArchs()
         .setSwiftVersion("6.0")
         .setVersioningSystem()

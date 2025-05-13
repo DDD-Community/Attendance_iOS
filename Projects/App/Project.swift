@@ -21,7 +21,7 @@ let project = Project.makeAppModule(
     .Presentation(implements: .Presentation)
   ],
   sources: ["Sources/**"],
-  resources: ["Resources/**", "Resources/PrivacyInfo.xcprivacy"],
+  resources: ["Resources/**"],
   infoPlist: .appInfoPlist,
   entitlements: .file(path: "../../Entitlements/DDDAttendance.entitlements")
 )

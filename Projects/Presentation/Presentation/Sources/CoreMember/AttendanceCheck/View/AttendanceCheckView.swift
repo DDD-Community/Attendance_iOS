@@ -1,5 +1,5 @@
 //
-//  AttandanceCheckView.swift
+//  AttendanceCheckView.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 1/16/25.
@@ -11,9 +11,9 @@ import Shareds
 
 import ComposableArchitecture
 
-struct AttandanceCheckView: View {
-  @Bindable var store: StoreOf<AttandanceCheck>
-  
+struct AttendanceCheckView: View {
+  @Bindable var store: StoreOf<AttendanceCheck>
+    
   var body: some View{
     VStack {
       selectAttandanceDate()
@@ -43,7 +43,7 @@ struct AttandanceCheckView: View {
 }
 
 
-extension AttandanceCheckView {
+extension AttendanceCheckView {
   
   @ViewBuilder
   fileprivate func selectAttandanceDate() -> some View {
