@@ -4,11 +4,16 @@ default_platform(:ios)
 
 ENV["FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT"] = "600"
 
+# 앱 관련 변수
 APP_NAME = "DDDAttendance"
 SCHEME = "DDDAttendance"
 BUNDLE_ID = "io.DDD.Attendance"
 OUTPUT_DIR = "./fastlane/output"
 IPA_FILENAME = "#{APP_NAME}.ipa"
+
+# 릴리스용 변수 (누락되어 있던 부분 보완)
+APP_RELEASE_NAME = APP_NAME
+APP_RELEASE_SCHEME = SCHEME
 
 platform :ios do
 
@@ -38,7 +43,7 @@ platform :ios do
     cleaned_ipa = ipa_path.sub(".ipa", "_clean.ipa")
 
     Dir.chdir(extract_dir) do
-     sh "zip -rX '#{cleaned_ipa}' Payload"
+      sh "zip -rX '#{cleaned_ipa}' Payload"
     end
 
     sh "mv '#{ipa_path}' '#{ipa_path.sub('.ipa', '_original.ipa')}'"
@@ -52,17 +57,18 @@ platform :ios do
   desc "Build Debug IPA and clean ._Symbols"
   lane :build_ipa_debug_and_strip do
     clear_derived_data
-   #cleanup_output_folder
+    # cleanup_output_folder
     match(type: "appstore", readonly: true)
 
-    ipa_path = build_app(
+     build_app(
       workspace: "#{APP_NAME}.xcworkspace",
       scheme: "#{SCHEME}",
       output_directory: OUTPUT_DIR,
       output_name: IPA_FILENAME,
       export_method: "app-store",
-      silent: true,
       clean: true,
+      silent: false, # 디버깅용 false
+      verbose: true,
       export_options: {
         signingStyle: "manual",
         uploadBitcode: false,
@@ -72,7 +78,7 @@ platform :ios do
       }
     )
 
-  #clean_symbols_from_ipa(ipa_path: ipa_path)
+    # clean_symbols_from_ipa(ipa_path: ipa_path)
   end
 
   # 📦 Release 빌드 + 정리
@@ -81,14 +87,15 @@ platform :ios do
     clear_derived_data
     match(type: "appstore", readonly: true)
 
-    ipa_path = build_app(
+    build_app(
       workspace: "#{APP_RELEASE_NAME}.xcworkspace",
       scheme: "#{APP_RELEASE_SCHEME}",
       output_directory: OUTPUT_DIR,
       output_name: IPA_FILENAME,
       export_method: "app-store",
-      silent: true,
       clean: true,
+      silent: false,
+      verbose: true,
       export_options: {
         signingStyle: "manual",
         uploadBitcode: false,
@@ -98,7 +105,7 @@ platform :ios do
       }
     )
 
-    #clean_symbols_from_ipa(ipa_path: ipa_path)
+    # clean_symbols_from_ipa(ipa_path: ipa_path)
   end
 
   # 🚀 TestFlight 업로드 (Debug)
@@ -113,8 +120,9 @@ platform :ios do
       output_directory: OUTPUT_DIR,
       output_name: IPA_FILENAME,
       export_method: "app-store",
-      silent: true,
       clean: true,
+      silent: false,
+      verbose: true,
       export_options: {
         signingStyle: "manual",
         uploadBitcode: false,
@@ -124,7 +132,7 @@ platform :ios do
       }
     )
 
-  #clean_symbols_from_ipa(ipa_path: ipa_path)
+    # clean_symbols_from_ipa(ipa_path: ipa_path)
 
     upload_to_testflight(
       ipa: ipa_path,
@@ -149,8 +157,9 @@ platform :ios do
         output_directory: OUTPUT_DIR,
         output_name: IPA_FILENAME,
         export_method: "app-store",
-        silent: true,
         clean: true,
+        silent: false,
+        verbose: true,
         export_options: {
           signingStyle: "manual",
           uploadBitcode: false,
@@ -160,7 +169,7 @@ platform :ios do
         }
       )
 
-      #clean_symbols_from_ipa(ipa_path: ipa_path)
+      # clean_symbols_from_ipa(ipa_path: ipa_path)
 
       upload_to_app_store(
         app_version: options[:version],
