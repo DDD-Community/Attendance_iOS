@@ -10,17 +10,16 @@ import Foundation
 import Moya
 import API
 
-public enum AttandanceDomain {
+public enum AttendanceDomain {
   case auth
   case invite
   case profile
   case qr
   case schedule
   case attendances
-  
 }
 
-extension AttandanceDomain {
+extension AttendanceDomain {
   var url: String {
     switch self {
     case .auth:
@@ -39,27 +38,26 @@ extension AttandanceDomain {
   }
 }
 
-
 public protocol BaseTargetType: TargetType {
-  var domain: AttandanceDomain { get }
+  var domain: AttendanceDomain { get }
   var urlPath: String { get }
   var error: [Int: NetworkError]? { get }
   var parameters: [String: Any]? { get }
 }
 
 public extension BaseTargetType {
-   var baseURL: URL {
+  var baseURL: URL {
     return URL(string: BaseAPI.base.apiDescription)!
   }
-  
+
   var path: String {
     return domain.url + urlPath
   }
-  
+
   var headers: [String: String]? {
     return APIHeader.notAccessTokenHeader
   }
-  
+
   var task: Moya.Task {
     if let parameters = parameters {
       if method == .get {
@@ -76,5 +74,4 @@ public extension BaseTargetType {
     }
     return .requestPlain
   }
-  
 }

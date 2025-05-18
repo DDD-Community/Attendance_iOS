@@ -18,7 +18,7 @@ public enum ScheduleService {
 }
 
 extension ScheduleService: BaseTargetType {
-  public var domain: AttandanceDomain {
+  public var domain: AttendanceDomain {
     return .schedule
   }
   
