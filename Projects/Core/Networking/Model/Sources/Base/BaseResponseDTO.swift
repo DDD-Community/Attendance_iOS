@@ -10,7 +10,7 @@ import Foundation
 public struct BaseResponseDTO<DataDTO: Decodable>: Decodable {
   public let code: Int
   public let message: String
-  public let data: DataDTO
+  public var data: DataDTO
 
   public init(
     code: Int,

@@ -38,6 +38,7 @@ public struct AttendanceCheck {
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     
     var attendanceCountDTOModel: AttendanceCountDTOModel?
+    var attendCheckModel: AttendanceCheckModel?
     
     
     public init() {
@@ -72,25 +73,20 @@ public struct AttendanceCheck {
   
   // MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
+    case appearData
+    
     case fetchAttendanceCount
     case filterAttendanceCount(startDate: String)
     case attendanceCountResponse(Result<AttendanceCountDTOModel, CustomError>)
+    case fetchAttedanceCheck
+    case filterAttendance(selectTeam: SelectTeam)
     
-    case fetchMember
-    case fetchAttenDance
-    case fetchCurrentUser
-    
-    case observeAttendance
-    case fetchUserDataResponse(Result<User, CustomError>)
-    case fetchMemberDataResponse(Result<[MemberDTO], CustomError>)
-    case fetchAttendanceDataResponse(Result<[AttendanceDTO], CustomError>)
-    
-    case upDateFetchAttandanceMember(selectPart: SelectTeam)
-    case filterAttandanceDate
   }
   
   // MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
+    case attendanceCountResponse(Result<AttendanceCountDTOModel, CustomError>)
+    case attendanceCheckResponse(Result<AttendanceCheckModel, CustomError>)
   }
   
   // MARK: - NavigationAction
@@ -151,11 +147,14 @@ public struct AttendanceCheck {
       
     case .swipeNext:
       guard let selectPart = state.selectPart else { return .none }
-      if let currentIndex = SelectTeam.allCases.firstIndex(of: selectPart),
-         currentIndex < SelectTeam.allCases.count - 1 {
-        let nextPart = SelectTeam.allCases[currentIndex + 1]
-        state.selectPart = nextPart
+
+      if selectPart == .ios2 {
+        state.selectPart = .web1
+      } else if let currentIndex = SelectTeam.allCases.firstIndex(of: selectPart),
+                currentIndex < SelectTeam.allCases.count - 1 {
+        state.selectPart = SelectTeam.allCases[currentIndex + 1]
       }
+
       return .none
       
     case .swipePrevious:
@@ -181,6 +180,17 @@ public struct AttendanceCheck {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
+    case .appearData:
+      return .concatenate(
+        Effect.run(operation: { send in
+          await send(.async(.fetchAttendanceCount))
+        }),
+        Effect.run(operation: { send in
+          await send(.async(.fetchAttedanceCheck))
+        })
+      )
+      .debounce(id: AttendanceCheckCancel(), for: 0.3, scheduler: mainQueue)
+      
     case .fetchAttendanceCount:
       return .run { [nowDate = state.selectAttandanceDate] send in
         let attendanceCountResult = await Result {
@@ -190,16 +200,14 @@ public struct AttendanceCheck {
         switch attendanceCountResult {
         case .success(let attendanceCountDTOData):
           if let attendanceCountDTOData = attendanceCountDTOData {
-            await send(.async(.attendanceCountResponse(.success(attendanceCountDTOData))))
+            await send(.inner(.attendanceCountResponse(.success(attendanceCountDTOData))))
           }
           
         case .failure(let error):
-          await send(.async(.attendanceCountResponse(.failure(.encodingError(error.localizedDescription)))))
+          await send(.inner(.attendanceCountResponse(.failure(.encodingError(error.localizedDescription)))))
         }
         
       }
-      .debounce(id: AttendanceCheckCancel(), for: 0.3, scheduler: mainQueue)
-      
       
     case .filterAttendanceCount(let startDate):
       return .run {  send in
@@ -210,7 +218,7 @@ public struct AttendanceCheck {
         switch attendanceCountResult {
         case .success(let attendanceCountDTOData):
           if let attendanceCountDTOData = attendanceCountDTOData {
-            await send(.async(.attendanceCountResponse(.success(attendanceCountDTOData))))
+            await send(.inner(.attendanceCountResponse(.success(attendanceCountDTOData))))
             
             await send(.view(.closeModal))
           }
@@ -231,263 +239,38 @@ public struct AttendanceCheck {
       }
       return .none
       
-    case .fetchMember:
-      return .run {  send in
-        let fetchedDataResult = await Result {
-          try await fireStoreUseCase.fetchFireStoreData(
-            from: .member,
-            as: Attendance.self,
-            shouldSave: false
-          )
+    case .fetchAttedanceCheck:
+      return .run { [selectAttandanceDate = state.selectAttandanceDate] send in
+        let attendanceCheckResult = await Result {
+          try await attendanceUseCase.getAttendances(startDate: selectAttandanceDate.formattedDates())
         }
-        
-        switch fetchedDataResult {
-        case let .success(fetchedData):
-          let filterData = fetchedData
-            .filter { $0.memberType == .member || !$0.name.isEmpty }
-            .map { $0.toMemberDTO() }
-          await send(.async(.fetchMemberDataResponse(.success(filterData))))
-          
-        case let .failure(error):
-          await send(.async(.fetchMemberDataResponse(.failure(CustomError.map(error)))))
-        }
-      }
-      
-      // MARK: - 실시간으로 데이터 가져오기 출석현황
-    case .fetchAttenDance:
-      return .run { [
-        selectAttandanceDate = state.selectAttandanceDate
-      ] send in
-        let fetchedDataResult = await Result {
-          try await fireStoreUseCase.fetchFireStoreData(
-            from: .attendance,
-            as: Attendance.self,
-            shouldSave: false
-          )
-        }
-        switch fetchedDataResult {
-        case let .success(fetchedData):
-          let filterData = fetchedData
-            .map { $0.toAttendanceDTO() }
-          var attendanceCount = filterData.filter { $0.status == .present }.count
-          var lateCount = filterData.filter { $0.status == .late  }.count
-          var absentCount = filterData.filter { $0.status == .absent }.count
-          #logDebug("카운트", attendanceCount, lateCount, absentCount)
-          let filterDateData = filterData.filter { $0.updatedAt.formattedDateToString() == selectAttandanceDate.formattedDateToString() }
-          await send(.async(.fetchAttendanceDataResponse(.success(filterDateData))))
-          attendanceCount = attendanceCount
-          lateCount = lateCount
-          absentCount = absentCount
-          
-        case let .failure(error):
-          await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
-        }
-      }
-      
-    case .filterAttandanceDate:
-      return .run { [
-        selectAttandanceDate = state.selectAttandanceDate
-      ] send in
-        let fetchedDataResult = await Result {
-          try await fireStoreUseCase.fetchFireStoreData(
-            from: .attendance,
-            as: Attendance.self,
-            shouldSave: false
-          )
-        }
-        switch fetchedDataResult {
-        case let .success(fetchedData):
-          await send(.view(.closeModal))
-          //          await send(.async(.fetchMember))
-          
-          let filterData = fetchedData
-            .map { $0.toAttendanceDTO() }
-          var attendanceCount = filterData.filter { $0.status == .present }.count
-          var lateCount = filterData.filter { $0.status == .late  }.count
-          var absentCount = filterData.filter { $0.status == .absent }.count
-          #logDebug("카운트", attendanceCount, lateCount, absentCount)
-          let filterDateData = filterData.filter { $0.updatedAt.formattedDateToString() == selectAttandanceDate.formattedDateToString() }
-          await send(.async(.fetchAttendanceDataResponse(.success(filterDateData))))
-          attendanceCount = attendanceCount
-          lateCount = lateCount
-          absentCount = absentCount
-          
-        case let .failure(error):
-          await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
-        }
-      }
-      
-    case .filterAttandanceDate:
-      return .run { [
-        selectAttandanceDate = state.selectAttandanceDate
-      ] send in
-        let fetchedDataResult = await Result {
-          try await fireStoreUseCase.fetchFireStoreData(
-            from: .attendance,
-            as: Attendance.self,
-            shouldSave: false
-          )
-        }
-        switch fetchedDataResult {
-        case let .success(fetchedData):
-          await send(.view(.closeModal))
-          //          await send(.async(.fetchMember))
-          
-          let filterData = fetchedData
-            .map { $0.toAttendanceDTO() }
-          var attendanceCount = filterData.filter { $0.status == .present }.count
-          var lateCount = filterData.filter { $0.status == .late  }.count
-          var absentCount = filterData.filter { $0.status == .absent }.count
-          #logDebug("카운트", attendanceCount, lateCount, absentCount)
-          let filterDateData = filterData.filter { $0.updatedAt.formattedDateToString() == selectAttandanceDate.formattedDateToString() }
-          try await clock.sleep(for: .seconds(0.4))
-          await send(.async(.fetchAttendanceDataResponse(.success(filterDateData))))
-          attendanceCount = attendanceCount
-          lateCount = lateCount
-          absentCount = absentCount
-          
-        case let .failure(error):
-          await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
-        }
-      }
-      
-    case .fetchCurrentUser:
-      return .run {  send in
-        let fetchUserResult = await Result {
-          try await fireStoreUseCase.getCurrentUser()
-        }
-        
-        switch fetchUserResult {
-        case let .success(user):
-          if let user = user {
-            await send(.async(.fetchUserDataResponse(.success(user))))
+        switch attendanceCheckResult {
+        case .success(let  attendanceCheckData):
+          if let  attendanceCheckData = attendanceCheckData {
+            await send(.inner(.attendanceCheckResponse(.success(attendanceCheckData))))
           }
-        case let .failure(error):
-          await send(.async(.fetchUserDataResponse(.failure(CustomError.map(error)))))
-        }
-      }
-      
-    case .observeAttendance:
-      return .run { send in
-        for await result in try await fireStoreUseCase.observeFireBaseChanges(
-          from: .attendance,
-          as: Attendance.self
-        ) {
-          switch result {
-          case let .success(fetchedData):
-            let filterData = fetchedData
-              .map { $0.toAttendanceDTO() }
-            await send(.async(.fetchAttendanceDataResponse(.success(filterData))))
-            
-          case .failure(let error):
-            await send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
-          }
-        }
-      }
-      
-    case let .upDateFetchAttandanceMember(selectPart: selectPart):
-      let selectData = state.selectAttandanceDate
-      return .run {  send in
-        let fetchedAttandanceResult = await Result {
-          try await fireStoreUseCase.fetchFireStoreData(
-            from: .attendance,
-            as: Attendance.self,
-            shouldSave: false
-          )
-        }
-        
-        switch fetchedAttandanceResult {
-        case let .success(fetchedData):
-          let filteredData = fetchedData
-            .filter {$0.memberTeam == selectPart  && $0.updatedAt.formattedDateToString() == selectData.formattedDateToString() }
-            .map { $0.toAttendanceDTO() }
-          await send(.async(.fetchAttendanceDataResponse(.success(filteredData))))
           
-        case let .failure(error):
-          await
-          send(.async(.fetchAttendanceDataResponse(.failure(CustomError.map(error)))))
+        case .failure(let error):
+          await send(.inner(.attendanceCheckResponse(.failure(.unknownError(error.localizedDescription)))))
         }
       }
       
-    case let .fetchUserDataResponse(fetchUser):
-      switch fetchUser {
-      case let .success(fetchUser):
-        state.user = fetchUser
-        #logDebug("fetching data", fetchUser.uid)
-      case let .failure(error):
-        #logError("Error fetching User", error)
-        state.user = nil
-      }
-      return .none
-      
-    case let .fetchAttendanceDataResponse(fetchedData):
-      switch fetchedData {
-      case let .success(fetchedAttendanceData):
-        let filteredData = fetchedAttendanceData
-          .filter {
-            ($0.id.isEmpty == false) &&
-            $0.memberType == .member &&
-            !$0.name.isEmpty &&
-            $0.updatedAt.formattedDateToString() == state.selectAttandanceDate.formattedDateToString()
-          }
-          .sorted { first, second in
-            // 정렬 우선순위 배열
-            let priority: [AttendanceType] = [
-              .present, .disease, .earlyLeave, .late, .absent, .run, .notAttendance
-            ]
-            // 우선순위에 따른 비교 정렬
-            guard let firstPriority = priority.firstIndex(of: first.status ?? .notAttendance),
-                  let secondPriority = priority.firstIndex(of: second.status ?? .notAttendance) else {
-              return false
-            }
-            return firstPriority < secondPriority
-          }
-        
-        let selectedDate = state.selectAttandanceDate
-        let selectedDay = Calendar.current.startOfDay(for: selectedDate)
-        let today = Calendar.current.startOfDay(for: Date())
-        
-        let updatedData = filteredData.map { attendance -> AttendanceDTO in
-          if !Calendar.current.isDate(attendance.updatedAt, inSameDayAs: selectedDay) {
-            var modifiedAttendance = attendance
-            modifiedAttendance.status = .notAttendance
-            return modifiedAttendance
-          }
-          return attendance
+    case .filterAttendance(let  selectTeam):
+      return .run { [selectAttandanceDate = state.selectAttandanceDate] send in
+        let attendanceCheckResult = await Result {
+          try await attendanceUseCase.fillAttendance(team: selectTeam, startDate: selectAttandanceDate.formattedDates())
         }
-        let attendanceCount = filteredData.filter { $0.status == .present }.count
-        let lateCount = filteredData.filter { $0.status == .late  }.count
-        let absentCount = filteredData.filter { $0.status == .absent }.count
-        state.attendanceCount = attendanceCount
-        state.lateCount = lateCount
-        state.absentCount = absentCount
-        #logDebug("카운트", attendanceCount, lateCount, absentCount)
-        
-        if Calendar.current.isDate(selectedDate, inSameDayAs: today) {
-          state.attendanceCheckInModel = updatedData
+        switch attendanceCheckResult {
+        case .success(let  attendanceCheckData):
+          if let  attendanceCheckData = attendanceCheckData {
+            await send(.inner(.attendanceCheckResponse(.success(attendanceCheckData))))
+          }
           
-        } else {
-          state.attendanceCheckInModel = updatedData
+        case .failure(let error):
+          await send(.inner(.attendanceCheckResponse(.failure(.unknownError(error.localizedDescription)))))
         }
-        
-      case let .failure(error):
-        #logError("출석  정보 데이터 에러", error.localizedDescription)
-        state.isLoading = true
       }
-      return .none
-      
-    case let .fetchMemberDataResponse(fetchedData):
-      switch fetchedData {
-      case let .success(fetchedData):
-        state.isLoading = false
-        let filteredData = fetchedData.filter { $0.memberType == .member && !$0.name.isEmpty }
-        state.attendaceMemberModel = filteredData
-        
-      case let .failure(error):
-        #logError("Error fetching data", error)
-        state.isLoading = true
-      }
-      return .none
+      .debounce(id: AttendanceCheckCancel(), for: 0.3, scheduler: mainQueue)
     }
   }
   
@@ -505,7 +288,36 @@ public struct AttendanceCheck {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
+    case .attendanceCountResponse(let result):
+      switch result {
+      case .success(let attendanceCountDTO):
+        state.attendanceCountDTOModel = attendanceCountDTO
+      case .failure(let error):
+        #logNetwork("출석 카운트 조회 에러", error.localizedDescription)
+      }
+      return .none
       
+    case .attendanceCheckResponse(let result):
+      switch result {
+      case .success(let attendanceCheckModel):
+        let sortedData = attendanceCheckModel.data.sorted { lhs, rhs in
+          let order: [AttendanceType] = [.present, .late, .absent]
+          let lhsType = AttendanceType(rawValue: lhs.status ?? "") ?? .notAttendance
+          let rhsType = AttendanceType(rawValue: rhs.status ?? "") ?? .notAttendance
+          return order.firstIndex(of: lhsType) ?? 999 < order.firstIndex(of: rhsType) ?? 999
+        }
+        
+        state.attendCheckModel = AttendanceCheckModel(
+          code: attendanceCheckModel.code,
+          message: attendanceCheckModel.message,
+          data: sortedData
+        )
+        
+      case .failure(let error):
+        #logNetwork("출석 목록 조회 실패", error.localizedDescription)
+      }
+      
+      return .none
     }
   }
 }

@@ -7,22 +7,22 @@
 
 import Foundation
 
-public typealias AttendanceCheckModel = BaseResponse<AttendanceCheckResponseModel>
+public typealias AttendanceCheckModel = BaseResponseDTO<[AttendanceCheckResponseModel]>
 
-public struct AttendanceCheckResponseModel: Decodable {
+public struct AttendanceCheckResponseModel: Decodable, Equatable {
   public let id: String
   public let profileSummary: ProfileSummaryResponse
   public let scheduleSummary: ScheduleSummaryResponse
   public let updatedAt: String
   public let method, note: String
-  public let status: AttendanceStatus?
+  public let status: String?
 
   public init(
     id: String,
     profileSummary: ProfileSummaryResponse,
     scheduleSummary: ScheduleSummaryResponse,
     updatedAt: String,
-    status: AttendanceStatus?,
+    status: String?,
     method: String,
     note: String
   ) {
@@ -37,24 +37,31 @@ public struct AttendanceCheckResponseModel: Decodable {
 }
 
 // MARK: - ProfileSummary
-public struct ProfileSummaryResponse: Decodable {
+public struct ProfileSummaryResponse: Decodable, Equatable {
   public let name: String
-  public let role, team: String
+  public let role: SelectPart?
+  public let team: SelectTeam?
+  public let cohort: String?
+  public let crew: SelectTeam?
   
   public init(
     name: String,
-    role: String,
-    team: String
+    role: SelectPart?,
+    team: SelectTeam?,
+    cohort: String?,
+    crew: SelectTeam?
   ) {
     self.name = name
     self.role = role
     self.team = team
+    self.cohort = cohort
+    self.crew = crew
   }
   
 }
 
 // MARK: - ScheduleSummary
-public struct ScheduleSummaryResponse: Decodable {
+public struct ScheduleSummaryResponse: Decodable, Equatable {
   public let scheduleId, title, description: String
   public let startTime: String
   

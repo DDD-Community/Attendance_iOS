@@ -14,11 +14,13 @@ public final class DefaultProfileRepository: ProfileRepositoryProtocol {
   
   public init() {}
   
+  
   public func editProfile(
     name: String,
     inviteCode: String,
     role: String,
-    team: String
+    crew: String,
+    responsibility: String
   ) async throws -> ProfileDTOModel? {
     return nil
   }

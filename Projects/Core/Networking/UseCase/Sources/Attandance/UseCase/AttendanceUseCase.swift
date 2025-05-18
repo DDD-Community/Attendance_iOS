@@ -25,6 +25,21 @@ public struct AttendanceUseCase: AttendanceUseCaseProtocol {
   ) async throws -> AttendanceCountDTOModel? {
     return try await repository.attendanceCount(startDate: startDate)
   }
+  
+  // MARK: - 출석 목록 조회
+  public func getAttendances(
+    startDate: String
+  ) async throws -> AttendanceCheckModel? {
+    return try await repository.getAttendances(startDate: startDate)
+  }
+  
+  public func fillAttendance(
+    team: SelectTeam,
+    startDate: String
+  ) async throws -> AttendanceCheckModel? {
+    return try await repository.fillAttendance(team: team, startDate: startDate)
+    
+  }
 }
 
 extension DependencyContainer {

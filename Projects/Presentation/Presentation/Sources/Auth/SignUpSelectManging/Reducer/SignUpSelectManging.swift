@@ -139,8 +139,9 @@ public struct SignUpSelectManaging {
           try await profileUseCase.editProfile(
             name: userEntity.signUpName,
             inviteCode: userEntity.inviteCodeId ?? "",
-            role: userEntity.managing?.managingDesc ?? "",
-            team: userEntity.role?.desc ??  ""
+            role: userEntity.role?.rawValue ?? "",
+            crew: "",
+            responsibility: userEntity.managing?.rawValue ?? ""
           )
         }
         

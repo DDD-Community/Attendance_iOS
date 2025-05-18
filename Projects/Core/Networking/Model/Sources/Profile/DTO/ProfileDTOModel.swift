@@ -15,7 +15,9 @@ public struct ProfileResponseDTO: Decodable, Equatable {
   public let id, name, inviteCodeID, role: String
   public let team: SelectPart
   public let isStaff: Bool
+  public let crew: SelectTeam?
   public let generation: String
+  public let responsibility: Managing?
   
   public init(
     id: String,
@@ -24,7 +26,9 @@ public struct ProfileResponseDTO: Decodable, Equatable {
     role: String,
     team: SelectPart,
     isStaff: Bool,
-    generation: String
+    generation: String,
+    crew: SelectTeam? = nil,
+    responsibility: Managing? = nil
   ) {
     self.id = id
     self.name = name
@@ -33,6 +37,8 @@ public struct ProfileResponseDTO: Decodable, Equatable {
     self.team = team
     self.isStaff = isStaff
     self.generation = generation
+    self.crew = crew
+    self.responsibility = responsibility
   }
 }
 

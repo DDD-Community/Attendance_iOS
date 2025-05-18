@@ -16,7 +16,9 @@ public extension ProfileModel {
       role: self.data?.role ?? "",
       team: SelectPart(rawValue: self.data?.team ?? "") ?? .all,
       isStaff: self.data?.isStaff ?? false,
-      generation: self.data?.cohort ?? ""
+      generation: self.data?.cohort ?? "",
+      crew: SelectTeam(rawValue: self.data?.crew ?? "") ?? .notTeam,
+      responsibility: Managing(rawValue: self.data?.responsibility ?? "") ?? .notManaging
     )
     
     return ProfileDTOModel(

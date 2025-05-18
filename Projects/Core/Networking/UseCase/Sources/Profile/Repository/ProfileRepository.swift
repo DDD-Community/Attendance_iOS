@@ -24,13 +24,15 @@ public class ProfileRepository: ProfileRepositoryProtocol {
     name: String,
     inviteCode: String,
     role: String,
-    team: String
+    crew: String,
+    responsibility: String
   ) async throws -> ProfileDTOModel? {
     let profileModel = try await provider.requestAsync(.editProfile(
         username: name,
         inviteCodeId: inviteCode,
         role: role,
-        team: team),decodeTo: ProfileModel.self)
+        crew: crew,
+        responsibility:  responsibility),decodeTo: ProfileModel.self)
     return profileModel.toProfileDTOModel()
   }
   

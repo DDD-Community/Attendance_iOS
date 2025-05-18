@@ -89,6 +89,7 @@ extension ManagerProfileView {
     let (team, platform) =  String.splitBySlash(store.profileDTOModel?.data.role ?? "")
     let memberTeam = store.profileDTOModel?.data.role ?? ""
     let isTeamManging = store.profileDTOModel?.data.role.contains("팀매니징") ?? false
+    let mangingTeam = store.profileDTOModel?.data.crew ?? .notTeam
     
     LazyVStack {
       Spacer()
@@ -128,7 +129,7 @@ extension ManagerProfileView {
         
         managerTextComponent(
           title: store.managerProfileRoleType,
-          subTitle: store.profileDTOModel?.data.team.desc ?? "",
+          subTitle: store.profileDTOModel?.data.role ??  "",
           managingTeam: "",
           isManaging: false,
           isGeneration: false
@@ -140,9 +141,9 @@ extension ManagerProfileView {
         if store.profileDTOModel?.data.isStaff == true {
           managerTextComponent(
             title: store.managerProfileManaging,
-            subTitle: isTeamManging ? team : store.profileDTOModel?.data.role ?? "",
-            managingTeam: SelectTeam(rawValue: platform)?.managingTeamDesc ?? "",
-            isManaging: store.profileDTOModel?.data.role.contains("팀매니징") ?? false ? true : false,
+            subTitle: store.profileDTOModel?.data.responsibility?.managingDesc ?? "",
+            managingTeam: mangingTeam.managingTeamDesc,
+            isManaging: store.profileDTOModel?.data.responsibility == .projectTeamManaging ? true : false,
             isGeneration: false
           )
         }

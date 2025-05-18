@@ -134,13 +134,14 @@ public struct SignUpSelectTeam {
       ] send in
         let isStaff = userEntity.userRole
         let memberTeam = userEntity.memberTeam?.rawValue ?? ""
-        let isAdminRole =   "\(userEntity.managing?.managingDesc ?? "") / \(memberTeam)"
+        let isAdminRole =   "\(userEntity.managing?.rawValue ?? "")"
         let editProfileResult = await Result {
           try await profileUseCase.editProfile(
             name: userEntity.signUpName,
             inviteCode: userEntity.inviteCodeId ?? "",
-            role: isStaff == .moderator ? isAdminRole : memberTeam,
-            team: userEntity.role?.desc ??  ""
+            role: userEntity.role?.rawValue ?? "",
+            crew: memberTeam,
+            responsibility: isStaff == .moderator ? isAdminRole : ""
           )
         }
         

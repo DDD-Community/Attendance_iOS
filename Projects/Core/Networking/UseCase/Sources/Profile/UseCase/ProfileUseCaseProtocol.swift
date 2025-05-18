@@ -14,7 +14,8 @@ public protocol ProfileUseCaseProtocol {
     name: String,
     inviteCode: String,
     role: String,
-    team: String
+    crew: String,
+    responsibility: String
   ) async throws -> ProfileDTOModel?
   func getProfile() async throws -> ProfileDTOModel?
 }

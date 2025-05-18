@@ -26,11 +26,19 @@ struct AttendanceCheckView: View {
       selectPartAttandanceStatus()
     }
     .task {
-      store.send(.async(.fetchAttendanceCount))
+      store.send(.async(.appearData))
+      
     }
+    .onChange(of: store.selectPart ?? .web1) { oldValue, newValue in
+      store.attendCheckModel?.data = []
+      store.send(.async(.filterAttendance(selectTeam: newValue)))
+    }
+    
+    
     .sheet(item: $store.scope(state: \.destination?.selectDate, action: \.destination.selectDate)) { selectDateStore in
       CustomDateView(store: selectDateStore, selectDate: $store.selectAttandanceDate) {
         store.send(.async(.filterAttendanceCount(startDate: store.selectAttandanceDate.formattedDates())))
+        store.send(.async(.fetchAttedanceCheck))
       }
       .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
       .presentationCornerRadius(20)
@@ -159,6 +167,9 @@ extension AttendanceCheckView {
     if let selectPart = store.selectPart,
        [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart) {
       selectPartAttandanceStatusCard()
+      
+      Spacer()
+        .frame(height: 20)
     } else {
       EmptyView()
     }
@@ -166,24 +177,30 @@ extension AttendanceCheckView {
 
   @ViewBuilder
   fileprivate func selectPartAttandanceStatusCard() -> some View {
-    if store.attendanceCheckInModel
-      .filter({ $0.memberTeam.description == store.selectPart?.description }).isEmpty {
+    let filtered = store.attendCheckModel?.data.filter {
+      $0.profileSummary.crew?.description == store.selectPart?.description
+    } ?? []
+
+    if filtered.isEmpty {
       noMemberAttandanceView()
     } else {
-      LazyVStack {
-        VStack {
-          ForEach(
-            store.attendanceCheckInModel
-              .filter { $0.memberTeam.description == store.selectPart?.description } ,id: \.id) { item in
-                AttendanceCheckStatusCard(
-                  attandanceType: item.status ?? .notAttendance,
-                  selectPart: item.roleType,
-                  selectTeam: item.memberTeam,
-                  name: item.name
-                )
-              }
+      ScrollView(.vertical) {
+        LazyVStack(spacing: .zero) {
+          ForEach(filtered, id: \.id) { item in
+            AttendanceCheckStatusCard(
+              attandanceType: AttendanceType(rawValue: item.status ?? "") ?? .present,
+              selectPart: item.profileSummary.role ?? .all,
+              selectTeam: item.profileSummary.crew ?? .notTeam,
+              name: item.profileSummary.name
+            )
+          }
         }
         .padding(.horizontal, 24)
+        .padding(.bottom, 10)
+      }
+      .scrollIndicators(.hidden)
+      .onAppear {
+        UIScrollView.appearance().bounces = false
       }
     }
   }

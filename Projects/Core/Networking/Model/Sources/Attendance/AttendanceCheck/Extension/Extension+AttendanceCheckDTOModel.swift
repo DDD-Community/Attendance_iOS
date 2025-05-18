@@ -1,5 +1,5 @@
 //
-//  Extension+AttendanceCheckModel.swift
+//  Extension+AttendanceCheckDTOModel.swift
 //  Model
 //
 //  Created by Wonji Suh  on 5/15/25.
@@ -8,34 +8,42 @@
 import Foundation
 
 public extension AttendanceCheckDTOModel {
-  func toAttendanceCheckDTOToModel() -> AttendanceCheckModel {
-    let profileDTO = ProfileSummaryResponse(
-      name: self.data?.profileSummary.name ?? "",
-      role:  self.data?.profileSummary.role ?? "",
-      team:  self.data?.profileSummary.team ?? ""
-    )
-    
-    let scheduleDTO = ScheduleSummaryResponse(
-      scheduleId: self.data?.scheduleSummary.id ?? "",
-      title: self.data?.scheduleSummary.title ?? "",
-      description: self.data?.scheduleSummary.description ?? "",
-      startTime: self.data?.scheduleSummary.startTime ?? ""
-    )
-    
-    let data = AttendanceCheckResponseModel(
-      id: self.data?.id ?? "",
-      profileSummary: profileDTO,
-      scheduleSummary: scheduleDTO,
-      updatedAt: self.data?.updatedAt ?? "",
-      status: AttendanceStatus(rawValue: self.data?.status ?? ""),
-      method: self.data?.method ?? "",
-      note: self.data?.note ?? ""
-    )
-    
+  func toDomain() -> AttendanceCheckModel {
+     let data = self.data?.compactMap { item in
+      let profile = item.profileSummary
+      let schedule = item.scheduleSummary
+
+      let profileModel = ProfileSummaryResponse(
+        name: profile.name,
+        role: SelectPart(rawValue: profile.role ?? "") ?? .all,
+        team: SelectTeam(rawValue: profile.team ?? "") ?? .notTeam,
+        cohort: profile.cohort ?? "",
+        crew: SelectTeam(rawValue: profile.crew ?? "") ?? .notTeam
+        
+      )
+
+      let scheduleModel = ScheduleSummaryResponse(
+        scheduleId: schedule.id ?? "",
+        title: schedule.title ?? "",
+        description: schedule.description ?? "",
+        startTime: schedule.startTime ?? ""
+      )
+
+      return AttendanceCheckResponseModel(
+        id: item.id,
+        profileSummary: profileModel,
+        scheduleSummary: scheduleModel,
+        updatedAt: item.updatedAt ?? "",
+        status: item.status ?? "",
+        method: item.method ?? "",
+        note: item.note ?? ""
+      )
+    }
+
     return AttendanceCheckModel(
-      code: self.code ?? .zero,
+      code: self.code ?? 0,
       message: self.message ?? "",
-      data: data
+      data: data ?? []
     )
   }
 }
