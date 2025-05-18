@@ -16,7 +16,7 @@ public enum AttendanceDomain {
   case profile
   case qr
   case schedule
-  case attendances
+  case attendance
 }
 
 extension AttendanceDomain {
@@ -32,7 +32,7 @@ extension AttendanceDomain {
       return "api/v1/qrcodes/"
     case .schedule:
       return "api/v1/schedules/"
-    case .attendances:
+    case .attendance:
       return "api/v1/attendances/"
     }
   }

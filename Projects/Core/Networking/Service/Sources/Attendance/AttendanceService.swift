@@ -13,18 +13,18 @@ import Foundations
 import AsyncMoya
 
 public enum AttendanceService {
-  case getAttandances
+  case fetchCount(userID: Int)
 }
 
 extension AttendanceService: BaseTargetType {
   public var domain: AttendanceDomain {
-    return .attendances
+    return .attendance
   }
 
   public var urlPath: String {
     switch self {
-    case .getAttandances:
-      return AttandanceAPI.getAttandances.attandanceDescription
+    case .fetchCount:
+      return AttandanceAPI.fetchCount.attandanceDescription
     }
   }
 
@@ -34,19 +34,22 @@ extension AttendanceService: BaseTargetType {
 
   public var method: Moya.Method {
     switch self {
-    case .getAttandances:
+    case .fetchCount:
       return .get
     }
   }
 
   public var parameters: [String : Any]? {
     switch self {
-    case .getAttandances:
-      return nil
+    case .fetchCount(let userID):
+      return ["user_id": userID]
     }
   }
 
   public var headers: [String : String]? {
-    return APIHeader.baseHeader
+    switch self {
+    case .fetchCount:
+      return APIHeader.baseHeader
+    }
   }
 }

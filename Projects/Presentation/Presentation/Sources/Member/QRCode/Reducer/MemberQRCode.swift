@@ -103,7 +103,7 @@ public struct MemberQRCode {
     case .onCreateQRCodeResponse(let result):
       switch result {
       case .success(let qrCodeString):
-        #logDebug("succeedd create QRCode:", qrCodeString)
+        #logDebug("succeed create QRCode:", qrCodeString)
         return .run { send in
           await send(.async(.generateQRCodeImage(qrCodeString)))
         }
@@ -116,7 +116,7 @@ public struct MemberQRCode {
     case .onGenerateQRCodeImage(let result):
       switch result {
       case .success(let image):
-        #logDebug("succeedd generate QRCodeImage")
+        #logDebug("succeed generate QRCodeImage")
         state.qrCodeImage = image
         return .none
 

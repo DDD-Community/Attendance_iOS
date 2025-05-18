@@ -111,7 +111,7 @@ struct MemberMainView: View {
             attendanceCount: store.attendanceCount,
             lateCount: store.lateCount,
             absentCount: store.absentCount,
-            showWarning: store.shouldShowAttendanceWarningIcon,
+            showWarning: store.showAttendanceWarningIcon,
             onTapAbsentButton: {
               store.send(.view(.didTapAbesentButton))
             }

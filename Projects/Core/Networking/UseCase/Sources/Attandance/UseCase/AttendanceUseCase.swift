@@ -59,6 +59,11 @@ public struct AttendanceUseCase: AttendanceUseCaseProtocol {
   ) async throws -> ModifyAttendanceModel? {
     return try await repository.modifyAttendance(attendanceId: attendanceId)
   }
+
+  // MARK: - 사용자 출석 카운트 조회
+  public func fetchCount(userID: Int) async throws -> AttendanceCountResponseModel {
+    return try await repository.fetchCount(userID: userID)
+  }
 }
 
 extension DependencyContainer {

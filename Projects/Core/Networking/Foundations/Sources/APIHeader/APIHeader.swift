@@ -12,20 +12,20 @@ import Model
 
 
 public struct APIHeader {
-  
+
   public static let contentType   = "Content-Type"
   public static let accessToken   = "Authorization"
   public static let accept        = "accept"
-  public static let xcsrftoken        = "X-CSRFTOKEN"
-  
+  public static let xcsrftoken    = "X-CSRFTOKEN"
+
   // ← add `static` here
   @Shared(.inMemory("UserEntity"))
   static var userEntity: UserEntity = .init()
-  
+
   private static var _accessTokenKeyChain: String {
     return  UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? "" // Returns an empty string if nil
   }
-  
+
   public static var accessTokenKeyChain: String {
     get { _accessTokenKeyChain }
     set { updateAccessToken(newValue) }
@@ -33,7 +33,7 @@ public struct APIHeader {
 
   public static func updateAccessToken(_ token: String?) {
     guard let newToken = token, !newToken.isEmpty else { return }
-    UserDefaults.standard.set(newToken, forKey:  "ACCESS_TOKEN")
+    UserDefaults.standard.set(newToken, forKey: "ACCESS_TOKEN")
     self.$userEntity.withLock {  $0.accessToken = newToken }
   }
 
@@ -48,35 +48,33 @@ extension APIHeader {
     }
     return baseHeaders
   }
-  
+
   public static var baseHeader: Dictionary<String, String> {
     [
-      contentType : APIHeaderManger.contentType,
-      accessToken : "Bearer \(accessTokenKeyChain)",
+      contentType: APIHeaderManger.contentType,
+      accessToken: "Bearer \(accessTokenKeyChain)",
       accept: APIHeaderManger.contentType
     ]
   }
-  
+
   public static var notAccessTokenHeader: Dictionary<String, String> {
     [
-      contentType : APIHeaderManger.contentType,
+      contentType: APIHeaderManger.contentType,
       accept: APIHeaderManger.contentType
     ]
   }
-  
+
   public static var mutiPartbaseHeader: Dictionary<String, String> {
     [
-      contentType : APIHeaderManger.multipartContentType,
-      accessToken : accessTokenKeyChain,
+      contentType: APIHeaderManger.multipartContentType,
+      accessToken: accessTokenKeyChain,
     ]
   }
-  
+
   public static var applebaseHeader: Dictionary<String, String> {
     [
-      contentType : APIHeaderManger.contentType,
+      contentType: APIHeaderManger.contentType,
       accept: APIHeaderManger.contentType
     ]
   }
-  
 }
-

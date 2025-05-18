@@ -16,6 +16,5 @@ public protocol AttendanceRepositoryProtocol {
     scheduleId: String
   ) async throws -> AttendanceCheckModel?
   func modifyAttendance(attendanceId: String) async throws -> ModifyAttendanceModel?
+  func fetchCount(userID: Int) async throws -> AttendanceCountResponseModel
 }
-
-

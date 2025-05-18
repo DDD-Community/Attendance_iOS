@@ -5,6 +5,7 @@
 //  Created by Wonji Suh  on 5/10/25.
 //
 
+import Foundation
 import Model
 
 import Service
@@ -16,8 +17,7 @@ public class AttendanceRepository: AttendanceRepositoryProtocol {
   
   private let provider = MoyaProvider<AttendanceService>(plugins: [MoyaLoggingPlugin()])
   
-  
-  public init(){}
+  public init() {}
   
   // MARK: - 출석 카운트 API
   public func attendanceCount(
@@ -31,7 +31,7 @@ public class AttendanceRepository: AttendanceRepositoryProtocol {
   public func getAttendances(
     startDate: String
   ) async throws -> AttendanceCheckModel? {
-    let attendanceModel = try await provider.requestAsync(.getAttendances(startDate: startDate ), decodeTo: AttendanceCheckDTOModel.self)
+    let attendanceModel = try await provider.requestAsync(.getAttendances(startDate: startDate), decodeTo: AttendanceCheckDTOModel.self)
     return attendanceModel.toDomain()
   }
   
@@ -66,5 +66,10 @@ public class AttendanceRepository: AttendanceRepositoryProtocol {
   ) async throws -> ModifyAttendanceModel? {
     let modifyAttendanceModel = try await provider.requestAsync(.modifyAttendance(attendanceId: attendanceId), decodeTo: ModifyDTOAttendanceModel.self)
     return modifyAttendanceModel.toDomain()
+
+  // MARK: - 사용자 출석 카운트 조회
+  public func fetchCount(userID: Int) async throws -> AttendanceCountResponseModel {
+    let response = try await provider.requestAsync(.fetchCount(userID: userID), decodeTo: BaseResponseDTO<AttendanceCountResponseDTO>.self)
+    return response.data.toDomain()
   }
 }

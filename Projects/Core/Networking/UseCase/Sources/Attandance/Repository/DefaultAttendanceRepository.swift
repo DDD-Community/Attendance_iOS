@@ -40,5 +40,15 @@ final public class DefaultAttendanceRepository: AttendanceRepositoryProtocol  {
     attendanceId: String
   ) async throws -> ModifyAttendanceModel? {
     return nil
+
+  public func fetchCount(userID: Int) async throws -> AttendanceCountResponseModel {
+    return .init(
+      attendanceCount: 0,
+      presentCount: 0,
+      lateCount: 0,
+      absentCount: 0,
+      exceptionCount: 0,
+      tbdCount: 0
+    )
   }
 }
