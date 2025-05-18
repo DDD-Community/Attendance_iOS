@@ -86,6 +86,11 @@ public struct MemberCoordinator {
     action: IndexedRouterActionOf<MemberScreen>
   ) -> Effect<Action> {
     switch action {
+    case .routeAction(id: _, action: .member(.navigation(.routeToQRCode))):
+      state.routes.push(.qrCode(.init()))
+      // TODO: - 출석 성공 시 멤버 메인 일정표 새로고침
+      return .none
+
     case .routeAction(id: _, action: .member(.navigation(.routeToProfile))):
       state.routes.push(.profile(.init()))
       return .none
@@ -99,16 +104,16 @@ public struct MemberCoordinator {
       state: inout State,
       action: View
   ) -> Effect<Action> {
-      switch action {
-      case .backAction:
-        state.routes.goBack()
-        return .none
-        
-      case .backToRootAction:
-        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-          $0.goBackToRoot()
-        }
+    switch action {
+    case .backAction:
+      state.routes.goBack()
+      return .none
+      
+    case .backToRootAction:
+      return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
+        $0.goBackToRoot()
       }
+    }
   }
 
   private func handleInnerAction(
@@ -138,5 +143,6 @@ extension MemberCoordinator {
   public enum MemberScreen {
     case member(MemberMain)
     case profile(ManagerProfile)
+    case qrCode(MemberQRCode)
   }
 }

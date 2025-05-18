@@ -59,7 +59,7 @@ struct MemberMainView: View {
 
       HStack(spacing: 12) {
         Button(action: {
-          store.send(.navigation(.presentQRCode))
+          store.send(.navigation(.routeToQRCode))
         }) {
           Image(asset: ImageAsset.qrCode)
             .renderingMode(.template)

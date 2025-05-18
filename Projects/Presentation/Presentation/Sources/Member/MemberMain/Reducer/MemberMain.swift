@@ -39,6 +39,8 @@ public struct MemberMain {
     // 일정표
     var generation: Int = 12
     var schedules: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
+
+    public init() {}
   }
 
   public enum Action: BindableAction, FeatureAction {
@@ -65,8 +67,13 @@ public struct MemberMain {
   }
 
   public enum NavigationAction: Equatable {
-    case presentQRCode
+    case routeToQRCode
     case routeToProfile
+  }
+
+  @Reducer(state: .equatable)
+  public enum Destination {
+    case qrcode(MemberQRCode)
   }
 
   @Dependency(FireStoreUseCase.self) var fireStoreUseCase
@@ -180,8 +187,7 @@ public struct MemberMain {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presentQRCode:
-      // TODO: - present to profile View
+    case .routeToQRCode:
       return .none
 
     case .routeToProfile:
