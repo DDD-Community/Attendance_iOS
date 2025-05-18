@@ -12,13 +12,15 @@ import Service
 
 import AsyncMoya
 
+fileprivate typealias Response = BaseResponseDTO<ProfileResponseDTO>
+
 @Observable
 public class ProfileRepository: ProfileRepositoryProtocol {
-  
-  public init(){}
-  
+
+  public init() {}
+
   private let provider = MoyaProvider<ProfileService>(plugins: [MoyaLoggingPlugin()])
-  
+
   // MARK: - 프로필 수정
   public func editProfileManger(
     name: String,
@@ -26,14 +28,18 @@ public class ProfileRepository: ProfileRepositoryProtocol {
     role: String,
     crew: String,
     responsibility: String
-  ) async throws -> ProfileDTOModel? {
-    let profileModel = try await provider.requestAsync(.editProfileManger(
+  ) async throws -> ProfileResponseModel? {
+    let response = try await provider.requestAsync(
+      .editProfileManger(
         username: name,
         inviteCodeId: inviteCode,
         role: role,
         crew: crew,
-        responsibility:  responsibility),decodeTo: ProfileModel.self)
-    return profileModel.toProfileDTOModel()
+        responsibility: responsibility
+      ),
+      decodeTo: Response.self
+    )
+    return response.data.toDomain()
   }
   
   // MARK: - 프로필 수정 운영진
@@ -42,14 +48,17 @@ public class ProfileRepository: ProfileRepositoryProtocol {
     inviteCode: String,
     role: String,
     responsibility: String
-  ) async throws -> ProfileDTOModel? {
-    let profileModel = try await provider.requestAsync(
+  ) async throws -> ProfileResponseModel? {
+    let response = try await provider.requestAsync(
       .editProfileMangerNoTeam(
         username: name,
         inviteCodeId: inviteCode,
         role: role,
-        responsibility: responsibility), decodeTo: ProfileModel.self)
-    return profileModel.toProfileDTOModel()
+        responsibility: responsibility
+      ),
+      decodeTo: Response.self
+    )
+    return response.data.toDomain()
   }
   
   // MARK: - 멤버 프로필 수정
@@ -58,18 +67,22 @@ public class ProfileRepository: ProfileRepositoryProtocol {
     inviteCode: String,
     role: String,
     crew: String
-  ) async throws -> ProfileDTOModel? {
-    let profileModel = try await provider.requestAsync(.editProfileMember(
+  ) async throws -> ProfileResponseModel? {
+    let profileModel = try await provider.requestAsync(
+      .editProfileMember(
         username: name,
         inviteCodeId: inviteCode,
         role: role,
-        crew: crew),decodeTo: ProfileModel.self)
-    return profileModel.toProfileDTOModel()
+        crew: crew
+      ),
+      decodeTo: Response.self
+    )
+    return response.data.toDomain()
   }
-  
+
   // MARK: - 프로필 조회
-  public func getProfile() async throws -> ProfileDTOModel? {
-    let profileModel  = try await provider.requestAsync(.getProfile, decodeTo: ProfileModel.self)
-    return profileModel.toProfileDTOModel()
+  public func getProfile() async throws -> ProfileResponseModel? {
+    let response = try await provider.requestAsync(.getProfile, decodeTo: Response.self)
+    return response.data.toDomain()
   }
 }

@@ -26,7 +26,7 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
     role: String,
     crew: String,
     responsibility: String
-  ) async throws -> ProfileDTOModel? {
+  ) async throws -> ProfileResponseModel? {
     return try await repository.editProfileManger(
       name: name,
       inviteCode: inviteCode,
@@ -36,7 +36,7 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
     )
   }
   // MARK: - 프로필 조회
-  public func getProfile() async throws -> ProfileDTOModel? {
+  public func getProfile() async throws -> ProfileResponseModel? {
     return try await repository.getProfile()
   }
   

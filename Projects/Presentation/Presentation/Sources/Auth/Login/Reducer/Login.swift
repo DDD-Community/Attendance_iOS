@@ -36,9 +36,8 @@ public struct Login {
     var signUpDTOModel: SignUpDTOModel?
     var checkEmailDTOModel: CheckEmailDTO?
     var loginDTOModel: LoginDTOModel?
-    var profileDTOModel: ProfileDTOModel?
-    
-    
+    var profileDTOModel: ProfileResponseModel?
+
     public init(
       userEntity: UserEntity = .init()
     ) {
@@ -78,7 +77,7 @@ public struct Login {
     case loginUser
     case loginUserResponse(Result<LoginDTOModel, CustomError>)
     case fetchUser
-    case fetchUserResponse(Result<ProfileDTOModel, CustomError>)
+    case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -484,7 +483,7 @@ public struct Login {
           if let profileDTOData = profileDTOData {
             await send(.async(.fetchUserResponse(.success(profileDTOData))))
             
-            if profileDTOData.data.isStaff == true {
+            if profileDTOData.isStaff == true {
               await send(.navigation(.presentCoreMemberMain))
             } else {
               await send(.navigation(.presentMemberMain))
@@ -503,7 +502,7 @@ public struct Login {
         state.profileDTOModel = profileDTOData
         
         state.$userEntity.withLock {
-          $0.inviteCodeId = profileDTOData.data.inviteCodeID
+          $0.inviteCodeId = profileDTOData.inviteCodeID
         }
         
       case .failure(let error):

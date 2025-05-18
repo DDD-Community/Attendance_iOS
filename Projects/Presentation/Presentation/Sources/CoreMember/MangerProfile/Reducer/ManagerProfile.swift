@@ -37,8 +37,8 @@ public struct ManagerProfile {
     @Shared(.appStorage("AccessToken")) var accessToken: String = ""
     
     var userMember: UserDTOMember? = nil
-    var profileDTOModel: ProfileDTOModel?
-    
+    var profileDTOModel: ProfileResponseModel?
+
     @Presents var destination: Destination.State?
     public init() {}
   }
@@ -73,7 +73,7 @@ public struct ManagerProfile {
     case signOut
     case fetchUserDataResponse(Result<User, CustomError>)
     case fetchUser
-    case fetchUserResponse(Result<ProfileDTOModel, CustomError>)
+    case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션

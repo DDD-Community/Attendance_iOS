@@ -9,7 +9,6 @@ import Combine
 
 import Model
 
-
 public final class DefaultProfileRepository: ProfileRepositoryProtocol {
   
   public init() {}
@@ -21,7 +20,7 @@ public final class DefaultProfileRepository: ProfileRepositoryProtocol {
     role: String,
     crew: String,
     responsibility: String
-  ) async throws -> ProfileDTOModel? {
+  ) async throws -> ProfileResponseModel? {
     return nil
   }
   
@@ -30,7 +29,7 @@ public final class DefaultProfileRepository: ProfileRepositoryProtocol {
     inviteCode: String,
     role: String,
     responsibility: String
-  ) async throws -> ProfileDTOModel? {
+  ) async throws -> ProfileResponseModel? {
     return nil
   }
   
@@ -39,11 +38,11 @@ public final class DefaultProfileRepository: ProfileRepositoryProtocol {
     inviteCode: String,
     role: String,
     crew: String
-  ) async throws -> ProfileDTOModel? {
+  ) async throws -> ProfileResponseModel? {
     return nil
   }
   
-  public func getProfile() async throws -> ProfileDTOModel? {
+  public func getProfile() async throws -> ProfileResponseModel? {
     return nil
   }
 }

@@ -15,7 +15,7 @@ import SDWebImageSwiftUI
 public struct ManagerProfileView: View {
   @Bindable private var store: StoreOf<ManagerProfile>
   private var backAction: () -> Void
-  
+
   public init(
     store: StoreOf<ManagerProfile>,
     backAction: @escaping () -> Void
@@ -23,25 +23,25 @@ public struct ManagerProfileView: View {
     self.store = store
     self.backAction = backAction
   }
-  
+
   public var body: some View {
     ZStack {
       Color.basicBlack
         .edgesIgnoringSafeArea(.all)
-      
+
       VStack {
         mangerProfileLoadingData()
       }
       .task {
         store.send(.async(.fetchUser))
       }
-      
+
       if store.destination?.createApp != nil {
         VisualEffectBlur(blurStyle: .systemChromeMaterialDark)
           .edgesIgnoringSafeArea(.top)
-           .transition(.opacity)
-           .animation(.easeInOut(duration: 0.25), value: store.destination?.createApp != nil)
-       }
+          .transition(.opacity)
+          .animation(.easeInOut(duration: 0.25), value: store.destination?.createApp != nil)
+      }
     }
     .sheet(item: $store.scope(state: \.destination?.createApp, action: \.destination.createApp)) { crateAppStore in
       CreateAppView(store: crateAppStore) {
@@ -55,49 +55,47 @@ public struct ManagerProfileView: View {
 }
 
 extension ManagerProfileView {
-  
   @ViewBuilder
   fileprivate func mangerProfileLoadingData() -> some View {
     if store.profileDTOModel == nil {
       if store.isLoading  {
         profileLoadingView()
       }
-  } else {
-    mangerProfileData()
+    } else {
+      mangerProfileData()
+    }
   }
-}
-  
+
   @ViewBuilder
   fileprivate func mangerProfileData() -> some View {
     VStack {
       Spacer()
         .frame(height: 12)
-      
+
       CustomNavigationBar(backAction: backAction, addAction: {
         store.send(.view(.appearModal))
       }, image: .info)
-      
+
       mangerCardImage()
-      
+
       logoutButton()
     }
   }
-  
-  
+
   @ViewBuilder
   fileprivate func mangerCardImage() -> some View {
-    let memberTeam = store.profileDTOModel?.data.role ?? .all
-    let mangingTeam = store.profileDTOModel?.data.crew ?? .notTeam
+    let memberTeam = store.profileDTOModel?.role ?? .all
+    let mangingTeam = store.profileDTOModel?.crew ?? .notTeam
     
     LazyVStack {
       Spacer()
         .frame(height: 17)
-      
+
       VStack(alignment: .leading, spacing: .zero) {
         Spacer()
           .frame(height: 24)
-        
-        if store.profileDTOModel?.data.isStaff == true {
+
+        if store.profileDTOModel?.isStaff == true {
           HStack {
             Text("운영진")
               .pretendardCustomFont(textStyle: .body3NormalBold)
@@ -109,43 +107,40 @@ extension ManagerProfileView {
                   .stroke(.statusFocus, lineWidth: 1)
                   .background(.clear)
               }
-            
+
             Spacer()
           }
-          
+
           Spacer()
             .frame(height: 8)
         }
-        
-       
-        
-        Text("\(store.profileDTOModel?.data.name ?? "")님")
+
+        Text("\(store.profileDTOModel?.name ?? "")님")
           .pretendardCustomFont(textStyle: .headline5Bold)
           .foregroundStyle(.borderInverse)
-        
+
         Spacer()
-        
+
         managerTextComponent(
           title: store.managerProfileRoleType,
-          subTitle: store.profileDTOModel?.data.role.attendanceListDesc ??  "",
+          subTitle: store.profileDTOModel?.role.attendanceListDesc ??  "",
           managingTeam: "",
           isManaging: false,
           isGeneration: false
         )
-        
+
         Spacer()
           .frame(height: 20)
-        
-        if store.profileDTOModel?.data.isStaff == true {
+
+        if store.profileDTOModel?.isStaff == true {
           managerTextComponent(
             title: store.managerProfileManaging,
-            subTitle: store.profileDTOModel?.data.responsibility?.managingDesc ?? "",
+            subTitle: store.profileDTOModel?.responsibility?.managingDesc ?? "",
             managingTeam: mangingTeam.managingTeamDesc,
-            isManaging: store.profileDTOModel?.data.responsibility == .projectTeamManaging ? true : false,
+            isManaging: store.profileDTOModel?.responsibility == .projectTeamManaging ? true : false,
             isGeneration: false
           )
-        }
-        else {
+        } else {
           managerTextComponent(
             title: store.memberSelectTeam,
             subTitle: memberTeam.attendanceListDesc,
@@ -154,34 +149,33 @@ extension ManagerProfileView {
             isGeneration: false
           )
         }
-        
+
         Spacer()
           .frame(height: 20)
-        
+
         managerTextComponent(
           title: store.managerProfileGeneration,
-          subTitle: store.profileDTOModel?.data.generation ?? "",
+          subTitle: store.profileDTOModel?.cohort ?? "",
           managingTeam: "",
           isManaging: false,
           isGeneration: true
         )
-        
+
         Spacer()
           .frame(height: 40)
-        
+
         HStack {
           Spacer()
-          
+
           Text("Dynamic Developer Designers")
             .pretendardCustomFont(textStyle: .body3NormalMedium)
             .foregroundStyle(.textSecondary100)
-          
+
           Spacer()
         }
-        
+
         Spacer()
           .frame(height: 24)
-        
       }
       .padding(.horizontal, 24)
       .background(
@@ -195,7 +189,7 @@ extension ManagerProfileView {
     }
     .padding(.horizontal, 24)
   }
-  
+
   @ViewBuilder
   private func managerTextComponent(
     title: String,
@@ -209,19 +203,19 @@ extension ManagerProfileView {
         Text(title)
           .pretendardCustomFont(textStyle: .body2NormalMedium)
           .foregroundStyle(.textSecondary100)
-        
+
         Spacer()
       }
-      
+
       Spacer()
         .frame(height: 2)
-      
+
       if isManaging {
         HStack {
           Text("\(subTitle) / \(managingTeam)팀")
             .pretendardCustomFont(textStyle: .title2NormalBold)
             .foregroundStyle(.borderInverse)
-          
+
           Spacer()
         }
       } else if isGeneration {
@@ -229,7 +223,7 @@ extension ManagerProfileView {
           Text("\(subTitle)기")
             .pretendardCustomFont(textStyle: .title2NormalBold)
             .foregroundStyle(.borderInverse)
-          
+
           Spacer()
         }
       } else {
@@ -237,34 +231,34 @@ extension ManagerProfileView {
           Text(subTitle)
             .pretendardCustomFont(textStyle: .tilte1NormalBold)
             .foregroundStyle(.borderInverse)
-          
+
           Spacer()
         }
       }
     }
     .padding(.horizontal, 24)
   }
-  
+
   @ViewBuilder
   fileprivate func profileLoadingView() -> some View {
     VStack {
       Spacer()
-      
+
       AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(true))
         .resizable()
         .scaledToFit()
         .frame(width: 200, height: 200)
-      
+
       Spacer()
     }
   }
-  
+
   @ViewBuilder
   private func logoutButton() -> some View {
     VStack {
       Spacer()
         .frame(height: 23)
-      
+
       HStack(alignment: .center) {
         Text(store.logoutText)
           .pretendardCustomFont(textStyle: .body2NormalMedium)
@@ -274,9 +268,8 @@ extension ManagerProfileView {
       .onTapGesture {
         store.send(.navigation(.presentLogOut))
       }
-      
+
       Spacer()
-        
     }
     .padding(.horizontal, 24)
   }

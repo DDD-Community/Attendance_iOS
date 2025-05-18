@@ -23,8 +23,7 @@ public struct Splash {
     
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
     var checkSessionJWTDTOModel: RefreshTokenDTOModel?
-    var profileDTOModel: ProfileDTOModel?
-//    var aceessToken = UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? ""
+    var profileDTOModel: ProfileResponseModel?
     @Shared(.appStorage("AccessToken")) var accessToken: String = ""
     public init() {
 
@@ -52,7 +51,7 @@ public struct Splash {
     case sessionCheckJWT
     case checkJwtResponse(Result<RefreshTokenDTOModel, CustomError>)
     case fetchUser
-    case fetchUserResponse(Result<ProfileDTOModel, CustomError>)
+    case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -162,7 +161,7 @@ public struct Splash {
           if let profileDTOData = profileDTOData {
             await send(.async(.fetchUserResponse(.success(profileDTOData))))
             
-            if profileDTOData.data.isStaff == true {
+            if profileDTOData.isStaff == true {
               await send(.navigation(.presentCoreMember))
             } else {
               await send(.navigation(.presentMember))
@@ -181,7 +180,7 @@ public struct Splash {
       case .success(let profileDTOData):
         state.profileDTOModel = profileDTOData
         state.$userEntity.withLock{
-          $0.userName = profileDTOData.data.name
+          $0.userName = profileDTOData.name
         }
       case .failure(let error):
         #logError("유저 정보 가져오기", error.localizedDescription)
