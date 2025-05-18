@@ -32,6 +32,7 @@ struct MemberMainView: View {
         .padding(.horizontal, 24)
       }
     }
+    .background(.backGroundPrimary)
     .customAlert(
       isPresented: store.isPresentAttendanceWarningAlert,
       title: "주의해주세요!",
