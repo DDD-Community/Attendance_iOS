@@ -1,30 +1,29 @@
 //
-//  AttendanceService.swift
+//  QRCodeService.swift
 //  Service
 //
-//  Created by Wonji Suh  on 5/10/25.
+//  Created by eunpyo on 5/18/25.
 //
 
 import Foundation
 
-import API
 import Foundations
 
 import AsyncMoya
 
-public enum AttendanceService {
-  case getAttandances
+public enum QRCodeService {
+  case createQRCode
 }
 
-extension AttendanceService: BaseTargetType {
+extension QRCodeService: BaseTargetType {
   public var domain: AttendanceDomain {
-    return .attendances
+    return .qr
   }
 
   public var urlPath: String {
     switch self {
-    case .getAttandances:
-      return AttandanceAPI.getAttandances.attandanceDescription
+    case .createQRCode:
+      return ""
     }
   }
 
@@ -34,14 +33,14 @@ extension AttendanceService: BaseTargetType {
 
   public var method: Moya.Method {
     switch self {
-    case .getAttandances:
-      return .get
+    case .createQRCode:
+      return .post
     }
   }
 
   public var parameters: [String : Any]? {
     switch self {
-    case .getAttandances:
+    case .createQRCode:
       return nil
     }
   }

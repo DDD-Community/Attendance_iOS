@@ -1,5 +1,5 @@
 //
-//  QrCodeUseCase.swift
+//  QRCodeUseCase.swift
 //  DDDAttendance
 //
 //  Created by 서원지 on 6/11/24.
@@ -12,16 +12,19 @@ import Model
 import DiContainer
 import ComposableArchitecture
 
+public struct QRCodeUseCase: QRCodeUseCaseProtocol {
+  private let repository: QRCodeRepositoryProtocol
 
-public struct QrCodeUseCase: QrCodeUseCaseProtocol {
-  private let repository: QrCodeRepositoryProtcol
-  
   public init(
-    repository: QrCodeRepositoryProtcol
+    repository: QRCodeRepositoryProtocol
   ) {
     self.repository = repository
   }
-  
+
+  public func createQRCode() async throws -> String {
+    return try await repository.createQRCode()
+  }
+
   public func generateQRCode(from string: String) async -> Image? {
     await repository.generateQRCode(from: string)
   }
@@ -34,24 +37,23 @@ public struct QrCodeUseCase: QrCodeUseCaseProtocol {
   }
 }
 
-
 extension DependencyContainer {
-  var qrCodeUseCase: QrCodeRepositoryProtcol? {
-    resolve(QrCodeRepositoryProtcol.self)
+  var qrCodeUseCase: QRCodeRepositoryProtocol? {
+    resolve(QRCodeRepositoryProtocol.self)
   }
 }
 
-extension QrCodeUseCase: DependencyKey {
-  public static var liveValue: QrCodeUseCase = {
+extension QRCodeUseCase: DependencyKey {
+  public static var liveValue: QRCodeUseCase = {
     let qrCodeRepository = ContainerResgister(\.qrCodeUseCase).wrappedValue
-    return QrCodeUseCase(repository: qrCodeRepository)
+    return QRCodeUseCase(repository: qrCodeRepository)
   }()
 }
 
 public extension DependencyValues {
-  var qrCodeUseCase: QrCodeUseCase {
-    get { self[QrCodeUseCase.self] }
-    set { self[QrCodeUseCase.self] = newValue  }
+  var qrCodeUseCase: QRCodeUseCase {
+    get { self[QRCodeUseCase.self] }
+    set { self[QRCodeUseCase.self] = newValue  }
   }
 }
 
@@ -59,18 +61,18 @@ public extension DependencyValues {
 public extension RegisterModule {
   var qrCodeUseCaseModule: () -> Module {
     makeUseCaseWithRepository(
-      QrCodeUseCaseProtocol.self,
-      repositoryProtocol: QrCodeRepositoryProtcol.self,
-      repositoryFallback: DefaultQrCodeRepository(),
+      QRCodeUseCaseProtocol.self,
+      repositoryProtocol: QRCodeRepositoryProtocol.self,
+      repositoryFallback: DefaultQRCodeRepository(),
       factory: { repo in
-        QrCodeUseCase(repository: repo)
+        QRCodeUseCase(repository: repo)
       }
     )
   }
-  
+
   var qrCodeRepositoryModule: () -> Module {
-    makeDependency(QrCodeRepositoryProtcol.self) {
-      QrCodeRepository()
+    makeDependency(QRCodeRepositoryProtocol.self) {
+      QRCodeRepository()
     }
   }
 }
