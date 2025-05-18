@@ -97,8 +97,8 @@ struct MemberMainView: View {
 
   private var attendanceStatus: some View {
     VStack(alignment: .leading, spacing: 16) {
-      if let member = store.state.member {
-        Text("\(member.name)님의 출석 현황")
+      if let name = store.state.member?.name {
+        Text("\(name)님의 출석 현황")
           .pretendardFont(family: .Bold, size: 28)
           .foregroundStyle(.textPrimary)
 

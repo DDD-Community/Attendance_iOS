@@ -22,7 +22,7 @@ public struct MemberMain {
   public struct State: Equatable {
     @Shared(.appStorage("UserUID")) var userUid: String = ""
     @Shared(.appStorage("UserEmail")) var userEmail: String = ""
-    var member: UserDTOMember? = nil
+    var member: ProfileResponseModel? = nil
 
     @ObservationStateIgnored
     var didAppear: Bool = false
@@ -61,7 +61,7 @@ public struct MemberMain {
   }
 
   public enum InnerAction: Equatable {
-    case onFetchUserResponse(Result<UserDTOMember, CustomError>)
+    case onFetchUserResponse(Result<ProfileResponseModel, CustomError>)
   }
 
   public enum NavigationAction: Equatable {
@@ -71,6 +71,7 @@ public struct MemberMain {
 
   @Dependency(FireStoreUseCase.self) var fireStoreUseCase
   @Dependency(AuthUseCase.self) var authUseCase
+  @Dependency(ProfileUseCase.self) var profileUseCase
 
   public var body: some ReducerOf<Self> {
     BindingReducer()
@@ -138,7 +139,7 @@ public struct MemberMain {
       switch result {
       case .success(let member):
         state.member = member
-        #logDebug("fetching data", member.uid)
+        #logDebug("fetching data", member)
         return .none
 
       case .failure(let error):
@@ -155,9 +156,9 @@ public struct MemberMain {
   ) -> Effect<Action> {
     switch action {
     case .fetchCurrentUser:
-      return .run { [userEmail = state.userEmail] send in
+      return .run { send in
         let result = await Result {
-          try await authUseCase.fetchUser(uid: userEmail)
+          try await profileUseCase.getProfile()
         }
 
         switch result {
