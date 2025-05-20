@@ -14,6 +14,7 @@ import AsyncMoya
 
 public enum ScheduleService {
   case getSchedule
+  case filterSchedule(stratDate: String)
 }
 
 extension ScheduleService: BaseTargetType {
@@ -23,7 +24,7 @@ extension ScheduleService: BaseTargetType {
   
   public var urlPath: String {
     switch self {
-    case .getSchedule:
+    case .getSchedule, .filterSchedule:
       return ScheduleAPI.scedules.scheduleDescription
     }
   }
@@ -34,7 +35,7 @@ extension ScheduleService: BaseTargetType {
   
   public var method: Moya.Method {
     switch self {
-    case .getSchedule:
+    case .getSchedule, .filterSchedule:
       return .get
     }
   }
@@ -43,6 +44,14 @@ extension ScheduleService: BaseTargetType {
     switch self {
     case .getSchedule:
       return nil
+      
+    case .filterSchedule(let stratDate):
+      let parameters: [String: Any] = [
+        "start_date": stratDate,
+        "end_date": stratDate
+      ]
+      return parameters
+      
     }
   }
   

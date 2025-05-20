@@ -19,8 +19,16 @@ public class ScheduleRepository: ScheduleRepositoryProtocol {
   public init(){}
   
   
-  public func getSchedules() async throws -> ScheduleDTOModel? {
-    let scheduleModel = try await provider.requestAsync(.getSchedule, decodeTo: ScheduleModel.self)
-    return scheduleModel.toScheduleDTOModel()
+  public func getSchedules() async throws -> ScheduleModel? {
+    let scheduleModel = try await provider.requestAsync(.getSchedule, decodeTo: ScheduleDTOModel.self)
+    return scheduleModel.toDomain()
+  }
+  
+  public func filtergetSchedules(
+    startDate: String
+  ) async throws -> ScheduleModel? {
+    let scheduleModel = try await provider.requestAsync(
+      .filterSchedule(stratDate: startDate),decodeTo: ScheduleDTOModel.self)
+    return scheduleModel.toDomain()
   }
 }

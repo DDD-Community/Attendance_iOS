@@ -8,5 +8,6 @@
 import Model
 
 public protocol ScheduleRepositoryProtocol {
-  func getSchedules()  async throws -> ScheduleDTOModel?
+  func getSchedules()  async throws -> ScheduleModel?
+  func filtergetSchedules(startDate: String) async throws -> ScheduleModel?
 }

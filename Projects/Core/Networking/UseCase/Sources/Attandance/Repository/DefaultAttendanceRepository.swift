@@ -28,4 +28,17 @@ final public class DefaultAttendanceRepository: AttendanceRepositoryProtocol  {
   ) async throws -> Model.AttendanceCheckModel? {
     return nil
   }
+  
+  public func filterScheduleAttendance(
+    userId: Int,
+    scheduleId: String
+  ) async throws -> AttendanceCheckModel? {
+    return nil
+  }
+  
+  public func modifyAttendance(
+    attendanceId: String
+  ) async throws -> ModifyAttendanceModel? {
+    return nil
+  }
 }

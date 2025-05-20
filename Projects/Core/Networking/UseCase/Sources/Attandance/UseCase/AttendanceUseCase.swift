@@ -33,12 +33,31 @@ public struct AttendanceUseCase: AttendanceUseCaseProtocol {
     return try await repository.getAttendances(startDate: startDate)
   }
   
+  // MARK: - 팀별로 출석 조회
   public func fillAttendance(
     team: SelectTeam,
     startDate: String
   ) async throws -> AttendanceCheckModel? {
     return try await repository.fillAttendance(team: team, startDate: startDate)
     
+  }
+  
+  // MARK: - 스케줄 아이디로 출석 조회 필터
+  public func filterScheduleAttendance(
+    userId: Int,
+    scheduleId: String
+  ) async throws -> AttendanceCheckModel? {
+    return try await repository.filterScheduleAttendance(
+      userId: userId,
+      scheduleId: scheduleId
+    )
+  }
+  
+  // MARK: - 출석 수정
+  public func modifyAttendance(
+    attendanceId: String
+  ) async throws -> ModifyAttendanceModel? {
+    return try await repository.modifyAttendance(attendanceId: attendanceId)
   }
 }
 

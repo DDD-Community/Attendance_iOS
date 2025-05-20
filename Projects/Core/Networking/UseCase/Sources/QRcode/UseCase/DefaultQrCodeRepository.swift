@@ -7,10 +7,19 @@
 
 import SwiftUI
 
+import Model
+
 final public class DefaultQrCodeRepository: QrCodeRepositoryProtcol {
   public init() {}
   
   public func generateQRCode(from string: String) async -> Image? {
     return nil
   }
+  
+  public func qrAttendanceCheck(
+    from code: String
+  ) async throws -> QRValidateModel? {
+    return nil
+  }
+  
 }

@@ -16,6 +16,8 @@ public enum AttendanceService{
   case getAttendances(startDate: String)
   case attendanceCount(startDate: String)
   case filterAttendance(startDate: String, team: String)
+  case filterScheduleAttendance(userId: Int, scheduleId: String)
+  case modifyAttendance(attendanceId: String)
 
 }
 
@@ -26,7 +28,7 @@ extension AttendanceService: BaseTargetType {
   
   public var urlPath: String {
     switch self {
-    case .getAttendances:
+    case .getAttendances, .filterScheduleAttendance:
       return AttendanceAPI.getAttandances.attendanceDescription
       
     case .attendanceCount:
@@ -34,6 +36,9 @@ extension AttendanceService: BaseTargetType {
       
     case .filterAttendance:
       return AttendanceAPI.getAttandances.attendanceDescription
+      
+    case .modifyAttendance(let attendanceId):
+      return AttendanceAPI.editAttendance(attendanceId: attendanceId).attendanceDescription
     }
   }
   
@@ -43,8 +48,11 @@ extension AttendanceService: BaseTargetType {
   
   public var method: Moya.Method {
     switch self {
-    case .getAttendances, .attendanceCount, .filterAttendance:
+    case .getAttendances, .attendanceCount, .filterAttendance, .filterScheduleAttendance:
       return .get
+      
+    case .modifyAttendance:
+      return .patch
     }
   }
   
@@ -65,7 +73,6 @@ extension AttendanceService: BaseTargetType {
       ]
       return parameters
       
-      
     case .filterAttendance(
       let startDate,
       let team):
@@ -75,7 +82,28 @@ extension AttendanceService: BaseTargetType {
         "team": team
       ]
       return parameters
+      
+    case .filterScheduleAttendance(
+      let userId,
+      let scheduleId
+    ):
+      let parameters: [String: Any] = [
+        "user_id": userId,
+        "start_date": "2025-05-24",
+        "end_date": "2025-05-24"
+//        "schedule_id": scheduleId,
+      ]
+      return parameters
+      
+    case .modifyAttendance( _):
+      let parameters: [String: Any] = [
+        "status": "present",
+        "method": "qr",
+        "note": "qr 출석"
+      ]
+      return parameters
     }
+    
   }
   
   public var headers: [String : String]? {

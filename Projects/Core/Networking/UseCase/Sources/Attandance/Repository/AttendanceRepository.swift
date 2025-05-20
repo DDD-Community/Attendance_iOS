@@ -44,4 +44,27 @@ public class AttendanceRepository: AttendanceRepositoryProtocol {
       .filterAttendance(startDate: startDate, team: team.rawValue), decodeTo: AttendanceCheckDTOModel.self)
     return attendanceModel.toDomain()
   }
+  
+  // MARK: - 출석 할 목록 조회
+  public func filterScheduleAttendance(
+    userId: Int,
+    scheduleId: String
+  ) async throws -> AttendanceCheckModel? {
+    let filterScheduleAttendanceModel = try await provider.requestAsync(
+      .filterScheduleAttendance(
+        userId: userId,
+        scheduleId: scheduleId
+      ),
+      decodeTo: AttendanceCheckDTOModel.self
+    )
+    return filterScheduleAttendanceModel.toDomain()
+  }
+  
+  // MARK: - qr 검증후 출석 수정
+  public func modifyAttendance(
+    attendanceId: String
+  ) async throws -> ModifyAttendanceModel? {
+    let modifyAttendanceModel = try await provider.requestAsync(.modifyAttendance(attendanceId: attendanceId), decodeTo: ModifyDTOAttendanceModel.self)
+    return modifyAttendanceModel.toDomain()
+  }
 }

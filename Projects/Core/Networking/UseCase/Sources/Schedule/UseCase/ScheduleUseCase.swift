@@ -21,8 +21,15 @@ public struct ScheduleUseCase: ScheduleUseCaseProtocol {
   }
   
   // MARK: - 스케줄 조회
-  public func getSchedules() async throws -> ScheduleDTOModel? {
+  public func getSchedules() async throws -> ScheduleModel? {
     return try await repository.getSchedules()
+  }
+  
+  // MARK: - 스케줄 날짜 필터
+  public func filtergetSchedules(
+    startDate: String
+  ) async throws -> ScheduleModel? {
+    return try await repository.filtergetSchedules(startDate: startDate)
   }
 }
 
