@@ -34,6 +34,7 @@ public struct ManagerProfile {
     var logoutText: String = "로그아웃"
     
     @Shared(.appStorage("UserEmail")) var userEmail: String = ""
+    @Shared(.appStorage("AccessToken")) var accessToken: String = ""
     
     var userMember: UserDTOMember? = nil
     var profileDTOModel: ProfileDTOModel?
@@ -236,7 +237,7 @@ public struct ManagerProfile {
   ) -> Effect<Action> {
     switch action {
     case .presentLogOut:
-      state.$userEmail.withLock { $0 = "" }
+      state.$accessToken.withLock { $0 = ""}
       return .run {  send in
         try await clock.sleep(for: .seconds(2))
         await send(.async(.signOut))

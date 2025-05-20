@@ -136,11 +136,10 @@ public struct SignUpSelectManaging {
         userEntity = state.userEntity,
       ] send in
         let editProfileResult = await Result {
-          try await profileUseCase.editProfile(
+          try await profileUseCase.editProfileMangerNoTeam(
             name: userEntity.signUpName,
             inviteCode: userEntity.inviteCodeId ?? "",
             role: userEntity.role?.rawValue ?? "",
-            crew: "",
             responsibility: userEntity.managing?.rawValue ?? ""
           )
         }

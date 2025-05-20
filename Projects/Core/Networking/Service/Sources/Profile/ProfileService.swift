@@ -13,12 +13,24 @@ import Foundations
 import AsyncMoya
 
 public enum ProfileService{
-  case editProfile(
+  case editProfileManger(
     username: String,
     inviteCodeId: String,
     role: String,
     crew: String,
     responsibility: String
+  )
+  case editProfileMangerNoTeam(
+      username: String,
+      inviteCodeId: String,
+      role: String,
+      responsibility: String
+  )
+  case editProfileMember(
+    username: String,
+    inviteCodeId: String,
+    role: String,
+    crew: String
   )
   case getProfile
 }
@@ -31,7 +43,7 @@ extension ProfileService: BaseTargetType {
   
   public var urlPath: String {
     switch self {
-    case .editProfile:
+    case .editProfileManger, .editProfileMangerNoTeam, .editProfileMember:
       return ProfileAPI.editProfile.profileDescription
       
     case .getProfile:
@@ -45,7 +57,7 @@ extension ProfileService: BaseTargetType {
   
   public var method: Moya.Method {
     switch self {
-    case .editProfile:
+    case .editProfileManger, .editProfileMangerNoTeam , .editProfileMember:
       return .patch
       
     case .getProfile:
@@ -56,7 +68,7 @@ extension ProfileService: BaseTargetType {
 
   public var parameters: [String : Any]? {
     switch self {
-    case .editProfile(
+    case .editProfileManger(
       let username,
       let inviteCodeId,
       let role,
@@ -72,6 +84,36 @@ extension ProfileService: BaseTargetType {
         "responsibility":responsibility
       ]
       return parameters
+      
+    case .editProfileMangerNoTeam(
+      let username,
+      let inviteCodeId,
+      let role,
+      let responsibility):
+      let parameters: [String: Any] = [
+      "name" :  username,
+      "invite_code_id": inviteCodeId,
+      "role":  role,
+      "cohort": "12",
+      "responsibility":responsibility
+    ]
+    return parameters
+      
+    case .editProfileMember(
+      let username,
+      let inviteCodeId,
+      let role,
+      let crew):
+      let parameters: [String: Any] = [
+        "name":  username,
+        "invite_code_id": inviteCodeId,
+        "role":  role,
+        "team":  crew,
+        "cohort": "12",
+        "crew": crew,
+      ]
+      return parameters
+      
           
     case .getProfile:
       return nil

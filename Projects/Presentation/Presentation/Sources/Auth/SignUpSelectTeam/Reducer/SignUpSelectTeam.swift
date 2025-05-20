@@ -44,13 +44,14 @@ public struct SignUpSelectTeam {
   
   public enum AsyncAction: Equatable {
     case editProfile
-    case editProfileResponse(Result<ProfileDTOModel, CustomError>)
+    case editProfileManger
+    case editProfileMember
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
-    
+    case editProfileResponse(Result<ProfileDTOModel, CustomError>)
   }
   
   // MARK: - NavigationAction
@@ -131,39 +132,86 @@ public struct SignUpSelectTeam {
     case .editProfile:
       return .run { [
         userEntity = state.userEntity,
+      ]  send in
+        if userEntity.userRole == .moderator {
+          await send(.async(.editProfileManger))
+        } else {
+          await send(.async(.editProfileMember))
+        }
+      }
+      
+    case .editProfileManger:
+      return .run { [
+        userEntity = state.userEntity,
       ] send in
-        let isStaff = userEntity.userRole
         let memberTeam = userEntity.memberTeam?.rawValue ?? ""
         let isAdminRole =   "\(userEntity.managing?.rawValue ?? "")"
         let editProfileResult = await Result {
-          try await profileUseCase.editProfile(
+          try await profileUseCase.editProfileManger(
             name: userEntity.signUpName,
             inviteCode: userEntity.inviteCodeId ?? "",
             role: userEntity.role?.rawValue ?? "",
             crew: memberTeam,
-            responsibility: isStaff == .moderator ? isAdminRole : ""
+            responsibility: isAdminRole
           )
         }
         
         switch editProfileResult {
         case .success(let profileDTOData):
           if let profileDTOData = profileDTOData {
-            await send(.async(.editProfileResponse(.success(profileDTOData))))
+            await send(.inner(.editProfileResponse(.success(profileDTOData))))
             
-            if profileDTOData.data.isStaff == true {
+            if profileDTOData.code == 200 {
               await send(.navigation(.presentCoreMember))
-            } else {
+            }
+            
+          }
+          
+        case .failure(let error):
+          await send(.inner(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
+        }
+      }
+      .debounce(id: SignUpSelectTeamCancel(), for: 0.3, scheduler: mainQueue)
+      
+    case .editProfileMember:
+      return .run { [
+        userEntity = state.userEntity,
+      ] send in
+        let memberTeam = userEntity.memberTeam?.rawValue ?? ""
+        let editProfileResult = await Result {
+          try await profileUseCase.editProfileMember(
+            name: userEntity.signUpName,
+            inviteCode: userEntity.inviteCodeId ?? "",
+            role: userEntity.role?.rawValue ?? "",
+            crew: memberTeam
+          )
+        }
+        
+        switch editProfileResult {
+        case .success(let profileDTOData):
+          if let profileDTOData = profileDTOData {
+            await send(.inner(.editProfileResponse(.success(profileDTOData))))
+            
+            if profileDTOData.code == 200 {
               await send(.navigation(.presentMember))
             }
             
           }
           
         case .failure(let error):
-          await send(.async(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
+          await send(.inner(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
         }
       }
       .debounce(id: SignUpSelectTeamCancel(), for: 0.3, scheduler: mainQueue)
       
+    }
+  }
+  
+  private func handleInnerAction(
+    state: inout State,
+    action: InnerAction
+  ) -> Effect<Action> {
+    switch action {
     case .editProfileResponse(let result):
       switch result {
       case .success(let profileDT0):
@@ -174,12 +222,5 @@ public struct SignUpSelectTeam {
       }
       return .none
     }
-  }
-  
-  private func handleInnerAction(
-    state: inout State,
-    action: InnerAction
-  ) -> Effect<Action> {
-    
   }
 }

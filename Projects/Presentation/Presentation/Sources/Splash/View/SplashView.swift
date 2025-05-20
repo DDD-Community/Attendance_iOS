@@ -39,10 +39,10 @@ public struct SplashView: View {
     }
     .onAppear {
       
-      if !store.aceessToken.isEmpty {
+      if !store.accessToken.isEmpty {
         if store.userEntity.accessToken.isEmpty {
           self.store.$userEntity.withLock {
-            $0.accessToken = store.aceessToken
+            $0.accessToken = store.accessToken
           }
         }
         store.send(.async(.fetchUser))

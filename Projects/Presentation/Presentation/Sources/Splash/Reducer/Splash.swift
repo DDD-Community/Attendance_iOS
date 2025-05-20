@@ -24,7 +24,8 @@ public struct Splash {
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
     var checkSessionJWTDTOModel: RefreshTokenDTOModel?
     var profileDTOModel: ProfileDTOModel?
-    var aceessToken = UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? ""
+//    var aceessToken = UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? ""
+    @Shared(.appStorage("AccessToken")) var accessToken: String = ""
     public init() {
 
     }

@@ -20,14 +20,14 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
   }
   
   // MARK: - 프로필 수정
-  public func editProfile(
+  public func editProfileManger(
     name: String,
     inviteCode: String,
     role: String,
     crew: String,
     responsibility: String
   ) async throws -> ProfileDTOModel? {
-    return try await repository.editProfile(
+    return try await repository.editProfileManger(
       name: name,
       inviteCode: inviteCode,
       role: role,
@@ -38,6 +38,36 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
   // MARK: - 프로필 조회
   public func getProfile() async throws -> ProfileDTOModel? {
     return try await repository.getProfile()
+  }
+  
+  // MARK: - 프로필수정 운영진 팀 없을때
+  public func editProfileMangerNoTeam(
+    name: String,
+    inviteCode: String,
+    role: String,
+    responsibility: String
+  ) async throws -> ProfileDTOModel? {
+    return try await repository.editProfileMangerNoTeam(
+      name: name,
+      inviteCode: inviteCode,
+      role: role,
+      responsibility: responsibility
+    )
+  }
+  
+  // MARK: - 프로필 수정 멤법
+  public func editProfileMember(
+    name: String,
+    inviteCode: String,
+    role: String,
+    crew: String
+  ) async throws -> ProfileDTOModel? {
+    return try await repository.editProfileMember(
+      name: name,
+      inviteCode: inviteCode,
+      role: role,
+      crew: crew
+    )
   }
 }
 

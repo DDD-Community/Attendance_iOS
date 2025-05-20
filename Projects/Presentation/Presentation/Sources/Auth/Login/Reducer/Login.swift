@@ -30,6 +30,7 @@ public struct Login {
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     var userMember: UserDTOMember? = nil
     @Shared(.appStorage("UserEmail")) var userEmail: String = ""
+    @Shared(.appStorage("AccessToken")) var accessToken: String = ""
     
     @Shared var userEntity: UserEntity
     var signUpDTOModel: SignUpDTOModel?
@@ -236,6 +237,7 @@ public struct Login {
       switch result {
       case .success(let registerDTO):
         UserDefaults.standard.set(registerDTO.data.accessToken, forKey: "ACCESS_TOKEN")
+        state.$accessToken.withLock { $0 = registerDTO.data.accessToken}
         state.$userEntity.withLock {
           $0.accessToken = registerDTO.data.accessToken
           $0.refreshToken = registerDTO.data.refreshToken
@@ -307,6 +309,7 @@ public struct Login {
       case .success(let loginDTOData):
         state.loginDTOModel = loginDTOData
         UserDefaults.standard.set(loginDTOData.data.accessToken, forKey: "ACCESS_TOKEN")
+        state.$accessToken.withLock {$0 = loginDTOData.data.accessToken}
         state.$userEntity.withLock {
           $0.userEmail = loginDTOData.data.email
           $0.accessToken = loginDTOData.data.accessToken

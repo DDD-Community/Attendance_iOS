@@ -7,15 +7,13 @@
 
 import Foundation
 
-import Foundation
-
 public typealias ProfileDTOModel = BaseResponseDTO<ProfileResponseDTO>
 
 public struct ProfileResponseDTO: Decodable, Equatable {
-  public let id, name, inviteCodeID, role: String
-  public let team: SelectPart
+  public let id, name, inviteCodeID: String
+  public let role: SelectPart
   public let isStaff: Bool
-  public let crew: SelectTeam?
+  public let crew, team: SelectTeam?
   public let generation: String
   public let responsibility: Managing?
   
@@ -23,8 +21,8 @@ public struct ProfileResponseDTO: Decodable, Equatable {
     id: String,
     name: String,
     inviteCodeID: String,
-    role: String,
-    team: SelectPart,
+    role: SelectPart,
+    team: SelectTeam? = nil,
     isStaff: Bool,
     generation: String,
     crew: SelectTeam? = nil,

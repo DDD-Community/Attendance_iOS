@@ -10,10 +10,10 @@ import Foundation
 public typealias ProfileModel = BaseResponse<ProfileResponseModel>
 
 public struct ProfileResponseModel: Decodable {
-  let id, name, inviteCodeID, role, crew : String
-  let team: String
-  let isStaff: Bool
-  let createdAt, updatedAt, cohort, responsibility: String
+  let id, name, inviteCodeID, role : String?
+  let team, crew: String?
+  let isStaff: Bool?
+  let createdAt, updatedAt, cohort, responsibility: String?
   
   enum CodingKeys: String, CodingKey {
     case id, name

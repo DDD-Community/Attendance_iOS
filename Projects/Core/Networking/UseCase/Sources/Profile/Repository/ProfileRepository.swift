@@ -20,19 +20,50 @@ public class ProfileRepository: ProfileRepositoryProtocol {
   private let provider = MoyaProvider<ProfileService>(plugins: [MoyaLoggingPlugin()])
   
   // MARK: - 프로필 수정
-  public func editProfile(
+  public func editProfileManger(
     name: String,
     inviteCode: String,
     role: String,
     crew: String,
     responsibility: String
   ) async throws -> ProfileDTOModel? {
-    let profileModel = try await provider.requestAsync(.editProfile(
+    let profileModel = try await provider.requestAsync(.editProfileManger(
         username: name,
         inviteCodeId: inviteCode,
         role: role,
         crew: crew,
         responsibility:  responsibility),decodeTo: ProfileModel.self)
+    return profileModel.toProfileDTOModel()
+  }
+  
+  // MARK: - 프로필 수정 운영진
+  public func editProfileMangerNoTeam(
+    name: String,
+    inviteCode: String,
+    role: String,
+    responsibility: String
+  ) async throws -> ProfileDTOModel? {
+    let profileModel = try await provider.requestAsync(
+      .editProfileMangerNoTeam(
+        username: name,
+        inviteCodeId: inviteCode,
+        role: role,
+        responsibility: responsibility), decodeTo: ProfileModel.self)
+    return profileModel.toProfileDTOModel()
+  }
+  
+  // MARK: - 멤버 프로필 수정
+  public func editProfileMember(
+    name: String,
+    inviteCode: String,
+    role: String,
+    crew: String
+  ) async throws -> ProfileDTOModel? {
+    let profileModel = try await provider.requestAsync(.editProfileMember(
+        username: name,
+        inviteCodeId: inviteCode,
+        role: role,
+        crew: crew),decodeTo: ProfileModel.self)
     return profileModel.toProfileDTOModel()
   }
   
