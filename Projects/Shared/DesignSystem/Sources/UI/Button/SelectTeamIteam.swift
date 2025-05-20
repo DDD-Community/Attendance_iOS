@@ -25,8 +25,9 @@ public struct SelectTeamIteam: View {
   public var body: some View {
     VStack {
       RoundedRectangle(cornerRadius: 16)
-        .fill(isActive ? Color.grayWhite : Color.gray90)
+        .stroke(isActive ? .statusFocus : Color.clear, style: .init(lineWidth: 2))
         .frame(height: 58)
+        .background(.gray90)
         .cornerRadius(16)
         .overlay {
           HStack {
@@ -36,7 +37,7 @@ public struct SelectTeamIteam: View {
             
             Spacer()
             
-            Image(asset: isActive ? .acitveSelectTeam : .disableSelectPart)
+            Image(asset: isActive ? .activeSelectPart : .disableSelectPart)
               .resizable()
               .scaledToFit()
               .frame(width: 20, height: 20)

@@ -38,7 +38,19 @@ public struct SplashView: View {
       }
     }
     .onAppear {
-      store.send(.async(.fetchUser))
+      
+      if !store.accessToken.isEmpty {
+        if store.userEntity.accessToken.isEmpty {
+          self.store.$userEntity.withLock {
+            $0.accessToken = store.accessToken
+          }
+        }
+        store.send(.async(.fetchUser))
+      } else {
+        store.send(.navigation(.presentLogin))
+      }
     }
   }
 }
+
+

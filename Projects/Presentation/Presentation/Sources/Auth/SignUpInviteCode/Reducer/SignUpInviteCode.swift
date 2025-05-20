@@ -24,6 +24,9 @@ public struct SignUpInviteCode {
     var secondInviteCode: String = ""
     var thirdInviteCode: String = ""
     var lastInviteCode: String = ""
+    var validateInviteCodeDTOModel: InviteDTOModel?
+    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
+    
     var totalInviteCode: String {
       return firstInviteCode + secondInviteCode + thirdInviteCode + lastInviteCode
     }
@@ -35,7 +38,6 @@ public struct SignUpInviteCode {
       !lastInviteCode.isEmpty
     }
     var isNotAvaliableCode: Bool = false
-    var inviteCodeModel: InviteDTOModel? = nil
     
     @Shared var userSignUp: Member
     
@@ -58,7 +60,7 @@ public struct SignUpInviteCode {
   
   @CasePathable
   public enum View {
-    
+    case initInviteCode
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
@@ -112,7 +114,14 @@ public struct SignUpInviteCode {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    
+    switch action {
+    case .initInviteCode:
+      state.firstInviteCode = ""
+      state.secondInviteCode = ""
+      state.thirdInviteCode = ""
+      state.lastInviteCode = ""
+      return .none
+    }
   }
   
   private func handleAsyncAction(
@@ -123,7 +132,7 @@ public struct SignUpInviteCode {
     case .validataInviteCode(let code):
       return .run { send in
         let validataCodeResult = await Result {
-          try await signUpUseCase.validateInviteCode(code: code)
+          try await signUpUseCase.validateInviteCode(inviteCode: code)
         }
         
         switch validataCodeResult {
@@ -131,7 +140,9 @@ public struct SignUpInviteCode {
           if let validataCodeData = validataCodeData {
             await send(.async(.validataInviteCodeResponse(.success(validataCodeData))))
             
-            await send(.navigation(.presentSignUpName))
+            if validataCodeData.data.valid == true {
+              await send(.navigation(.presentSignUpName))
+            }
           }
         case .failure(let error):
           await send(.async(.validataInviteCodeResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
@@ -142,23 +153,11 @@ public struct SignUpInviteCode {
     case .validataInviteCodeResponse(let result):
       switch result {
       case .success(let validateCodeData):
-        state.inviteCodeModel = validateCodeData
-        state.$userSignUp.withLock { $0.isAdmin = validateCodeData.isAdmin }
-        
-        if validateCodeData.isAdmin == true {
-          state.$userSignUp.withLock { $0.memberType = .coreMember }
-          
-          // `memberDesc`를 `MemberType`의 `rawValue`로 변환하여 유효성을 확인한 후 할당
-          if let part = MemberType(rawValue: state.userSignUp.memberType.rawValue) {
-            state.$userSignUp.withLock { $0.memberType = part }
-          }
-        } else {
-          state.$userSignUp.withLock { $0.memberType = .member }
-          
-          if let part = MemberType(rawValue: state.userSignUp.memberType.rawValue) {
-            state.$userSignUp.withLock { $0.memberType = part }
-          }
+        state.validateInviteCodeDTOModel = validateCodeData
+        state.$userEntity.withLock{ $0.userRole = UserRole(rawValue: state.validateInviteCodeDTOModel?.data.inviteType ?? "")
+          $0.inviteCodeId = state.validateInviteCodeDTOModel?.data.inviteCodeID ?? ""
         }
+        
       case .failure(let error):
         #logError("코드에러", error.localizedDescription)
         state.isNotAvaliableCode.toggle()

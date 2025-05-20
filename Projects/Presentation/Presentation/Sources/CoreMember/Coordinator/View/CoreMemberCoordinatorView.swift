@@ -25,16 +25,9 @@ public struct CoreMemberCoordinatorView: View {
       case .coreMember(let coreMember):
         CoreMemberMainView(store: coreMember)
           .navigationBarBackButtonHidden()
-        
+
       case .mangeProfile(let managerProfileStore):
         ManagerProfileView(store: managerProfileStore) {
-          store.send(.view(.backAction))
-        }
-        .navigationBarBackButtonHidden()
-    
-        
-      case .scheduleEvent(let scheduleEventStore):
-        ScheduleEventView(store: scheduleEventStore) {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()

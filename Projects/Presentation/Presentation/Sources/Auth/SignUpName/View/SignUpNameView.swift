@@ -6,8 +6,12 @@
 //
 
 import SwiftUI
-import ComposableArchitecture
+
 import DesignSystem
+
+import SwiftUIX
+import ComposableArchitecture
+
 
 public struct SignUpNameView: View {
   @Bindable var store: StoreOf<SignUpName>
@@ -23,41 +27,46 @@ public struct SignUpNameView: View {
   
   
   public var body: some View {
-    ZStack {
-      Color.backGroundPrimary
-        .edgesIgnoringSafeArea(.all)
-      
-      VStack {
+    LazyView {
+      ZStack {
+        Color.backGroundPrimary
+          .edgesIgnoringSafeArea(.all)
         
-        Spacer()
-          .frame(height: 12)
-        
-        StepNavigationBar(activeStep: 1, buttonAction: backAction)
-        
-        ScrollView {
-          signUpNameText()
+        VStack {
           
-          signUpNameTextField()
+          Spacer()
+            .frame(height: 12)
           
-          errorNameText()
+          StepNavigationBar(activeStep: 1, buttonAction: backAction)
+          
+          ScrollView {
+            signUpNameText()
+            
+            signUpNameTextField()
+            
+            errorNameText()
+          }
+          .scrollIndicators(.hidden)
+          .scrollBounceBehavior(.basedOnSize)
+          .onAppear {
+            UIScrollView.appearance().bounces = false
+          }
+          
+          signUpNameButton()
+          
+          Spacer()
+            .frame(height: 20)
         }
-        .scrollIndicators(.hidden)
-        .scrollBounceBehavior(.basedOnSize)
-        .onAppear {
-          UIScrollView.appearance().bounces = false
+        .onTapGesture {
+          UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         }
-        
-        signUpNameButton()
-        
-        Spacer()
-          .frame(height: 20)
       }
       .onTapGesture {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
       }
-    }
-    .onTapGesture {
-      UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+      .onAppear {
+        store.send(.view(.initSignUpName))
+      }
     }
   }
 }
@@ -89,20 +98,22 @@ extension SignUpNameView {
             Spacer()
               .frame(width: 20)
             
-            TextField("이름을 입력해주세요.", text: $store.userSignUpMember.name)
-              .pretendardCustomFont(textStyle: .body2NormalMedium)
-              .foregroundStyle(.grayWhite)
-              .multilineTextAlignment(.leading)
-              .frame(maxWidth: .infinity)
-              .onChange(of: store.userSignUpMember.name) { newValue, oldValue in
-                if newValue.count > 5 {
-                  store.userSignUpMember.name = String(newValue.prefix(5))
-                  store.isNotAvaliableName = false
-                }
+            TextField(
+              "",
+              text: $store.userEntity.signUpName,
+              prompt: Text("이름을 입력해주세요.")
+                .font(.pretendardFontFamily(family: .Medium, size: 16))
+                .foregroundColor(.white.opacity(0.6))   // placeholder 색
+            )
+            .pretendardCustomFont(textStyle: .body2NormalMedium)  // 입력 글자 스타일
+            .foregroundStyle(.staticWhite)                        // 입력 글자 색
+            .frame(maxWidth: .infinity)
+            .onChange(of: store.userEntity.signUpName) { new, _ in
+              if new.count > 5 {
+                store.userEntity.signUpName = String(new.prefix(5))
+                store.isNotAvaliableName = false
               }
-              .onSubmit {
-                
-              }
+            }
             
             Spacer()
             
@@ -111,7 +122,7 @@ extension SignUpNameView {
               .scaledToFit()
               .frame(width: 20, height: 20)
               .onTapGesture {
-                store.userSignUpMember.name = ""
+                store.userEntity.signUpName = ""
               }
             
             Spacer()

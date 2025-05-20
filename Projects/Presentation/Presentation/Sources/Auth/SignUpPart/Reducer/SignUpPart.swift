@@ -20,9 +20,9 @@ public struct SignUpPart {
   public struct State: Equatable {
     public init() {}
     
-    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     var activeSelectPart: Bool = false
     var selectPart: SelectPart? = .all
+    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -91,14 +91,14 @@ public struct SignUpPart {
     case .selectPartButton(let selectPart):
       if state.selectPart == selectPart {
         state.selectPart = nil
-        state.$userSignUpMember.withLock { $0.role = nil }
+        state.$userEntity.withLock { $0.role = nil }
         state.activeSelectPart = false
         return .none
       }
       
       state.selectPart = selectPart
       if let part = SelectPart(rawValue: selectPart.desc) {
-        state.$userSignUpMember.withLock { $0.role = part}
+        state.$userEntity.withLock { $0.role = part }
       }
       state.activeSelectPart = true
       return .none
@@ -115,8 +115,8 @@ public struct SignUpPart {
     case .presentSelectTeam:
       return .none
     case .presentNextStep:
-      return .run { [isAdmin = state.userSignUpMember.isAdmin] send in
-        if isAdmin == true {
+      return .run { [isAdmin = state.userEntity.userRole] send in
+        if isAdmin == .moderator {
           await send(.navigation(.presentManaging))
         } else {
           await send(.navigation(.presentSelectTeam))

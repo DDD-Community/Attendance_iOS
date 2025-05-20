@@ -7,11 +7,11 @@
 
 import Foundation
 
-import Foundation
 import ComposableArchitecture
 
 import Utill
 import Networkings
+
 import AsyncMoya
 
 @Reducer
@@ -21,12 +21,12 @@ public struct SignUpSelectManaging {
   @ObservableState
   public struct State: Equatable {
     public init() {}
-    var selectManagingPart : Managing? = .notManaging
+    
+    
     var activeButton: Bool = false
-    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
-    @Shared(.appStorage("UserUID")) var userUid: String = ""
-    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
-    var signUpCoreMemberModel: CoreMemberDTOSignUp? = nil
+    var editProfileDTO: ProfileDTOModel?
+    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
+    
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -47,8 +47,8 @@ public struct SignUpSelectManaging {
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
-    case signUpCoreMember
-    case signUpCoreMemberResponse(Result<CoreMemberDTOSignUp, CustomError>)
+    case editProfile
+    case editProfileResponse(Result<ProfileDTOModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -61,14 +61,14 @@ public struct SignUpSelectManaging {
   
   public enum NavigationAction: Equatable {
     case presentCoreMember
+    case presentSelectTeam
   }
   
   struct SignUpSelectManagingCancel: Hashable {}
   
-  @Dependency(SignUpUseCase.self) var signUpUseCase
+  @Dependency(ProfileUseCase.self) var profileUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
-  @Dependency(\.uuid) var uuid
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
@@ -98,15 +98,15 @@ public struct SignUpSelectManaging {
   ) -> Effect<Action> {
       switch action {
       case .selectManagingButton(let selectManaging):
-        if state.selectManagingPart == selectManaging {
-          state.selectManagingPart = nil
-          state.$userSignUpMember.withLock { $0.managing = nil }
+        if state.userEntity.managing == selectManaging {
+          state.$userEntity.withLock { $0.managing = nil }
           state.activeButton = false
           return .none
         }
-        state.selectManagingPart = selectManaging
+        state.$userEntity.withLock { $0.managing = selectManaging }
         if let selectManaging = Managing(rawValue: selectManaging.managingDesc) {
-          state.$userSignUpMember.withLock { $0.managing = selectManaging }
+          
+          state.$userEntity.withLock { $0.managing = selectManaging }
         }
         state.activeButton = true
         return .none
@@ -120,6 +120,9 @@ public struct SignUpSelectManaging {
     switch action {
     case .presentCoreMember:
       return .none
+      
+    case .presentSelectTeam:
+      return .none
     }
   }
   
@@ -128,47 +131,42 @@ public struct SignUpSelectManaging {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-    case .signUpCoreMember:
-      return .run { [member = state.userSignUpMember] send in
-        let member: Member = Member(
-          uid: member.uid,
-          memberid: member.uid,
-          email: member.email,
-          name: member.name,
-          role: SelectPart(rawValue: member.role?.rawValue ?? "") ?? .all,
-          memberType: MemberType(rawValue: member.memberType.rawValue) ?? .notYet,
-          managing: Managing(rawValue: member.managing?.rawValue ?? "") ?? .notManaging,
-          isAdmin: member.isAdmin,
-          generation: member.generation
-        )
-        let signUpCoreMemberResult = await Result {
-          try await signUpUseCase.signUpCoreMember(member: member)
+    case .editProfile:
+      return .run { [
+        userEntity = state.userEntity,
+      ] send in
+        let editProfileResult = await Result {
+          try await profileUseCase.editProfileMangerNoTeam(
+            name: userEntity.signUpName,
+            inviteCode: userEntity.inviteCodeId ?? "",
+            role: userEntity.role?.rawValue ?? "",
+            responsibility: userEntity.managing?.rawValue ?? ""
+          )
         }
         
-        switch signUpCoreMemberResult {
-        case .success(let signUpCoreMemberData):
-          if let signUpCoreMemberData = signUpCoreMemberData {
-            await send(.async(.signUpCoreMemberResponse(.success(signUpCoreMemberData))))
-            try await clock.sleep(for: .seconds(1))
-//            userUid = signUpCoreMemberData.uid
-            if signUpCoreMemberData.isAdmin == true {
+        switch editProfileResult {
+        case .success(let profileDTOData):
+          if let profileDTOData = profileDTOData {
+            await send(.async(.editProfileResponse(.success(profileDTOData))))
+            
+            if profileDTOData.code == 200 {
               await send(.navigation(.presentCoreMember))
             }
           }
+          
         case .failure(let error):
-          await send(.async(.signUpCoreMemberResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
+          await send(.async(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
         }
       }
       .debounce(id: SignUpSelectManagingCancel(), for: 0.3, scheduler: mainQueue)
       
-    case .signUpCoreMemberResponse(let result):
+    case .editProfileResponse(let result):
       switch result {
-      case .success(let signUpCoreMemberData):
-        state.signUpCoreMemberModel = signUpCoreMemberData
-        state.$userUid.withLock { $0 = signUpCoreMemberData.uid }
-        state.$userEmail.withLock { $0 = signUpCoreMemberData.email} 
+      case .success(let profileDT0):
+        state.editProfileDTO = profileDT0
+        
       case .failure(let error):
-        #logError("회원가입 실패", error.localizedDescription)
+        #logNetwork("회원가입 프로핍 변경  에러", error.localizedDescription)
       }
       return .none
     }

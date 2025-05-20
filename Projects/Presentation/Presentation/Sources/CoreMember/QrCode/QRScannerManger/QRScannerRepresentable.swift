@@ -13,15 +13,24 @@ import LogMacro
 struct QRScannerRepresentable: UIViewControllerRepresentable {
   @Binding var shouldStartScanning: Bool
   @Binding var scannedText: String
+  var scannAction: () -> Void = {}
   
   var dataToScanFor: Set<DataScannerViewController.RecognizedDataType>
   
   // MARK: - Coordinator
   class Coordinator: NSObject, DataScannerViewControllerDelegate {
     var parent: QRScannerRepresentable
+    var scanTimeoutTask: DispatchWorkItem?
+    var lastScannedText: String?
+    var lastScannedTime: Date?
     
     init(_ parent: QRScannerRepresentable) {
       self.parent = parent
+    }
+    
+    func resetLastScanned() {
+      lastScannedText = nil
+      lastScannedTime = nil
     }
     
     // 사용자가 탭했을 때 호출 (원한다면 사용)
@@ -40,19 +49,41 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
     func dataScanner(_ dataScanner: DataScannerViewController,
                      didUpdate items: [RecognizedItem],
                      allItems: [RecognizedItem]) {
-      #logDebug("인식된 아이템: \(items)")
       for item in items {
         if case let .barcode(barcode) = item {
-          #logDebug("QR 코드 인식됨: \(barcode.payloadStringValue ?? "nil")")
-          parent.scannedText = barcode.payloadStringValue ?? "Unable to decode the scanned code"
-          // 비동기 방식으로 스캔 중지
+          let text = barcode.payloadStringValue ?? ""
+          // 최근에 같은 텍스트를 30초 이내에 스캔했다면 무시
+          if let lastText = lastScannedText,
+             let lastTime = lastScannedTime,
+             lastText == text,
+             Date().timeIntervalSince(lastTime) < 30 {
+            // 30초 이내에는 무시
+
+            #logDebug("30초 이내 같은 QR 무시: \(text)")
+
+            continue
+          }
+          // 새로운 텍스트이거나 30초 지난 경우만 처리
+          lastScannedText = text
+          lastScannedTime = Date()
+          parent.scannedText = text
           DispatchQueue.main.async {
             dataScanner.stopScanning()
+            self.parent.shouldStartScanning = false
+            self.parent.scannAction()
           }
+          // 30초 후 다시 같은 텍스트 허용 (초기화)
+          scanTimeoutTask?.cancel()
+          let task = DispatchWorkItem { [weak self] in
+            self?.resetLastScanned()
+          }
+          scanTimeoutTask = task
+          DispatchQueue.main.asyncAfter(deadline: .now() + 15, execute: task)
           break
         }
       }
     }
+    
   }
   
   // MARK: - UIViewControllerRepresentable

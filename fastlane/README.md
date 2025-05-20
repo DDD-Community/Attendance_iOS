@@ -15,13 +15,21 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
-### ios build_ipa
+### ios build_ipa_debug_and_strip
 
 ```sh
-[bundle exec] fastlane ios build_ipa
+[bundle exec] fastlane ios build_ipa_debug_and_strip
 ```
 
-IPA 빌드 및 ._Symbols 제거
+Build Debug IPA and clean ._Symbols
+
+### ios build_ipa_release_and_strip
+
+```sh
+[bundle exec] fastlane ios build_ipa_release_and_strip
+```
+
+Build Release IPA and clean ._Symbols
 
 ### ios QA
 
@@ -29,7 +37,15 @@ IPA 빌드 및 ._Symbols 제거
 [bundle exec] fastlane ios QA
 ```
 
-TestFlight 업로드
+Upload to TestFlight (Debug)
+
+### ios release
+
+```sh
+[bundle exec] fastlane ios release
+```
+
+Submit to App Store
 
 ----
 

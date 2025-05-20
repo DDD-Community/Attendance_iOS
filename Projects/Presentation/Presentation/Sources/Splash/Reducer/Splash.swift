@@ -19,10 +19,16 @@ public struct Splash {
   
   @ObservableState
   public struct State: Equatable {
-    public init() {}
-    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
-    @Shared(.appStorage("UserUID")) var userUid: String = ""
-    var userMember: UserDTOMember? = nil
+   
+    
+    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
+    var checkSessionJWTDTOModel: RefreshTokenDTOModel?
+    var profileDTOModel: ProfileDTOModel?
+//    var aceessToken = UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? ""
+    @Shared(.appStorage("AccessToken")) var accessToken: String = ""
+    public init() {
+
+    }
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -43,8 +49,10 @@ public struct Splash {
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
+    case sessionCheckJWT
+    case checkJwtResponse(Result<RefreshTokenDTOModel, CustomError>)
     case fetchUser
-    case fetchUserResponse(Result<UserDTOMember, CustomError>)
+    case fetchUserResponse(Result<ProfileDTOModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -61,7 +69,10 @@ public struct Splash {
     case presentMember
   }
   
+  fileprivate struct SplashCancel: Hashable {}
+  
   @Dependency(AuthUseCase.self) var authUseCase
+  @Dependency(ProfileUseCase.self) var profileUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
@@ -99,24 +110,62 @@ public struct Splash {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-      
-    case .fetchUser:
-      return .run { [userEmail = state.userEmail] send in
-        let fetchUserResult = await Result {
-          try await authUseCase.fetchUser(uid: userEmail)
+    case .sessionCheckJWT:
+      return .run { [useEntity = state.userEntity] send in
+        let acceesToken  = UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? ""
+        
+        let checkJwtResult = await Result {
+          try await authUseCase.sessionCheckJWT(token: acceesToken)
         }
         
-        switch fetchUserResult {
-        case .success(let fetchUserData):
-          if let fetchUserData = fetchUserData {
-            await send(.async(.fetchUserResponse(.success(fetchUserData))))
+        switch checkJwtResult {
+        case .success(let checkJwtDTOData):
+          if let checkJwtDTOData = checkJwtDTOData {
+            await send(.async(.checkJwtResponse(.success(checkJwtDTOData))))
+          }
+          
+        case .failure(let error):
+          await send(.async(.checkJwtResponse(.failure(.encodingError(error.localizedDescription)))))
+          await send(.navigation(.presentLogin))
+        }
+        
+      }
+      
+      
+    case .checkJwtResponse(let result):
+      switch result {
+      case .success(let jwtDTOData):
+        state.checkSessionJWTDTOModel = jwtDTOData
+        UserDefaults.standard.set(jwtDTOData.data.accessToken, forKey: "ACCESS_TOKEN")
+        
+        state.$userEntity.withLock {
+          $0.accessToken = jwtDTOData.data.accessToken
+          $0.refreshToken = jwtDTOData.data.refreshToken
+          $0.userEmail = jwtDTOData.data.user.email
+          $0.userName = jwtDTOData.data.user.email
+        }
+        
+      case .failure(let error):
+        #logNetwork("jwt check 실패", error.localizedDescription)
+      }
+      return .none
+      
+      
+    case .fetchUser:
+      return .run { send in
+        let profileResult = await Result {
+          try await profileUseCase.getProfile()
+        }
+        
+        switch profileResult {
+        case .success(let profileDTOData):
+          if let profileDTOData = profileDTOData {
+            await send(.async(.fetchUserResponse(.success(profileDTOData))))
             
-            if fetchUserData.email != "" {
-              if fetchUserData.isAdmin == true {
-                await send(.navigation(.presentCoreMember))
-              } else {
-                await send(.navigation(.presentMember))
-              }
+            if profileDTOData.data.isStaff == true {
+              await send(.navigation(.presentCoreMember))
+            } else {
+              await send(.navigation(.presentMember))
             }
           }
         case .failure(let error):
@@ -125,14 +174,15 @@ public struct Splash {
           
         }
       }
+      .debounce(id: SplashCancel(), for: 0.3, scheduler: mainQueue)
       
     case .fetchUserResponse(let result):
       switch result {
-      case .success(let userDtoMemberData):
-        state.userMember = userDtoMemberData
-        let _ = state.userMember?.email ?? ""
-        state.$userUid.withLock { $0 = userDtoMemberData.uid}
-        state.$userEmail.withLock { $0 = userDtoMemberData.email}
+      case .success(let profileDTOData):
+        state.profileDTOModel = profileDTOData
+        state.$userEntity.withLock{
+          $0.userName = profileDTOData.data.name
+        }
       case .failure(let error):
         #logError("유저 정보 가져오기", error.localizedDescription)
       }

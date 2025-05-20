@@ -38,7 +38,8 @@ public struct MemberCoordinator {
 
   @CasePathable
   public enum View {
-
+    case backAction
+    case backToRootAction
   }
 
   public enum AsyncAction: Equatable {
@@ -86,7 +87,7 @@ public struct MemberCoordinator {
   ) -> Effect<Action> {
     switch action {
     case .routeAction(id: _, action: .member(.navigation(.routeToProfile))):
-      // TODO: - navigate to profile View
+      state.routes.push(.profile(.init()))
       return .none
 
     default:
@@ -95,10 +96,19 @@ public struct MemberCoordinator {
   }
 
   private func handleViewAction(
-    state: inout State,
-    action: View
+      state: inout State,
+      action: View
   ) -> Effect<Action> {
-
+      switch action {
+      case .backAction:
+        state.routes.goBack()
+        return .none
+        
+      case .backToRootAction:
+        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
+          $0.goBackToRoot()
+        }
+      }
   }
 
   private func handleInnerAction(
@@ -127,5 +137,6 @@ extension MemberCoordinator {
   @Reducer(state: .equatable)
   public enum MemberScreen {
     case member(MemberMain)
+    case profile(ManagerProfile)
   }
 }

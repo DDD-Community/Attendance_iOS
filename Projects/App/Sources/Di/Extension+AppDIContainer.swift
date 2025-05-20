@@ -21,6 +21,7 @@ extension AppDIContainer {
       await repositoryFactory.makeAllModules().asyncForEach { module in
         await container.register(module)
       }
+      
       await useCaseFactory.makeAllModules().asyncForEach { module in
         await container.register(module)
       }

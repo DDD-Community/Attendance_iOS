@@ -11,7 +11,6 @@ let project = Project.makeAppModule(
   settings:  .settings(),
   dependencies: [
     .Networking(implements: .Model),
-    .Networking(implements: .ThirdPartys),
     .Networking(implements: .Service),
     .SPM.diContainer,
     .SPM.composableArchitecture,

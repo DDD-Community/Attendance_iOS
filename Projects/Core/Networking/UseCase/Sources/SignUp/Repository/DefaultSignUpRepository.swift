@@ -10,17 +10,20 @@ import Model
 final public class DefaultSignUpRepository: SignUpRepositoryProtocol {
   public init() {}
   
+  public func registerAccount(
+    email: String,
+    password: String
+  ) async throws -> SignUpDTOModel? {
+    return nil
+  }
+  
   public func validateInviteCode(
-    code: String
+    inviteCode: String
   ) async throws -> InviteDTOModel? {
     return nil
   }
   
-  public func signUpMember(member: Member) async throws -> MemberDTOSignUp? {
-    return nil
-  }
-  
-  public func signUpCoreMember(member: Member) async throws -> CoreMemberDTOSignUp? {
+  public func checkEmail(email: String) async throws -> CheckEmailDTO? {
     return nil
   }
 }

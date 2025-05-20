@@ -20,12 +20,9 @@ public struct SignUpSelectTeam {
   public struct State: Equatable {
     public init() {}
     
-    var selectTeam: SelectTeam? = .notTeam
     var activeButton: Bool = false
-    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
-    @Shared(.appStorage("UserUID")) var userUid: String = ""
-    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
-    var signUpMemberModel: MemberDTOSignUp? = nil
+    var editProfileDTO: ProfileDTOModel?
+    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -46,24 +43,30 @@ public struct SignUpSelectTeam {
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
-    case signUpMember
-    case signUpMemberResponse(Result<MemberDTOSignUp, CustomError>)
+    case editProfile
+    case editProfileManger
+    case editProfileMember
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
-    
+    case editProfileResponse(Result<ProfileDTOModel, CustomError>)
   }
   
   // MARK: - NavigationAction
   
   public enum NavigationAction: Equatable {
     case presentMember
+    case presentCoreMember
   }
+  
+  
+  private struct SignUpSelectTeamCancel: Hashable {}
   
   @Dependency(SignUpUseCase.self) var signUpUseCase
   @Dependency(\.continuousClock) var clock
+  @Dependency(ProfileUseCase.self) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
   
   public var body: some ReducerOf<Self> {
@@ -95,18 +98,13 @@ public struct SignUpSelectTeam {
   ) -> Effect<Action> {
     switch action {
     case .selectTeamButton(let selectTeam):
-      if state.selectTeam == selectTeam {
-        state.selectTeam = nil
-        state.$userSignUpMember.withLock { $0.memberTeam = nil}
+      if state.userEntity.memberTeam == selectTeam {
+        state.$userEntity.withLock { $0.memberTeam = nil}
         state.activeButton = false
         return .none
       }
       
-      state.selectTeam = selectTeam
-      
-      if let selectTeam = SelectTeam(rawValue: selectTeam.selectTeamDescription) {
-        state.$userSignUpMember.withLock { $0.memberTeam = selectTeam}
-      }
+      state.$userEntity.withLock { $0.memberTeam = selectTeam }
       
       state.activeButton = true
       return .none
@@ -120,6 +118,9 @@ public struct SignUpSelectTeam {
     switch action {
     case .presentMember:
       return .none
+      
+    case .presentCoreMember:
+      return .none
     }
   }
   
@@ -128,46 +129,81 @@ public struct SignUpSelectTeam {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
+    case .editProfile:
+      return .run { [
+        userEntity = state.userEntity,
+      ]  send in
+        if userEntity.userRole == .moderator {
+          await send(.async(.editProfileManger))
+        } else {
+          await send(.async(.editProfileMember))
+        }
+      }
       
-    case .signUpMember:
-      return .run { [member = state.userSignUpMember] send in
-        let member: Member = Member(
-          uid: member.uid,
-          memberid: member.uid,
-          email: member.email,
-          name: member.name,
-          role: SelectPart(rawValue: member.role?.rawValue ?? "") ?? .all,
-          memberType: MemberType(rawValue: member.memberType.rawValue) ?? .notYet,
-          memberTeam: SelectTeam(rawValue: member.memberTeam?.rawValue ?? "") ?? .notTeam,
-          isAdmin: member.isAdmin,
-          generation: member.generation
-        )
-        let signUpCoreMemberResult = await Result {
-          try await signUpUseCase.signUpMember(member: member)
+    case .editProfileManger:
+      return .run { [
+        userEntity = state.userEntity,
+      ] send in
+        let memberTeam = userEntity.memberTeam?.rawValue ?? ""
+        let isAdminRole =   "\(userEntity.managing?.rawValue ?? "")"
+        let editProfileResult = await Result {
+          try await profileUseCase.editProfileManger(
+            name: userEntity.signUpName,
+            inviteCode: userEntity.inviteCodeId ?? "",
+            role: userEntity.role?.rawValue ?? "",
+            crew: memberTeam,
+            responsibility: isAdminRole
+          )
         }
         
-        switch signUpCoreMemberResult {
-        case .success(let signUpMemberData):
-          if let signUpMemberData = signUpMemberData {
-            await send(.async(.signUpMemberResponse(.success(signUpMemberData))))
-            try await clock.sleep(for: .seconds(1))
-            await send(.navigation(.presentMember))
+        switch editProfileResult {
+        case .success(let profileDTOData):
+          if let profileDTOData = profileDTOData {
+            await send(.inner(.editProfileResponse(.success(profileDTOData))))
+            
+            if profileDTOData.code == 200 {
+              await send(.navigation(.presentCoreMember))
+            }
+            
           }
+          
         case .failure(let error):
-          await send(.async(.signUpMemberResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
+          await send(.inner(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
         }
       }
+      .debounce(id: SignUpSelectTeamCancel(), for: 0.3, scheduler: mainQueue)
       
-    case .signUpMemberResponse(let result):
-      switch result {
-      case .success(let signUpMemberData):
-        state.signUpMemberModel = signUpMemberData
-        state.$userUid.withLock { $0  = signUpMemberData.uid}
-        state.$userEmail.withLock { $0 = signUpMemberData.email } 
-      case .failure(let error):
-        #logError("회원가입 실패", error.localizedDescription)
+    case .editProfileMember:
+      return .run { [
+        userEntity = state.userEntity,
+      ] send in
+        let memberTeam = userEntity.memberTeam?.rawValue ?? ""
+        let editProfileResult = await Result {
+          try await profileUseCase.editProfileMember(
+            name: userEntity.signUpName,
+            inviteCode: userEntity.inviteCodeId ?? "",
+            role: userEntity.role?.rawValue ?? "",
+            crew: memberTeam
+          )
+        }
+        
+        switch editProfileResult {
+        case .success(let profileDTOData):
+          if let profileDTOData = profileDTOData {
+            await send(.inner(.editProfileResponse(.success(profileDTOData))))
+            
+            if profileDTOData.code == 200 {
+              await send(.navigation(.presentMember))
+            }
+            
+          }
+          
+        case .failure(let error):
+          await send(.inner(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
+        }
       }
-      return .none
+      .debounce(id: SignUpSelectTeamCancel(), for: 0.3, scheduler: mainQueue)
+      
     }
   }
   
@@ -175,6 +211,16 @@ public struct SignUpSelectTeam {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    
+    switch action {
+    case .editProfileResponse(let result):
+      switch result {
+      case .success(let profileDT0):
+        state.editProfileDTO = profileDT0
+        
+      case .failure(let error):
+        #logNetwork("회원가입 프로핍 변경  에러", error.localizedDescription)
+      }
+      return .none
+    }
   }
 }
