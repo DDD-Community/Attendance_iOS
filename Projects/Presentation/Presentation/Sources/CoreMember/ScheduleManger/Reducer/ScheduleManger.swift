@@ -22,7 +22,7 @@ public struct ScheduleManger {
     
     public init() {}
     
-    var scheduleDTOModel: ScheduleDTOModel?
+    var scheduleModel: ScheduleModel?
     var loading: Bool = false
     
   }
@@ -52,7 +52,7 @@ public struct ScheduleManger {
   
   //MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
-    case fetchScheduleResponse(Result<ScheduleDTOModel, CustomError>)
+    case fetchScheduleResponse(Result<ScheduleModel, CustomError>)
   }
   
   //MARK: - NavigationAction
@@ -153,7 +153,7 @@ public struct ScheduleManger {
         let sortedData = scheduleDTOData.data.sorted {
           $0.startTime < $1.startTime
         }
-        state.scheduleDTOModel = ScheduleDTOModel(
+        state.scheduleModel = ScheduleModel(
           code: scheduleDTOData.code,
           message: scheduleDTOData.message,
           data: sortedData

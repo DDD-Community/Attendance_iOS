@@ -7,9 +7,10 @@
 
 import Foundation
 
-public enum AttendanceAPI: String, CaseIterable {
+public enum AttendanceAPI {
   case getAttandances
   case attendanceCount
+  case editAttendance(attendanceId: String)
    
   public var attendanceDescription: String {
     switch self {
@@ -18,6 +19,9 @@ public enum AttendanceAPI: String, CaseIterable {
       
     case .attendanceCount:
       return "count/"
+      
+    case .editAttendance(let attendanceId):
+      return "\(attendanceId)/"
     }
   }
 }

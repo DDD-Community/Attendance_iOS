@@ -46,7 +46,7 @@ extension ScheduleView {
   
   @ViewBuilder
   fileprivate func scheduleListView() -> some View {
-    if let schedules = store.scheduleDTOModel?.data {
+    if let schedules = store.scheduleModel?.data {
       let grouped = schedules.grouped(by: { String.extractMonthString(from: $0.startTime) })
       
       ScrollView(.vertical) {
