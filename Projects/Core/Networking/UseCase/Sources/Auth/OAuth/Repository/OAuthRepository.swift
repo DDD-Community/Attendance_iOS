@@ -19,6 +19,21 @@ import GoogleSignIn
 @Observable
 public class OAuthRepository: OAuthRepositoryProtocol {
   private let fireBaseDB = Firestore.firestore()
+  @Shared(.inMemory("UseEntity"))
+    private static var internalUserEntity: UserEntity = .init()
+
+    // 2️⃣ Expose it via an instance computed property:
+    public var userEntity: UserEntity {
+      get {
+        // read under lock
+        return Self.$internalUserEntity.withLock { $0 }
+      }
+      set {
+        // write under lock
+        Self.$internalUserEntity.withLock { $0 = newValue }
+      }
+    }
+  
   public init() {}
   
   public func handleAppleLogin(
@@ -70,7 +85,6 @@ public class OAuthRepository: OAuthRepositoryProtocol {
     )
     
     let accessToken = UserDefaults.standard.string(forKey: "APPLE_ACCESS_TOKEN") ?? ""
-    
     // 비동기 로그인 시 오류 처리를 위해 async/await를 사용
     let authResult: User? = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<User?, Error>) in
       Auth.auth().signIn(with: firebaseCredential) { result, error in
@@ -97,6 +111,12 @@ public class OAuthRepository: OAuthRepositoryProtocol {
       uid: uid
     )
     
+    
+    self.userEntity.userUid = uid
+    self.userEntity.userEmail = fullName.email ?? ""
+    self.userEntity.userName = fullName.fullName?.givenName ?? ""
+   
+    
     return oauthResponseModel.toDTOModel()
   }
   
@@ -120,7 +140,7 @@ public class OAuthRepository: OAuthRepositoryProtocol {
             continuation.resume(throwing: NSError(domain: "GoogleLoginError", code: -1, userInfo: [NSLocalizedDescriptionKey: "User is nil"]))
             return
           }
-          
+         
           let accessToken: String = user.user.idToken?.tokenString ?? ""
           let firebaseCredential = GoogleAuthProvider.credential(
             withIDToken: accessToken,

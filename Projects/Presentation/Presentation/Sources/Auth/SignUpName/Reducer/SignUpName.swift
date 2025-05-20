@@ -19,10 +19,12 @@ public struct SignUpName {
   @ObservableState
   public struct State: Equatable {
     public init() {}
-    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
+    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
+    
+    
     var isNotAvaliableName: Bool = false
     var enableButton: Bool {
-      return !userSignUpMember.name.isEmpty && !isNotAvaliableName
+      return !userEntity.signUpName.isEmpty && !isNotAvaliableName
     }
   }
   
@@ -39,6 +41,7 @@ public struct SignUpName {
   @CasePathable
   public enum View {
     case checkIsAvaliableName
+    case initSignUpName
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
@@ -87,7 +90,7 @@ public struct SignUpName {
   ) -> Effect<Action> {
     switch action {
     case .checkIsAvaliableName:
-      if state.userSignUpMember.name.count > 5 {
+      if state.userEntity.signUpName.count > 5 {
         state.isNotAvaliableName = true
       } else {
         state.isNotAvaliableName = false
@@ -97,6 +100,10 @@ public struct SignUpName {
           await send(.navigation(.presentSignUpPart))
         }
       }
+      
+    case .initSignUpName:
+      state.$userEntity.withLock { $0.signUpName = "" }
+      return .none
     }
   }
   

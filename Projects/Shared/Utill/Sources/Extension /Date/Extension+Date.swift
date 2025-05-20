@@ -45,6 +45,13 @@ public extension Date {
     return dateFormatter.string(from: self)
   }
   
+  func formattedDates() -> String {
+    let dateFormatter = DateFormatter()
+    dateFormatter.locale = Locale(identifier: "ko_KR")
+    dateFormatter.dateFormat = "yyyy-MM-dd"
+    return dateFormatter.string(from: self)
+  }
+  
   func formattedDateTimeToString(date: Date) -> String {
     let dateFormatter = DateFormatter()
     dateFormatter.locale = Locale(identifier: "ko_KR")

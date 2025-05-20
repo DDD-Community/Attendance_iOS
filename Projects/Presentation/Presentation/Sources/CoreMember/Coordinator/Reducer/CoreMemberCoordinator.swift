@@ -107,14 +107,8 @@ public struct CoreMemberCoordinator {
       state.routes.push(.mangeProfile(.init()))
       return .none
       
-    // MARK: - 스케줄 화면
       
-    case .routeAction(id: _, action: .coreMember(.navigation(.presentSchedule))):
-      state.routes.push(.scheduleEvent(.init(eventModel: state.eventModel, generation: 12)))
-      return .none
-      
-    // MARK: - 로그아웃
-      
+    // MARK: - 로그아웃    
     case .routeAction(id: _, action: .mangeProfile(.navigation(.presentLogOut))):
       return .run { send in
         try await clock.sleep(for: .seconds(0.5))
@@ -202,7 +196,6 @@ extension CoreMemberCoordinator {
   @Reducer(state: .equatable)
   public enum CoreMemberScreen{
     case coreMember(CoreMember)
-    case scheduleEvent(ScheduleEvent)
     case mangeProfile(ManagerProfile)
   }
 }

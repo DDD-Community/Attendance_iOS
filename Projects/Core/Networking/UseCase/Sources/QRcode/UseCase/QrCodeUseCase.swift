@@ -7,9 +7,11 @@
 
 import SwiftUI
 
-import DiContainer
+import Model
 
+import DiContainer
 import ComposableArchitecture
+
 
 public struct QrCodeUseCase: QrCodeUseCaseProtocol {
   private let repository: QrCodeRepositoryProtcol
@@ -22,6 +24,13 @@ public struct QrCodeUseCase: QrCodeUseCaseProtocol {
   
   public func generateQRCode(from string: String) async -> Image? {
     await repository.generateQRCode(from: string)
+  }
+  
+  // MARK: - qrcode 출석체크
+  public func qrAttendanceCheck(
+    from code: String
+  ) async throws -> QRValidateModel? {
+    return try await repository.qrAttendanceCheck(from: code)
   }
 }
 

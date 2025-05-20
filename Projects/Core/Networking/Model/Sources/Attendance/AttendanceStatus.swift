@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum AttendanceStatus: String {
+public enum AttendanceStatus: String, Decodable {
   case tbd
   case present
   case late

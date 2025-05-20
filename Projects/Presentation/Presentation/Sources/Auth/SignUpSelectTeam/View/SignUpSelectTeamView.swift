@@ -39,6 +39,9 @@ public struct SignUpSelectTeamView: View {
         
         signUpSelectTeamButton()
       }
+      .onAppear {
+        store.userEntity.memberTeam = nil
+      }
     }
   }
 }
@@ -65,7 +68,7 @@ extension SignUpSelectTeamView {
           ForEach(SelectTeam.teamList, id: \.self) { item in
             SelectTeamIteam(
               content: item.selectTeamDescription,
-              isActive:  item == store.selectTeam) {
+              isActive:  item == store.userEntity.memberTeam) {
                 store.send(.view(.selectTeamButton(selectTeam: item)))
               }
           }
@@ -83,7 +86,7 @@ extension SignUpSelectTeamView {
       
       CustomButton(
         action: {
-          store.send(.async(.signUpMember))
+          store.send(.async(.editProfile))
         },
         title: "가입 완료",
         config: CustomButtonConfig.create(),
@@ -96,3 +99,4 @@ extension SignUpSelectTeamView {
     .padding(.horizontal, 24)
   }
 }
+

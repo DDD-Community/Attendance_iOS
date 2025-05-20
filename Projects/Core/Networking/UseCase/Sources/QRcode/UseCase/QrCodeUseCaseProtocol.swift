@@ -6,7 +6,9 @@
 //
 
 import SwiftUI
+import Model
 
 public protocol QrCodeUseCaseProtocol {
   func generateQRCode(from string: String) async -> Image?
+  func qrAttendanceCheck(from code: String) async throws -> QRValidateModel?
 }

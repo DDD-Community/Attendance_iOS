@@ -11,6 +11,7 @@ let project = Project.makeAppModule(
   dependencies: [
     .Networking(implements: .ThirdPartys),
     .Networking(implements: .API),
+    .Networking(implements: .Model)
   ],
   sources: ["Sources/**"]
 )

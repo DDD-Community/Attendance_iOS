@@ -25,6 +25,12 @@ public struct MemberCoordinatorView: View {
       case .member(let store):
         MemberMainView(store: store)
           .navigationBarBackButtonHidden()
+        
+      case .profile(let profileStore):
+        ManagerProfileView(store: profileStore) {
+          store.send(.view(.backAction))
+        }
+        .navigationBarBackButtonHidden()
       }
     }
   }

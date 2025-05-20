@@ -54,12 +54,8 @@ struct CoreMemberMainView: View {
         .onEnded { value in
           if value.translation.width < -UIScreen.screenWidth * 0.02 {
             store.send(.attendanceCheck(.view(.swipeNext)))
-            
-            
           } else if value.translation.width > UIScreen.screenWidth * 0.02 {
             store.send(.attendanceCheck(.view(.swipePrevious)))
-            
-            
           }
         }
     )
@@ -148,10 +144,9 @@ extension CoreMemberMainView {
     switch store.selectDropDownItem {
     case .attandance:
       AttendanceCheckView(store: self.store.scope(state: \.attendanceCheck, action: \.attendanceCheck))
-      
+
     case .schedule:
-      EmptyView()
-      
+      ScheduleView(store: self.store.scope(state: \.schedule, action: \.schedule))
     }
   }
   

@@ -7,6 +7,8 @@
 
 import Model
 
+import Service
+
 import AsyncMoya
 import FirebaseFirestore
 
@@ -14,6 +16,8 @@ import FirebaseFirestore
 public class AuthRepository: AuthRepositoryProtocol {
   
   private let fireBaseDB = Firestore.firestore()
+  
+  fileprivate var provider = MoyaProvider<AuthService>(plugins: [MoyaLoggingPlugin()])
   
   public init() {}
   
@@ -61,5 +65,23 @@ public class AuthRepository: AuthRepositoryProtocol {
     } catch {
       throw UserRepositoryError.memberNotExist
     }
+  }
+  
+  // MARK: - 로그인 API
+  public func loginUser(
+    email: String,
+  ) async throws -> LoginDTOModel? {
+    let loginModel = try await provider.requestAsync(
+      .login(
+        email: email), decodeTo: LoginModel.self)
+    return loginModel.toLoginDTOModel()
+  }
+  
+  // MARK: - 세션  시작시 jwtCheck API
+  public func sessionCheckJWT(
+    token: String
+  ) async throws -> RefreshTokenDTOModel? {
+    let sessionCheckModel = try await provider.requestAsync(.sessionToJwt(token: token), decodeTo: RefreshTokenModel.self)
+    return sessionCheckModel.toRefreshDTOModel()
   }
 }

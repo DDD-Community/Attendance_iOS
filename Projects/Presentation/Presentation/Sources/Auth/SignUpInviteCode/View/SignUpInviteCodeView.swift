@@ -10,6 +10,7 @@ import SwiftUI
 import DesignSystem
 
 import ComposableArchitecture
+import SwiftUIX
 
 public struct SignUpInviteCodeView : View {
   @Bindable var store: StoreOf<SignUpInviteCode>
@@ -28,37 +29,43 @@ public struct SignUpInviteCodeView : View {
   }
   
   public var body: some View {
-    ZStack {
-      Color.backGroundPrimary
-        .edgesIgnoringSafeArea(.all)
-      
-      VStack {
+    LazyView {
+      ZStack {
+        Color.backGroundPrimary
+          .edgesIgnoringSafeArea(.all)
         
-        Spacer()
-          .frame(height: 12)
-        
-        NavigationBackButton(buttonAction: backAction)
-        
-        ScrollView{
-          inviteCodeInPutTextView()
+        VStack {
           
-          inviteCodeView()
+          Spacer()
+            .frame(height: 12)
           
-          isNotValidateCodeErrorText()
+          NavigationBackButton(buttonAction: backAction)
+          
+          ScrollView{
+            inviteCodeInPutTextView()
+            
+            inviteCodeView()
+            
+            isNotValidateCodeErrorText()
+            
+          }
+          .scrollIndicators(.hidden)
+          .scrollBounceBehavior(.basedOnSize)
+          
+          checkInviteCodeButton()
+          
+          Spacer()
+            .frame(height: 20)
           
         }
-        .scrollIndicators(.hidden)
-        .scrollBounceBehavior(.basedOnSize)
-        
-        checkInviteCodeButton()
-        
-        Spacer()
-          .frame(height: 20)
-        
+        .onTapGesture {
+          UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
+        .onAppear {
+          store.send(.view(.initInviteCode))
+        }
       }
-      .onTapGesture {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-      }
+      
     }
   }
 }
