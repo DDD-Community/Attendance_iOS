@@ -8,25 +8,17 @@
 import Foundation
 
 
-public typealias ScheduleDTOModel = BaseResponseDTO<[ScheduleDTOResponseModel]>
+public typealias ScheduleDTOModel = BaseResponse<[ScheduleDTOResponseModel]>
 
-// MARK: - Datum
-public struct ScheduleDTOResponseModel: Decodable, Equatable {
-    public let id, title, description: String
-    public let startTime, endTime: String
+public struct ScheduleDTOResponseModel: Decodable {
+  let id, title, description: String?
+  let startTime, endTime: String?
+  let createdAt: String?
   
-   public init(
-    id: String,
-    title: String,
-    description: String,
-    startTime: String,
-    endTime: String
-  ) {
-    self.id = id
-    self.title = title
-    self.description = description
-    self.startTime = startTime
-    self.endTime = endTime
+  enum CodingKeys: String, CodingKey {
+    case id, title, description
+    case startTime = "start_time"
+    case endTime = "end_time"
+    case createdAt = "created_at"
   }
-    
 }

@@ -7,10 +7,10 @@
 
 import Foundation
 
-public extension ScheduleModel {
-  func toScheduleDTOModel() -> ScheduleDTOModel {
+public extension ScheduleDTOModel {
+  func toDomain() -> ScheduleModel {
       let data = self.data?.compactMap { item in
-      return ScheduleDTOResponseModel(
+      return ScheduleResponseModel(
         id: item.id ?? "",
         title: item.title ?? "",
         description: item.description ?? "",
@@ -19,7 +19,7 @@ public extension ScheduleModel {
       )
      }
     
-    return ScheduleDTOModel(
+    return ScheduleModel(
       code: self.code ?? .zero,
       message: self.message ?? "",
       data: data ?? []
