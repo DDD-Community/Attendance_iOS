@@ -7,14 +7,11 @@
 
 import Foundation
 
-public struct APIHeaderManger {
-  public static let shared = APIHeaderManger()
+public enum APIHeaderManger {
   
-  public init() {}
-  
-  let appPackageName: String = "-"
-  let contentType: String = "application/json"
-  let multipartContentType: String = "multipart/form-data"
-  let contentAppleType: String = "application/x-www-form-urlencoded"
-  let csrf: String = "BNazqxDLBzmlYFKCwAMMJYNcmkAq6kAt"
+  static let appPackageName: String = "-"
+  static let contentType: String = "application/json"
+  static let multipartContentType: String = "multipart/form-data"
+  static let contentAppleType: String = "application/x-www-form-urlencoded"
+  static let csrf: String = "BNazqxDLBzmlYFKCwAMMJYNcmkAq6kAt"
 }

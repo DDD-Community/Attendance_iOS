@@ -11,7 +11,10 @@ public typealias AttendanceCountModel = BaseResponse<AttendanceCountResponseMode
 
 // MARK: - DataClass
 public struct AttendanceCountResponseModel: Decodable {
-  let attendanceCount, presentCount, lateCount, absentCount: Int?
+  let attendanceCount: Int?
+  let presentCount: Int?
+  let lateCount: Int?
+  let absentCount: Int?
   let exceptionCount, tbdCount: Int?
   
   enum CodingKeys: String, CodingKey {

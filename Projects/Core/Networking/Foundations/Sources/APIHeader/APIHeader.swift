@@ -51,33 +51,30 @@ extension APIHeader {
   
   public static var baseHeader: Dictionary<String, String> {
     [
-      contentType : APIHeaderManger.shared.contentType,
+      contentType : APIHeaderManger.contentType,
       accessToken : "Bearer \(accessTokenKeyChain)",
-      accept: APIHeaderManger.shared.contentType
+      accept: APIHeaderManger.contentType
     ]
   }
   
   public static var notAccessTokenHeader: Dictionary<String, String> {
     [
-      contentType : APIHeaderManger.shared.contentType,
-//      xcsrftoken :APIHeaderManger.shared.csrf,
-      //          accessToken : "Bearer \(accessTokenKeyChain ?? "")",
-      accept: APIHeaderManger.shared.contentType
+      contentType : APIHeaderManger.contentType,
+      accept: APIHeaderManger.contentType
     ]
   }
   
   public static var mutiPartbaseHeader: Dictionary<String, String> {
     [
-      contentType : APIHeaderManger.shared.multipartContentType,
+      contentType : APIHeaderManger.multipartContentType,
       accessToken : accessTokenKeyChain,
     ]
   }
   
   public static var applebaseHeader: Dictionary<String, String> {
     [
-      contentType : APIHeaderManger.shared.contentType,
-      //            "Authorization": "Bearer \(_accessAppleTokenKeyChain)",
-      accept: APIHeaderManger.shared.contentType
+      contentType : APIHeaderManger.contentType,
+      accept: APIHeaderManger.contentType
     ]
   }
   
