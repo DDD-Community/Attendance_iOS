@@ -137,9 +137,7 @@ public struct ScheduleManger {
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleInnerAction(

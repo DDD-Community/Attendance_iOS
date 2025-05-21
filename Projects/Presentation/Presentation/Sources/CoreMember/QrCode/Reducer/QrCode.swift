@@ -208,9 +208,7 @@ public struct QrCode {
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleInnerAction(

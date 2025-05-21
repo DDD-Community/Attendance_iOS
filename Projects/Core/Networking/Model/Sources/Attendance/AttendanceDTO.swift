@@ -59,7 +59,7 @@ extension AttendanceDTO {
       fatalError("Invalid date format")
     }
     
-    guard let specificCreateDate = dateFormatter.date(from: "2024-09-15") else {
+    guard let _ = dateFormatter.date(from: "2024-09-15") else {
       fatalError("Invalid date format")
     }
     

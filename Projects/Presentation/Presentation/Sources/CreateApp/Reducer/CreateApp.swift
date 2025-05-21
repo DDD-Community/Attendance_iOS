@@ -79,36 +79,28 @@ public struct CreateApp {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+
   }
   
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+
   }
   
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+
   }
   
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
 }
 

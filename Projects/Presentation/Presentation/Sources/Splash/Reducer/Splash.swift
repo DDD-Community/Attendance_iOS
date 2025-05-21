@@ -110,7 +110,7 @@ public struct Splash {
   ) -> Effect<Action> {
     switch action {
     case .sessionCheckJWT:
-      return .run { [useEntity = state.userEntity] send in
+      return .run { send in
         let acceesToken  = UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? ""
         
         let checkJwtResult = await Result {
