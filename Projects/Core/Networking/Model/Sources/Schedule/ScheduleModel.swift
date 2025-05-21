@@ -11,10 +11,11 @@ public typealias ScheduleModel = BaseResponseDTO<[ScheduleResponseModel]>
 
 // MARK: - Datum
 public struct ScheduleResponseModel: Decodable, Equatable {
-    public let id, title, description: String
-    public let startTime, endTime: String
+  public var id : String
+  public let title, description: String
+  public let startTime, endTime: String
   
-   public init(
+  public init(
     id: String,
     title: String,
     description: String,
@@ -27,5 +28,5 @@ public struct ScheduleResponseModel: Decodable, Equatable {
     self.startTime = startTime
     self.endTime = endTime
   }
-    
+  
 }

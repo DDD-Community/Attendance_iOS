@@ -11,6 +11,7 @@ import DesignSystem
 
 import AsyncMoya
 import ComposableArchitecture
+import Model
 
 struct QRScannerView: View {
   var onClose: (() -> Void)?
@@ -32,7 +33,7 @@ struct QRScannerView: View {
       // 1. 카메라 미리보기 + 데이터 스캐너
       qrScanningView()
       
-      scannedTextViewWithBackGround()
+      scanedTextViewWithBackGround()
       
       // 3. 왼쪽 상단 닫기 버튼
       navigationBar()
@@ -88,7 +89,7 @@ extension QRScannerView {
   }
   
   @ViewBuilder
-  fileprivate func scannedTextViewWithBackGround() -> some View {
+  fileprivate func scanedTextViewWithBackGround() -> some View {
     let attendanceStatus =  store.modifyAttendanceModel?.data.status
     GeometryReader { proxy in
       let width = proxy.size.width
@@ -113,46 +114,84 @@ extension QRScannerView {
         .ignoresSafeArea()
       
       // (B) 안내 문구 (네모 영역 위쪽에 배치)
-      if attendanceStatus == nil {
-        Text("QR 코드를 스캔해 주세요")
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
-          .foregroundColor(.staticWhite)
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
-          .position(x: width / 2, y: rectY - 30)
-      } else  if attendanceStatus  == .present{
-        HStack(spacing: .zero){
-          Spacer()
-          Image(asset: .qrCheck)
-            .resizable()
-            .scaledToFit()
-            .frame(width: 24, height: 24)
-          
-          Spacer()
-            .frame(width: 4)
-          
-          Text("출석이 완료됐어요!")
-            .pretendardCustomFont(textStyle: .body1NormalMedium)
-            .foregroundColor(.staticWhite)
-            .pretendardCustomFont(textStyle: .body1NormalMedium)
-          
-          
-          Spacer()
-        }
+      scanText(attendanceType: attendanceStatus)
         .position(x: width / 2, y: rectY - 30)
-      } else {
-        Text("QR 코드를 스캔해 주세요")
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
-          .foregroundColor(.staticWhite)
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
-          .position(x: width / 2, y: rectY - 30)
-      }
-      
       // (C) 중앙 테두리 (네모 영역 강조)
       RoundedRectangle(cornerRadius: 12)
         .stroke(store.isPresent ? .statusFocus : .clear , lineWidth: 2)
         .frame(width: store.scannerSize, height: store.scannerSize)
         .position(x: rectX + store.scannerSize / 2,
                   y: rectY + store.scannerSize / 2)
+    }
+  }
+  
+  @ViewBuilder
+  fileprivate func scanText(
+    attendanceType: AttendanceType?,
+  ) -> some View {
+    switch attendanceType {
+    case .present:
+      HStack(spacing: .zero){
+        Spacer()
+        Image(asset: .qrCheck)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 24, height: 24)
+        
+        Spacer()
+          .frame(width: 4)
+        
+        Text("출석이 완료됐어요!")
+          .pretendardCustomFont(textStyle: .body1NormalMedium)
+          .foregroundColor(.staticWhite)
+          .pretendardCustomFont(textStyle: .body1NormalMedium)
+        
+        
+        Spacer()
+      }
+    case .absent:
+      HStack(spacing: .zero){
+        Spacer()
+        Image(asset: .qrCheck)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 24, height: 24)
+        
+        Spacer()
+          .frame(width: 4)
+        
+        Text("10분 초과로 지각이에요")
+          .pretendardCustomFont(textStyle: .body1NormalMedium)
+          .foregroundColor(.staticWhite)
+          .pretendardCustomFont(textStyle: .body1NormalMedium)
+        
+        
+        Spacer()
+      }
+    case .late:
+      HStack(spacing: .zero){
+        Spacer()
+        Image(asset: .qrCheck)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 24, height: 24)
+        
+        Spacer()
+          .frame(width: 4)
+        
+        Text("30분 초과로 결석이에요")
+          .pretendardCustomFont(textStyle: .body1NormalMedium)
+          .foregroundColor(.staticWhite)
+          .pretendardCustomFont(textStyle: .body1NormalMedium)
+        
+        
+        Spacer()
+      }
+    default:
+      Text("QR 코드를 스캔해 주세요")
+        .pretendardCustomFont(textStyle: .body1NormalMedium)
+        .foregroundColor(.staticWhite)
+        .pretendardCustomFont(textStyle: .body1NormalMedium)
     }
   }
   

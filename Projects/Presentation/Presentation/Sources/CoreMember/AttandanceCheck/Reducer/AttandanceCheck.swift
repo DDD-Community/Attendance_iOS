@@ -301,7 +301,7 @@ public struct AttendanceCheck {
       switch result {
       case .success(let attendanceCheckModel):
         let sortedData = attendanceCheckModel.data.sorted { lhs, rhs in
-          let order: [AttendanceType] = [.present, .late, .absent]
+          let order: [AttendanceType] = [.present, .late, .tbd, .absent]
           let lhsType = AttendanceType(rawValue: lhs.status ?? "") ?? .notAttendance
           let rhsType = AttendanceType(rawValue: rhs.status ?? "") ?? .notAttendance
           return order.firstIndex(of: lhsType) ?? 999 < order.firstIndex(of: rhsType) ?? 999

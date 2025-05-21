@@ -9,26 +9,26 @@ import Foundation
 
 public enum AttendanceType: String, Codable {
   case present = "present"
-    case absent = "absent"
-    case late = "late"
-    case earlyLeave = "earlyLeave"
-    case disease = "disease"
-    case run = "run"
-    case notAttendance
-    case tbd = "tbd" // ✅ 추가
-
+  case absent = "absent"
+  case late = "late"
+  case earlyLeave = "earlyLeave"
+  case disease = "disease"
+  case run = "run"
+  case notAttendance
+  case tbd = "tbd" // ✅ 추가
+  
   // 안전한 디코딩 처리: 예상하지 못한 값은 .thd 로 처리
   public init(from decoder: Decoder) throws {
     let container = try decoder.singleValueContainer()
     let rawValue = try? container.decode(String.self)
     self = AttendanceType(rawValue: rawValue ?? "") ?? .tbd
   }
-
+  
   public func encode(to encoder: Encoder) throws {
     var container = encoder.singleValueContainer()
     try container.encode(self.rawValue)
   }
-
+  
   public var desc: String {
     switch self {
     case .present: return "PRESENT"
@@ -41,7 +41,7 @@ public enum AttendanceType: String, Codable {
     case .tbd: return "THD"
     }
   }
-
+  
   public var koreanDesc: String {
     switch self {
     case .present: return "출석"
@@ -51,10 +51,10 @@ public enum AttendanceType: String, Codable {
     case .disease: return "병결"
     case .run: return "탈주"
     case .notAttendance: return "미참여"
-    case .tbd: return "기본"
+    case .tbd: return "대기"
     }
   }
-
+  
   public var imageDesc: String {
     switch self {
     case .present: return "Present_icons"
@@ -64,7 +64,7 @@ public enum AttendanceType: String, Codable {
     case .disease: return "Disease_icons"
     case .run: return "Run_icons"
     case .notAttendance: return "None_icons"
-    case .tbd: return "None_icons"
+    case .tbd: return "Thd_icons"
     }
   }
 }
