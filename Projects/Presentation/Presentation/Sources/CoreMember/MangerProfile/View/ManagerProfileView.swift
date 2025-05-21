@@ -92,8 +92,6 @@ extension ManagerProfileView {
         .frame(height: 17)
 
       VStack(alignment: .leading, spacing: .zero) {
-        Spacer()
-          .frame(height: 24)
 
         if store.profileDTOModel?.isStaff == true {
           HStack {
@@ -112,6 +110,9 @@ extension ManagerProfileView {
           }
 
           Spacer()
+            .frame(height: 6)
+        } else {
+          Spacer()
             .frame(height: 8)
         }
 
@@ -121,45 +122,41 @@ extension ManagerProfileView {
 
         Spacer()
 
-        managerTextComponent(
-          title: store.managerProfileRoleType,
-          subTitle: store.profileDTOModel?.role.attendanceListDesc ??  "",
-          managingTeam: "",
-          isManaging: false,
-          isGeneration: false
-        )
-
-        Spacer()
-          .frame(height: 20)
-
-        if store.profileDTOModel?.isStaff == true {
+        VStack(alignment: .leading, spacing: 20) {
           managerTextComponent(
-            title: store.managerProfileManaging,
-            subTitle: store.profileDTOModel?.responsibility?.managingDesc ?? "",
-            managingTeam: mangingTeam.managingTeamDesc,
-            isManaging: store.profileDTOModel?.responsibility == .projectTeamManaging ? true : false,
-            isGeneration: false
-          )
-        } else {
-          managerTextComponent(
-            title: store.memberSelectTeam,
-            subTitle: memberTeam.attendanceListDesc,
+            title: store.managerProfileRoleType,
+            subTitle: store.profileDTOModel?.role.attendanceListDesc ?? "",
             managingTeam: "",
             isManaging: false,
             isGeneration: false
           )
+
+          if store.profileDTOModel?.isStaff == true {
+            managerTextComponent(
+              title: store.managerProfileManaging,
+              subTitle: store.profileDTOModel?.responsibility.managingDesc ?? "",
+              managingTeam: mangingTeam.managingTeamDesc,
+              isManaging: store.profileDTOModel?.responsibility == .projectTeamManaging ? true : false,
+              isGeneration: false
+            )
+          } else {
+            managerTextComponent(
+              title: store.memberSelectTeam,
+              subTitle: memberTeam.attendanceListDesc,
+              managingTeam: "",
+              isManaging: false,
+              isGeneration: false
+            )
+          }
+
+          managerTextComponent(
+            title: store.managerProfileGeneration,
+            subTitle: store.profileDTOModel?.cohort ?? "",
+            managingTeam: "",
+            isManaging: false,
+            isGeneration: true
+          )
         }
-
-        Spacer()
-          .frame(height: 20)
-
-        managerTextComponent(
-          title: store.managerProfileGeneration,
-          subTitle: store.profileDTOModel?.cohort ?? "",
-          managingTeam: "",
-          isManaging: false,
-          isGeneration: true
-        )
 
         Spacer()
           .frame(height: 40)
@@ -173,11 +170,8 @@ extension ManagerProfileView {
 
           Spacer()
         }
-
-        Spacer()
-          .frame(height: 24)
       }
-      .padding(.horizontal, 24)
+      .padding(24)
       .background(
         Image(asset: .profileBack)
           .resizable()
@@ -213,7 +207,7 @@ extension ManagerProfileView {
       if isManaging {
         HStack {
           Text("\(subTitle) / \(managingTeam)팀")
-            .pretendardCustomFont(textStyle: .title2NormalBold)
+            .pretendardCustomFont(textStyle: .title2NormalMedium)
             .foregroundStyle(.borderInverse)
 
           Spacer()
@@ -221,7 +215,7 @@ extension ManagerProfileView {
       } else if isGeneration {
         HStack {
           Text("\(subTitle)기")
-            .pretendardCustomFont(textStyle: .title2NormalBold)
+            .pretendardCustomFont(textStyle: .title2NormalMedium)
             .foregroundStyle(.borderInverse)
 
           Spacer()
@@ -229,14 +223,13 @@ extension ManagerProfileView {
       } else {
         HStack {
           Text(subTitle)
-            .pretendardCustomFont(textStyle: .tilte1NormalBold)
+            .pretendardCustomFont(textStyle: .title2NormalMedium)
             .foregroundStyle(.borderInverse)
 
           Spacer()
         }
       }
     }
-    .padding(.horizontal, 24)
   }
 
   @ViewBuilder
