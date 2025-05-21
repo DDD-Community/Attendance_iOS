@@ -31,11 +31,12 @@ public class AttendanceRepository: AttendanceRepositoryProtocol {
 
   // MARK: - 출석 목록 조회
   public func getAttendances(
-    startDate: String
-  ) async throws -> AttendanceCheckModel? {
+    startDate: String,
+    endDate: String
+  ) async throws -> AttendanceListModel? {
     let attendanceModel = try await provider.requestAsync(
-      .getAttendances(startDate: startDate),
-      decodeTo: AttendanceCheckDTOModel.self
+      .getAttendances(startDate: startDate, endDate: endDate),
+      decodeTo: AttendanceListResponseDTOModel.self
     )
     return attendanceModel.toDomain()
   }
@@ -44,10 +45,10 @@ public class AttendanceRepository: AttendanceRepositoryProtocol {
   public func fillAttendance(
     team: SelectTeam,
     startDate: String
-  ) async throws -> AttendanceCheckModel? {
+  ) async throws -> AttendanceListModel? {
     let attendanceModel = try await provider.requestAsync(
       .filterAttendance(startDate: startDate, team: team.rawValue),
-      decodeTo: AttendanceCheckDTOModel.self
+      decodeTo: AttendanceListResponseDTOModel.self
     )
     return attendanceModel.toDomain()
   }
@@ -56,13 +57,13 @@ public class AttendanceRepository: AttendanceRepositoryProtocol {
   public func filterScheduleAttendance(
     userId: Int,
     scheduleId: String
-  ) async throws -> AttendanceCheckModel? {
+  ) async throws -> AttendanceListModel? {
     let filterScheduleAttendanceModel = try await provider.requestAsync(
       .filterScheduleAttendance(
         userId: userId,
         scheduleId: scheduleId
       ),
-      decodeTo: AttendanceCheckDTOModel.self
+      decodeTo: AttendanceListResponseDTOModel.self
     )
     return filterScheduleAttendanceModel.toDomain()
   }

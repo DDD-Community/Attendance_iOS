@@ -24,7 +24,7 @@ public struct QrCode {
     
     var attendanceCheckModel: QRValidateModel?
     var sceduleFilterModel: ScheduleModel?
-    var filterSceduleAttendanceModel: AttendanceCheckModel?
+    var filterSceduleAttendanceModel: AttendanceListModel?
     var modifyAttendanceModel: ModifyAttendanceModel?
     var scheduleId: String = ""
     
@@ -60,7 +60,7 @@ public struct QrCode {
   public enum InnerAction: Equatable {
     case qrCodeValidateReponse(Result<QRValidateModel, CustomError>)
     case filterScheduleReponse(Result<ScheduleModel, CustomError>)
-    case filterScheduleAttendanceReponse(Result<AttendanceCheckModel, CustomError>)
+    case filterScheduleAttendanceReponse(Result<AttendanceListModel, CustomError>)
     case modifyAttendanceResponse(Result<ModifyAttendanceModel, CustomError>)
   }
   

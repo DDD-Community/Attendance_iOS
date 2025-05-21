@@ -7,20 +7,21 @@
 
 import Foundation
 
-public typealias AttendanceCheckModel = BaseResponseDTO<[AttendanceCheckResponseModel]>
+public typealias AttendanceListModel = BaseResponseDTO<[AttendanceListResponseModel]>
 
-public struct AttendanceCheckResponseModel: Decodable, Equatable {
+public struct AttendanceListResponseModel: Decodable, Equatable {
   public let id: String
-  public let profileSummary: ProfileSummaryResponse
-  public let scheduleSummary: ScheduleSummaryResponse
+  public let profileSummary: ProfileSummary
+  public let scheduleSummary: ScheduleSummary
   public let updatedAt: String
-  public let method, note: String
+  public let method: String
+  public let note: String
   public let status: String?
 
   public init(
     id: String,
-    profileSummary: ProfileSummaryResponse,
-    scheduleSummary: ScheduleSummaryResponse,
+    profileSummary: ProfileSummary,
+    scheduleSummary: ScheduleSummary,
     updatedAt: String,
     status: String?,
     method: String,
@@ -37,13 +38,13 @@ public struct AttendanceCheckResponseModel: Decodable, Equatable {
 }
 
 // MARK: - ProfileSummary
-public struct ProfileSummaryResponse: Decodable, Equatable {
+public struct ProfileSummary: Decodable, Equatable {
   public let name: String
   public let role: SelectPart?
   public let team: SelectTeam?
   public let cohort: String?
   public let crew: SelectTeam?
-  
+
   public init(
     name: String,
     role: SelectPart?,
@@ -57,14 +58,13 @@ public struct ProfileSummaryResponse: Decodable, Equatable {
     self.cohort = cohort
     self.crew = crew
   }
-  
 }
 
 // MARK: - ScheduleSummary
-public struct ScheduleSummaryResponse: Decodable, Equatable {
+public struct ScheduleSummary: Decodable, Equatable {
   public let scheduleId, title, description: String
   public let startTime: String
-  
+
   public init(
     scheduleId: String,
     title: String,
@@ -75,5 +75,30 @@ public struct ScheduleSummaryResponse: Decodable, Equatable {
     self.title = title
     self.description = description
     self.startTime = startTime
+  }
+}
+
+public extension AttendanceListResponseModel {
+  func toSchedule() -> Schedule? {
+    let formatter = ISO8601DateFormatter()
+    guard let date = formatter.date(from: scheduleSummary.startTime) else {
+      return nil
+    }
+
+    let calendar = Calendar.current
+    let components = calendar.dateComponents([.month, .day], from: date)
+
+    guard let month = components.month, let day = components.day else {
+      return nil
+    }
+
+    return .init(
+      id: id,
+      month: month,
+      day: day,
+      title: scheduleSummary.title,
+      description: scheduleSummary.description,
+      status: .init(rawValue: status ?? "") ?? .tbd
+    )
   }
 }

@@ -38,7 +38,7 @@ public struct AttendanceCheck {
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     
     var attendanceCountDTOModel: AttendanceCountResponseModel?
-    var attendCheckModel: AttendanceCheckModel?
+    var attendCheckModel: AttendanceListModel?
     
     
     public init() {
@@ -74,25 +74,22 @@ public struct AttendanceCheck {
   // MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     case appearData
-    
     case fetchAttendanceCount
     case filterAttendanceCount(startDate: String)
     case attendanceCountResponse(Result<AttendanceCountResponseModel, CustomError>)
     case fetchAttedanceCheck
     case filterAttendance(selectTeam: SelectTeam)
-    
   }
   
   // MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
     case attendanceCountResponse(Result<AttendanceCountResponseModel, CustomError>)
-    case attendanceCheckResponse(Result<AttendanceCheckModel, CustomError>)
+    case attendanceCheckResponse(Result<AttendanceListModel, CustomError>)
   }
   
   // MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    
-    
+
   }
   
   private struct AttendanceCheckCancel: Hashable {}
@@ -242,11 +239,14 @@ public struct AttendanceCheck {
     case .fetchAttedanceCheck:
       return .run { [selectAttandanceDate = state.selectAttandanceDate] send in
         let attendanceCheckResult = await Result {
-          try await attendanceUseCase.getAttendances(startDate: selectAttandanceDate.formattedDates())
+          try await attendanceUseCase.getAttendances(
+            startDate: selectAttandanceDate.formattedDates(),
+            endDate: selectAttandanceDate.formattedDates()
+          )
         }
         switch attendanceCheckResult {
-        case .success(let  attendanceCheckData):
-          if let  attendanceCheckData = attendanceCheckData {
+        case .success(let attendanceCheckData):
+          if let attendanceCheckData = attendanceCheckData {
             await send(.inner(.attendanceCheckResponse(.success(attendanceCheckData))))
           }
           
@@ -305,7 +305,7 @@ public struct AttendanceCheck {
           return order.firstIndex(of: lhsType) ?? 999 < order.firstIndex(of: rhsType) ?? 999
         }
         
-        state.attendCheckModel = AttendanceCheckModel(
+        state.attendCheckModel = AttendanceListModel(
           code: attendanceCheckModel.code,
           message: attendanceCheckModel.message,
           data: sortedData

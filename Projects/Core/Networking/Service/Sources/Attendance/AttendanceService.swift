@@ -13,7 +13,7 @@ import Foundations
 import AsyncMoya
 
 public enum AttendanceService {
-  case getAttendances(startDate: String)
+  case getAttendances(startDate: String, endDate: String)
   case attendanceCount(startDate: String)
   case filterAttendance(startDate: String, team: String)
   case filterScheduleAttendance(userId: Int, scheduleId: String)
@@ -64,10 +64,10 @@ extension AttendanceService: BaseTargetType {
 
   public var parameters: [String: Any]? {
     switch self {
-    case .getAttendances(let stratDate):
+    case .getAttendances(let stratDate, let endDate):
       let parameters: [String: Any] = [
         "start_date": stratDate,
-        "end_date": stratDate
+        "end_date": endDate
       ]
       return parameters
 
@@ -78,9 +78,7 @@ extension AttendanceService: BaseTargetType {
       ]
       return parameters
 
-    case .filterAttendance(
-      let startDate,
-      let team):
+    case .filterAttendance(let startDate, let team):
       let parameters: [String: Any] = [
         "start_date": startDate,
         "end_date": startDate,

@@ -9,12 +9,12 @@ import Model
 
 public protocol AttendanceUseCaseProtocol {
   func attendanceCount(startDate: String) async throws -> AttendanceCountResponseModel?
-  func getAttendances(startDate: String) async throws -> AttendanceCheckModel?
-  func fillAttendance(team: SelectTeam ,startDate: String) async throws -> AttendanceCheckModel?
+  func getAttendances(startDate: String, endDate: String) async throws -> AttendanceListModel?
+  func fillAttendance(team: SelectTeam ,startDate: String) async throws -> AttendanceListModel?
   func filterScheduleAttendance(
     userId: Int,
     scheduleId: String
-  ) async throws -> AttendanceCheckModel?
+  ) async throws -> AttendanceListModel?
   func modifyAttendance(attendanceId: String) async throws -> ModifyAttendanceModel?
   func fetchCount(userID: Int) async throws -> AttendanceCountResponseModel
 }

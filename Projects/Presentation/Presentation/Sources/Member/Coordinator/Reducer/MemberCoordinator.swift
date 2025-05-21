@@ -19,7 +19,6 @@ public struct MemberCoordinator {
 
   @ObservableState
   public struct State: Equatable {
-    @Shared(.appStorage("UserUID")) var userUid: String = ""
     var routes: [Route<MemberScreen.State>]
 
     public init() {
@@ -47,7 +46,7 @@ public struct MemberCoordinator {
   }
 
   public enum InnerAction: Equatable {
-
+    case onResume
   }
 
   public enum NavigationAction: Equatable {
@@ -90,7 +89,6 @@ public struct MemberCoordinator {
     switch action {
     case .routeAction(id: _, action: .member(.navigation(.routeToQRCode))):
       state.routes.push(.qrCode(.init()))
-      // TODO: - 출석 성공 시 멤버 메인 일정표 새로고침
       return .none
 
     case .routeAction(id: _, action: .member(.navigation(.routeToProfile))):
@@ -128,7 +126,12 @@ public struct MemberCoordinator {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-
+    switch action {
+    case .onResume:
+      return .send(
+        .router(.routeAction(id: 0, action: .member(.inner(.onResume))))
+      )
+    }
   }
 
   private func handleAsyncAction(

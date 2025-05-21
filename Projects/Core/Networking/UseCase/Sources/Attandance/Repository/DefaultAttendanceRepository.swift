@@ -17,22 +17,23 @@ final public class DefaultAttendanceRepository: AttendanceRepositoryProtocol  {
   }
   
   public func getAttendances(
-    startDate: String
-  ) async throws -> Model.AttendanceCheckModel? {
+    startDate: String,
+    endDate: String
+  ) async throws -> Model.AttendanceListModel? {
     return nil
   }
   
   public func fillAttendance(
     team: Model.SelectTeam,
     startDate: String
-  ) async throws -> Model.AttendanceCheckModel? {
+  ) async throws -> Model.AttendanceListModel? {
     return nil
   }
   
   public func filterScheduleAttendance(
     userId: Int,
     scheduleId: String
-  ) async throws -> AttendanceCheckModel? {
+  ) async throws -> AttendanceListModel? {
     return nil
   }
   

@@ -12,8 +12,8 @@ public typealias ModifyAttendanceModel = BaseResponseDTO<ModifyAttendanceRespons
 // MARK: - DataClass
 public struct ModifyAttendanceResponseModel: Decodable, Equatable {
   public let id: String
-  public let profileSummary: ProfileSummaryResponse
-  public let scheduleSummary: ScheduleSummaryResponse
+  public let profileSummary: ProfileSummary
+  public let scheduleSummary: ScheduleSummary
   public let method, note: String
   public let status: AttendanceType
   
