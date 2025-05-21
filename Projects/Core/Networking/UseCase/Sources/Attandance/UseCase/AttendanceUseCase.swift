@@ -22,7 +22,7 @@ public struct AttendanceUseCase: AttendanceUseCaseProtocol {
   // MARK: - 출석 현황 카운트 api
   public func attendanceCount(
     startDate: String
-  ) async throws -> AttendanceCountDTOModel? {
+  ) async throws -> AttendanceCountResponseModel? {
     return try await repository.attendanceCount(startDate: startDate)
   }
   

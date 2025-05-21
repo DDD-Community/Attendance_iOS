@@ -14,12 +14,13 @@ public extension ProfileResponseDTO {
       userID: userID ?? 0,
       name: name,
       inviteCodeID: inviteCodeID ?? "",
-      role: role ?? "",
-      team: team ?? "",
+      role: .init(rawValue: role ?? "") ?? .all,
+      team: .init(rawValue: team ?? "") ?? .notTeam,
+      crew: .init(rawValue: team ?? "") ?? .notTeam,
+      responsibility: .init(rawValue: responsibility ?? "") ?? .notManaging,
       cohort: cohort ?? "",
-      isStaff: isStaff ?? false,
-      createdAt: createdAt ?? "",
-      updatedAt: updatedAt ?? ""
+      cohortID: cohortID ?? "",
+      isStaff: isStaff ?? false
     )
   }
 }

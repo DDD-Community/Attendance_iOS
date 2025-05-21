@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+import Model
+
 final public class DefaultQRCodeRepository: QRCodeRepositoryProtocol {
   public init() {}
 

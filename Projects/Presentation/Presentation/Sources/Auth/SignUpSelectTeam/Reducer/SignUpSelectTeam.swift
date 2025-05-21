@@ -51,7 +51,7 @@ public struct SignUpSelectTeam {
   // MARK: - 앱내에서 사용하는 액션
 
   public enum InnerAction: Equatable {
-    case editProfileResponse(Result<ProfileDTOModel, CustomError>)
+    case editProfileResponse(Result<ProfileResponseModel, CustomError>)
   }
 
   // MARK: - NavigationAction
@@ -157,7 +157,7 @@ public struct SignUpSelectTeam {
         switch editProfileResult {
         case .success(let profileDTOData):
           if let profileDTOData = profileDTOData {
-            await send(.async(.editProfileResponse(.success(profileDTOData))))
+            await send(.inner(.editProfileResponse(.success(profileDTOData))))
             await send(.navigation(.presentCoreMember))
           }
           
@@ -185,10 +185,7 @@ public struct SignUpSelectTeam {
         case .success(let profileDTOData):
           if let profileDTOData = profileDTOData {
             await send(.inner(.editProfileResponse(.success(profileDTOData))))
-            
-            if profileDTOData.code == 200 {
-              await send(.navigation(.presentMember))
-            }
+            await send(.navigation(.presentMember))
           }
 
         case .failure(let error):

@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+import Model
+
 public protocol QRCodeRepositoryProtocol {
   func createQRCode() async throws -> String
   func generateQRCode(from string: String) async -> Image?

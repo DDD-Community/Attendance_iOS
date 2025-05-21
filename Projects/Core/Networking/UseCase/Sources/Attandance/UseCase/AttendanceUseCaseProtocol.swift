@@ -8,7 +8,7 @@
 import Model
 
 public protocol AttendanceUseCaseProtocol {
-  func attendanceCount(startDate: String) async throws -> AttendanceCountDTOModel?
+  func attendanceCount(startDate: String) async throws -> AttendanceCountResponseModel?
   func getAttendances(startDate: String) async throws -> AttendanceCheckModel?
   func fillAttendance(team: SelectTeam ,startDate: String) async throws -> AttendanceCheckModel?
   func filterScheduleAttendance(

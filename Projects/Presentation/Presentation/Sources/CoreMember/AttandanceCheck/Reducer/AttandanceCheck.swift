@@ -37,7 +37,7 @@ public struct AttendanceCheck {
     @Presents var destination: Destination.State?
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     
-    var attendanceCountDTOModel: AttendanceCountDTOModel?
+    var attendanceCountDTOModel: AttendanceCountResponseModel?
     var attendCheckModel: AttendanceCheckModel?
     
     
@@ -77,7 +77,7 @@ public struct AttendanceCheck {
     
     case fetchAttendanceCount
     case filterAttendanceCount(startDate: String)
-    case attendanceCountResponse(Result<AttendanceCountDTOModel, CustomError>)
+    case attendanceCountResponse(Result<AttendanceCountResponseModel, CustomError>)
     case fetchAttedanceCheck
     case filterAttendance(selectTeam: SelectTeam)
     
@@ -85,7 +85,7 @@ public struct AttendanceCheck {
   
   // MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
-    case attendanceCountResponse(Result<AttendanceCountDTOModel, CustomError>)
+    case attendanceCountResponse(Result<AttendanceCountResponseModel, CustomError>)
     case attendanceCheckResponse(Result<AttendanceCheckModel, CustomError>)
   }
   
@@ -278,9 +278,7 @@ public struct AttendanceCheck {
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
-    switch action {
-      
-    }
+    
   }
   
   private func handleInnerAction(

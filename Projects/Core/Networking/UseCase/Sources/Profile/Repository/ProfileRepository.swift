@@ -68,7 +68,7 @@ public class ProfileRepository: ProfileRepositoryProtocol {
     role: String,
     crew: String
   ) async throws -> ProfileResponseModel? {
-    let profileModel = try await provider.requestAsync(
+    let response = try await provider.requestAsync(
       .editProfileMember(
         username: name,
         inviteCodeId: inviteCode,

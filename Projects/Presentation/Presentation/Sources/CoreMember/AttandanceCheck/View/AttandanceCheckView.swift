@@ -78,7 +78,7 @@ extension AttendanceCheckView {
 
   @ViewBuilder
   fileprivate func attandanceStatusView() -> some View {
-    let attendanceCountDTOData = store.attendanceCountDTOModel?.data
+    let attendanceCountDTOData = store.attendanceCountDTOModel
     LazyVStack {
       Spacer()
         .frame(height: 14)

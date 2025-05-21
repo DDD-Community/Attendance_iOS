@@ -12,12 +12,13 @@ public struct ProfileResponseModel: Hashable {
   public let userID: Int
   public let name: String
   public let inviteCodeID: String
-  public let role: String
-  public let team: String
+  public let role: SelectPart
+  public let team: SelectTeam
+  public let crew: SelectTeam
+  public let responsibility: Managing
   public let cohort: String
+  public let cohortID: String
   public let isStaff: Bool
-  public let createdAt: String
-  public let updatedAt: String
 
   public func hash(into hasher: inout Hasher) {
     hasher.combine(id)

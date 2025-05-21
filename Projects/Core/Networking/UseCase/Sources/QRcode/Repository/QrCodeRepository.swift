@@ -18,7 +18,7 @@ public class QRCodeRepository: QRCodeRepositoryProtocol {
 
   public init() {}
 
-  private let provider = MoyaProvider<QRCodeService>(plugins: [MoyaLoggingPlugin()])
+  private let provider = MoyaProvider<QRService>(plugins: [MoyaLoggingPlugin()])
 
   // MARK: - QRCode String 생성
 
@@ -47,7 +47,7 @@ public class QRCodeRepository: QRCodeRepositoryProtocol {
       continuation.resume(returning: nil)
     }
   }
-  
+
   public func qrAttendanceCheck(
     from code: String
   ) async throws -> QRValidateModel? {
@@ -55,7 +55,7 @@ public class QRCodeRepository: QRCodeRepositoryProtocol {
       .qrAttendanceCheck(
         code: code
       ), decodeTo: QRValidateDTOModel.self)
-    
+
     return qrModel.toDomain()
   }
 }

@@ -11,7 +11,8 @@ public enum AttendanceAPI {
   case getAttandances
   case attendanceCount
   case editAttendance(attendanceId: String)
-   
+  case fetchCount
+
   public var attendanceDescription: String {
     switch self {
     case .getAttandances:
@@ -22,6 +23,9 @@ public enum AttendanceAPI {
       
     case .editAttendance(let attendanceId):
       return "\(attendanceId)/"
+
+    case .fetchCount:
+      return "count/"
     }
   }
 }

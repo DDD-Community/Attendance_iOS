@@ -75,7 +75,7 @@ public struct QrCode {
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
-  @Dependency(QrCodeUseCase.self) var qrCodeUseCase
+  @Dependency(QRCodeUseCase.self) var qrCodeUseCase
   @Dependency(ScheduleUseCase.self) var scheduleUseCase
   @Dependency(AttendanceUseCase.self) var attendanceUseCase
   

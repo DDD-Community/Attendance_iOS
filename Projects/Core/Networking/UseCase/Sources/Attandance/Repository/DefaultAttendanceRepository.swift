@@ -12,7 +12,7 @@ final public class DefaultAttendanceRepository: AttendanceRepositoryProtocol  {
   
   public func attendanceCount(
     startDate: String
-  ) async throws -> AttendanceCountDTOModel? {
+  ) async throws -> AttendanceCountResponseModel? {
     return nil
   }
   
@@ -40,6 +40,7 @@ final public class DefaultAttendanceRepository: AttendanceRepositoryProtocol  {
     attendanceId: String
   ) async throws -> ModifyAttendanceModel? {
     return nil
+  }
 
   public func fetchCount(userID: Int) async throws -> AttendanceCountResponseModel {
     return .init(

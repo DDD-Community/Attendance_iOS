@@ -14,7 +14,10 @@ public struct ProfileResponseDTO: Decodable {
   let inviteCodeID: String?
   let role: String?
   let team: String?
+  let crew: String?
+  let responsibility: String?
   let cohort: String?
+  let cohortID: String?
   let isStaff: Bool?
   let createdAt: String?
   let updatedAt: String?
@@ -26,7 +29,10 @@ public struct ProfileResponseDTO: Decodable {
     case inviteCodeID = "invite_code_id"
     case role
     case team
+    case crew
+    case responsibility
     case cohort
+    case cohortID = "cohort_id"
     case isStaff = "is_staff"
     case createdAt = "created_at"
     case updatedAt = "updated_at"
