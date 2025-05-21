@@ -51,6 +51,7 @@ public enum ImageAsset: String {
   case abesent_icons
   case late_icons
   case present_icons
+  case thd_icons
   case stamp
   case late_stamp
   case present_stamp

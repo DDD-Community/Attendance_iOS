@@ -89,15 +89,15 @@ extension AttendanceService: BaseTargetType {
     ):
       let parameters: [String: Any] = [
         "user_id": userId,
-        "start_date": "2025-05-24",
-        "end_date": "2025-05-24"
-//        "schedule_id": scheduleId,
+        "start_date": "2025-05-21",
+        "end_date": "2025-05-21",
+        "schedule_id": scheduleId,
       ]
       return parameters
       
     case .modifyAttendance( _):
       let parameters: [String: Any] = [
-        "status": "present",
+        "status": "auto",
         "method": "qr",
         "note": "qr 출석"
       ]

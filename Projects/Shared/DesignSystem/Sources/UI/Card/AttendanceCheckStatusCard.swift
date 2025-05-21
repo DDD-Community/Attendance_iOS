@@ -37,13 +37,13 @@ public struct AttendanceCheckStatusCard: View {
             HStack {
               Text(name)
                 .pretendardCustomFont(textStyle: .title3NormalBold)
-                .foregroundStyle(attandanceType == .absent ? .borderDisabled : .staticWhite)
+                .foregroundStyle(attandanceType == .absent  || attandanceType == .tbd ? .borderDisabled : .staticWhite)
               Spacer()
             }
             
             Text("\(selectTeam.attandanceCardDescription) / \(selectPart.attendanceListDesc) ")
               .pretendardCustomFont(textStyle: .body2NormalBold)
-              .foregroundStyle(attandanceType == .absent ? .borderDisabled : .staticWhite)
+              .foregroundStyle(attandanceType == .absent  || attandanceType == .tbd ? .borderDisabled : .staticWhite)
           }
           
           Spacer()
@@ -51,7 +51,7 @@ public struct AttendanceCheckStatusCard: View {
           HStack(spacing: .zero) {
             Text(attandanceType.koreanDesc)
               .pretendardCustomFont(textStyle: .body2NormalMedium)
-              .foregroundStyle(attandanceType == .absent ? .borderDisabled : .staticWhite)
+              .foregroundStyle(attandanceType == .absent  || attandanceType == .tbd ? .borderDisabled : .staticWhite)
             
             Spacer()
               .frame(width: 12)
@@ -69,16 +69,17 @@ public struct AttendanceCheckStatusCard: View {
       }
       .padding(.horizontal, 20)
     }
-    .background(attandanceType == .absent ? .staticBlack : .borderInverse)
+    .background(attandanceType == .absent  || attandanceType == .tbd ? .staticBlack : .borderInverse)
     .frame(height: 84)
     .cornerRadius(15)
     .overlay(
       // ABSENT일 때 점선 테두리 적용
-      attandanceType == .absent ?
+      attandanceType == .absent  || attandanceType == .tbd  ?
       RoundedRectangle(cornerRadius: 15)
         .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5]))
         .foregroundColor(.borderDisabled) // 점선 색상 설정
       : nil
     )
+    .padding(.vertical, attandanceType == .absent  || attandanceType == .tbd ? 2: 0)
   }
 }

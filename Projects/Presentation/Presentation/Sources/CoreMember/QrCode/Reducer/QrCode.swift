@@ -26,6 +26,7 @@ public struct QrCode {
     var sceduleFilterModel: ScheduleModel?
     var filterSceduleAttendanceModel: AttendanceCheckModel?
     var modifyAttendanceModel: ModifyAttendanceModel?
+    var scheduleId: String = ""
     
     public init() {}
   }
@@ -117,7 +118,9 @@ public struct QrCode {
   ) -> Effect<Action> {
     switch action {
     case .qrCodeValidate:
-      return .run { [scannedText = state.scannedText] send in
+      return .run { [
+        scannedText = state.scannedText
+      ] send in
         let qrCodeValidateResult = await Result {
           try await qrCodeUseCase.qrAttendanceCheck(from: scannedText)
         }
@@ -143,7 +146,7 @@ public struct QrCode {
     case .filterSchedule:
       return .run { send in
         let filterScheduleResult = await Result {
-          try await scheduleUseCase.filtergetSchedules(startDate: "2025-05-24")
+          try await scheduleUseCase.filtergetSchedules(startDate: "2025-05-21")
         }
         
         switch filterScheduleResult {
@@ -159,9 +162,11 @@ public struct QrCode {
       .debounce(id: QRCodeCancel(), for: 0.3, scheduler: mainQueue)
       
     case .filterScheduleAttendance(let userId):
-      return .run { send in
+      return .run { [
+        sceduleId = state.scheduleId
+      ] send in
         let filterSceduleAttendanceResult = await Result {
-          try await attendanceUseCase.filterScheduleAttendance(userId: userId, scheduleId: "")
+          try await attendanceUseCase.filterScheduleAttendance(userId: userId, scheduleId: sceduleId)
         }
         
         switch filterSceduleAttendanceResult {
@@ -227,6 +232,7 @@ public struct QrCode {
       switch result {
       case .success(let filterScheduleData):
         state.sceduleFilterModel = filterScheduleData
+        state.scheduleId = filterScheduleData.data.first?.id ?? ""
       case .failure(let error):
         #logNetwork("스케줄 필터 실패", error.localizedDescription)
       }
