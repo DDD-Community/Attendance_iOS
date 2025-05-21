@@ -51,8 +51,10 @@ public struct MemberCoordinator {
   }
 
   public enum NavigationAction: Equatable {
-
+    case presentLogin
   }
+
+  @Dependency(\.continuousClock) var clock
 
   public var body: some ReducerOf<Self> {
     BindingReducer()
@@ -95,6 +97,12 @@ public struct MemberCoordinator {
       state.routes.push(.profile(.init()))
       return .none
 
+    case .routeAction(id: _, action: .profile(.navigation(.presentLogOut))):
+      return .run { send in
+        try await clock.sleep(for: .seconds(0.5))
+        await send(.navigation(.presentLogin))
+      }
+
     default:
       return .none
     }
@@ -134,7 +142,10 @@ public struct MemberCoordinator {
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
-
+    switch action {
+    case .presentLogin:
+      return .none
+    }
   }
 }
 

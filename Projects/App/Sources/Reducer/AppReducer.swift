@@ -108,6 +108,9 @@ struct AppReducer {
     case .coreMember(.navigation(.presentLogin)):
       return .send(.view(.presentAuth))
 
+    case .member(.navigation(.presentLogin)):
+      return .send(.view(.presentAuth))
+
     default:
       return .none
     }
