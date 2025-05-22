@@ -12,10 +12,10 @@ import Networkings
 import SwiftUIX
 
 struct ScheduleView: View {
-  @Bindable var store: StoreOf<ScheduleManger>
+  @Bindable var store: StoreOf<ScheduleManager>
   
   init(
-    store: StoreOf<ScheduleManger>
+    store: StoreOf<ScheduleManager>
   ) {
     self.store = store
   }

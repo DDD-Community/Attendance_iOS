@@ -1,5 +1,5 @@
 //
-//  ScheduleManger.swift
+//  ScheduleManager.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 5/9/25.
@@ -14,7 +14,7 @@ import ComposableArchitecture
 import Utill
 
 @Reducer
-public struct ScheduleManger {
+public struct ScheduleManager {
   public init() {}
   
   @ObservableState

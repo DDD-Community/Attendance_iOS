@@ -1,5 +1,5 @@
 //
-//  QrCode.swift
+//  QRCode.swift
 //  DDDAttendance
 //
 //  Created by 서원지 on 6/11/24.
@@ -12,7 +12,7 @@ import Utill
 import Networkings
 
 @Reducer
-public struct QrCode {
+public struct QRCode {
   public init() {}
   
   @ObservableState

@@ -1,5 +1,5 @@
 //
-//  QrCodeView.swift
+//  QRScannerView.swift
 //  DDDAttendance
 //
 //  Created by 서원지 on 6/11/24.
@@ -16,10 +16,10 @@ import Model
 struct QRScannerView: View {
   var onClose: (() -> Void)?
   var backAction: () -> Void = {}
-  @Bindable var store: StoreOf<QrCode>
+  @Bindable var store: StoreOf<QRCode>
   
   init(
-    store: StoreOf<QrCode>,
+    store: StoreOf<QRCode>,
     onClose: ( () -> Void)? = nil,
     backAction: @escaping () -> Void
   ) {
