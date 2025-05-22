@@ -28,7 +28,6 @@ public struct CustomNavigationBar: View {
         .resizable()
         .scaledToFit()
         .frame(width: 12, height: 20)
-        .foregroundStyle(Color.gray400)
         .onTapGesture {
           backAction()
         }

@@ -29,7 +29,4 @@ public struct AttendanceCountDTOResponseModel: Decodable, Equatable {
     self.exceptionCount = exceptionCount
     self.tbdCount = tbdCount
   }
-  
 }
-
-

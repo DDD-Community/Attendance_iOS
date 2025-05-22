@@ -182,7 +182,7 @@ extension SignUpInviteCodeView {
           .frame(maxWidth: .infinity)
       }
       .keyboardType(.decimalPad)
-      .onChange(of: text.wrappedValue) { newValue in
+      .onChange(of: text.wrappedValue) { _, newValue in
         if newValue.count > 1 {
           text.wrappedValue = String(newValue.prefix(1))
           completion(false)

@@ -9,7 +9,7 @@ import Foundation
 
 public extension ModifyDTOAttendanceModel {
   func toDomain() -> ModifyAttendanceModel {
-    let profileSummary = ProfileSummaryResponse(
+    let profileSummary = ProfileSummary(
       name: self.data?.profileSummary?.name ?? "",
       role: SelectPart(rawValue: self.data?.profileSummary?.role ?? ""),
       team: SelectTeam(rawValue: self.data?.profileSummary?.team ?? ""),
@@ -17,7 +17,7 @@ public extension ModifyDTOAttendanceModel {
       crew: SelectTeam(rawValue: self.data?.profileSummary?.crew ?? "")
     )
     
-    let scheduleSummary = ScheduleSummaryResponse(
+    let scheduleSummary = ScheduleSummary(
       scheduleId:  self.data?.scheduleSummary?.id ?? "",
       title:  self.data?.scheduleSummary?.title ?? "",
       description: self.data?.scheduleSummary?.description ?? "",

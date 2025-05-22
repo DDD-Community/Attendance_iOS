@@ -32,6 +32,7 @@ struct MemberMainView: View {
         .padding(.horizontal, 24)
       }
     }
+    .background(.backGroundPrimary)
     .customAlert(
       isPresented: store.isPresentAttendanceWarningAlert,
       title: "주의해주세요!",
@@ -58,7 +59,7 @@ struct MemberMainView: View {
 
       HStack(spacing: 12) {
         Button(action: {
-          store.send(.navigation(.presentQRCode))
+          store.send(.navigation(.routeToQRCode))
         }) {
           Image(asset: ImageAsset.qrCode)
             .renderingMode(.template)
@@ -96,26 +97,24 @@ struct MemberMainView: View {
 
   private var attendanceStatus: some View {
     VStack(alignment: .leading, spacing: 16) {
-      if let member = store.state.member {
-        Text("\(member.name)님의 출석 현황")
-          .pretendardFont(family: .Bold, size: 28)
-          .foregroundStyle(.textPrimary)
+      Text("\(store.state.member?.name ?? "")님의 출석 현황")
+        .pretendardFont(family: .Bold, size: 28)
+        .foregroundStyle(.textPrimary)
 
-        VStack(alignment: .leading, spacing: 8) {
-          Text("활동 기간: \(store.startDate) - \(store.endDate)")
-            .pretendardFont(family: .Regular, size: 14)
-            .foregroundStyle(.textSecondary)
+      VStack(alignment: .leading, spacing: 8) {
+        Text("활동 기간: \(store.startDate) - \(store.endDate)")
+          .pretendardFont(family: .Regular, size: 14)
+          .foregroundStyle(.textSecondary)
 
-          AttendanceCard(
-            attendanceCount: store.attendanceCount,
-            lateCount: store.lateCount,
-            absentCount: store.absentCount,
-            showWarning: store.shouldShowAttendanceWarningIcon,
-            onTapAbsentButton: {
-              store.send(.view(.didTapAbesentButton))
-            }
-          )
-        }
+        AttendanceCard(
+          attendanceCount: store.presentCount,
+          lateCount: store.lateCount,
+          absentCount: store.absentCount,
+          showWarning: store.showAttendanceWarningIcon,
+          onTapAbsentButton: {
+            store.send(.view(.didTapAbesentButton))
+          }
+        )
       }
     }
     .padding(.top, 20)
@@ -123,7 +122,7 @@ struct MemberMainView: View {
 
   private var generationScheduleListView: some View {
     VStack(alignment: .leading, spacing: 16) {
-      Text("\(store.generation)기 일정표")
+      Text("\(store.member?.cohort ?? "")기 일정표")
         .pretendardFont(family: .Medium, size: 24)
         .foregroundStyle(.textPrimary)
 
