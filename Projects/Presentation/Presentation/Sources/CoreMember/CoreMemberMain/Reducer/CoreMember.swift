@@ -29,7 +29,7 @@ public struct CoreMember {
     var selectDropDownItem: SelectDropDownItem = .attandance
     
     var attendanceCheck = AttendanceCheck.State()
-    var schedule = ScheduleManger.State()
+    var schedule = ScheduleManager.State()
     
     var qrcodeImage: ImageAsset = .qrCode
     var eventImage: ImageAsset = .eventGenerate
@@ -51,7 +51,7 @@ public struct CoreMember {
     case inner(InnerAction)
     case navigation(NavigationAction)
     case attendanceCheck(AttendanceCheck.Action)
-    case schedule(ScheduleManger.Action)
+    case schedule(ScheduleManager.Action)
   }
   
   // MARK: - View action
@@ -82,7 +82,7 @@ public struct CoreMember {
   
   @Reducer(state: .equatable)
   public enum Destination {
-    case qrcode(QrCode)
+    case qrcode(QRCode)
   }
   
   @Dependency(FireStoreUseCase.self) var fireStoreUseCase
@@ -125,7 +125,7 @@ public struct CoreMember {
       AttendanceCheck()
     }
     Scope(state: \.schedule, action: \.schedule) {
-      ScheduleManger()
+      ScheduleManager()
     }
   }
   

@@ -26,7 +26,7 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
     role: String,
     crew: String,
     responsibility: String
-  ) async throws -> ProfileDTOModel? {
+  ) async throws -> ProfileResponseModel? {
     return try await repository.editProfileManger(
       name: name,
       inviteCode: inviteCode,
@@ -36,7 +36,7 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
     )
   }
   // MARK: - 프로필 조회
-  public func getProfile() async throws -> ProfileDTOModel? {
+  public func getProfile() async throws -> ProfileResponseModel? {
     return try await repository.getProfile()
   }
   
@@ -46,7 +46,7 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
     inviteCode: String,
     role: String,
     responsibility: String
-  ) async throws -> ProfileDTOModel? {
+  ) async throws -> ProfileResponseModel? {
     return try await repository.editProfileMangerNoTeam(
       name: name,
       inviteCode: inviteCode,
@@ -61,7 +61,7 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
     inviteCode: String,
     role: String,
     crew: String
-  ) async throws -> ProfileDTOModel? {
+  ) async throws -> ProfileResponseModel? {
     return try await repository.editProfileMember(
       name: name,
       inviteCode: inviteCode,
@@ -71,13 +71,11 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
   }
 }
 
-
 extension DependencyContainer {
   var profileUseCase: ProfileRepositoryProtocol? {
     resolve(ProfileRepositoryProtocol.self)
   }
 }
-
 
 extension ProfileUseCase: DependencyKey {
   static public var liveValue: ProfileUseCase = {
@@ -94,7 +92,6 @@ public extension DependencyValues {
 }
 
 public extension RegisterModule {
-  
   var profileUseCaseModule: () -> Module {
     makeUseCaseWithRepository(
       ProfileUseCaseProtocol.self,
@@ -111,5 +108,4 @@ public extension RegisterModule {
       ProfileRepository()
     }
   }
-  
 }

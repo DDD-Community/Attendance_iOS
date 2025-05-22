@@ -37,7 +37,7 @@ public enum ProfileService{
 
 
 extension ProfileService: BaseTargetType {
-  public var domain: AttandanceDomain {
+  public var domain: AttendanceDomain {
     return .profile
   }
   

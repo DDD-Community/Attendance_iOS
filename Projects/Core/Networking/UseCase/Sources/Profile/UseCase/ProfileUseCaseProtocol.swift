@@ -16,21 +16,21 @@ public protocol ProfileUseCaseProtocol {
     role: String,
     crew: String,
     responsibility: String
-  ) async throws -> ProfileDTOModel?
+  ) async throws -> ProfileResponseModel?
   
   func editProfileMangerNoTeam(
     name: String,
     inviteCode: String,
     role: String,
     responsibility: String
-  ) async throws -> ProfileDTOModel?
+  ) async throws -> ProfileResponseModel?
   
   func editProfileMember(
     name: String,
     inviteCode: String,
     role: String,
     crew: String
-  ) async throws -> ProfileDTOModel?
+  ) async throws -> ProfileResponseModel?
   
-  func getProfile() async throws -> ProfileDTOModel?
+  func getProfile() async throws -> ProfileResponseModel?
 }

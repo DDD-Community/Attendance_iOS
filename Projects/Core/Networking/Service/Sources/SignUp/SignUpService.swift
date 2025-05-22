@@ -24,7 +24,7 @@ public enum SignUpService {
 }
 
 extension SignUpService: BaseTargetType {
-  public var domain: AttandanceDomain {
+  public var domain: AttendanceDomain {
     switch self {
     case .registerAccount, .checkEmail:
       return .auth

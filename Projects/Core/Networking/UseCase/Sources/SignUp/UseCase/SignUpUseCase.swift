@@ -12,15 +12,15 @@ import DiContainer
 import ComposableArchitecture
 
 public struct SignUpUseCase: SignUpUseCaseProtocol {
-  
+
   private let repository: SignUpRepositoryProtocol
-  
+
   public init(
     repository: SignUpRepositoryProtocol
   ) {
     self.repository = repository
   }
-  
+
   // MARK: - 회원가입 API
   public func registerAccount(
     email: String,
@@ -31,14 +31,14 @@ public struct SignUpUseCase: SignUpUseCaseProtocol {
       password: password
     )
   }
-  
+
   // MARK: -초대코드 확인
   public func validateInviteCode(
     inviteCode: String
   ) async throws -> InviteDTOModel? {
     return try await repository.validateInviteCode(inviteCode: inviteCode)
   }
-  
+
   // MARK: - 이메일 검증
   public func checkEmail(email: String) async throws -> CheckEmailDTO? {
     return try await repository.checkEmail(email: email)
@@ -77,7 +77,7 @@ public extension RegisterModule {
       }
     )
   }
-  
+
   var signUpRepositoryModoule: () -> Module {
     makeDependency(SignUpRepositoryProtocol.self) {
       SignUpRepository()

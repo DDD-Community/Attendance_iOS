@@ -14,25 +14,25 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
   @Binding var shouldStartScanning: Bool
   @Binding var scannedText: String
   var scannAction: () -> Void = {}
-  
+
   var dataToScanFor: Set<DataScannerViewController.RecognizedDataType>
-  
+
   // MARK: - Coordinator
   class Coordinator: NSObject, DataScannerViewControllerDelegate {
     var parent: QRScannerRepresentable
     var scanTimeoutTask: DispatchWorkItem?
     var lastScannedText: String?
     var lastScannedTime: Date?
-    
+
     init(_ parent: QRScannerRepresentable) {
       self.parent = parent
     }
-    
+
     func resetLastScanned() {
       lastScannedText = nil
       lastScannedTime = nil
     }
-    
+
     // 사용자가 탭했을 때 호출 (원한다면 사용)
     func dataScanner(_ dataScanner: DataScannerViewController, didTapOn item: RecognizedItem) {
       switch item {
@@ -44,7 +44,7 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
         #logDebug("Unexpected item")
       }
     }
-    
+
     // 인식된 아이템이 업데이트될 때 호출됨
     func dataScanner(_ dataScanner: DataScannerViewController,
                      didUpdate items: [RecognizedItem],
@@ -83,9 +83,9 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
         }
       }
     }
-    
+
   }
-  
+
   // MARK: - UIViewControllerRepresentable
   func makeUIViewController(context: Context) -> DataScannerViewController {
     let dataScannerVC = DataScannerViewController(
@@ -100,7 +100,7 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
     dataScannerVC.delegate = context.coordinator
     return dataScannerVC
   }
-  
+
   func updateUIViewController(_ uiViewController: DataScannerViewController, context: Context) {
     let isScanning = uiViewController.isScanning
     if shouldStartScanning, !isScanning {
@@ -113,11 +113,11 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
       uiViewController.stopScanning()
     }
   }
-  
+
   func makeCoordinator() -> Coordinator {
     Coordinator(self)
   }
-  
+
   // startScanning() 호출을 비동기 함수로 감싸기 위한 래퍼
   private func startScanningAsync(_ uiViewController: DataScannerViewController) async throws {
     try await withCheckedThrowingContinuation { continuation in

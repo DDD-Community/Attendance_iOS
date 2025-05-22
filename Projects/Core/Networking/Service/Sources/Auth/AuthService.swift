@@ -19,7 +19,7 @@ public enum AuthService {
 
 
 extension AuthService: BaseTargetType {
-  public var domain: Foundations.AttandanceDomain {
+  public var domain: Foundations.AttendanceDomain {
     return .auth
   }
   
