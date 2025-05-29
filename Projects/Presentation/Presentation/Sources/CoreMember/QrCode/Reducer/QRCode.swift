@@ -27,6 +27,7 @@ public struct QRCode {
     var filterSceduleAttendanceModel: AttendanceListModel?
     var modifyAttendanceModel: ModifyAttendanceModel?
     var scheduleId: String = ""
+    var nowDate = Date()
     
     public init() {}
   }
@@ -144,9 +145,9 @@ public struct QRCode {
       .debounce(id: QRCodeCancel(), for: 0.3, scheduler: mainQueue)
       
     case .filterSchedule:
-      return .run { send in
+      return .run { [nowDate = state.nowDate] send in
         let filterScheduleResult = await Result {
-          try await scheduleUseCase.filtergetSchedules(startDate: "2025-05-21")
+          try await scheduleUseCase.filtergetSchedules(startDate: nowDate.formattedDates())
         }
         
         switch filterScheduleResult {
@@ -166,7 +167,7 @@ public struct QRCode {
         sceduleId = state.scheduleId
       ] send in
         let filterSceduleAttendanceResult = await Result {
-          try await attendanceUseCase.filterScheduleAttendance(userId: userId, scheduleId: sceduleId)
+          try await attendanceUseCase.filterScheduleAttendance(userId: userId, scheduleId: sceduleId, startDate: Date().formattedDates())
         }
         
         switch filterSceduleAttendanceResult {

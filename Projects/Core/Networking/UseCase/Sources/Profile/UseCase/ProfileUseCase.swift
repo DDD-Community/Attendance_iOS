@@ -19,7 +19,7 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
     self.repository = repository
   }
   
-  // MARK: - 프로필 수정
+  // MARK: - 프로필  수정
   public func editProfileManger(
     name: String,
     inviteCode: String,
@@ -55,7 +55,7 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
     )
   }
   
-  // MARK: - 프로필 수정 멤법
+  // MARK: - 프로필 수정 멤버
   public func editProfileMember(
     name: String,
     inviteCode: String,

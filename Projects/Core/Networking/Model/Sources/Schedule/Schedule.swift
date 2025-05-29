@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Schedule: Identifiable, Equatable {
+public struct Schedule: Identifiable, Hashable {
   public let id: String
   public let month: Int
   public let day: Int
@@ -32,7 +32,12 @@ public struct Schedule: Identifiable, Equatable {
   }
   
   public static func ==(lhs: Schedule, rhs: Schedule) -> Bool {
-    return lhs.id == rhs.id
+    return lhs.id == rhs.id && lhs.status == rhs.status
+  }
+  
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(id)
+    hasher.combine(status)
   }
 }
 

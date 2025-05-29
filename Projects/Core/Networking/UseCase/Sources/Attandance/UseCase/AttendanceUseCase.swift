@@ -45,11 +45,13 @@ public struct AttendanceUseCase: AttendanceUseCaseProtocol {
   // MARK: - 스케줄 아이디로 출석 조회 필터
   public func filterScheduleAttendance(
     userId: Int,
-    scheduleId: String
+    scheduleId: String,
+    startDate: String
   ) async throws -> AttendanceListModel? {
     return try await repository.filterScheduleAttendance(
       userId: userId,
-      scheduleId: scheduleId
+      scheduleId: scheduleId,
+      startDate: startDate
     )
   }
   
@@ -105,5 +107,4 @@ public extension RegisterModule {
       AttendanceRepository()
     }
   }
-  
 }

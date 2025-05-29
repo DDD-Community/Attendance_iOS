@@ -270,7 +270,6 @@ public struct AttendanceCheck {
           await send(.inner(.attendanceCheckResponse(.failure(.unknownError(error.localizedDescription)))))
         }
       }
-      .debounce(id: AttendanceCheckCancel(), for: 0.3, scheduler: mainQueue)
     }
   }
   

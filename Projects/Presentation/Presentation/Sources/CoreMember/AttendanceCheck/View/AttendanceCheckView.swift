@@ -31,7 +31,7 @@ struct AttendanceCheckView: View {
     }
     .onChange(of: store.selectPart ?? .web1) { oldValue, newValue in
       store.attendCheckModel?.data = []
-      store.send(.async(.filterAttendance(selectTeam: newValue)))
+      store.send(.async(.filterAttendance(selectTeam: newValue)), animation: .easeIn)
     }
     
     

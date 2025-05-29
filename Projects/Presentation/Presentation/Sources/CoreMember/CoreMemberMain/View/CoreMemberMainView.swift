@@ -62,6 +62,7 @@ struct CoreMemberMainView: View {
     .sheet(item: $store.scope(state: \.destination?.qrcode, action: \.destination.qrcode)) { qrCodeStore in
       QRScannerView(store: qrCodeStore) {
         store.send(.view(.closeModal))
+        store.send(.attendanceCheck(.async(.appearData)))
       }
       .presentationDetents([.height(UIScreen.screenHeight * 0.85)])
       .presentationCornerRadius(20)
