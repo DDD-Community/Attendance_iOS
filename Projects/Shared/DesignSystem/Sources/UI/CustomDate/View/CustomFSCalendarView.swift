@@ -160,7 +160,6 @@ public struct CustomFSCalendarView: UIViewRepresentable {
     // MARK: - 페이지 변경
     public func calendarCurrentPageDidChange(_ calendar: FSCalendar) {
       parent.currentMonth = calendar.currentPage
-      
     }
   }
 }

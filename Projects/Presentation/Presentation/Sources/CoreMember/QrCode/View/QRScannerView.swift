@@ -38,9 +38,6 @@ struct QRScannerView: View {
       // 3. 왼쪽 상단 닫기 버튼
       navigationBar()
     }
-    .task {
-      store.send(.async(.filterSchedule))
-    }
     .onChange(of: store.scannedText) { oldValue ,newValue in
       // 스캔된 텍스트가 업데이트되면, 2초 후에 재스캔을 위해 상태 재활성화
       if !newValue.isEmpty {

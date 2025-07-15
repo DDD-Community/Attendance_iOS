@@ -26,7 +26,7 @@ public class ProfileRepository: ProfileRepositoryProtocol {
     name: String,
     inviteCode: String,
     role: String,
-    crew: String,
+    team: String,
     responsibility: String
   ) async throws -> ProfileResponseModel? {
     let response = try await provider.requestAsync(
@@ -34,7 +34,7 @@ public class ProfileRepository: ProfileRepositoryProtocol {
         username: name,
         inviteCodeId: inviteCode,
         role: role,
-        crew: crew,
+        team:team,
         responsibility: responsibility
       ),
       decodeTo: Response.self
@@ -66,14 +66,14 @@ public class ProfileRepository: ProfileRepositoryProtocol {
     name: String,
     inviteCode: String,
     role: String,
-    crew: String
+    team: String
   ) async throws -> ProfileResponseModel? {
     let response = try await provider.requestAsync(
       .editProfileMember(
         username: name,
         inviteCodeId: inviteCode,
         role: role,
-        crew: crew
+        team: team
       ),
       decodeTo: Response.self
     )
