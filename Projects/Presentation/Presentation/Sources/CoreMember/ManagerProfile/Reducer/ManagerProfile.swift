@@ -87,7 +87,6 @@ public struct ManagerProfile {
   
   fileprivate struct MangerProfileCancel: Hashable {}
   
-  @Dependency(FireStoreUseCase.self) var fireStoreUseCase
   @Dependency(AuthUseCase.self) var authUseCase
   @Dependency(ProfileUseCase.self) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue

@@ -17,7 +17,6 @@ extension RepositoryModuleFactory {
       return [
         registerModuleCopy.authRepositoryModule,
         registerModuleCopy.oAuthRepositoryModule,
-        registerModuleCopy.fireStoreRepositoryModule,
         registerModuleCopy.qrCodeRepositoryModule,
         registerModuleCopy.signUpRepositoryModoule,
         registerModuleCopy.profileRepositoryModule,

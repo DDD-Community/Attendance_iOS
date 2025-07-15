@@ -18,13 +18,8 @@ public struct AuthUseCase: AuthUseCaseProtocol {
   ) {
     self.repository = repository
   }
-  
-  // MARK: - 유저 조회
-  
-  public func fetchUser(uid: String) async throws -> UserDTOMember? {
-    try await repository.fetchUser(uid: uid)
-  }
-  
+
+
   // MARK: - API로 통해서 로그인
   public func loginUser(
     email: String

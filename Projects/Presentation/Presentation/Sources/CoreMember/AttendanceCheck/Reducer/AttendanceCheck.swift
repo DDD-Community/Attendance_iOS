@@ -25,9 +25,6 @@ public struct AttendanceCheck {
     var selectPart: SelectTeam? = .web1
     
     var dividerWidths: [SelectTeam: CGFloat] = [:]
-    var attendanceCheckInModel: [AttendanceDTO] = []
-    var attendaceMemberModel : [MemberDTO] = []
-    var user: User? =  nil
     
     var isLoading: Bool = false
     var attendanceCount: Int = .zero
@@ -94,7 +91,6 @@ public struct AttendanceCheck {
   
   private struct AttendanceCheckCancel: Hashable {}
   
-  @Dependency(FireStoreUseCase.self) var fireStoreUseCase
   @Dependency(AttendanceUseCase.self) var attendanceUseCase
   @Dependency(ScheduleUseCase.self) var scheduleUseCase
   @Dependency(\.continuousClock) var clock
@@ -124,9 +120,9 @@ public struct AttendanceCheck {
       }
     }
     .ifLet(\.$destination, action: \.destination)
-    .onChange(of: \.attendanceCheckInModel) { oldValue, newValue in
+    .onChange(of: \.sceheduleAttandanceModel) { oldValue, newValue in
       Reduce { state, action in
-        state.attendanceCheckInModel = newValue
+        state.sceheduleAttandanceModel = newValue
         return .none
       }
     }
@@ -139,8 +135,6 @@ public struct AttendanceCheck {
     switch action {
     case .selectPartButton(let selectPart):
       state.selectPart = selectPart
-      #logDebug("출석 데이터", state.attendanceCheckInModel.filter { state.selectPart?
-        .description == $0.memberTeam.description})
       return .none
       
     case .swipeNext:

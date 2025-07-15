@@ -85,7 +85,6 @@ public struct CoreMember {
     case qrcode(QRCode)
   }
   
-  @Dependency(FireStoreUseCase.self) var fireStoreUseCase
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
