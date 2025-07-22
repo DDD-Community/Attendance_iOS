@@ -32,7 +32,6 @@ struct AttendanceCheckView: View {
     .onChange(of: store.selectPart ?? .web1) { oldValue, newValue in
       store.selectPart = newValue
       store.send(.inner(.fillterAttendance(team: newValue)))
-
     }
 
 
@@ -86,7 +85,7 @@ extension AttendanceCheckView {
         .frame(height: 14)
 
       AttendanceCard(
-        attendanceCount: attendanceCountDTOData?.attendanceCount ?? .zero,
+        attendanceCount: attendanceCountDTOData?.presentCount ?? .zero,
         lateCount: attendanceCountDTOData?.lateCount ?? .zero,
         absentCount: attendanceCountDTOData?.absentCount ?? .zero,
         showWarning: false

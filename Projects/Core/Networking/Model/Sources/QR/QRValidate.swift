@@ -11,17 +11,17 @@ public typealias QRValidateModel = BaseResponseDTO<QRValidateResponseModel>
 
 // MARK: - DataClass
 public struct QRValidateResponseModel: Decodable, Equatable {
-  public let valid: Bool
-  public let userID: Int
-  public let username: String
-  
-  public init(
-    valid: Bool,
-    userID: Int,
-    username: String
-  ) {
-    self.valid = valid
-    self.userID = userID
-    self.username = username
+  public let id: String?
+  public let profileSummary: ProfileSummary?
+  public let scheduleSummary: ScheduleSummary?
+  public let updatedAt, status, method: String
+  public let note: String?
+
+  public   enum CodingKeys: String, CodingKey {
+    case id
+    case profileSummary = "profile_summary"
+    case scheduleSummary = "schedule_summary"
+    case updatedAt = "updated_at"
+    case status, method, note
   }
 }

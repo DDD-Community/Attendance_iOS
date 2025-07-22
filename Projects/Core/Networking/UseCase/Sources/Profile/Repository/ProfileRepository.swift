@@ -19,7 +19,7 @@ public class ProfileRepository: ProfileRepositoryProtocol {
 
   public init() {}
 
-  private let provider = MoyaProvider<ProfileService>(plugins: [MoyaLoggingPlugin()])
+  private let provider = MoyaProvider<ProfileService>(session: Session(interceptor: AuthInterceptor.shared), plugins: [MoyaLoggingPlugin()])
 
   // MARK: - 프로필 수정
   public func editProfileManger(

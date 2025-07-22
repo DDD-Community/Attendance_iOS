@@ -7,17 +7,21 @@
 
 import Foundation
 
-public typealias QRValidateDTOModel = BaseResponse<QRValidateDTOResponseModel>
+public typealias QRValidateDTOModel = BaseResponseDTO<QRValidateDTOResponseModel>
 
 // MARK: - DataClass
 public struct QRValidateDTOResponseModel: Decodable{
-  let valid: Bool?
-  let userID: Int?
-  let username: String?
-  
+  let id: String
+  let profileSummary: ProfileSummaryDTO
+  let scheduleSummary: ScheduleSummaryDTO
+  let updatedAt, status, method: String
+  let note: String?
+
   enum CodingKeys: String, CodingKey {
-    case valid
-    case userID = "user_id"
-    case username
+    case id
+    case profileSummary = "profile_summary"
+    case scheduleSummary = "schedule_summary"
+    case updatedAt = "updated_at"
+    case status, method, note
   }
 }

@@ -22,9 +22,11 @@ public struct Splash {
    
     
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
-    var checkSessionJWTDTOModel: RefreshTokenDTOModel?
+    var loginModel: LoginModel?
     var profileDTOModel: ProfileResponseModel?
     @Shared(.appStorage("AccessToken")) var accessToken: String = ""
+    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
+
     public init() {
 
     }
@@ -48,16 +50,15 @@ public struct Splash {
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
-    case sessionCheckJWT
-    case checkJwtResponse(Result<RefreshTokenDTOModel, CustomError>)
+    case autoLogin
     case fetchUser
-    case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
-    
+    case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
+    case autoLoginResponse(Result<LoginModel?, CustomError>)
   }
   
   // MARK: - NavigationAction
@@ -109,58 +110,17 @@ public struct Splash {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-    case .sessionCheckJWT:
-      return .run { send in
-        let acceesToken  = UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? ""
-        
-        let checkJwtResult = await Result {
-          try await authUseCase.sessionCheckJWT(token: acceesToken)
-        }
-        
-        switch checkJwtResult {
-        case .success(let checkJwtDTOData):
-          if let checkJwtDTOData = checkJwtDTOData {
-            await send(.async(.checkJwtResponse(.success(checkJwtDTOData))))
-          }
-          
-        case .failure(let error):
-          await send(.async(.checkJwtResponse(.failure(.encodingError(error.localizedDescription)))))
-          await send(.navigation(.presentLogin))
-        }
-        
-      }
-      
-      
-    case .checkJwtResponse(let result):
-      switch result {
-      case .success(let jwtDTOData):
-        state.checkSessionJWTDTOModel = jwtDTOData
-        UserDefaults.standard.set(jwtDTOData.data.accessToken, forKey: "ACCESS_TOKEN")
-        
-        state.$userEntity.withLock {
-          $0.accessToken = jwtDTOData.data.accessToken
-          $0.refreshToken = jwtDTOData.data.refreshToken
-          $0.userEmail = jwtDTOData.data.user.email
-          $0.userName = jwtDTOData.data.user.email
-        }
-        
-      case .failure(let error):
-        #logNetwork("jwt check 실패", error.localizedDescription)
-      }
-      return .none
-      
-      
     case .fetchUser:
       return .run { send in
         let profileResult = await Result {
           try await profileUseCase.getProfile()
         }
-        
+
         switch profileResult {
         case .success(let profileDTOData):
           if let profileDTOData = profileDTOData {
-            await send(.async(.fetchUserResponse(.success(profileDTOData))))
-            
+            await send(.inner(.fetchUserResponse(.success(profileDTOData))))
+
             if profileDTOData.isStaff == true {
               await send(.navigation(.presentCoreMember))
             } else {
@@ -168,13 +128,42 @@ public struct Splash {
             }
           }
         case .failure(let error):
-          await send(.async(.fetchUserResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
+          await send(.inner(.fetchUserResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
           await send(.navigation(.presentLogin))
-          
+
         }
       }
-      .debounce(id: SplashCancel(), for: 0.3, scheduler: mainQueue)
-      
+
+    case .autoLogin:
+      return .run { [userEmail = state.userEmail] send in
+        let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
+        let loginResult = await Result {
+          try await authUseCase.loginUser(email: userEmail)
+        }
+
+        switch loginResult {
+        case .success(let loginModel):
+          if let loginModel = loginModel {
+            await send(.inner(.autoLoginResponse(.success(loginModel))))
+
+            if loginModel.code == 200 {
+              await send(.async(.fetchUser))
+            }
+          }
+
+        case .failure(let error):
+          await send(.inner(.autoLoginResponse(.failure(.encodingError(error.localizedDescription)))))
+          await send(.navigation(.presentLogin))
+        }
+      }
+    }
+  }
+
+  private func handleInnerAction(
+    state: inout State,
+    action: InnerAction
+  ) -> Effect<Action> {
+    switch action {
     case .fetchUserResponse(let result):
       switch result {
       case .success(let profileDTOData):
@@ -186,14 +175,25 @@ public struct Splash {
         #logError("유저 정보 가져오기", error.localizedDescription)
       }
       return .none
+
+    case .autoLoginResponse(let result):
+      switch result {
+      case .success(let loginDTOData):
+        state.loginModel = loginDTOData
+        UserDefaults.standard.set(loginDTOData?.data.accessToken, forKey: "ACCESS_TOKEN")
+        state.$accessToken.withLock {$0 = loginDTOData?.data.accessToken ?? ""}
+        state.$userEntity.withLock {
+          $0.userEmail = loginDTOData?.data.email ?? ""
+          $0.accessToken = loginDTOData?.data.accessToken ?? ""
+          $0.refreshToken = loginDTOData?.data.refreshToken ?? ""
+        }
+
+
+      case .failure(let error):
+        #logNetwork("로그인 실패", error.localizedDescription)
+      }
+      return .none
     }
-  }
-  
-  private func handleInnerAction(
-    state: inout State,
-    action: InnerAction
-  ) -> Effect<Action> {
-    
   }
   
   private func handleNavigationAction(

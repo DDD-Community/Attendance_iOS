@@ -26,11 +26,11 @@ public class AuthRepository: AuthRepositoryProtocol {
   // MARK: - 로그인 API
   public func loginUser(
     email: String,
-  ) async throws -> LoginDTOModel? {
+  ) async throws -> LoginModel? {
     let loginModel = try await provider.requestAsync(
       .login(
-        email: email), decodeTo: LoginModel.self)
-    return loginModel.toLoginDTOModel()
+        email: email), decodeTo: LoginDTOModel.self)
+    return loginModel.toDomanl()
   }
   
   // MARK: - 세션  시작시 jwtCheck API

@@ -9,15 +9,13 @@ import Foundation
 
 // MARK: - DTO -> Domain 변환 확장
 public extension ScheduleDTOModel {
-  /// DTO를 도메인 모델로 변환
-  /// - Returns: ScheduleModel 인스턴스
   func toDomain() -> ScheduleModel {
-    // 1) attendances_summary 변환
     let responses: [ScheduleResponseModel] = (self.data ?? []).map { item in
-      // AttendancesSummaryDTO Optional 배열 처리
-      let attendances: [AttendancesSummary] = item.attendancesSummary?.map { dto in
-        let profileDTO = dto.profile
-        // Profile 변환
+      let attendances: [AttendancesSummary] = item.attendancesSummary?.compactMap { dto in
+        guard let profileDTO = dto.profile else {
+          return .none // ❗ profile이 null이면 해당 attendance 생략
+        }
+
         let profile = AttendanceProfile(
           id: profileDTO.id,
           userID: profileDTO.userID,
@@ -27,17 +25,16 @@ public extension ScheduleDTOModel {
           cohort: profileDTO.cohort,
           responsibility: profileDTO.responsibility
         )
-        // AttendancesSummary 변환
+
         return AttendancesSummary(
           profile: profile,
-          status: dto.status,
-          updatedAt: dto.updatedAt,
+          status: dto.status ?? "",
+          updatedAt: dto.updatedAt ?? "",
           method: dto.method ?? "",
           note: dto.note ?? ""
         )
       } ?? []
 
-      // ScheduleResponseModel 생성
       return ScheduleResponseModel(
         scheduleId: item.id ?? "",
         title: item.title ?? "",
@@ -48,7 +45,6 @@ public extension ScheduleDTOModel {
       )
     }
 
-    // 최종 ScheduleModel 반환
     return ScheduleModel(
       code: self.code ?? 0,
       message: self.message ?? "",

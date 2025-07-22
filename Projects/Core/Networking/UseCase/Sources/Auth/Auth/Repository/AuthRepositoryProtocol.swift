@@ -8,6 +8,6 @@
 import Model
 
 public protocol AuthRepositoryProtocol {
-  func loginUser(email: String) async throws -> LoginDTOModel?
+  func loginUser(email: String) async throws -> LoginModel?
   func sessionCheckJWT(token: String) async throws -> RefreshTokenDTOModel?
 }

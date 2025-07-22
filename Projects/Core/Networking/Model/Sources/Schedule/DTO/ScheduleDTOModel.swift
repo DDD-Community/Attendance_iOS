@@ -27,8 +27,8 @@ public struct ScheduleDTOResponseModel: Decodable {
 }
 
 struct AttendancesSummaryDTO: Decodable {
-  let profile: ProfileDTO
-  let status, updatedAt: String
+  let profile: ProfileDTO?
+  let status, updatedAt: String?
   let method, note: String?
 
   enum CodingKeys: String, CodingKey {

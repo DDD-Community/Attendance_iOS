@@ -18,7 +18,7 @@ public class QRCodeRepository: QRCodeRepositoryProtocol {
 
   public init() {}
 
-  private let provider = MoyaProvider<QRService>(plugins: [MoyaLoggingPlugin()])
+  private let provider = MoyaProvider<QRService>(session: Session(interceptor: AuthInterceptor.shared), plugins: [MoyaLoggingPlugin()])
 
   // MARK: - QRCode String 생성
 

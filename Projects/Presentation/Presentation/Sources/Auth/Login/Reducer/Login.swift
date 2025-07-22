@@ -35,7 +35,7 @@ public struct Login {
     @Shared var userEntity: UserEntity
     var signUpDTOModel: SignUpDTOModel?
     var checkEmailDTOModel: CheckEmailDTO?
-    var loginDTOModel: LoginDTOModel?
+    var loginModel: LoginModel?
     var profileDTOModel: ProfileResponseModel?
 
     public init(
@@ -75,7 +75,7 @@ public struct Login {
     case checkEmail
     case checkEmailResponse(Result<CheckEmailDTO, CustomError>)
     case loginUser
-    case loginUserResponse(Result<LoginDTOModel, CustomError>)
+    case loginUserResponse(Result<LoginModel, CustomError>)
     case fetchUser
     case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
   }
@@ -164,7 +164,6 @@ public struct Login {
           
           let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
           let uid = UserDefaults.standard.string(forKey: "UserUID") ?? ""
-          
           state.$userEntity.withLock {
             $0.userEmail = email
             $0.userUid = uid
@@ -306,7 +305,7 @@ public struct Login {
     case .loginUserResponse(let result):
       switch result {
       case .success(let loginDTOData):
-        state.loginDTOModel = loginDTOData
+        state.loginModel = loginDTOData
         UserDefaults.standard.set(loginDTOData.data.accessToken, forKey: "ACCESS_TOKEN")
         state.$accessToken.withLock {$0 = loginDTOData.data.accessToken}
         state.$userEntity.withLock {

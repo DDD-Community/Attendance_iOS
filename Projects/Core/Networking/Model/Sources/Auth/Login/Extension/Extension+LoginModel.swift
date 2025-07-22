@@ -7,17 +7,17 @@
 
 import Foundation
 
-public extension LoginModel {
-  func toLoginDTOModel() -> LoginDTOModel {
+public extension LoginDTOModel {
+  func toDomanl() -> LoginModel {
     
-    let data = LoginResponseDTOModel(
+    let data = LoginResponseModel(
       id: self.data?.id ?? .zero,
       email:  self.data?.email ?? "",
       accessToken: self.data?.access ?? "",
       refreshToken: self.data?.refresh ?? "",
     )
     
-    return LoginDTOModel(
+    return LoginModel(
       code: self.code ?? .zero,
       message: self.message ?? "",
       data: data

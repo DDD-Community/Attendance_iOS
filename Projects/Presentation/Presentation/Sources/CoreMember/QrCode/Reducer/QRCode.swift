@@ -126,7 +126,7 @@ public struct QRCode {
             try await clock.sleep(for: .seconds(2))
             await send(.inner(.qrCodeValidateReponse(.success(qrCodeValidateData))))
             
-            if qrCodeValidateData.code == 200 && qrCodeValidateData.data.valid == true {
+            if qrCodeValidateData.code == 200  {
               await send(.view(.stopScanning))
             }
           }
