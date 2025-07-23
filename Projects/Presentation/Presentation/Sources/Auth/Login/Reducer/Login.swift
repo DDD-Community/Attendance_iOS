@@ -26,17 +26,17 @@ public struct Login {
     var appleAccessToken: String = ""
     var appleAuthCode: String = ""
     var appleLoginFullName: ASAuthorizationAppleIDCredential? = nil
-    var oAuthResponseModel: OAuthResponseDTOModel? = nil
+    var oAuthResponseModel: OAuthResponseModel? = nil
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     var userMember: UserDTOMember? = nil
     @Shared(.appStorage("UserEmail")) var userEmail: String = ""
     @Shared(.appStorage("AccessToken")) var accessToken: String = ""
 
     @Shared var userEntity: UserEntity
-    var signUpDTOModel: SignUpDTOModel?
-    var checkEmailDTOModel: CheckEmailDTO?
+    var signUpModel: SignUpModel?
+    var checkEmailModel: CheckEmailModel?
     var loginModel: LoginModel?
-    var profileDTOModel: ProfileResponseModel?
+    var profileModel: ProfileResponseModel?
 
     public init(
       userEntity: UserEntity = .init()
@@ -69,11 +69,11 @@ public struct Login {
     case appleLogin(Result<ASAuthorization, Error>, nonce: String)
     case appleRespose(Result<ASAuthorization, Error>)
     case googleLogin
-    case oAuthResponse(Result<OAuthResponseDTOModel, CustomError>)
+    case oAuthResponse(Result<OAuthResponseModel, CustomError>)
     case registerUser
-    case registerUserResponse(Result<SignUpDTOModel, CustomError>)
+    case registerUserResponse(Result<SignUpModel, CustomError>)
     case checkEmail
-    case checkEmailResponse(Result<CheckEmailDTO, CustomError>)
+    case checkEmailResponse(Result<CheckEmailModel, CustomError>)
     case loginUser
     case loginUserResponse(Result<LoginModel, CustomError>)
     case fetchUser
@@ -221,7 +221,7 @@ public struct Login {
           if let registerUserData = registerUserData {
             await send(.async(.registerUserResponse(.success(registerUserData))))
             
-            if !registerUserData.data.accessToken.isEmpty {
+            if registerUserData.data.accessToken?.isEmpty != nil {
               await send(.navigation(.presentSignUpInviteView))
             }
           }
@@ -233,12 +233,13 @@ public struct Login {
       
     case .registerUserResponse(let result):
       switch result {
-      case .success(let registerDTO):
-        UserDefaults.standard.set(registerDTO.data.accessToken, forKey: "ACCESS_TOKEN")
-        state.$accessToken.withLock { $0 = registerDTO.data.accessToken}
+      case .success(let signUpModel):
+        state.signUpModel = signUpModel
+        UserDefaults.standard.set(signUpModel.data.accessToken, forKey: "ACCESS_TOKEN")
+        state.$accessToken.withLock { $0 = signUpModel.data.accessToken ?? ""}
         state.$userEntity.withLock {
-          $0.accessToken = registerDTO.data.accessToken
-          $0.refreshToken = registerDTO.data.refreshToken
+          $0.accessToken = signUpModel.data.accessToken ?? ""
+          $0.refreshToken = signUpModel.data.refreshToken ?? ""
         }
         
       case .failure(let error):
@@ -272,8 +273,8 @@ public struct Login {
     case .checkEmailResponse(let result):
       switch result {
       case .success(let checkEmailDTO):
-        state.checkEmailDTOModel = checkEmailDTO
-        
+        state.checkEmailModel = checkEmailDTO
+
       case .failure(let error):
         #logNetwork("이메일 중복 확인 실패", error.localizedDescription)
       }
@@ -347,7 +348,7 @@ public struct Login {
     case .fetchUserResponse(let result):
       switch result {
       case .success(let profileDTOData):
-        state.profileDTOModel = profileDTOData
+        state.profileModel = profileDTOData
         
         state.$userEntity.withLock {
           $0.inviteCodeId = profileDTOData.inviteCodeID

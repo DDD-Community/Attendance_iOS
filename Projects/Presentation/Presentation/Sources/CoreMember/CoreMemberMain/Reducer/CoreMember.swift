@@ -35,7 +35,6 @@ public struct CoreMember {
     var eventImage: ImageAsset = .eventGenerate
     var managerProfilemage: ImageAsset = .managementProfile
     
-    var user: User? =  nil
     
     @Presents var destination: Destination.State?
   

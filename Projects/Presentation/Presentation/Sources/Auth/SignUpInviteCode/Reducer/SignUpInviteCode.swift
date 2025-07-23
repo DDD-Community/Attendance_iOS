@@ -24,7 +24,7 @@ public struct SignUpInviteCode {
     var secondInviteCode: String = ""
     var thirdInviteCode: String = ""
     var lastInviteCode: String = ""
-    var validateInviteCodeDTOModel: InviteDTOModel?
+    var validateInviteCodeDTOModel: InviteCodeModel?
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
     
     var totalInviteCode: String {
@@ -67,7 +67,7 @@ public struct SignUpInviteCode {
   
   public enum AsyncAction: Equatable {
     case validataInviteCode(code: String)
-    case validataInviteCodeResponse(Result<InviteDTOModel, CustomError>)
+    case validataInviteCodeResponse(Result<InviteCodeModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
