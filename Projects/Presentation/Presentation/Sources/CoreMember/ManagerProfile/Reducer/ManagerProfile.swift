@@ -7,11 +7,8 @@
 
 import Foundation
 
-import DesignSystem
-import Model
-import Networkings
-import Service
-import Utill
+import Core
+import Shareds
 
 import AsyncMoya
 import ComposableArchitecture
@@ -87,8 +84,8 @@ public struct ManagerProfile {
   
   fileprivate struct MangerProfileCancel: Hashable {}
   
-  @Dependency(AuthUseCase.self) var authUseCase
-  @Dependency(ProfileUseCase.self) var profileUseCase
+  @Dependency(AuthUseCaseImpl.self) var authUseCase
+  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.continuousClock) var clock
   

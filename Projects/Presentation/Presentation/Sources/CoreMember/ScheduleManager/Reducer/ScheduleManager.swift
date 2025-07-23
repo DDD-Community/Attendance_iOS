@@ -7,11 +7,10 @@
 
 import Foundation
 
-import Networkings
+import Core
+import Shareds
 
 import ComposableArchitecture
-
-import Utill
 
 @Reducer
 public struct ScheduleManager {
@@ -63,7 +62,7 @@ public struct ScheduleManager {
   
   private struct ScheduleCancel: Hashable {}
   
-  @Dependency(ScheduleUseCase.self) var scheduleUseCase
+  @Dependency(ScheduleUseCaseImpl.self) var scheduleUseCase
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.continuousClock) var  clock
   

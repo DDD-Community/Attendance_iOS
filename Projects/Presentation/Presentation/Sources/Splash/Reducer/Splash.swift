@@ -7,8 +7,8 @@
 
 import Foundation
 
-import Networkings
-import Utill
+import Core
+import Shareds
 
 import ComposableArchitecture
 import FirebaseAuth
@@ -71,8 +71,8 @@ public struct Splash {
   
   fileprivate struct SplashCancel: Hashable {}
   
-  @Dependency(AuthUseCase.self) var authUseCase
-  @Dependency(ProfileUseCase.self) var profileUseCase
+  @Dependency(AuthUseCaseImpl.self) var authUseCase
+  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   

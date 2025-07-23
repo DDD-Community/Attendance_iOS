@@ -7,8 +7,8 @@
 
 import Foundation
 
-import Networkings
-import Utill
+import Core
+import Shareds
 
 import ComposableArchitecture
 import TCACoordinators

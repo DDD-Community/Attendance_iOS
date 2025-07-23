@@ -7,7 +7,7 @@
 
 import Foundation
 
-import Networkings
+import Core
 import Utill
 
 import AsyncMoya
@@ -84,7 +84,7 @@ public struct SignUpInviteCode {
   
   struct SignUpInviteCodeCancel: Hashable {}
   
-  @Dependency(SignUpUseCase.self) var signUpUseCase
+  @Dependency(SignUpUseCaseImpl.self) var signUpUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   

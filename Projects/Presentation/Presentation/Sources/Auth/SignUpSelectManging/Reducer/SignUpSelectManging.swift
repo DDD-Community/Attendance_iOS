@@ -7,8 +7,8 @@
 
 import Foundation
 
+import Core
 import Utill
-import Networkings
 
 import AsyncMoya
 import ComposableArchitecture
@@ -65,7 +65,7 @@ public struct SignUpSelectManaging {
   
   struct SignUpSelectManagingCancel: Hashable {}
   
-  @Dependency(ProfileUseCase.self) var profileUseCase
+  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   

@@ -7,7 +7,7 @@
 
 import Foundation
 
-import Networkings
+import Core
 import Utill
 
 import AsyncMoya
@@ -93,10 +93,10 @@ public struct Login {
     case presentMemberMain
   }
 
-  @Dependency(OAuthUseCase.self) var oAuthUseCase
-  @Dependency(AuthUseCase.self) var authUseCase
-  @Dependency(SignUpUseCase.self) var signUpUseCase
-  @Dependency(ProfileUseCase.self) var profileUseCase
+  @Dependency(OAuthUseCaseImpl.self) var oAuthUseCase
+  @Dependency(AuthUseCaseImpl.self) var authUseCase
+  @Dependency(SignUpUseCaseImpl.self) var signUpUseCase
+  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
 

@@ -7,8 +7,8 @@
 
 import Foundation
 
+import Core
 import Shareds
-import Networkings
 
 import ComposableArchitecture
 import FirebaseAuth
@@ -91,8 +91,8 @@ public struct AttendanceCheck {
   
   private struct AttendanceCheckCancel: Hashable {}
   
-  @Dependency(AttendanceUseCase.self) var attendanceUseCase
-  @Dependency(ScheduleUseCase.self) var scheduleUseCase
+  @Dependency(AttendanceUseCaseImpl.self) var attendanceUseCase
+  @Dependency(ScheduleUseCaseImpl.self) var scheduleUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   

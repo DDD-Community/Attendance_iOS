@@ -8,9 +8,8 @@
 import Foundation
 import SwiftUI
 
-import DesignSystem
-import Networkings
-import Utill
+import Core
+import Shareds
 
 import ComposableArchitecture
 import KeychainAccess
