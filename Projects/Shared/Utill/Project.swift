@@ -11,7 +11,7 @@ let project = Project.makeAppModule(
   settings:  .settings(),
   dependencies: [
     .SPM.composableArchitecture,
-    .Networking(implements: .Model),
+    .Data(implements: .Model),
   ],
   sources: ["Sources/**"]
 )
