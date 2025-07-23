@@ -51,7 +51,7 @@ public class QRCodeRepository: QRCodeRepositoryProtocol {
   public func qrAttendanceCheck(
     from code: String
   ) async throws -> QRValidateModel? {
-    let qrModel = try await provider.requestAsync(
+    let qrModel = try await provider.requestAsyncAwait(
       .qrAttendanceCheck(
         code: code
       ), decodeTo: QRValidateDTOModel.self)

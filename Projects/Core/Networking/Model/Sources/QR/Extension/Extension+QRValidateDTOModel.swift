@@ -12,19 +12,21 @@ public extension QRValidateDTOModel {
     let profile = self.data.profileSummary
     let schedule =  self.data.scheduleSummary
 
-    let profileModel = ProfileSummary(
+    let profileModel = QRProfileSummary(
+      id: profile.id,
+      userID: profile.userID,
       name: profile.name,
-      role: SelectPart(rawValue: profile.role ?? "") ?? .all,
-      team: SelectTeam(rawValue: profile.team ?? "") ?? .notTeam,
-      cohort: profile.cohort ?? "",
-      crew: SelectTeam(rawValue: profile.crew ?? "") ?? .notTeam
+      role: SelectPart(rawValue: profile.role) ?? .all,
+      team: SelectTeam(rawValue: profile.team) ?? .notTeam,
+      cohort: profile.cohort
     )
 
-    let scheduleModel = ScheduleSummary(
-      scheduleId: schedule.id ?? "",
-      title: schedule.title ?? "",
-      description: schedule.description ?? "",
-      startTime: schedule.startTime ?? ""
+    let scheduleModel = QRScheduleSummary(
+      id: schedule.id,
+      title: schedule.title,
+      description: schedule.description,
+      startTime: schedule.startTime,
+      endTime: schedule.endTime
     )
 
     let data = QRValidateResponseModel(
@@ -32,9 +34,9 @@ public extension QRValidateDTOModel {
       profileSummary: profileModel,
       scheduleSummary: scheduleModel,
       updatedAt: self.data.updatedAt,
-      status: self.data.status,
-      method: self.data.method,
-      note: self.data.note ?? ""
+      method: self.data.status,
+      note: self.data.method,
+      status: AttendanceType(rawValue: self.data.status) ?? .notAttendance
       )
 
     

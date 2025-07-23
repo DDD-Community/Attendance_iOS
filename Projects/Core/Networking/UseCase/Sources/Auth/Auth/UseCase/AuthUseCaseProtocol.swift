@@ -9,5 +9,4 @@ import Model
 
 public protocol AuthUseCaseProtocol {
   func loginUser(email: String) async throws -> LoginModel?
-  func sessionCheckJWT(token: String) async throws -> RefreshTokenDTOModel?
 }

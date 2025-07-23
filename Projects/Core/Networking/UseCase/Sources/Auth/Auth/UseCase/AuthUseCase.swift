@@ -29,16 +29,6 @@ public struct AuthUseCase: AuthUseCaseProtocol {
         email: email
       )
   }
-  
-  // MARK: - 세션 시작시 jwt check
-  public func sessionCheckJWT(
-    token: String
-  ) async throws -> RefreshTokenDTOModel? {
-    return try await repository
-      .sessionCheckJWT(
-        token: token
-      )
-  }
 }
 
 extension DependencyContainer {

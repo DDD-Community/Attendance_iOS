@@ -62,4 +62,13 @@ extension QRService: BaseTargetType {
   public var error: [Int: Foundations.NetworkError]? {
     return nil
   }
+
+  public var validationType: ValidationType {
+    switch self {
+    case .qrAttendanceCheck(let code):
+      return .customCodes(Array(200...410))
+    case .createQRCode:
+      return .successCodes
+    }
+  }
 }

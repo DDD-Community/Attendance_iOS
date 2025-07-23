@@ -32,12 +32,4 @@ public class AuthRepository: AuthRepositoryProtocol {
         email: email), decodeTo: LoginDTOModel.self)
     return loginModel.toDomanl()
   }
-  
-  // MARK: - 세션  시작시 jwtCheck API
-  public func sessionCheckJWT(
-    token: String
-  ) async throws -> RefreshTokenDTOModel? {
-    let sessionCheckModel = try await provider.requestAsync(.sessionToJwt(token: token), decodeTo: RefreshTokenModel.self)
-    return sessionCheckModel.toRefreshDTOModel()
-  }
 }

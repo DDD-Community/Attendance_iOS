@@ -48,6 +48,16 @@ struct QRScannerView: View {
         }
       }
     }
+    .onChange(of: store.qrCheckModel?.data.status) { oldValue, newValue in
+      switch newValue {
+      case .present, .late, .absent:
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+          backAction()
+        }
+      default:
+        break
+      }
+    }
   }
 }
 
@@ -87,7 +97,7 @@ extension QRScannerView {
   
   @ViewBuilder
   fileprivate func scanedTextViewWithBackGround() -> some View {
-    let attendanceStatus =  store.modifyAttendanceModel?.data.status
+    let attendanceStatus =  store.qrCheckModel?.data.status
     GeometryReader { proxy in
       let width = proxy.size.width
       let height = proxy.size.height
@@ -141,9 +151,8 @@ extension QRScannerView {
         Text("출석이 완료됐어요!")
           .pretendardCustomFont(textStyle: .body1NormalMedium)
           .foregroundColor(.staticWhite)
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
-        
-        
+
+
         Spacer()
       }
     case .absent:
@@ -179,16 +188,13 @@ extension QRScannerView {
         Text("30분 초과로 결석이에요")
           .pretendardCustomFont(textStyle: .body1NormalMedium)
           .foregroundColor(.staticWhite)
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
         
-        
-        Spacer()
+
       }
     default:
-      Text("QR 코드를 스캔해 주세요")
+      Text(store.isUseQRCode ? "이미 사용된 QR 코드입니다.":  "QR 코드를 스캔해 주세요")
         .pretendardCustomFont(textStyle: .body1NormalMedium)
         .foregroundColor(.staticWhite)
-        .pretendardCustomFont(textStyle: .body1NormalMedium)
     }
   }
   

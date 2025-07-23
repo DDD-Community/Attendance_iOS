@@ -14,7 +14,7 @@ import AsyncMoya
 
 public enum AuthService {
   case login(email: String)
-  case sessionToJwt(token: String)
+
 }
 
 
@@ -22,31 +22,26 @@ extension AuthService: BaseTargetType {
   public var domain: Foundations.AttendanceDomain {
     return .auth
   }
-  
+
   public var urlPath: String {
     switch self {
     case .login:
       return AuthAPI.login.authDescription
-      
-    case .sessionToJwt:
-      return AuthAPI.sessionToJwt.authDescription
+
     }
   }
-  
+
   public var error: [Int : Foundations.NetworkError]? {
     return nil
   }
-  
+
   public var method: Moya.Method {
     switch self {
     case .login:
       return .post
-      
-    case .sessionToJwt:
-      return .get
     }
   }
-  
+
   public var parameters: [String : Any]? {
     switch self {
     case .login(
@@ -55,19 +50,11 @@ extension AuthService: BaseTargetType {
         "email": email,
       ]
       return parameters
-      
-    case .sessionToJwt(let token):
-      let parameters: [String: Any] = [
-        "token": token
-      ]
-      return parameters
     }
   }
-  
+
   public var headers: [String : String]? {
     switch self {
-    case .sessionToJwt:
-      return APIHeader.baseHeader
     default:
       return APIHeader.notAccessTokenHeader
     }
