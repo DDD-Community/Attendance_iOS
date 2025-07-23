@@ -12,7 +12,9 @@ let project = Project.makeAppModule(
   settings:  .settings(),
   dependencies: [
     .Network(implements: .Service),
-    .Domain(implements: .DomainInterface)
+    .Domain(implements: .DomainInterface),
+
+      .SPM.googleSignIn
   ],
   sources: ["Sources/**"]
 )
