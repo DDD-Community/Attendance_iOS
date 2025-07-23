@@ -11,7 +11,10 @@ import ProjectDescription
 public enum ModulePath {
   case Presentatios(Presentations)
   case Core(Cores)
-  case Networking(Networkings)
+  case Network(Networks)
+  case Interface(Interfaces)
+  case Domain(Domains)
+  case Data(Datas)
   case Shared(Shareds)
 }
 
@@ -37,8 +40,6 @@ public extension ModulePath {
 public extension ModulePath {
   enum Cores: String, CaseIterable {
     case Core
-    case Authorization
-    case Station
     
     public static let name: String = "Core"
   }
@@ -46,7 +47,7 @@ public extension ModulePath {
 
 //MARK: -  CoreDomainModule
 public extension ModulePath {
-  enum Networkings: String, CaseIterable {
+  enum Networks: String, CaseIterable {
     case API
     case Networkings
     case Foundations
@@ -57,9 +58,42 @@ public extension ModulePath {
     case ThirdPartys
     
     
-    public static let name: String = "Networking"
+    public static let name: String = "Network"
   }
 }
+
+//MARK: -  CoreMoudule
+public extension ModulePath {
+  enum Datas: String, CaseIterable {
+    case Model
+    case Repository
+
+    public static let name: String = "Data"
+  }
+}
+
+
+//MARK: -  CoreMoudule
+public extension ModulePath {
+  enum Domains: String, CaseIterable {
+    case UseCase
+    case DomainInterface
+
+
+    public static let name: String = "Domain"
+  }
+}
+
+//MARK: -  CoreMoudule
+public extension ModulePath {
+  enum Interfaces: String, CaseIterable {
+    case Interface
+
+
+    public static let name: String = "Interface"
+  }
+}
+
 
 public extension ModulePath {
   enum Shareds: String, CaseIterable {
