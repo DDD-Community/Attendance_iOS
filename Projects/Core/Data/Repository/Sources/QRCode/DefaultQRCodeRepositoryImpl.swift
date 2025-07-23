@@ -10,7 +10,7 @@ import SwiftUI
 import DomainInterface
 import Model
 
-final public class DefaultQRCodeRepository: QRCodeInterface {
+final public class DefaultQRCodeRepositoryImpl: QRCodeInterface {
   public init() {}
 
   public func createQRCode() async throws -> String {

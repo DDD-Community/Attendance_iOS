@@ -8,7 +8,7 @@
 import DomainInterface
 import Model
 
-final public class DefaultScheduleRepositoryImpl: SceduleInterface  {
+final public class DefaultScheduleRepositoryImpl: ScheduleInterface  {
 
   public init() {}
 

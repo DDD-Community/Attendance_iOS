@@ -15,7 +15,7 @@ import Service
 import AsyncMoya
 
 @Observable
-public class QRCodeRepository: QRCodeInterface {
+public class QRCodeRepositoryImpl: QRCodeInterface {
 
   public init() {}
 

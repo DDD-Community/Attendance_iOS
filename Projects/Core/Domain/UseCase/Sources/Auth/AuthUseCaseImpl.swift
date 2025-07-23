@@ -56,7 +56,7 @@ public extension DependencyValues {
 
 public extension RegisterModule {
 
-  var authUseCaseModule: () -> Module {
+  var authUseCaseImplModule: () -> Module {
     makeUseCaseWithRepository(
       AuthInterface.self,
       repositoryProtocol: AuthInterface.self,
@@ -67,7 +67,7 @@ public extension RegisterModule {
     )
   }
 
-  var authRepositoryModule: () -> Module {
+  var authRepositoryImplModule: () -> Module {
     makeDependency(AuthInterface.self) {
       AuthRepositoryImpl()
     }

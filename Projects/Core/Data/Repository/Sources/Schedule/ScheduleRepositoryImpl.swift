@@ -13,7 +13,7 @@ import Service
 import AsyncMoya
 
 @Observable
-public class ScheduleRepositoryImpl: SceduleInterface {
+public class ScheduleRepositoryImpl: ScheduleInterface {
 
   fileprivate let provider = MoyaProvider<ScheduleService>(session: Session(interceptor: AuthInterceptor.shared), plugins: [MoyaLoggingPlugin()])
 

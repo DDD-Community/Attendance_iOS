@@ -7,7 +7,7 @@
 
 import DomainInterface
 
-public final class DefaultProfileRepository: ProfileInterface {
+final public class DefaultProfileRepositoryImpl: ProfileInterface {
 
   public init() {}
 
