@@ -8,20 +8,20 @@
 import Foundation
 
 import DiContainer
-import Networkings
+import Core
 
 extension RepositoryModuleFactory {
   public mutating func registerDefaultDefinitions() {
     let registerModuleCopy = registerModule  // self를 직접 캡처하지 않고 복사
     repositoryDefinitions = {
       return [
-        registerModuleCopy.authRepositoryModule,
-        registerModuleCopy.oAuthRepositoryModule,
-        registerModuleCopy.qrCodeRepositoryModule,
-        registerModuleCopy.signUpRepositoryModoule,
-        registerModuleCopy.profileRepositoryModule,
-        registerModuleCopy.scheduleRepositoryModule,
-        registerModuleCopy.attendanceRepositoryModule
+        registerModuleCopy.authRepositoryImplModule,
+        registerModuleCopy.oAuthRepositoryImplModule,
+        registerModuleCopy.qrCodeRepositoryImplModule,
+        registerModuleCopy.signUpRepositoryImplModoule,
+        registerModuleCopy.profileRepositoryImplModule,
+        registerModuleCopy.scheduleRepositoryImplModule,
+        registerModuleCopy.attendanceRepositoryImplModule
       ]
     }()
   }
