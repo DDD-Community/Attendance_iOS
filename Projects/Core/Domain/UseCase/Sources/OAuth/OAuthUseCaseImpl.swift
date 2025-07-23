@@ -91,7 +91,7 @@ public extension RegisterModule {
   }
 
   var oAuthRepositoryImplModule: () -> Module {
-    makeDependency(OAuthUseCaseImpl.self) {
+    makeDependency(OAuthInterface.self) {
       OAuthRepositoryImpl()
     }
   }
