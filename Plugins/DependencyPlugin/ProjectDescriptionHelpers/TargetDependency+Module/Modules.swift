@@ -49,7 +49,7 @@ public extension ModulePath {
 public extension ModulePath {
   enum Networks: String, CaseIterable {
     case API
-    case Networkings
+    case Networks
     case Foundations
     case Model
     case Service
