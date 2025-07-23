@@ -14,7 +14,7 @@ let project = Project.makeAppModule(
     .SPM.composableArchitecture,
     .SPM.diContainer,
     .Data(implements: .Repository),
-    .Domain(implements: .DomainInterface),
+    
   ],
   sources: ["Sources/**"]
 )
