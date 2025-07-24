@@ -66,13 +66,12 @@ public struct ManagerProfile {
   
   public enum AsyncAction: Equatable {
     case fetchUser
-    case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
-    
+    case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
   }
   
   // MARK: - 네비게이션 연결 액션
@@ -167,24 +166,15 @@ public struct ManagerProfile {
             
             await send(.view(.stopLoading))
             
-            await send(.async(.fetchUserResponse(.success(profileUserDTOData))))
-            
+            await send(.inner(.fetchUserResponse(.success(profileUserDTOData))))
+
           }
         case .failure(let error):
-          await send(.async(.fetchUserResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
+          await send(.inner(.fetchUserResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
         }
       }
       .debounce(id: MangerProfileCancel(), for: 0.01, scheduler: mainQueue)
-      
-    case .fetchUserResponse(let result):
-      switch result {
-      case .success(let profileDTOData):
-        state.profileDTOModel = profileDTOData
-        
-      case .failure(let error):
-        #logError("유저 정보 가져오기", error.localizedDescription)
-      }
-      return .none
+
       
     }
   }
@@ -193,7 +183,17 @@ public struct ManagerProfile {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    
+    switch action {
+    case .fetchUserResponse(let result):
+      switch result {
+      case .success(let profileDTOData):
+        state.profileDTOModel = profileDTOData
+
+      case .failure(let error):
+        #logError("유저 정보 가져오기", error.localizedDescription)
+      }
+      return .none
+    }
   }
   
   private func handleNavigationAction(

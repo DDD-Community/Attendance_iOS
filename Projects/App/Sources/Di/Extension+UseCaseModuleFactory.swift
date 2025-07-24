@@ -8,7 +8,7 @@
 import Foundation
 
 import DiContainer
-import Networkings
+import Core
 
 extension UseCaseModuleFactory {
   public var useCaseDefinitions: [() -> Module] {

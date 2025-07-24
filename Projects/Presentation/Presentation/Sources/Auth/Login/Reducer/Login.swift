@@ -67,22 +67,21 @@ public struct Login {
 
   public enum AsyncAction {
     case appleLogin(Result<ASAuthorization, Error>, nonce: String)
-    case appleRespose(Result<ASAuthorization, Error>)
     case googleLogin
-    case oAuthResponse(Result<OAuthResponseModel, CustomError>)
-    case registerUser
-    case registerUserResponse(Result<SignUpModel, CustomError>)
+    case signUpUser
     case checkEmail
-    case checkEmailResponse(Result<CheckEmailModel, CustomError>)
     case loginUser
-    case loginUserResponse(Result<LoginModel, CustomError>)
     case fetchUser
-    case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
   }
 
   // MARK: - 앱내에서 사용하는 액션
-  public enum InnerAction: Equatable {
-
+  public enum InnerAction {
+    case appleRespose(Result<ASAuthorization, Error>)
+    case oAuthResponse(Result<OAuthResponseModel, CustomError>)
+    case signUpUserResponse(Result<SignUpModel, CustomError>)
+    case checkEmailResponse(Result<CheckEmailModel, CustomError>)
+    case loginUserResponse(Result<LoginModel, CustomError>)
+    case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
   }
 
   // MARK: - NavigationAction
@@ -138,7 +137,7 @@ public struct Login {
       return .run { send in
         do {
           let result = try await oAuthUseCase.handleAppleLogin(authData, nonce: nonce)
-          await send(.async(.appleRespose(.success(result))))
+          await send(.inner(.appleRespose(.success(result))))
           try await clock.sleep(for: .seconds(0.4))
           
           await send(.async(.checkEmail))
@@ -146,7 +145,131 @@ public struct Login {
           #logDebug("애플 로그인 에러", error.localizedDescription)
         }
       }
+
+    case .googleLogin:
+      return .run { send in
+        let googleLoginResult = await Result {
+          try await oAuthUseCase.googleLogin()
+        }
+        
+        switch googleLoginResult {
+        case .success(let googleLoginData):
+          if let googleLoginData = googleLoginData {
+            await send(.inner(.oAuthResponse(.success(googleLoginData))))
+            await send(.async(.checkEmail))
+          }
+        case .failure(let error):
+          await send(.inner(.oAuthResponse(.failure(CustomError.firestoreError("구글 로그인 실패 \(error.localizedDescription)")))))
+        }
+      }
+      .debounce(id: LoginID(), for: 0.1, scheduler: mainQueue)
+
       
+    case .signUpUser:
+      return .run { [userEntity = state.userEntity] send in
+        let registerUserResult = await Result {
+          try await signUpUseCase.registerAccount(
+            email: userEntity.userEmail,
+            password: userEntity.userUid
+          )
+        }
+        
+        switch registerUserResult {
+        case .success(let registerUserData):
+          if let registerUserData = registerUserData {
+            await send(.inner(.signUpUserResponse(.success(registerUserData))))
+
+            if registerUserData.data.accessToken?.isEmpty != nil {
+              await send(.navigation(.presentSignUpInviteView))
+            }
+          }
+          
+        case .failure(let error):
+          await send(.inner(.signUpUserResponse(.failure(.encodingError("회원 가입 실패 \(error.localizedDescription)")))))
+        }
+      }
+
+      
+    case .checkEmail:
+      return .run { [ useEntity = state.userEntity ] send in
+        let checkEmailResult = await Result {
+          try await signUpUseCase.checkEmail(email: useEntity.userEmail)
+        }
+        
+        switch checkEmailResult {
+        case .success(let checkEmailDTOData):
+          if  let checkEmailDTOData = checkEmailDTOData {
+            await send(.inner(.checkEmailResponse(.success(checkEmailDTOData))))
+
+            if checkEmailDTOData.data.emailUsed == true {
+              await send(.async(.loginUser))
+            } else {
+              await send(.async(.signUpUser))
+            }
+          }
+          
+        case .failure(let error):
+          await send(.inner(.checkEmailResponse(.failure(.encodingError(error.localizedDescription)))))
+        }
+      }
+
+    case .loginUser:
+      return .run { [
+        useEntity = state.userEntity
+      ]  send in
+        let loginResult = await Result {
+          try await authUseCase.loginUser(email: useEntity.userEmail)
+        }
+        
+        switch loginResult {
+        case .success(let loginResultData):
+          if  let loginResultData = loginResultData {
+            await send(.inner(.loginUserResponse(.success(loginResultData))))
+
+            if !loginResultData.data.accessToken.isEmpty {
+              await send(.async(.fetchUser))
+            }
+          }
+          
+        case .failure(let error):
+          await send(.inner(.loginUserResponse(.failure(.encodingError("로그인 실패 \(error.localizedDescription)")))))
+        }
+      }
+
+      
+    case .fetchUser:
+      return .run { send in
+        let profileDataResult = await Result {
+          try await profileUseCase.getProfile()
+        }
+        
+        switch profileDataResult {
+        case .success(let profileDTOData):
+          if let profileDTOData = profileDTOData {
+            await send(.inner(.fetchUserResponse(.success(profileDTOData))))
+
+            if profileDTOData.isStaff == true {
+              await send(.navigation(.presentCoreMemberMain))
+            } else {
+              await send(.navigation(.presentMemberMain))
+            }
+          }
+          
+        case .failure(let error):
+          await send(.inner(.fetchUserResponse(.failure(.encodingError(error.localizedDescription)))))
+        }
+        
+      }
+
+    }
+    
+  }
+  
+  private func handleInnerAction(
+    state: inout State,
+    action: InnerAction
+  ) -> Effect<Action> {
+    switch action {
     case .appleRespose(let data):
       switch data {
       case .success(let authResult):
@@ -161,7 +284,7 @@ public struct Login {
           }
           state.appleAccessToken = identityToken
           state.appleLoginFullName = appleIDCredential
-          
+
           let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
           let uid = UserDefaults.standard.string(forKey: "UserUID") ?? ""
           state.$userEntity.withLock {
@@ -175,25 +298,7 @@ public struct Login {
         #logError("애플로그인 에러", error)
       }
       return .none
-      
-    case .googleLogin:
-      return .run { send in
-        let googleLoginResult = await Result {
-          try await oAuthUseCase.googleLogin()
-        }
-        
-        switch googleLoginResult {
-        case .success(let googleLoginData):
-          if let googleLoginData = googleLoginData {
-            await send(.async(.oAuthResponse(.success(googleLoginData))))
-            await send(.async(.checkEmail))
-          }
-        case .failure(let error):
-          await send(.async(.oAuthResponse(.failure(CustomError.firestoreError("구글 로그인 실패 \(error.localizedDescription)")))))
-        }
-      }
-      .debounce(id: LoginID(), for: 0.1, scheduler: mainQueue)
-      
+
     case .oAuthResponse(let result):
       switch result {
       case .success(let resultData):
@@ -206,32 +311,8 @@ public struct Login {
         #logError("소셜 로그인 실패", error.localizedDescription)
       }
       return .none
-      
-    case .registerUser:
-      return .run { [userEntity = state.userEntity] send in
-        let registerUserResult = await Result {
-          try await signUpUseCase.registerAccount(
-            email: userEntity.userEmail,
-            password: userEntity.userUid
-          )
-        }
-        
-        switch registerUserResult {
-        case .success(let registerUserData):
-          if let registerUserData = registerUserData {
-            await send(.async(.registerUserResponse(.success(registerUserData))))
-            
-            if registerUserData.data.accessToken?.isEmpty != nil {
-              await send(.navigation(.presentSignUpInviteView))
-            }
-          }
-          
-        case .failure(let error):
-          await send(.async(.registerUserResponse(.failure(.encodingError("회원 가입 실패 \(error.localizedDescription)")))))
-        }
-      }
-      
-    case .registerUserResponse(let result):
+
+    case .signUpUserResponse(let result):
       switch result {
       case .success(let signUpModel):
         state.signUpModel = signUpModel
@@ -241,35 +322,12 @@ public struct Login {
           $0.accessToken = signUpModel.data.accessToken ?? ""
           $0.refreshToken = signUpModel.data.refreshToken ?? ""
         }
-        
+
       case .failure(let error):
         #logNetwork("회원가입 실패", error.localizedDescription)
       }
       return .none
-      
-    case .checkEmail:
-      return .run { [ useEntity = state.userEntity ] send in
-        let checkEmailResult = await Result {
-          try await signUpUseCase.checkEmail(email: useEntity.userEmail)
-        }
-        
-        switch checkEmailResult {
-        case .success(let checkEmailDTOData):
-          if  let checkEmailDTOData = checkEmailDTOData {
-            await send(.async(.checkEmailResponse(.success(checkEmailDTOData))))
-            
-            if checkEmailDTOData.data.emailUsed == true {
-              await send(.async(.loginUser))
-            } else {
-              await send(.async(.registerUser))
-            }
-          }
-          
-        case .failure(let error):
-          await send(.async(.checkEmailResponse(.failure(.encodingError(error.localizedDescription)))))
-        }
-      }
-      
+
     case .checkEmailResponse(let result):
       switch result {
       case .success(let checkEmailDTO):
@@ -279,30 +337,7 @@ public struct Login {
         #logNetwork("이메일 중복 확인 실패", error.localizedDescription)
       }
       return .none
-      
-    case .loginUser:
-      return .run { [
-        useEntity = state.userEntity
-      ]  send in
-        let loginResult = await Result {
-          try await authUseCase.loginUser(email: useEntity.userEmail)
-        }
-        
-        switch loginResult {
-        case .success(let loginResultData):
-          if  let loginResultData = loginResultData {
-            await send(.async(.loginUserResponse(.success(loginResultData))))
-            
-            if !loginResultData.data.accessToken.isEmpty {
-              await send(.async(.fetchUser))
-            }
-          }
-          
-        case .failure(let error):
-          await send(.async(.loginUserResponse(.failure(.encodingError("로그인 실패 \(error.localizedDescription)")))))
-        }
-      }
-      
+
     case .loginUserResponse(let result):
       switch result {
       case .success(let loginDTOData):
@@ -314,59 +349,28 @@ public struct Login {
           $0.accessToken = loginDTOData.data.accessToken
           $0.refreshToken = loginDTOData.data.refreshToken
         }
-        
-        
+
+
       case .failure(let error):
         #logNetwork("로그인 실패", error.localizedDescription)
       }
       return .none
-      
-    case .fetchUser:
-      return .run { send in
-        let profileDataResult = await Result {
-          try await profileUseCase.getProfile()
-        }
-        
-        switch profileDataResult {
-        case .success(let profileDTOData):
-          if let profileDTOData = profileDTOData {
-            await send(.async(.fetchUserResponse(.success(profileDTOData))))
-            
-            if profileDTOData.isStaff == true {
-              await send(.navigation(.presentCoreMemberMain))
-            } else {
-              await send(.navigation(.presentMemberMain))
-            }
-          }
-          
-        case .failure(let error):
-          await send(.async(.fetchUserResponse(.failure(.encodingError(error.localizedDescription)))))
-        }
-        
-      }
-      
+
     case .fetchUserResponse(let result):
       switch result {
       case .success(let profileDTOData):
         state.profileModel = profileDTOData
-        
+
         state.$userEntity.withLock {
           $0.inviteCodeId = profileDTOData.inviteCodeID
         }
-        
+
       case .failure(let error):
         #logNetwork("프로필 조회 실패", error.localizedDescription)
       }
       return .none
     }
-    
-  }
-  
-  private func handleInnerAction(
-    state: inout State,
-    action: InnerAction
-  ) -> Effect<Action> {
-    
+
   }
   
   private func handleNavigationAction(

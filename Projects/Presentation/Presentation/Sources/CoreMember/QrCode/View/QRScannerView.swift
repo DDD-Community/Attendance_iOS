@@ -106,7 +106,7 @@ extension QRScannerView {
       let rectY = (height - store.scannerSize) / 2
       
       // (A) 반투명 오버레이 + 중앙 네모 영역은 투명하게
-      Color.black.opacity(0.5)
+      Color.basicBlack.opacity(0.5)
         .mask(
           ZStack {
             Rectangle()  // 전체 화면 채움
