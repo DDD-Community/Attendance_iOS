@@ -189,7 +189,7 @@ extension QRScannerView {
           .pretendardCustomFont(textStyle: .body1NormalMedium)
           .foregroundColor(.staticWhite)
         
-
+        Spacer()
       }
     default:
       Text(store.isUseQRCode ? "이미 사용된 QR 코드입니다.":  "QR 코드를 스캔해 주세요")

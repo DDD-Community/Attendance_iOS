@@ -179,7 +179,8 @@ public struct Login {
           if let registerUserData = registerUserData {
             await send(.inner(.signUpUserResponse(.success(registerUserData))))
 
-            if registerUserData.data.accessToken?.isEmpty != nil {
+            if registerUserData.data.accessToken?.isEmpty != nil &&
+                registerUserData.data.user != nil {
               await send(.navigation(.presentSignUpInviteView))
             }
           }

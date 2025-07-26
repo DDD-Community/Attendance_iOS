@@ -25,7 +25,7 @@ struct AttendanceCheckView: View {
 
       selectPartAttandanceStatus()
     }
-    .task {
+    .onAppear {
       store.send(.async(.onAppear))
       
     }

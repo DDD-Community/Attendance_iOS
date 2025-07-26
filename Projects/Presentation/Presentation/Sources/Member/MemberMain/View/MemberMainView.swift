@@ -44,6 +44,9 @@ struct MemberMainView: View {
     .onAppear {
       store.send(.view(.onAppear))
     }
+    .onDisappear {
+      store.didAppear = false
+    }
   }
 
   private var navigationBar: some View {
