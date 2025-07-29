@@ -3,7 +3,7 @@ import ProjectDescription
 import DependencyPlugin
 import ProjectTemplatePlugin
 
-let project = Project.makeAppModule(
+let project = Project.makeModule(
   name: "Presentation",
   bundleId: .appBundleID(name: ".Presentation"),
   product: .staticFramework,

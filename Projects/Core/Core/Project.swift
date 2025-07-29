@@ -5,7 +5,7 @@ import ProjectTemplatePlugin
 import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
-let project = Project.makeAppModule(
+let project = Project.makeModule(
   name: "Core",
   bundleId: .appBundleID(name: ".Core"),
   product: .staticFramework,
