@@ -155,7 +155,7 @@ extension QRScannerView {
 
         Spacer()
       }
-    case .absent:
+    case .late:
       HStack(spacing: .zero){
         Spacer()
         Image(asset: .qrCheck)
@@ -174,7 +174,7 @@ extension QRScannerView {
         
         Spacer()
       }
-    case .late:
+    case .absent:
       HStack(spacing: .zero){
         Spacer()
         Image(asset: .qrCheck)
