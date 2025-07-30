@@ -251,7 +251,10 @@ public struct Login {
 
             if profileDTOData.isStaff == true {
               await send(.navigation(.presentCoreMemberMain))
-            } else {
+            } else if profileDTOData.crew == .notTeam && profileDTOData.team == .notTeam  {
+              await send(.navigation(.presentSignUpInviteView))
+            }
+            else {
               await send(.navigation(.presentMemberMain))
             }
           }

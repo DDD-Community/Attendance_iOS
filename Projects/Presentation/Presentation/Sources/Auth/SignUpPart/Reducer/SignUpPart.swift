@@ -87,9 +87,10 @@ public struct SignUpPart {
     action: View
   ) -> Effect<Action> {
     switch action {
-      
+
     case .selectPartButton(let selectPart):
       if state.selectPart == selectPart {
+        // 동일한 파트 재선택 → 해제
         state.selectPart = nil
         state.$userEntity.withLock { $0.role = nil }
         state.activeSelectPart = false
@@ -97,10 +98,9 @@ public struct SignUpPart {
       }
       
       state.selectPart = selectPart
-      if let part = SelectPart(rawValue: selectPart.desc) {
-        state.$userEntity.withLock { $0.role = part }
-      }
+      state.$userEntity.withLock { $0.role = selectPart }
       state.activeSelectPart = true
+      #logDebug("selectPart", state.userEntity.role)
       return .none
     }
   }

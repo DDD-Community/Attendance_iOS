@@ -206,7 +206,7 @@ extension ManagerProfileView {
 
       if isManaging {
         HStack {
-          Text("\(subTitle) / \(managingTeam)팀")
+          Text("\(subTitle) / \(managingTeam)")
             .pretendardCustomFont(textStyle: .title2NormalMedium)
             .foregroundStyle(.borderInverse)
 
