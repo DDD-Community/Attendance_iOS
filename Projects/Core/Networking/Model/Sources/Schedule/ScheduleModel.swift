@@ -7,11 +7,10 @@
 
 import Foundation
 
-public typealias ScheduleModel = BaseResponseDTO<[ScheduleResponseModel]>
+public typealias ScheduleModel = BaseResponseDomain<[ScheduleResponseModel]>
 
 // MARK: - Datum
-public struct ScheduleResponseModel: Decodable, Equatable, Identifiable {
-  public var id = UUID()
+public struct ScheduleResponseModel: Equatable {
   public var scheduleId : String
   public let title, description: String
   public let startTime, endTime: String
@@ -36,7 +35,7 @@ public struct ScheduleResponseModel: Decodable, Equatable, Identifiable {
 }
 
 
-public struct AttendancesSummary: Decodable, Equatable {
+public struct AttendancesSummary:  Equatable {
   public let profile: AttendanceProfile
   public let status, updatedAt: String
   public let method, note: String
@@ -57,7 +56,7 @@ public struct AttendancesSummary: Decodable, Equatable {
   
 }
 
-public struct AttendanceProfile: Decodable, Equatable {
+public struct AttendanceProfile:  Equatable {
   public let id: String
   public let userID: Int
   public  let name, role, cohort: String

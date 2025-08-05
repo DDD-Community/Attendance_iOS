@@ -65,8 +65,8 @@ public struct QRProfileSummary: Decodable, Equatable {
 
 // MARK: - ScheduleSummary
 public struct QRScheduleSummary: Decodable, Equatable  {
-public let id, title, description: String
- public let startTime, endTime: String
+  public let id, title, description: String
+  public let startTime, endTime: String
 
   public init(
     id: String,
