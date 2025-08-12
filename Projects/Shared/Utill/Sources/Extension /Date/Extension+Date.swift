@@ -102,16 +102,6 @@ public extension Date {
     return dateFormatter.date(from: dateString) ?? Date()
   }
   
-  func filterEventsForToday(events: [DDDEvent]) -> [DDDEvent] {
-    let currentDate = Date()
-    let currentFormattedDate = currentDate.formattedDate(date: currentDate)
-    
-    return events.filter { event in
-      let eventStartTime = event.startTime
-      let eventFormattedDate = eventStartTime.formattedDate(date: eventStartTime)
-      return currentFormattedDate == eventFormattedDate
-    }
-  }
   
   func toFormattedString() -> String {
     let dateFormatter = DateFormatter()

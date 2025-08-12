@@ -14,7 +14,7 @@ public protocol ProfileRepositoryProtocol {
     name: String,
     inviteCode: String,
     role: String,
-    crew: String,
+    team: String,
     responsibility: String
   ) async throws -> ProfileResponseModel?
   
@@ -29,7 +29,7 @@ public protocol ProfileRepositoryProtocol {
     name: String,
     inviteCode: String,
     role: String,
-    crew: String
+    team: String
   ) async throws -> ProfileResponseModel?
   
   func getProfile() async throws -> ProfileResponseModel?

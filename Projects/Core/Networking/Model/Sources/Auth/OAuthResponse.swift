@@ -10,12 +10,12 @@ import Foundation
 import FirebaseAuth
 
 public struct OAuthResponseModel : Equatable {
-  var accessToken: String
-  var refreshToken: String
-  var credential: AuthCredential?
-  var email: String
-  var uid: String
-  
+  public let accessToken: String
+  public let refreshToken: String
+  public let credential: AuthCredential?
+  public let email: String
+  public let uid: String
+
   public init(
     accessToken: String,
     refreshToken: String,

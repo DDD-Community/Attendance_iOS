@@ -58,13 +58,13 @@ public struct CoreMember {
   
   @CasePathable
   public enum View: Equatable {
-   case presentQrcode
-  case closeModal
+    case presentQrcode
+    case closeModal
   }
   
   // MARK: - 비동기 처리 액션
   public enum AsyncAction: Equatable {
-   
+    
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -85,7 +85,6 @@ public struct CoreMember {
     case qrcode(QRCode)
   }
   
-  @Dependency(FireStoreUseCase.self) var fireStoreUseCase
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
@@ -96,10 +95,10 @@ public struct CoreMember {
         
       case .binding(\.isExpandedDropDown):
         return .none
-             
+        
       case .destination(_):
         return .none
-       
+        
         // MARK: - ViewAction
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
@@ -115,7 +114,7 @@ public struct CoreMember {
         // MARK: - NavigationAction
       case .navigation(let NavigationAction):
         return handleNavigationAction(state: &state, action: NavigationAction)
-       
+        
       default:
         return .none
       }

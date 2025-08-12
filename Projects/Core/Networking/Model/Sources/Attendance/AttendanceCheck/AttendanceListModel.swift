@@ -11,21 +11,21 @@ public typealias AttendanceListModel = BaseResponseDTO<[AttendanceListResponseMo
 
 public struct AttendanceListResponseModel: Decodable, Equatable {
   public let id: String
-  public let profileSummary: ProfileSummary
-  public let scheduleSummary: ScheduleSummary
+  public let profileSummary: ProfileSummary?
+  public let scheduleSummary: ScheduleSummary?
   public let updatedAt: String
   public let method: String
-  public let note: String
+  public let note: String?
   public let status: String?
 
   public init(
     id: String,
-    profileSummary: ProfileSummary,
-    scheduleSummary: ScheduleSummary,
+    profileSummary: ProfileSummary?,
+    scheduleSummary: ScheduleSummary?,
     updatedAt: String,
     status: String?,
     method: String,
-    note: String
+    note: String?
   ) {
     self.id = id
     self.profileSummary = profileSummary
@@ -81,7 +81,7 @@ public struct ScheduleSummary: Decodable, Equatable {
 public extension AttendanceListResponseModel {
   func toSchedule() -> Schedule? {
     let formatter = ISO8601DateFormatter()
-    guard let date = formatter.date(from: scheduleSummary.startTime) else {
+    guard let date = formatter.date(from: scheduleSummary?.startTime ?? "") else {
       return nil
     }
 
@@ -96,8 +96,8 @@ public extension AttendanceListResponseModel {
       id: id,
       month: month,
       day: day,
-      title: scheduleSummary.title,
-      description: scheduleSummary.description,
+      title: scheduleSummary?.title ?? "",
+      description: scheduleSummary?.description ?? "",
       status: .init(rawValue: status ?? "") ?? .tbd
     )
   }

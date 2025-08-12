@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ProfileResponseModel: Hashable {
+public struct ProfileResponseModel: Equatable {
   public let id: String
   public let userID: Int
   public let name: String
@@ -19,12 +19,5 @@ public struct ProfileResponseModel: Hashable {
   public let cohort: String
   public let cohortID: String
   public let isStaff: Bool
-
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(id)
-  }
   
-  public static func == (lhs: ProfileResponseModel, rhs: ProfileResponseModel)  -> Bool {
-    return lhs.id == rhs.id
-  }
 }

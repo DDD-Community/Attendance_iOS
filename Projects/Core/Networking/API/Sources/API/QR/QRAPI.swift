@@ -13,7 +13,7 @@ public enum QRAPI: String {
   public var qrcodeDescription: String {
     switch self {
     case .qrcodeValidate:
-      return "validate/"
+      return "attend-with-qr/"
     }
   }
 }

@@ -17,7 +17,7 @@ public enum ProfileService{
     username: String,
     inviteCodeId: String,
     role: String,
-    crew: String,
+    team: String,
     responsibility: String
   )
   case editProfileMangerNoTeam(
@@ -30,7 +30,7 @@ public enum ProfileService{
     username: String,
     inviteCodeId: String,
     role: String,
-    crew: String
+    team: String
   )
   case getProfile
 }
@@ -72,15 +72,14 @@ extension ProfileService: BaseTargetType {
       let username,
       let inviteCodeId,
       let role,
-      let crew,
-      let  responsibility):
+      let team,
+      let responsibility):
       let parameters: [String: Any] = [
         "name":  username,
         "invite_code_id": inviteCodeId,
         "role":  role,
-        "team":  crew,
+        "team":  team,
         "cohort": "12",
-        "crew": crew,
         "responsibility":responsibility
       ]
       return parameters
@@ -103,14 +102,13 @@ extension ProfileService: BaseTargetType {
       let username,
       let inviteCodeId,
       let role,
-      let crew):
+      let team):
       let parameters: [String: Any] = [
         "name":  username,
         "invite_code_id": inviteCodeId,
         "role":  role,
-        "team":  crew,
+        "team":  team,
         "cohort": "12",
-        "crew": crew,
       ]
       return parameters
       

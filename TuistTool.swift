@@ -32,6 +32,10 @@ func build() {
   generate()
 }
 
+func edit() {
+  run("tuist", arguments: ["edit"])
+}
+
 func clean() {
   run("tuist", arguments: ["clean"])
 }
@@ -44,7 +48,12 @@ func cache() {
   run("tuist", arguments: ["cache", "DDDAttendance"])
 }
 
-func scaffoldModule(template: String, layer: String, name: String, author: String) {
+func scaffoldModule(
+  template: String,
+  layer: String,
+  name: String,
+  author: String
+) {
   run("tuist", arguments: [
     "scaffold",
     template,
@@ -64,7 +73,7 @@ func reset() {
 }
 
 enum Command: String {
-  case generate, fetch, build, clean, install, cache, module, reset
+  case edit, generate, fetch, build, clean, install, cache, module, reset
 }
 
 let args = CommandLine.arguments.dropFirst()
@@ -82,6 +91,7 @@ guard let cmd = args.first, let command = Command(rawValue: cmd) else {
 }
 
 switch command {
+case .edit : edit()
 case .generate: generate()
 case .fetch:    fetch()
 case .build:    build()

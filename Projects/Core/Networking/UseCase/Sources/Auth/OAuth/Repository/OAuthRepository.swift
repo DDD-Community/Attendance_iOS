@@ -159,6 +159,7 @@ public class OAuthRepository: OAuthRepositoryProtocol {
                 email: result?.user.email ?? "",
                 uid: result?.user.uid ?? ""
               )
+              UserDefaults.standard.set(result?.user.email ?? "", forKey: "UserEmail")
               continuation.resume(returning: tokenResponse.toDTOModel())
             }
           }

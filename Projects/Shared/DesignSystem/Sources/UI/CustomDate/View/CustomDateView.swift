@@ -119,7 +119,11 @@ extension CustomDateView {
         .frame(height: 20)
       
       CustomButton(
-        action: selectAction,
+        action: {
+          if store.dateSelected {
+            selectAction()
+          }
+        },
         title: "확인",
         config: CustomButtonConfig.createDateButton(),
         isEnable: store.dateSelected

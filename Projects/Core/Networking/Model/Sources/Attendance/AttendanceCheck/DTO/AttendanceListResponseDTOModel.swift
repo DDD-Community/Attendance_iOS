@@ -13,8 +13,8 @@ public struct AttendanceListResonseDTO: Decodable {
   let id: String
   let profileSummary: ProfileSummaryDTO
   let scheduleSummary: ScheduleSummaryDTO
-  let updatedAt: String
-  let status: String
+  let updatedAt: String?
+  let status: String?
   let method: String?
   let note: String?
 
