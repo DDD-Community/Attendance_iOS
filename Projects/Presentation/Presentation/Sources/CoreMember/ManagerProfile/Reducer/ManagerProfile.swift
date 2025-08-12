@@ -15,7 +15,6 @@ import Utill
 
 import AsyncMoya
 import ComposableArchitecture
-import FirebaseAuth
 import KeychainAccess
 
 @Reducer
@@ -24,7 +23,6 @@ public struct ManagerProfile {
   
   @ObservableState
   public struct State: Equatable {
-    var user: User? =  nil
     var isLoading: Bool = false
     var managerProfileName: String = "의 프로필"
     var managerProfileRoleType: String = "직군"
@@ -70,8 +68,6 @@ public struct ManagerProfile {
   // MARK: - 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
-    case signOut
-    case fetchUserDataResponse(Result<User, CustomError>)
     case fetchUser
     case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
   }
@@ -91,7 +87,6 @@ public struct ManagerProfile {
   
   fileprivate struct MangerProfileCancel: Hashable {}
   
-  @Dependency(FireStoreUseCase.self) var fireStoreUseCase
   @Dependency(AuthUseCase.self) var authUseCase
   @Dependency(ProfileUseCase.self) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
@@ -194,33 +189,6 @@ public struct ManagerProfile {
       }
       return .none
       
-    case .signOut:
-      return .run { send  in
-        let fetchUserResult = await Result {
-          try await fireStoreUseCase.getUserLogOut()
-        }
-        
-        switch fetchUserResult {
-          
-        case let .success(fetchUserResult):
-          guard let fetchUserResult = fetchUserResult else {return}
-          await send(.async(.fetchUserDataResponse(.success(fetchUserResult))))
-          
-        case let .failure(error):
-          await send(.async(.fetchUserDataResponse(.failure(CustomError.map(error)))))
-        }
-      }
-      
-    case let .fetchUserDataResponse(fetchUser):
-      switch fetchUser {
-      case let .success(fetchUser):
-        state.user = fetchUser
-        #logDebug("fetching data", fetchUser.uid)
-      case let .failure(error):
-        #logError("Error fetching User", error)
-        state.user = nil
-      }
-      return .none
     }
   }
   
@@ -240,7 +208,6 @@ public struct ManagerProfile {
       state.$accessToken.withLock { $0 = ""}
       return .run {  send in
         try await clock.sleep(for: .seconds(2))
-        await send(.async(.signOut))
       }
       
     case .presentCreatByApp:

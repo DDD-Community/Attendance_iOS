@@ -61,7 +61,7 @@ extension ScheduleView {
               
               let schedulesInMonth = grouped[month] ?? []
 
-              ForEach(schedulesInMonth, id: \.id) { schedule in
+              ForEach(schedulesInMonth, id: \.scheduleId) { schedule in
                 let day = String.extractDay(from: schedule.startTime)
                 scheduleCard(
                   month: month,

@@ -32,65 +32,65 @@ public struct SignUpSelectTeam {
     case inner(InnerAction)
     case navigation(NavigationAction)
   }
-
+  
   // MARK: - ViewAction
-
+  
   @CasePathable
   public enum View {
     case selectTeamButton(selectTeam: SelectTeam)
   }
-
+  
   // MARK: - AsyncAction 비동기 처리 액션
-
+  
   public enum AsyncAction: Equatable {
     case editProfile
     case editProfileManger
     case editProfileMember
   }
-
+  
   // MARK: - 앱내에서 사용하는 액션
-
+  
   public enum InnerAction: Equatable {
     case editProfileResponse(Result<ProfileResponseModel, CustomError>)
   }
-
+  
   // MARK: - NavigationAction
-
+  
   public enum NavigationAction: Equatable {
     case presentMember
     case presentCoreMember
   }
-
-
+  
+  
   private struct SignUpSelectTeamCancel: Hashable {}
-
+  
   @Dependency(SignUpUseCase.self) var signUpUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(ProfileUseCase.self) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
-
+  
   public var body: some ReducerOf<Self> {
     BindingReducer()
     Reduce { state, action in
       switch action {
       case .binding:
         return .none
-
+        
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
-
+        
       case .async(let asyncAction):
         return handleAsyncAction(state: &state, action: asyncAction)
-
+        
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
-
+        
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
       }
     }
   }
-
+  
   private func handleViewAction(
     state: inout State,
     action: View
@@ -102,13 +102,13 @@ public struct SignUpSelectTeam {
         state.activeButton = false
         return .none
       }
-
+      
       state.$userEntity.withLock { $0.memberTeam = selectTeam }
       state.activeButton = true
       return .none
     }
   }
-
+  
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
@@ -116,12 +116,12 @@ public struct SignUpSelectTeam {
     switch action {
     case .presentMember:
       return .none
-
+      
     case .presentCoreMember:
       return .none
     }
   }
-
+  
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
@@ -149,11 +149,11 @@ public struct SignUpSelectTeam {
             name: userEntity.signUpName,
             inviteCode: userEntity.inviteCodeId ?? "",
             role: userEntity.role?.rawValue ?? "",
-            crew: memberTeam,
+            team: memberTeam,
             responsibility: isAdminRole
           )
         }
-
+        
         switch editProfileResult {
         case .success(let profileDTOData):
           if let profileDTOData = profileDTOData {
@@ -177,7 +177,7 @@ public struct SignUpSelectTeam {
             name: userEntity.signUpName,
             inviteCode: userEntity.inviteCodeId ?? "",
             role: userEntity.role?.rawValue ?? "",
-            crew: memberTeam
+            team: memberTeam
           )
         }
         
@@ -187,7 +187,7 @@ public struct SignUpSelectTeam {
             await send(.inner(.editProfileResponse(.success(profileDTOData))))
             await send(.navigation(.presentMember))
           }
-
+          
         case .failure(let error):
           await send(.inner(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
         }
@@ -206,7 +206,7 @@ public struct SignUpSelectTeam {
       switch result {
       case .success(let profileDT0):
         state.editProfileDTO = profileDT0
-
+        
       case .failure(let error):
         #logNetwork("회원가입 프로핍 변경  에러", error.localizedDescription)
       }

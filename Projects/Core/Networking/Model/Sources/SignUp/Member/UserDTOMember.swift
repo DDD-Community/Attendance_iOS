@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct UserDTOMember: Codable, Equatable {
+public struct UserDTOMember: Codable, Equatable, Hashable {
   public var uid: String
   public var memberid: String
   public var name: String

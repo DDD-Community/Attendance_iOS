@@ -16,7 +16,7 @@ public enum AttendanceService {
   case getAttendances(startDate: String, endDate: String)
   case attendanceCount(startDate: String)
   case filterAttendance(startDate: String, team: String)
-  case filterScheduleAttendance(userId: Int, scheduleId: String)
+  case filterScheduleAttendance(userId: Int, scheduleId: String, startDate: String)
   case modifyAttendance(attendanceId: String)
   case fetchCount(userID: Int)
 }
@@ -88,12 +88,13 @@ extension AttendanceService: BaseTargetType {
 
     case .filterScheduleAttendance(
       let userId,
-      let scheduleId
+      let scheduleId,
+      let startDate
     ):
       let parameters: [String: Any] = [
         "user_id": userId,
-        "start_date": "2025-05-21",
-        "end_date": "2025-05-21",
+        "start_date": startDate,
+        "end_date": startDate,
         "schedule_id": scheduleId,
       ]
       return parameters

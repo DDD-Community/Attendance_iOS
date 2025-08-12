@@ -56,12 +56,14 @@ public class AttendanceRepository: AttendanceRepositoryProtocol {
   // MARK: - 출석 할 목록 조회
   public func filterScheduleAttendance(
     userId: Int,
-    scheduleId: String
+    scheduleId: String,
+    startDate: String
   ) async throws -> AttendanceListModel? {
     let filterScheduleAttendanceModel = try await provider.requestAsync(
       .filterScheduleAttendance(
         userId: userId,
-        scheduleId: scheduleId
+        scheduleId: scheduleId,
+        startDate: startDate
       ),
       decodeTo: AttendanceListResponseDTOModel.self
     )

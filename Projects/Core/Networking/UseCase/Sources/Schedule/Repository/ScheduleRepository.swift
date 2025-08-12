@@ -14,7 +14,7 @@ import AsyncMoya
 @Observable
 public class ScheduleRepository: ScheduleRepositoryProtocol {
  
-  fileprivate let provider = MoyaProvider<ScheduleService>(plugins: [MoyaLoggingPlugin()])
+  fileprivate let provider = MoyaProvider<ScheduleService>(session: Session(interceptor: AuthInterceptor.shared), plugins: [MoyaLoggingPlugin()])
   
   public init(){}
   

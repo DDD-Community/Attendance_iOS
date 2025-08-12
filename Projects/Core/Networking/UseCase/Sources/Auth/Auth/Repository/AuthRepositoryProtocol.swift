@@ -8,7 +8,5 @@
 import Model
 
 public protocol AuthRepositoryProtocol {
-  func fetchUser(uid: String) async throws -> UserDTOMember?
-  func loginUser(email: String) async throws -> LoginDTOModel?
-  func sessionCheckJWT(token: String) async throws -> RefreshTokenDTOModel?
+  func loginUser(email: String) async throws -> LoginModel?
 }

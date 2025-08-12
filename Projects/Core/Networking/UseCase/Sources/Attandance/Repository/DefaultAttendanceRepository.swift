@@ -32,7 +32,8 @@ final public class DefaultAttendanceRepository: AttendanceRepositoryProtocol  {
   
   public func filterScheduleAttendance(
     userId: Int,
-    scheduleId: String
+    scheduleId: String,
+    startDate: String
   ) async throws -> AttendanceListModel? {
     return nil
   }

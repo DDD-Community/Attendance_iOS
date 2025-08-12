@@ -182,7 +182,7 @@ public struct MemberMain {
       }
 
     case .onResume:
-      return .merge(
+      return .concatenate(
         .run { await $0(.async(.fetchCurrentUser)) },
         .run { await $0(.async(.fetchSchedule)) }
       )

@@ -12,26 +12,26 @@ import ComposableArchitecture
 
 public struct ProfileUseCase: ProfileUseCaseProtocol {
   private let repository: ProfileRepositoryProtocol
-  
+
   public init(
     repository: ProfileRepositoryProtocol
   ) {
     self.repository = repository
   }
-  
-  // MARK: - 프로필 수정
+
+  // MARK: - 프로필  수정
   public func editProfileManger(
     name: String,
     inviteCode: String,
     role: String,
-    crew: String,
+    team: String,
     responsibility: String
   ) async throws -> ProfileResponseModel? {
     return try await repository.editProfileManger(
       name: name,
       inviteCode: inviteCode,
       role: role,
-      crew: crew,
+      team: team,
       responsibility: responsibility
     )
   }
@@ -39,7 +39,7 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
   public func getProfile() async throws -> ProfileResponseModel? {
     return try await repository.getProfile()
   }
-  
+
   // MARK: - 프로필수정 운영진 팀 없을때
   public func editProfileMangerNoTeam(
     name: String,
@@ -54,19 +54,19 @@ public struct ProfileUseCase: ProfileUseCaseProtocol {
       responsibility: responsibility
     )
   }
-  
-  // MARK: - 프로필 수정 멤법
+
+  // MARK: - 프로필 수정 멤버
   public func editProfileMember(
     name: String,
     inviteCode: String,
     role: String,
-    crew: String
+    team: String
   ) async throws -> ProfileResponseModel? {
     return try await repository.editProfileMember(
       name: name,
       inviteCode: inviteCode,
       role: role,
-      crew: crew
+      team: team
     )
   }
 }
@@ -102,7 +102,7 @@ public extension RegisterModule {
       }
     )
   }
-  
+
   var profileRepositoryModule: () -> Module {
     makeDependency(ProfileRepositoryProtocol.self) {
       ProfileRepository()

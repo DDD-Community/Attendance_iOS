@@ -19,7 +19,12 @@ public enum QRService {
 
 extension QRService: BaseTargetType {
   public var domain: AttendanceDomain {
-    return .qr
+    switch self {
+    case .qrAttendanceCheck:
+      return .attendance
+    case .createQRCode:
+      return .qr
+    }
   }
   
   public var urlPath: String {
@@ -43,7 +48,7 @@ extension QRService: BaseTargetType {
   public var parameters: [String: Any]? {
     switch self {
     case .qrAttendanceCheck(let code):
-      let parameters: [String: Any] = ["qr_string": code]
+      let parameters: [String: Any] = ["qr_code_value": code]
       return parameters
     case .createQRCode:
       return nil
@@ -56,5 +61,14 @@ extension QRService: BaseTargetType {
   
   public var error: [Int: Foundations.NetworkError]? {
     return nil
+  }
+
+  public var validationType: ValidationType {
+    switch self {
+    case .qrAttendanceCheck(let code):
+      return .customCodes(Array(200...410))
+    case .createQRCode:
+      return .successCodes
+    }
   }
 }

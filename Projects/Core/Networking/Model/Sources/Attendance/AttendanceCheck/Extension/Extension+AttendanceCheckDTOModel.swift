@@ -32,7 +32,7 @@ public extension AttendanceListResponseDTOModel {
         id: item.id,
         profileSummary: profileModel,
         scheduleSummary: scheduleModel,
-        updatedAt: item.updatedAt,
+        updatedAt: item.updatedAt ?? "",
         status: item.status,
         method: item.method ?? "",
         note: item.note ?? ""

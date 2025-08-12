@@ -13,7 +13,8 @@ public protocol AttendanceUseCaseProtocol {
   func fillAttendance(team: SelectTeam ,startDate: String) async throws -> AttendanceListModel?
   func filterScheduleAttendance(
     userId: Int,
-    scheduleId: String
+    scheduleId: String,
+    startDate: String
   ) async throws -> AttendanceListModel?
   func modifyAttendance(attendanceId: String) async throws -> ModifyAttendanceModel?
   func fetchCount(userID: Int) async throws -> AttendanceCountResponseModel

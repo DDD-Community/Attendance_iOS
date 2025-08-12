@@ -97,8 +97,7 @@ public struct AuthCoordinator {
   ) -> Effect<Action> {
     switch action {
       
-    // MARK: - 초대코드 입력
-      
+      // MARK: - 초대코드 입력
     case .routeAction(id: _, action: .login(.navigation(.presentSignUpInviteView))):
       state.routes.push(.signUpInviteCode(.init(userSignUp: state.userSignUpMember)))
       return .none
@@ -109,8 +108,7 @@ public struct AuthCoordinator {
     case .routeAction(id: _, action: .login(.navigation(.presentMemberMain))):
       return .send(.navigation(.presentMember))
       
-    // MARK: - 이름 입력
-      
+      // MARK: - 이름 입력
     case .routeAction(id: _, action: .signUpInviteCode(.navigation(.presentSignUpName))):
       state.routes.push(.signUpName(.init()))
       return .none
@@ -119,7 +117,7 @@ public struct AuthCoordinator {
       state.routes.push(.signUpPart(.init()))
       return .none
       
-    // MARK: - 운영진 담당업무 선택
+      // MARK: - 운영진 담당업무 선택
       
     case .routeAction(id: _, action: .signUpPart(.navigation(.presentManaging))):
       state.routes.push(.signUpManaging(.init()))
@@ -136,7 +134,7 @@ public struct AuthCoordinator {
     case .routeAction(id: _, action: .signUpSelectTeam(.navigation(.presentCoreMember))):
       return .send(.navigation(.presentCoreMember))
       
-    // MARK: - 멤버 선택 할팀 선택
+      // MARK: - 멤버 선택 할팀 선택
     case .routeAction(id: _, action: .signUpPart(.navigation(.presentSelectTeam))):
       state.routes.push(.signUpSelectTeam(.init()))
       return .none

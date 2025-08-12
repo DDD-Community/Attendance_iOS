@@ -17,13 +17,7 @@ final public class DefaultAuthRepository: AuthRepositoryProtocol {
   
   public func loginUser(
     email: String
-  ) async throws -> LoginDTOModel? {
-    return nil
-  }
-  
-  public func sessionCheckJWT(
-    token: String
-  ) async throws -> RefreshTokenDTOModel? {
+  ) async throws -> LoginModel? {
     return nil
   }
 }

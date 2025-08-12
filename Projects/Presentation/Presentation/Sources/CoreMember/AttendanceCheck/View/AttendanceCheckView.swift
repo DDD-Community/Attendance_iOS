@@ -30,15 +30,16 @@ struct AttendanceCheckView: View {
       
     }
     .onChange(of: store.selectPart ?? .web1) { oldValue, newValue in
-      store.attendCheckModel?.data = []
-      store.send(.async(.filterAttendance(selectTeam: newValue)))
+      store.selectPart = newValue
+      store.send(.inner(.fillterAttendance(team: newValue)))
     }
-    
-    
+
+
+
     .sheet(item: $store.scope(state: \.destination?.selectDate, action: \.destination.selectDate)) { selectDateStore in
       CustomDateView(store: selectDateStore, selectDate: $store.selectAttandanceDate) {
+        store.send(.async(.fetchScheduleAttedanceCheck))
         store.send(.async(.filterAttendanceCount(startDate: store.selectAttandanceDate.formattedDates())))
-        store.send(.async(.fetchAttedanceCheck))
       }
       .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
       .presentationCornerRadius(20)
@@ -84,7 +85,7 @@ extension AttendanceCheckView {
         .frame(height: 14)
 
       AttendanceCard(
-        attendanceCount: attendanceCountDTOData?.attendanceCount ?? .zero,
+        attendanceCount: attendanceCountDTOData?.presentCount ?? .zero,
         lateCount: attendanceCountDTOData?.lateCount ?? .zero,
         absentCount: attendanceCountDTOData?.absentCount ?? .zero,
         showWarning: false
@@ -171,14 +172,18 @@ extension AttendanceCheckView {
       Spacer()
         .frame(height: 20)
     } else {
-      EmptyView()
+      selectPartAttandanceStatusCard()
     }
   }
 
   @ViewBuilder
   fileprivate func selectPartAttandanceStatusCard() -> some View {
-    let filtered = store.attendCheckModel?.data.filter {
-      $0.profileSummary.crew?.description == store.selectPart?.description
+    let filtered = store.sceheduleAttandanceModel?.data.flatMap {
+      $0.attendancesSummary.filter { item in
+        guard let team = SelectTeam(rawValue: item.profile.team.rawValue),
+              let selected = store.selectPart else { return false }
+        return team == selected
+      }
     } ?? []
 
     if filtered.isEmpty {
@@ -186,12 +191,12 @@ extension AttendanceCheckView {
     } else {
       ScrollView(.vertical) {
         LazyVStack(spacing: .zero) {
-          ForEach(filtered, id: \.id) { item in
+          ForEach(filtered, id: \.profile.id) { item in
             AttendanceCheckStatusCard(
-              attandanceType: AttendanceType(rawValue: item.status ?? "") ?? .present,
-              selectPart: item.profileSummary.role ?? .all,
-              selectTeam: item.profileSummary.crew ?? .notTeam,
-              name: item.profileSummary.name
+              attandanceType: AttendanceType(rawValue: item.status) ?? .present,
+              selectPart: SelectPart(rawValue:  item.profile.role) ?? .all,
+              selectTeam: item.profile.team,
+              name: item.profile.name
             )
           }
         }

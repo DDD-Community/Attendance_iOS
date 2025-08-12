@@ -18,7 +18,7 @@ public final class DefaultProfileRepository: ProfileRepositoryProtocol {
     name: String,
     inviteCode: String,
     role: String,
-    crew: String,
+        team: String,
     responsibility: String
   ) async throws -> ProfileResponseModel? {
     return nil
@@ -37,7 +37,7 @@ public final class DefaultProfileRepository: ProfileRepositoryProtocol {
     name: String,
     inviteCode: String,
     role: String,
-    crew: String
+    team: String
   ) async throws -> ProfileResponseModel? {
     return nil
   }

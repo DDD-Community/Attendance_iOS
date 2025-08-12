@@ -20,7 +20,6 @@ public struct CoreMemberCoordinator {
 
   @ObservableState
   public struct State: Equatable {
-    var eventModel: [DDDEventDTO] = []
 
     public init() {
       self.routes = [.root(.coreMember(.init()), embedInNavigationView: true)]
@@ -48,8 +47,8 @@ public struct CoreMemberCoordinator {
   // MARK: - AsyncAction 비동기 처리 액션
 
   public enum AsyncAction: Equatable {
-    case fetchEvent
-    case fetchEventResponse(Result<[DDDEventDTO], CustomError>)
+    
+    
   }
 
   // MARK: - 앱내에서 사용하는 액션
@@ -64,7 +63,7 @@ public struct CoreMemberCoordinator {
     case presentLogin
   }
 
-  @Dependency(FireStoreUseCase.self) var fireStoreUseCase
+  
   @Dependency(\.continuousClock) var clock
 
   public var body: some ReducerOf<Self> {
@@ -146,36 +145,7 @@ public struct CoreMemberCoordinator {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    switch action {
-
-    case .fetchEvent:
-      return .run { send in
-        let fetchedDataResult = await Result {
-          try await fireStoreUseCase.fetchFireStoreData(
-            from: .event,
-            as: DDDEvent.self,
-            shouldSave: true
-          )
-        }
-
-        switch fetchedDataResult {
-        case let .success(fetchedData):
-          let filterData = fetchedData.map { $0.toModel()}
-          await send(.async(.fetchEventResponse(.success(filterData))))
-        case let .failure(error):
-          await send(.async(.fetchEventResponse(.failure(CustomError.map(error)))))
-        }
-      }
-
-    case let .fetchEventResponse(fetchedData):
-      switch fetchedData {
-      case let .success(fetchedData):
-        state.eventModel = fetchedData
-      case let .failure(error):
-        #logError("Error fetching data", error)
-      }
-      return .none
-    }
+    
   }
 
   private func handleInnerAction(

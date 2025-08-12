@@ -18,30 +18,15 @@ public struct AuthUseCase: AuthUseCaseProtocol {
   ) {
     self.repository = repository
   }
-  
-  // MARK: - 유저 조회
-  
-  public func fetchUser(uid: String) async throws -> UserDTOMember? {
-    try await repository.fetchUser(uid: uid)
-  }
-  
+
+
   // MARK: - API로 통해서 로그인
   public func loginUser(
     email: String
-  ) async throws -> LoginDTOModel? {
+  ) async throws -> LoginModel? {
     return try await repository
       .loginUser(
         email: email
-      )
-  }
-  
-  // MARK: - 세션 시작시 jwt check
-  public func sessionCheckJWT(
-    token: String
-  ) async throws -> RefreshTokenDTOModel? {
-    return try await repository
-      .sessionCheckJWT(
-        token: token
       )
   }
 }
