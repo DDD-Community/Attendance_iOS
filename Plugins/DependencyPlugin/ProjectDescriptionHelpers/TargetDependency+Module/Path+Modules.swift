@@ -51,27 +51,48 @@ public extension ProjectDescription.Path {
   }
 }
 
-// MARK: ProjectDescription.Path + Domain
+// MARK: ProjectDescription.Path +  Network
 public extension ProjectDescription.Path {
   static var Networking: Self {
-    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Networkings.name)")
+    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Networks.name)")
   }
   
-  static func Networking(implementation module: ModulePath.Networkings) -> Self {
-    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Networkings.name)/\(module.rawValue)")
+  static func Network(implementation module: ModulePath.Networks) -> Self {
+    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Networks.name)/\(module.rawValue)")
   }
 }
 
-//public extension ProjectDescription.Path {
-//    static var Domain: Self {
-//        return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Networkings.name)")
-//    }
-//    
-//    static func Networking(implementation module: ModulePath.Networkings) -> Self {
-//        return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Networkings.name)/\(module.rawValue)")
-//    }
-//}
+// MARK: ProjectDescription.Path +  Domain
+public extension ProjectDescription.Path {
+  static var Domain: Self {
+    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Domains.name)")
+  }
 
+  static func Domain(implementation module: ModulePath.Domains) -> Self {
+    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Domains.name)/\(module.rawValue)")
+  }
+}
+
+// MARK: ProjectDescription.Path +  Data
+public extension ProjectDescription.Path {
+  static var Data: Self {
+    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Datas.name)")
+  }
+
+  static func Data(implementation module: ModulePath.Datas) -> Self {
+    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Datas.name)/\(module.rawValue)")
+  }
+}
+
+public extension ProjectDescription.Path {
+  static var Interface: Self {
+    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Interfaces.name)")
+  }
+
+  static func Interface(implementation module: ModulePath.Interfaces) -> Self {
+    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Interfaces.name)/\(module.rawValue)")
+  }
+}
 
 
 

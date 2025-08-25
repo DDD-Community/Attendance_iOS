@@ -7,7 +7,7 @@
 
 import Foundation
 
-import Networkings
+import Core
 import Utill
 
 import AsyncMoya
@@ -24,7 +24,7 @@ public struct SignUpInviteCode {
     var secondInviteCode: String = ""
     var thirdInviteCode: String = ""
     var lastInviteCode: String = ""
-    var validateInviteCodeDTOModel: InviteDTOModel?
+    var validateInviteCodeDTOModel: InviteCodeModel?
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
     
     var totalInviteCode: String {
@@ -67,13 +67,12 @@ public struct SignUpInviteCode {
   
   public enum AsyncAction: Equatable {
     case validataInviteCode(code: String)
-    case validataInviteCodeResponse(Result<InviteDTOModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
-    
+    case validataInviteCodeResponse(Result<InviteCodeModel, CustomError>)
   }
   
   // MARK: - NavigationAction
@@ -84,7 +83,7 @@ public struct SignUpInviteCode {
   
   struct SignUpInviteCodeCancel: Hashable {}
   
-  @Dependency(SignUpUseCase.self) var signUpUseCase
+  @Dependency(SignUpUseCaseImpl.self) var signUpUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
@@ -138,31 +137,18 @@ public struct SignUpInviteCode {
         switch validataCodeResult {
         case .success(let validataCodeData):
           if let validataCodeData = validataCodeData {
-            await send(.async(.validataInviteCodeResponse(.success(validataCodeData))))
-            
+            await send(.inner(.validataInviteCodeResponse(.success(validataCodeData))))
+
             if validataCodeData.data.valid == true {
               await send(.navigation(.presentSignUpName))
             }
           }
         case .failure(let error):
-          await send(.async(.validataInviteCodeResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
+          await send(.inner(.validataInviteCodeResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
         }
       }
       .debounce(id: SignUpInviteCodeCancel(), for: 0.3, scheduler: mainQueue)
-      
-    case .validataInviteCodeResponse(let result):
-      switch result {
-      case .success(let validateCodeData):
-        state.validateInviteCodeDTOModel = validateCodeData
-        state.$userEntity.withLock{ $0.userRole = UserRole(rawValue: state.validateInviteCodeDTOModel?.data.inviteType ?? "")
-          $0.inviteCodeId = state.validateInviteCodeDTOModel?.data.inviteCodeID ?? ""
-        }
-        
-      case .failure(let error):
-        #logError("코드에러", error.localizedDescription)
-        state.isNotAvaliableCode.toggle()
-      }
-      return .none
+
     }
   }
   
@@ -180,6 +166,20 @@ public struct SignUpInviteCode {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    
+    switch action {
+    case .validataInviteCodeResponse(let result):
+      switch result {
+      case .success(let validateCodeData):
+        state.validateInviteCodeDTOModel = validateCodeData
+        state.$userEntity.withLock{ $0.userRole = UserRole(rawValue: state.validateInviteCodeDTOModel?.data.inviteType ?? "")
+          $0.inviteCodeId = state.validateInviteCodeDTOModel?.data.inviteCodeID ?? ""
+        }
+
+      case .failure(let error):
+        #logError("코드에러", error.localizedDescription)
+        state.isNotAvaliableCode.toggle()
+      }
+      return .none
+    }
   }
 }

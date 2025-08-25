@@ -8,7 +8,6 @@
 import SwiftUI
 import ComposableArchitecture
 import DesignSystem
-import Networkings
 
 public struct SignUpPartView: View {
   @Bindable var store: StoreOf<SignUpPart>

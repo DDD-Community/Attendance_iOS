@@ -10,7 +10,7 @@ let project = Project.makeAppModule(
   product: .staticFramework,
   settings:  .settings(),
   dependencies: [
-    .Networking(implements: .Model),
+    .Data(implements: .Model),
     .Shared(implements: .Utill),
     .Shared(implements: .ThirdParty)
   ],

@@ -8,8 +8,8 @@
 import Foundation
 import SwiftUI
 
-import Networkings
-import Model
+import Core
+import Shareds
 
 import ComposableArchitecture
 

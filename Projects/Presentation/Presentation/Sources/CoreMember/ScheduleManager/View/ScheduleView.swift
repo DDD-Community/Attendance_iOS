@@ -8,7 +8,6 @@
 import SwiftUI
 
 import Collections
-import Networkings
 import SwiftUIX
 
 struct ScheduleView: View {

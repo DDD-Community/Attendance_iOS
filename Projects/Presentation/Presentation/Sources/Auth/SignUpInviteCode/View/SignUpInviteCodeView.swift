@@ -170,31 +170,43 @@ extension SignUpInviteCodeView {
     completion: @escaping (Bool) -> Void
   ) -> some View {
     RoundedRectangle(cornerRadius: 16)
-      .stroke(text.wrappedValue.isEmpty ? Color.blue20 : isErrorCode ? Color.red40 : Color.clear, style: .init(lineWidth: text.wrappedValue.isEmpty ? 1.5 : 2))
-      .background(text.wrappedValue.isEmpty ? Color.clear : isErrorCode ? Color.red10 : Color.blue10)
+      .stroke(
+        text.wrappedValue.isEmpty ? .blue20 :
+        isErrorCode ? .red40 : Color.clear,
+        style: .init(lineWidth: text.wrappedValue.isEmpty ? 1.5 : 2)
+      )
+      .background(
+        text.wrappedValue.isEmpty ? Color.clear :
+        isErrorCode ? .red10 : .blue10
+      )
       .cornerRadius(16)
       .frame(width: 64, height: 64)
-      .overlay(alignment: .center) {
-        TextField(text: text, label: {})
+      .overlay {
+        TextField("", text: text)
           .pretendardCustomFont(textStyle: .headline7Semibold)
-          .foregroundStyle(Color.gray90)
+          .foregroundStyle(.gray90)
           .multilineTextAlignment(.center)
           .frame(maxWidth: .infinity)
+          .keyboardType(.numberPad)
+          .focused(isFocs)
+          .onChange(of: text.wrappedValue) { _, newValue in
+            if newValue.count > 1 {
+              text.wrappedValue = String(newValue.prefix(1))
+            }
+
+            if newValue.count == 1 {
+              DispatchQueue.main.async {
+                completion(false) // 다음 칸으로 이동
+              }
+            } else if newValue.isEmpty {
+              DispatchQueue.main.async {
+                completion(true) // 이전 칸으로 이동
+              }
+            }
+          }
       }
-      .keyboardType(.decimalPad)
-      .onChange(of: text.wrappedValue) { _, newValue in
-        if newValue.count > 1 {
-          text.wrappedValue = String(newValue.prefix(1))
-          completion(false)
-          isFocs.wrappedValue = true
-        } else if newValue.isEmpty {
-          completion(true)
-          isFocs.wrappedValue = false
-        }
-      }
-      .focused(isFocs)
   }
-  
+
   @ViewBuilder
   private func isNotValidateCodeErrorText() -> some View {
     if store.isNotAvaliableCode {

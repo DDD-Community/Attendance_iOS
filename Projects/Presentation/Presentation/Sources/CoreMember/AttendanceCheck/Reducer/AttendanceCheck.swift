@@ -7,8 +7,8 @@
 
 import Foundation
 
+import Core
 import Shareds
-import Networkings
 
 import ComposableArchitecture
 import FirebaseAuth
@@ -71,7 +71,7 @@ public struct AttendanceCheck {
   
   // MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
-    case appearData
+    case onAppear
     case fetchAttendanceCount
     case filterAttendanceCount(startDate: String)
     case fetchScheduleAttedanceCheck
@@ -91,8 +91,8 @@ public struct AttendanceCheck {
   
   private struct AttendanceCheckCancel: Hashable {}
   
-  @Dependency(AttendanceUseCase.self) var attendanceUseCase
-  @Dependency(ScheduleUseCase.self) var scheduleUseCase
+  @Dependency(AttendanceUseCaseImpl.self) var attendanceUseCase
+  @Dependency(ScheduleUseCaseImpl.self) var scheduleUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
@@ -172,14 +172,10 @@ public struct AttendanceCheck {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-    case .appearData:
+    case .onAppear:
       return .concatenate(
-        Effect.run(operation: { send in
-          await send(.async(.fetchAttendanceCount))
-        }),
-        Effect.run(operation: { send in
-          await send(.async(.fetchScheduleAttedanceCheck))
-        })
+        .run{  await $0(.async(.fetchAttendanceCount)) },
+        .run { await $0(.async(.fetchScheduleAttedanceCheck)) }
       )
       .debounce(id: AttendanceCheckCancel(), for: 0.3, scheduler: mainQueue)
       

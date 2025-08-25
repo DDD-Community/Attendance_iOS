@@ -84,7 +84,7 @@ extension ManagerProfileView {
 
   @ViewBuilder
   fileprivate func mangerCardImage() -> some View {
-    let memberTeam = store.profileDTOModel?.role ?? .all
+    let memberTeam = store.profileDTOModel?.team ?? .notTeam
     let mangingTeam = store.profileDTOModel?.crew ?? .notTeam
     
     LazyVStack {
@@ -135,14 +135,14 @@ extension ManagerProfileView {
             managerTextComponent(
               title: store.managerProfileManaging,
               subTitle: store.profileDTOModel?.responsibility.managingDesc ?? "",
-              managingTeam: mangingTeam.managingTeamDesc,
+              managingTeam: mangingTeam.attendanceListDescription,
               isManaging: store.profileDTOModel?.responsibility == .projectTeamManaging ? true : false,
               isGeneration: false
             )
           } else {
             managerTextComponent(
               title: store.memberSelectTeam,
-              subTitle: memberTeam.attendanceListDesc,
+              subTitle: memberTeam.attendanceListDescription,
               managingTeam: "",
               isManaging: false,
               isGeneration: false

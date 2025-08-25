@@ -7,8 +7,8 @@
 
 import Foundation
 
+import Core
 import Utill
-import Networkings
 
 import AsyncMoya
 import ComposableArchitecture
@@ -47,13 +47,12 @@ public struct SignUpSelectManaging {
   
   public enum AsyncAction: Equatable {
     case editProfile
-    case editProfileResponse(Result<ProfileResponseModel, CustomError>)
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
-    
+    case editProfileResponse(Result<ProfileResponseModel, CustomError>)
   }
   
   // MARK: - NavigationAction
@@ -65,7 +64,7 @@ public struct SignUpSelectManaging {
   
   struct SignUpSelectManagingCancel: Hashable {}
   
-  @Dependency(ProfileUseCase.self) var profileUseCase
+  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
@@ -145,16 +144,24 @@ public struct SignUpSelectManaging {
         switch editProfileResult {
         case .success(let profileDTOData):
           if let profileDTOData = profileDTOData {
-            await send(.async(.editProfileResponse(.success(profileDTOData))))
+            await send(.inner(.editProfileResponse(.success(profileDTOData))))
             await send(.navigation(.presentCoreMember))
           }
           
         case .failure(let error):
-          await send(.async(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
+          await send(.inner(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
         }
       }
       .debounce(id: SignUpSelectManagingCancel(), for: 0.3, scheduler: mainQueue)
-      
+
+    }
+  }
+  
+  private func handleInnerAction(
+    state: inout State,
+    action: InnerAction
+  ) -> Effect<Action> {
+    switch action {
     case .editProfileResponse(let result):
       switch result {
       case .success(let profileDT0):
@@ -165,12 +172,5 @@ public struct SignUpSelectManaging {
       }
       return .none
     }
-  }
-  
-  private func handleInnerAction(
-    state: inout State,
-    action: InnerAction
-  ) -> Effect<Action> {
-    
   }
 }

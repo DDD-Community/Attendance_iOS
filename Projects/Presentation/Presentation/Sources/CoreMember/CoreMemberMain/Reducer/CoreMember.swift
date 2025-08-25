@@ -8,9 +8,8 @@
 import Foundation
 import SwiftUI
 
-import DesignSystem
-import Networkings
-import Utill
+import Core
+import Shareds
 
 import ComposableArchitecture
 import KeychainAccess
@@ -35,7 +34,6 @@ public struct CoreMember {
     var eventImage: ImageAsset = .eventGenerate
     var managerProfilemage: ImageAsset = .managementProfile
     
-    var user: User? =  nil
     
     @Presents var destination: Destination.State?
   
