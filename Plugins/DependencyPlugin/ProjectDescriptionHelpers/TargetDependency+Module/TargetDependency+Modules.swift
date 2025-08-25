@@ -42,13 +42,34 @@ public extension TargetDependency {
 }
 
 
-// MARK: TargetDependency + Domain
-
+// MARK: TargetDependency + Network
 public extension TargetDependency {
-    static func Networking(implements module: ModulePath.Networkings) -> Self {
-        return .project(target: module.rawValue, path: .Networking(implementation: module))
+    static func Network(implements module: ModulePath.Networks) -> Self {
+        return .project(target: module.rawValue, path: .Network(implementation: module))
     }
 }
 
+
+// MARK: TargetDependency + Network
+public extension TargetDependency {
+    static func Domain(implements module: ModulePath.Domains) -> Self {
+        return .project(target: module.rawValue, path: .Domain(implementation: module))
+    }
+}
+
+
+// MARK: TargetDependency + Network
+public extension TargetDependency {
+    static func Data(implements module: ModulePath.Datas) -> Self {
+        return .project(target: module.rawValue, path: .Data(implementation: module))
+    }
+}
+
+// MARK: TargetDependency + Network
+public extension TargetDependency {
+    static func Interface(implements module: ModulePath.Interfaces) -> Self {
+        return .project(target: module.rawValue, path: .Interface(implementation: module))
+    }
+}
 
 

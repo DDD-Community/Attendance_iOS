@@ -7,9 +7,8 @@
 
 import Foundation
 
-import Networkings
-import Model
-import Utill
+import Core
+import Shareds
 
 import ComposableArchitecture
 import FirebaseAuth
@@ -79,8 +78,8 @@ public struct MemberMain {
     case qrcode(MemberQRCode)
   }
 
-  @Dependency(ProfileUseCase.self) var profileUseCase
-  @Dependency(AttendanceUseCase.self) var attendanceUseCase
+  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
+  @Dependency(AttendanceUseCaseImpl.self) var attendanceUseCase
 
   public var body: some ReducerOf<Self> {
     BindingReducer()

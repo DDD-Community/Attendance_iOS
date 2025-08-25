@@ -7,7 +7,7 @@
 
 import Foundation
 
-import Networkings
+import Core
 import Utill
 
 import ComposableArchitecture
@@ -47,8 +47,7 @@ public struct CoreMemberCoordinator {
   // MARK: - AsyncAction 비동기 처리 액션
 
   public enum AsyncAction: Equatable {
-    
-    
+
   }
 
   // MARK: - 앱내에서 사용하는 액션

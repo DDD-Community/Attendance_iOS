@@ -25,8 +25,8 @@ struct AttendanceCheckView: View {
 
       selectPartAttandanceStatus()
     }
-    .task {
-      store.send(.async(.appearData))
+    .onAppear {
+      store.send(.async(.onAppear))
       
     }
     .onChange(of: store.selectPart ?? .web1) { oldValue, newValue in

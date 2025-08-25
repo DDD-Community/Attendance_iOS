@@ -7,8 +7,8 @@
 
 import Foundation
 
+import Core
 import Utill
-import Networkings
 
 import ComposableArchitecture
 
@@ -64,9 +64,9 @@ public struct SignUpSelectTeam {
   
   private struct SignUpSelectTeamCancel: Hashable {}
   
-  @Dependency(SignUpUseCase.self) var signUpUseCase
+  @Dependency(SignUpUseCaseImpl.self) var signUpUseCase
   @Dependency(\.continuousClock) var clock
-  @Dependency(ProfileUseCase.self) var profileUseCase
+  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
   
   public var body: some ReducerOf<Self> {

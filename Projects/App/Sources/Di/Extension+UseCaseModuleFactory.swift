@@ -8,18 +8,18 @@
 import Foundation
 
 import DiContainer
-import Networkings
+import Core
 
 extension UseCaseModuleFactory {
   public var useCaseDefinitions: [() -> Module] {
     return [
-      registerModule.authUseCaseModule,
-      registerModule.oAuthUseCaseModule,
-      registerModule.qrCodeUseCaseModule,
-      registerModule.signUpUseCaseModoule,
-      registerModule.profileUseCaseModule,
-      registerModule.scheduleUseCaseModule,
-      registerModule.attendanceUseCaseModule
+      registerModule.authUseCaseImplModule,
+      registerModule.oAuthUseCaseImplModule,
+      registerModule.qrCodeUseCaseImplModule,
+      registerModule.signUpUseCaseImplModoule,
+      registerModule.profileUseCaseImplModule,
+      registerModule.scheduleUseCaseImplModule,
+      registerModule.attendanceUseCaseImplModule
     ]
   }
 }

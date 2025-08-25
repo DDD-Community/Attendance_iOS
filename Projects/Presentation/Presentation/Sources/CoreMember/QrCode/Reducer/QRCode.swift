@@ -8,8 +8,8 @@
 import Foundation
 import ComposableArchitecture
 
-import Utill
-import Networkings
+import Core
+import Shareds
 
 @Reducer
 public struct QRCode {
@@ -68,9 +68,7 @@ public struct QRCode {
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
 
-  @Dependency(QRCodeUseCase.self) var qrCodeUseCase
-  @Dependency(ScheduleUseCase.self) var scheduleUseCase
-  @Dependency(AttendanceUseCase.self) var attendanceUseCase
+  @Dependency(QRCodeUseCaseImpl.self) var qrCodeUseCase
 
   public var body: some ReducerOf<Self> {
     BindingReducer()
@@ -160,21 +158,6 @@ public struct QRCode {
       }
       return .none
 
-    }
-  }
-}
-
-extension Data {
-  func decodeds<T: Decodable>(as type: T.Type) throws -> T {
-    do {
-      return try JSONDecoder().decode(T.self, from: self)
-    } catch {
-      if let string = String(data: self, encoding: .utf8) {
-        print("📦 디코딩 실패: \(string)")
-      } else {
-        print("📦 디코딩 실패 - 디코딩할 수 없는 데이터 형식")
-      }
-      throw error
     }
   }
 }
