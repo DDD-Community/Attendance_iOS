@@ -11,8 +11,8 @@ public extension LoginDTOModel {
   func toDomanl() -> LoginModel {
     
     let data = LoginResponseModel(
-      id: self.data?.id ?? .zero,
       email:  self.data?.email ?? "",
+      id: self.data?.id ?? .zero,
       accessToken: self.data?.access ?? "",
       refreshToken: self.data?.refresh ?? "",
     )
