@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct AttendanceCountResponseModel: Equatable {
+public struct AttendanceCountResponseModel: Decodable, Equatable {
   public let attendanceCount: Int
   public let presentCount: Int
   public let lateCount: Int
