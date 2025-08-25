@@ -285,7 +285,7 @@ public struct Login {
           }
           state.appleAccessToken = identityToken
           state.appleLoginFullName = appleIDCredential
-
+          
           let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
           let uid = UserDefaults.standard.string(forKey: "UserUID") ?? ""
           state.$userEntity.withLock {
@@ -323,7 +323,7 @@ public struct Login {
           $0.accessToken = signUpModel.data.accessToken ?? ""
           $0.refreshToken = signUpModel.data.refreshToken ?? ""
         }
-
+        
       case .failure(let error):
         #logNetwork("회원가입 실패", error.localizedDescription)
       }
@@ -350,8 +350,8 @@ public struct Login {
           $0.accessToken = loginDTOData.data.accessToken
           $0.refreshToken = loginDTOData.data.refreshToken
         }
-
-
+        
+        
       case .failure(let error):
         #logNetwork("로그인 실패", error.localizedDescription)
       }
@@ -365,13 +365,13 @@ public struct Login {
         state.$userEntity.withLock {
           $0.inviteCodeId = profileDTOData.inviteCodeID
         }
-
+        
       case .failure(let error):
         #logNetwork("프로필 조회 실패", error.localizedDescription)
       }
       return .none
     }
-
+    
   }
   
   private func handleNavigationAction(

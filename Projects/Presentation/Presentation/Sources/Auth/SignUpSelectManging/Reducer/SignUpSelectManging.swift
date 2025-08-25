@@ -166,7 +166,7 @@ public struct SignUpSelectManaging {
       switch result {
       case .success(let profileDT0):
         state.editProfileDTO = profileDT0
-
+        
       case .failure(let error):
         #logNetwork("회원가입 프로핍 변경  에러", error.localizedDescription)
       }
