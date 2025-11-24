@@ -8,7 +8,7 @@
 import AuthenticationServices
 
 import DomainInterface
-import DiContainer
+import WeaveDI
 import Model
 import Repository
 
@@ -56,15 +56,11 @@ public struct OAuthUseCaseImpl: OAuthInterface {
   }
 }
 
-extension DependencyContainer {
-  var oAuthUseCase: OAuthInterface? {
-    resolve(OAuthInterface.self)
-  }
-}
-
 extension OAuthUseCaseImpl: DependencyKey {
   static public var liveValue: OAuthInterface =  {
-    let repository =  ContainerResgister(\.oAuthUseCase).wrappedValue
+    let repository =  UnifiedDI.register(OAuthInterface.self) {
+      OAuthRepositoryImpl()
+    }
     return OAuthUseCaseImpl(repository: repository)
   }()
 }
@@ -73,27 +69,6 @@ public extension DependencyValues {
   var oAuthUseCase: OAuthInterface {
     get { self[OAuthUseCaseImpl.self] }
     set { self[OAuthUseCaseImpl.self] = newValue }
-  }
-}
-
-
-public extension RegisterModule {
-
-  var oAuthUseCaseImplModule: () -> Module {
-    makeUseCaseWithRepository(
-      OAuthInterface.self,
-      repositoryProtocol: OAuthInterface.self,
-      repositoryFallback: DefaultOAuthRepositoryImpl(),
-      factory: { repo in
-        OAuthUseCaseImpl(repository: repo)
-      }
-    )
-  }
-
-  var oAuthRepositoryImplModule: () -> Module {
-    makeDependency(OAuthInterface.self) {
-      OAuthRepositoryImpl()
-    }
   }
 }
 

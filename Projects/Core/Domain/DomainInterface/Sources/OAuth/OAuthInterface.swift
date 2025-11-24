@@ -8,7 +8,7 @@
 import Foundation
 import AuthenticationServices
 
-public protocol OAuthInterface {
+public protocol OAuthInterface: Sendable {
   func handleAppleLogin(
     _ requestResult: Result<ASAuthorization, Error>,
     nonce: String

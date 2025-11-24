@@ -10,7 +10,7 @@ import Model
 import Repository
 
 import ComposableArchitecture
-import DiContainer
+import WeaveDI
 
 public struct AttendanceUseCaseImpl: AttendanceInterface {
   private let repository: AttendanceInterface
@@ -70,16 +70,11 @@ public struct AttendanceUseCaseImpl: AttendanceInterface {
   }
 }
 
-extension DependencyContainer {
-  var attendanceUseCase: AttendanceInterface? {
-    resolve(AttendanceInterface.self)
-  }
-}
-
-
 extension AttendanceUseCaseImpl: DependencyKey {
   static public var liveValue: AttendanceInterface = {
-    let repository = ContainerResgister(\.attendanceUseCase).wrappedValue
+    let repository = UnifiedDI.register(AttendanceInterface.self) {
+      AttendanceRepositoryImpl()
+    }
     return AttendanceUseCaseImpl(repository: repository)
   }()
 }
@@ -91,23 +86,4 @@ public extension DependencyValues {
   }
 }
 
-public extension RegisterModule {
-
-  var attendanceUseCaseImplModule: () -> Module {
-    makeUseCaseWithRepository(
-      AttendanceInterface.self,
-      repositoryProtocol: AttendanceInterface.self,
-      repositoryFallback: DefaultAttendanceRepositoryImpl(),
-      factory: { repo in
-        AttendanceUseCaseImpl(repository: repo)
-      }
-    )
-  }
-
-  var attendanceRepositoryImplModule: () -> Module {
-    makeDependency(AttendanceInterface.self) {
-      AttendanceRepositoryImpl()
-    }
-  }
-}
 
