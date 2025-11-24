@@ -10,21 +10,27 @@ import Model
 
 import Service
 
-import AsyncMoya
+@preconcurrency import AsyncMoya
 
 @Observable
-public class AttendanceRepositoryImpl: AttendanceInterface {
-  private let provider = MoyaProvider<AttendanceService>(plugins: [MoyaLoggingPlugin()])
+final public class AttendanceRepositoryImpl: AttendanceInterface , Sendable {
+  private let provider: MoyaProvider<AttendanceService>
 
-  public init(){}
+  public init(
+    provider: MoyaProvider<AttendanceService> = MoyaProvider<AttendanceService>.withSession(AuthInterceptor.shared)
+  ) {
+    self.provider = provider
+  }
+
+
+  
 
   // MARK: - 출석 카운트 API
   public func attendanceCount(
     startDate: String
   ) async throws -> AttendanceCountResponseModel? {
-    let response = try await provider.requestAsync(
+    let response : BaseResponseDTO<AttendanceCountResponseDTO> = try await provider.request(
       .attendanceCount(startDate: startDate),
-      decodeTo: BaseResponseDTO<AttendanceCountResponseDTO>.self
     )
     return response.data.toDomain()
   }
@@ -34,9 +40,8 @@ public class AttendanceRepositoryImpl: AttendanceInterface {
     startDate: String,
     endDate: String
   ) async throws -> AttendanceListModel? {
-    let attendanceModel = try await provider.requestAsync(
+    let attendanceModel : AttendanceListResponseDTOModel = try await provider.request(
       .getAttendances(startDate: startDate, endDate: endDate),
-      decodeTo: AttendanceListResponseDTOModel.self
     )
     return attendanceModel.toDomain()
   }
@@ -46,9 +51,8 @@ public class AttendanceRepositoryImpl: AttendanceInterface {
     team: SelectTeam,
     startDate: String
   ) async throws -> AttendanceListModel? {
-    let attendanceModel = try await provider.requestAsync(
-      .filterAttendance(startDate: startDate, team: team.rawValue),
-      decodeTo: AttendanceListResponseDTOModel.self
+    let attendanceModel : AttendanceListResponseDTOModel = try await provider.request(
+      .filterAttendance(startDate: startDate, team: team.rawValue)
     )
     return attendanceModel.toDomain()
   }
@@ -59,13 +63,12 @@ public class AttendanceRepositoryImpl: AttendanceInterface {
     scheduleId: String,
     startDate: String
   ) async throws -> AttendanceListModel? {
-    let filterScheduleAttendanceModel = try await provider.requestAsync(
+    let filterScheduleAttendanceModel: AttendanceListResponseDTOModel = try await provider.request(
       .filterScheduleAttendance(
         userId: userId,
         scheduleId: scheduleId,
         startDate: startDate
       ),
-      decodeTo: AttendanceListResponseDTOModel.self
     )
     return filterScheduleAttendanceModel.toDomain()
   }
@@ -74,17 +77,15 @@ public class AttendanceRepositoryImpl: AttendanceInterface {
   public func modifyAttendance(
     attendanceId: String
   ) async throws -> ModifyAttendanceModel? {
-    let modifyAttendanceModel = try await provider.requestAsync(
+    let modifyAttendanceModel: ModifyDTOAttendanceModel = try await provider.request(
       .modifyAttendance(attendanceId: attendanceId),
-      decodeTo: ModifyDTOAttendanceModel.self
     )
     return modifyAttendanceModel.toDomain()
   }
 
   public func fetchCount(userID: Int) async throws -> AttendanceCountResponseModel {
-    let response = try await provider.requestAsync(
-      .fetchCount(userID: userID),
-      decodeTo: BaseResponseDTO<AttendanceCountResponseDTO>.self
+    let response: BaseResponseDTO<AttendanceCountResponseDTO> = try await provider.request(
+      .fetchCount(userID: userID)
     )
     return response.data.toDomain()
   }

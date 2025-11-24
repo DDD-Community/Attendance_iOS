@@ -2,19 +2,16 @@ import Foundation
 import ProjectDescription
 import DependencyPlugin
 import ProjectTemplatePlugin
-import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
 let project = Project.makeAppModule(
-  name: "Repository",
-  bundleId: .appBundleID(name: ".Repository"),
+  name: "API",
+  bundleId: .appBundleID(name: ".API"),
   product: .staticFramework,
   settings:  .settings(),
   dependencies: [
-    .Data(implements: .Service),
-    .Domain(implements: .DomainInterface),
-
-      .SPM.googleSignIn
+    .SPM.asyncMoya
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  infoPlist: .moduleInfoPlist
 )

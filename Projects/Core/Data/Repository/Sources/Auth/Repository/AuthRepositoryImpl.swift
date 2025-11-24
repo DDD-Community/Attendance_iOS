@@ -10,15 +10,21 @@ import Model
 
 import Service
 
-import AsyncMoya
+@preconcurrency import AsyncMoya
 import FirebaseFirestore
 
 
 @Observable
-public class AuthRepositoryImpl: AuthInterface {
-  fileprivate var provider = MoyaProvider<AuthService>(plugins: [MoyaLoggingPlugin()])
+final public class AuthRepositoryImpl: AuthInterface, Sendable {
 
-  public init() {}
+  private let provider: MoyaProvider<AuthService>
+
+  public init(
+    provider: MoyaProvider<AuthService> = MoyaProvider<AuthService>.default
+  ) {
+    self.provider = provider
+  }
+
 
   // MARK: - 회원가입한 유저 조회
 
@@ -26,9 +32,9 @@ public class AuthRepositoryImpl: AuthInterface {
   public func loginUser(
     email: String,
   ) async throws -> LoginModel? {
-    let loginModel = try await provider.requestAsync(
+    let loginModel: LoginDTOModel = try await provider.request(
       .login(
-        email: email), decodeTo: LoginDTOModel.self)
+        email: email))
     return loginModel.toDomanl()
   }
 }

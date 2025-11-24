@@ -18,7 +18,7 @@ import FirebaseAuth
 import GoogleSignIn
 
 @Observable
-public class OAuthRepositoryImpl: OAuthInterface {
+final public class OAuthRepositoryImpl: OAuthInterface {
   @Shared(.inMemory("UseEntity"))
     private static var internalUserEntity: UserEntity = .init()
 
