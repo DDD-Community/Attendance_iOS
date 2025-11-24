@@ -5,6 +5,6 @@
 //  Created by 서원지 on 2/21/24.
 //
 
-@preconcurrency import ProjectDescription
+import ProjectDescription
 
-let plugin = Plugin(name: "DependencyPlugin")
+@MainActor let plugin = Plugin(name: "DependencyPlugin")

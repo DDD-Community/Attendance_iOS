@@ -45,9 +45,11 @@ extension InfoPlistDictionary {
   
   // 매개변수 없는 경우, 기본 지역을 "ko"로 설정
   func setCFBundleDevelopmentRegion() -> InfoPlistDictionary {
-    return self.merging(["CFBundleDevelopmentRegion": .string("ko")]) { (_, new) in new }
+    return self.merging(["CFBundleDevelopmentRegion": .string("ko")]) {
+      (_, new) in new
+    }
   }
-  
+
   func setCFBundleURLTypes(_ value: [[String: Any]]) -> InfoPlistDictionary {
     func convertToPlistValue(_ value: Any) -> Plist.Value {
       switch value {

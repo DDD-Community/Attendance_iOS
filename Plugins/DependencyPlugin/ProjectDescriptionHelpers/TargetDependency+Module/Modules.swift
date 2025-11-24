@@ -9,7 +9,7 @@ import Foundation
 import ProjectDescription
 
 public enum ModulePath {
-  case Presentatios(Presentations)
+  case Presentation(Presentations)
   case Core(Cores)
   case Network(Networks)
   case Interface(Interfaces)
@@ -32,6 +32,12 @@ public extension ModulePath {
 public extension ModulePath {
   enum Presentations: String, CaseIterable {
     case Presentation
+    case Splash
+    case Auth
+    case Profile
+    case Member
+    case Management
+
     public static let name: String = "Presentation"
   }
 }
@@ -67,6 +73,8 @@ public extension ModulePath {
   enum Datas: String, CaseIterable {
     case Model
     case Repository
+    case Service
+    case API
 
     public static let name: String = "Data"
   }
@@ -78,6 +86,7 @@ public extension ModulePath {
   enum Domains: String, CaseIterable {
     case UseCase
     case DomainInterface
+    case QRCode
 
 
     public static let name: String = "Domain"
