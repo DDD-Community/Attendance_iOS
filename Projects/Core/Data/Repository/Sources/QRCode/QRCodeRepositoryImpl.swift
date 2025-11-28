@@ -12,19 +12,25 @@ import DomainInterface
 import Model
 import Service
 
-import AsyncMoya
+@preconcurrency import AsyncMoya
 
 @Observable
-public class QRCodeRepositoryImpl: QRCodeInterface {
+final public class QRCodeRepositoryImpl: QRCodeInterface {
 
-  public init() {}
+  private let provider: MoyaProvider<QRService>
 
-  private let provider = MoyaProvider<QRService>(session: Session(interceptor: AuthInterceptor.shared), plugins: [MoyaLoggingPlugin()])
+  public init(
+    provider: MoyaProvider<QRService> = MoyaProvider<QRService>.withSession(AuthInterceptor.shared)
+  ) {
+    self.provider = provider
+  }
+
+
 
   // MARK: - QRCode String 생성
 
   public func createQRCode() async throws -> String {
-    let response = try await provider.requestAsync(.createQRCode, decodeTo: BaseResponseDTO<CreateQRCodeResponseDTO>.self)
+    let response : BaseResponseDTO<CreateQRCodeResponseDTO> = try await provider.request(.createQRCode)
     return response.data.qrString
   }
 
@@ -52,10 +58,10 @@ public class QRCodeRepositoryImpl: QRCodeInterface {
   public func qrAttendanceCheck(
     from code: String
   ) async throws -> QRValidateModel? {
-    let qrModel = try await provider.requestAsyncAwait(
+    let qrModel: QRValidateDTOModel = try await provider.request(
       .qrAttendanceCheck(
         code: code
-      ), decodeTo: QRValidateDTOModel.self)
+      ))
 
     return qrModel.toDomain()
   }

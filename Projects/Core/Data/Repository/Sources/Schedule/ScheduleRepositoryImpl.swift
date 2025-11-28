@@ -10,26 +10,29 @@ import Model
 
 import Service
 
-import AsyncMoya
+@preconcurrency import AsyncMoya
 
 @Observable
-public class ScheduleRepositoryImpl: ScheduleInterface {
+final public class ScheduleRepositoryImpl: ScheduleInterface {
 
-  fileprivate let provider = MoyaProvider<ScheduleService>(session: Session(interceptor: AuthInterceptor.shared), plugins: [MoyaLoggingPlugin()])
+  private let provider: MoyaProvider<ScheduleService>
 
-  public init(){}
-
+  public init(
+    provider: MoyaProvider<ScheduleService> = MoyaProvider<ScheduleService>.withSession(AuthInterceptor.shared)
+  ) {
+    self.provider = provider
+  }
 
   public func getSchedules() async throws -> ScheduleModel? {
-    let scheduleModel = try await provider.requestAsync(.getSchedule, decodeTo: ScheduleDTOModel.self)
+    let scheduleModel: ScheduleDTOModel = try await provider.request(.getSchedule)
     return scheduleModel.toDomain()
   }
 
   public func filtergetSchedules(
     startDate: String
   ) async throws -> ScheduleModel? {
-    let scheduleModel = try await provider.requestAsync(
-      .filterSchedule(stratDate: startDate),decodeTo: ScheduleDTOModel.self)
+    let scheduleModel: ScheduleDTOModel = try await provider.request(
+      .filterSchedule(stratDate: startDate))
     return scheduleModel.toDomain()
   }
 }

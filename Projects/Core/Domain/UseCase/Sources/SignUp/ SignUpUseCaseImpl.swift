@@ -6,11 +6,11 @@
 //
 
 import DomainInterface
-import DiContainer
 import Model
 import Repository
 
 import ComposableArchitecture
+import WeaveDI
 
 public struct SignUpUseCaseImpl: SignUpInterface {
 
@@ -46,16 +46,11 @@ public struct SignUpUseCaseImpl: SignUpInterface {
   }
 }
 
-extension DependencyContainer {
-  var signUpUseCase: SignUpInterface? {
-    resolve(SignUpInterface.self)
-  }
-}
-
-
 extension SignUpUseCaseImpl: DependencyKey {
   static public var liveValue: SignUpInterface = {
-    let repository = ContainerResgister(\.signUpUseCase).wrappedValue
+    let repository = UnifiedDI.register(SignUpInterface.self) {
+      SignUpRepositoryImpl()
+    }
     return SignUpUseCaseImpl(repository: repository)
   }()
 }
@@ -67,21 +62,3 @@ public extension DependencyValues {
   }
 }
 
-public extension RegisterModule {
-  var signUpUseCaseImplModoule: () -> Module {
-    makeUseCaseWithRepository(
-      SignUpInterface.self,
-      repositoryProtocol: SignUpInterface.self,
-      repositoryFallback: DefaultSignUpRepositoryImpl(),
-      factory: { repo in
-        SignUpUseCaseImpl(repository: repo)
-      }
-    )
-  }
-
-  var signUpRepositoryImplModoule: () -> Module {
-    makeDependency(SignUpInterface.self) {
-      SignUpRepositoryImpl()
-    }
-  }
-}

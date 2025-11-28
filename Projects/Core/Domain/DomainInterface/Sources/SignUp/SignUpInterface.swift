@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol SignUpInterface {
+public protocol SignUpInterface: Sendable {
   func registerAccount(
     email: String,
     password: String

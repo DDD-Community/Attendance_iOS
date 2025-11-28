@@ -11,28 +11,30 @@ import DomainInterface
 import Model
 import Service
 
-import AsyncMoya
-import Moya
+@preconcurrency import AsyncMoya
 
 @Observable
-public class SignUpRepositoryImpl: SignUpInterface {
+final public class SignUpRepositoryImpl: SignUpInterface {
 
-  private let provider = MoyaProvider<SignUpService>(plugins: [MoyaLoggingPlugin()])
 
-  public init() {}
+  private let provider: MoyaProvider<SignUpService>
 
+  public init(
+    provider: MoyaProvider<SignUpService> = MoyaProvider<SignUpService>.default
+  ) {
+    self.provider = provider
+  }
 
   // Mark : -  API 회원가입
   public func registerAccount(
     email: String,
     password: String
   ) async throws -> SignUpModel? {
-    let signUpModel = try await provider.requestAsync(
+    let signUpModel: SignUpDTOModel  = try await provider.request(
       .registerAccount(
         email: email,
         password1: password,
-        password2: password),
-      decodeTo: SignUpDTOModel.self)
+        password2: password))
     return signUpModel.toDomain()
   }
 
@@ -40,14 +42,14 @@ public class SignUpRepositoryImpl: SignUpInterface {
   public func validateInviteCode(
     inviteCode: String
   ) async throws -> InviteCodeModel? {
-    let model = try await provider.requestAsync(
-      .verifyInviteCode(inviteCode: inviteCode), decodeTo: InviteCodeDTOModel.self)
+    let model: InviteCodeDTOModel  = try await provider.request(
+      .verifyInviteCode(inviteCode: inviteCode))
     return model.toDomain()
   }
 
   // MARK: - 이메일 검증
   public func checkEmail(email: String) async throws -> CheckEmailModel? {
-    let model = try await provider.requestAsync(.checkEmail(email: email), decodeTo: CheckEmailDTOModel.self)
+    let model: CheckEmailDTOModel = try await provider.request(.checkEmail(email: email))
     return model.toDomain()
   }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol AttendanceInterface {
+public protocol AttendanceInterface: Sendable {
   func attendanceCount(startDate: String) async throws -> AttendanceCountResponseModel?
   func getAttendances(startDate: String, endDate: String) async throws -> AttendanceListModel?
   func fillAttendance(team: SelectTeam, startDate: String) async throws -> AttendanceListModel?

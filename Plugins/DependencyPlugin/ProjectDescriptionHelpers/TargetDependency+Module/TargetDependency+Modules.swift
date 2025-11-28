@@ -8,68 +8,52 @@
 import Foundation
 import ProjectDescription
 
-// MARK: TargetDependency + App
-
-public extension TargetDependency {
-    static var app: Self {
-        return .project(target: ModulePath.App.name, path: .app)
-    }
-    
-    static func app(implements module: ModulePath.App) -> Self {
-        return .target(name: ModulePath.App.name + module.rawValue)
-    }
+// 공통 헬퍼
+private extension TargetDependency {
+  static func projectTarget(_ name: String, path: ProjectDescription.Path) -> Self {
+    .project(target: name, path: path)
+  }
 }
 
-// MARK: TargetDependency + Presentation
+// Presentation
 public extension TargetDependency {
-    static func Presentation(implements module: ModulePath.Presentations) -> Self {
-        return .project(target: module.rawValue, path: .Presentation(implementation: module))
-    }
+  static func Presentation(implements module: ModulePath.Presentations) -> Self {
+    projectTarget(module.rawValue, path: .Presentation(implementation: module))
+  }
 }
 
-// MARK: TargetDependency + Design
+// Shared
 public extension TargetDependency {
-    static func Shared(implements module: ModulePath.Shareds) -> Self {
-        return .project(target: module.rawValue, path: .Shared(implementation: module))
-    }
+  static func Shared(implements module: ModulePath.Shareds) -> Self {
+    projectTarget(module.rawValue, path: .Shared(implementation: module))
+  }
 }
 
-// MARK: TargetDependency + Core
+// Core
 public extension TargetDependency {
-    static func Core(implements module: ModulePath.Cores) -> Self {
-        return .project(target: module.rawValue, path: .Core(implementation: module))
-    }
+  static func Core(implements module: ModulePath.Cores) -> Self {
+    projectTarget(module.rawValue, path: .Core(implementation: module))
+  }
 }
 
-
-// MARK: TargetDependency + Network
+// Network
 public extension TargetDependency {
-    static func Network(implements module: ModulePath.Networks) -> Self {
-        return .project(target: module.rawValue, path: .Network(implementation: module))
-    }
+  static func Network(implements module: ModulePath.Networks) -> Self {
+    projectTarget(module.rawValue, path: .Network(implementation: module))
+  }
 }
 
-
-// MARK: TargetDependency + Network
+// Domain
 public extension TargetDependency {
-    static func Domain(implements module: ModulePath.Domains) -> Self {
-        return .project(target: module.rawValue, path: .Domain(implementation: module))
-    }
+  static func Domain(implements module: ModulePath.Domains) -> Self {
+    projectTarget(module.rawValue, path: .Domain(implementation: module))
+  }
 }
 
-
-// MARK: TargetDependency + Network
+// Data
 public extension TargetDependency {
-    static func Data(implements module: ModulePath.Datas) -> Self {
-        return .project(target: module.rawValue, path: .Data(implementation: module))
-    }
+  static func Data(implements module: ModulePath.Datas) -> Self {
+    projectTarget(module.rawValue, path: .Data(implementation: module))
+  }
 }
-
-// MARK: TargetDependency + Network
-public extension TargetDependency {
-    static func Interface(implements module: ModulePath.Interfaces) -> Self {
-        return .project(target: module.rawValue, path: .Interface(implementation: module))
-    }
-}
-
 

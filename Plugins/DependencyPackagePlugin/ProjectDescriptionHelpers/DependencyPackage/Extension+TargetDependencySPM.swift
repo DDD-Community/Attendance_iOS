@@ -17,7 +17,7 @@ public extension TargetDependency.SPM {
   static let sdwebImage = TargetDependency.external(name: "SDWebImageSwiftUI", condition: .none)
   static let swiftUIX = TargetDependency.external(name: "SwiftUIX", condition: .none)
   static let fsCalendar = TargetDependency.external(name: "FSCalendar", condition: .none)
-  static let diContainer = TargetDependency.external(name: "DiContainer", condition: .none)
+  static let weaveDI = TargetDependency.external(name: "WeaveDI", condition: .none)
 
   static let keychainAccess = TargetDependency.external(name: "KeychainAccess", condition: .none)
   static let popupView = TargetDependency.external(name: "PopupView", condition: .none)
@@ -30,4 +30,5 @@ public extension TargetDependency.SPM {
   static let firebaseCrashlytics = TargetDependency.external(name: "FirebaseCrashlytics", condition: .none)
   static let firebaseRemoteConfig = TargetDependency.external(name: "FirebaseRemoteConfig", condition: .none)
   static let firebaseDatabase = TargetDependency.external(name: "FirebaseDatabase", condition: .none)
+  static let firebaseMessaging = TargetDependency.external(name: "FirebaseMessaging", condition: .none)
 }

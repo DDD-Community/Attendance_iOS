@@ -11,7 +11,8 @@ import ProjectDescription
 public extension Project {
   enum Environment {
     public static let appName = "DDDAttendance"
-    public static let appDemoName = "DDDAttendance-Demo"
+    public static let appStageName = "DDDAttendance-Stage"
+    public static let appProdName = "DDDAttendance-Prod"
     public static let appDevName = "DDDAttendance-Dev"
     public static let deploymentTarget : ProjectDescription.DeploymentTargets = .iOS("17.0")
     public static let deploymentDestination: ProjectDescription.Destinations = [.iPhone]

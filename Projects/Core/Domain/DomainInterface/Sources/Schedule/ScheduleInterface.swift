@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol ScheduleInterface {
+public protocol ScheduleInterface: Sendable {
   func getSchedules()  async throws -> ScheduleModel?
   func filtergetSchedules(startDate: String) async throws -> ScheduleModel?
 }

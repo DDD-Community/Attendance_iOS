@@ -10,7 +10,7 @@ import Model
 import Repository
 
 import ComposableArchitecture
-import DiContainer
+import WeaveDI
 
 public struct AuthUseCaseImpl: AuthInterface {
   private let repository: AuthInterface
@@ -33,16 +33,11 @@ public struct AuthUseCaseImpl: AuthInterface {
   }
 }
 
-extension DependencyContainer {
-  var authUseCase: AuthInterface? {
-    resolve(AuthInterface.self)
-  }
-}
-
-
 extension AuthUseCaseImpl: DependencyKey {
   static public var liveValue: AuthInterface = {
-    let authRepository = ContainerResgister(\.authUseCase).wrappedValue
+    let authRepository = UnifiedDI.register(AuthInterface.self) {
+      AuthRepositoryImpl()
+    }
     return AuthUseCaseImpl(repository: authRepository)
   }()
 }
@@ -51,26 +46,6 @@ public extension DependencyValues {
   var authUseCase: AuthInterface {
     get { self[AuthUseCaseImpl.self] }
     set { self[AuthUseCaseImpl.self] = newValue }
-  }
-}
-
-public extension RegisterModule {
-
-  var authUseCaseImplModule: () -> Module {
-    makeUseCaseWithRepository(
-      AuthInterface.self,
-      repositoryProtocol: AuthInterface.self,
-      repositoryFallback: DefaultAuthRepositoryImpl(),
-      factory: { repo in
-        AuthUseCaseImpl(repository: repo)
-      }
-    )
-  }
-
-  var authRepositoryImplModule: () -> Module {
-    makeDependency(AuthInterface.self) {
-      AuthRepositoryImpl()
-    }
   }
 }
 

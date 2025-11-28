@@ -10,14 +10,17 @@ import AsyncMoya
 import Foundation
 import API
 
-final actor AuthInterceptor: RequestInterceptor {
-
-  static let shared = AuthInterceptor()
+public final actor AuthInterceptor: RequestInterceptor {
+  public static let shared = AuthInterceptor()
 
   private init() {}
 
   // Request를 수정하여 토큰을 추가하는 메서드
-  nonisolated func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) async {
+  public nonisolated func adapt(
+    _ urlRequest: URLRequest,
+    for session: Session,
+    completion: @escaping (Result<URLRequest, Error>) -> Void
+  ) async {
     guard urlRequest.url?.absoluteString.hasPrefix(BaseAPI.base.apiDescription) == true else {
       completion(.success(urlRequest))
       return
@@ -34,8 +37,7 @@ final actor AuthInterceptor: RequestInterceptor {
     completion(.success(urlRequest))
   }
 
-  // 401 Unauthorized 응답 시 토큰 갱신 및 재시도 로직
-  nonisolated func retry(
+  public nonisolated func retry(
     _ request: Request,
     for session: Session,
     dueTo error: Error,

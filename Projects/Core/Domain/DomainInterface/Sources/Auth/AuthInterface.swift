@@ -7,6 +7,6 @@
 
 import Foundation
 
-public protocol AuthInterface {
+public protocol AuthInterface: Sendable {
   func loginUser(email: String) async throws -> LoginModel?
 }
