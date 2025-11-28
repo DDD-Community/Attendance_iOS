@@ -828,12 +828,12 @@ func registerModule() {
   // 레이어 자동 감지
   let layer: String = {
     let lower = moduleInput.lowercased()
-    if lower.starts(with: "presentation") { return "Presentation" }
-    else if lower.starts(with: "shared")   { return "Shared" }
-    else if lower.starts(with: "domain")   { return "Domain" }
-    else if lower.starts(with: "interface"){ return "Core/Interface" }
-    else if lower.starts(with: "network"){ return "Core/Network" }
-    else if lower.starts(with: "data")     { return "Data" }
+    if lower.hasPrefix("presentation") { return "Presentation" }
+    else if lower.hasPrefix("shared")   { return "Shared" }
+    else if lower.contains("domain")   { return "Domain" }
+    else if lower.contains("interface"){ return "Core/Interface" }
+    else if lower.contains("network"){ return "Network" }
+    else if lower.contains("data")     { return "Data" }
     else { return "Core" }
   }()
 
@@ -942,7 +942,7 @@ func registerModule() {
 
     // ──────────────────────────────
     // ✅ Domain 모듈일 경우 Interface 폴더 생성 여부 확인
-    if layer == "Domain" || layer == "Core/Domain" {
+    if layer.lowercased().contains("domain") {
       let askInterface = prompt("이 Domain 모듈에 Interface 폴더를 생성할까요? (y/N)").lowercased()
       if askInterface == "y" {
         let interfaceDir = "Projects/\(layer)/\(moduleName)/Interface/Sources"
