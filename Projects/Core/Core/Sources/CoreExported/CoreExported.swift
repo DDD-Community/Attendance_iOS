@@ -7,3 +7,4 @@
 
 @_exported import Networks
 @_exported import UseCase
+@_exported import DomainInterface

@@ -22,6 +22,7 @@ extension Settings {
       .setDebugInformationFormat("dwarf-with-dsym")
       .setProvisioningProfileSpecifier(provisioningProfile)
       .setSkipInstall(setSkipInstall)
+      .setCFBundleDevelopmentRegion("ko")
   }
   
   private static func commonBaseSettings(
@@ -62,20 +63,18 @@ extension Settings {
             provisioningProfile: "match Development \(Project.Environment.bundlePrefix)",
             setSkipInstall: false
           ),
-        xcconfig:
-            .relativeToRoot("./Config/dev.xcconfig")
+        xcconfig: .path(.dev)
       ),
       .debug(
-        name: "QA",
+        name: .stage,
         settings:
           commonSettings(
-            appName: Project.Environment.appName,
+            appName: Project.Environment.appStageName,
             displayName: Project.Environment.appName,
             provisioningProfile: "match Development \(Project.Environment.bundlePrefix)",
             setSkipInstall: false
           ),
-        xcconfig:
-            .relativeToRoot("./Config/qa.xcconfig")
+        xcconfig: .path(.stage)
       ),
       .release(
         name: .release,
@@ -86,9 +85,20 @@ extension Settings {
             provisioningProfile: "match AppStore \(Project.Environment.bundlePrefix)",
             setSkipInstall: false
           ),
-        xcconfig:
-            .relativeToRoot("./Config/realse.xcconfig")
-      )
+        xcconfig: .path(.release)
+      ),
+      .release(
+        name: .prod,
+        settings:
+          commonSettings(
+            appName: Project.Environment.appProdName,
+            displayName: Project.Environment.appName,
+            provisioningProfile: "match AppStore \(Project.Environment.bundlePrefix)",
+            setSkipInstall: false
+          ),
+        xcconfig: .path(.prod)
+      ),
+
     ], defaultSettings: .recommended
   )
   

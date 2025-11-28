@@ -6,11 +6,11 @@
 //
 
 import DomainInterface
-import DiContainer
 import Model
 import Repository
 
 import ComposableArchitecture
+import WeaveDI
 
 public struct ScheduleUseCaseImpl: ScheduleInterface {
   private let repository: ScheduleInterface
@@ -35,16 +35,11 @@ public struct ScheduleUseCaseImpl: ScheduleInterface {
 }
 
 
-extension DependencyContainer {
-  var scheduleUseCase: ScheduleInterface? {
-    resolve(ScheduleInterface.self)
-  }
-}
-
-
 extension ScheduleUseCaseImpl: DependencyKey {
   static public var liveValue: ScheduleInterface = {
-    let repository = ContainerResgister(\.scheduleUseCase).wrappedValue
+    let repository = UnifiedDI.register(ScheduleInterface.self) {
+      ScheduleRepositoryImpl()
+    }
     return ScheduleUseCaseImpl(repository: repository)
   }()
 }
@@ -54,25 +49,4 @@ public extension DependencyValues {
     get { self[ScheduleUseCaseImpl.self] }
     set { self[ScheduleUseCaseImpl.self] = newValue }
   }
-}
-
-public extension RegisterModule {
-
-  var scheduleUseCaseImplModule: () -> Module {
-    makeUseCaseWithRepository(
-      ScheduleInterface.self,
-      repositoryProtocol: ScheduleInterface.self,
-      repositoryFallback: DefaultScheduleRepositoryImpl(),
-      factory: { repo in
-        ScheduleUseCaseImpl(repository: repo)
-      }
-    )
-  }
-
-  var scheduleRepositoryImplModule: () -> Module {
-    makeDependency(ScheduleInterface.self) {
-      ScheduleRepositoryImpl()
-    }
-  }
-
 }

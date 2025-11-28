@@ -4,9 +4,7 @@
 //
 //  Created by Wonji Suh  on 7/23/25.
 //
-
-
-import DiContainer
+import WeaveDI
 import DomainInterface
 import Model
 import Repository
@@ -74,15 +72,11 @@ public struct ProfileUseCaseImpl: ProfileInterface {
   }
 }
 
-extension DependencyContainer {
-  var profileUseCase: ProfileInterface? {
-    resolve(ProfileInterface.self)
-  }
-}
-
 extension ProfileUseCaseImpl: DependencyKey {
   static public var liveValue: ProfileInterface = {
-    let repository = ContainerResgister(\.profileUseCase).wrappedValue
+    let repository = UnifiedDI.register(ProfileInterface.self) {
+      ProfileRepositoryImpl()
+    }
     return ProfileUseCaseImpl(repository: repository)
   }()
 }
@@ -91,25 +85,6 @@ public extension DependencyValues {
   var profileUseCase: ProfileInterface {
     get { self[ProfileUseCaseImpl.self] }
     set { self[ProfileUseCaseImpl.self] = newValue }
-  }
-}
-
-public extension RegisterModule {
-  var profileUseCaseImplModule: () -> Module {
-    makeUseCaseWithRepository(
-      ProfileInterface.self,
-      repositoryProtocol: ProfileInterface.self,
-      repositoryFallback: DefaultProfileRepositoryImpl(),
-      factory: { repo in
-        ProfileUseCaseImpl(repository: repo)
-      }
-    )
-  }
-
-  var profileRepositoryImplModule: () -> Module {
-    makeDependency(ProfileInterface.self) {
-      ProfileRepositoryImpl()
-    }
   }
 }
 

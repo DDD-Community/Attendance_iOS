@@ -1,5 +1,5 @@
 import UIKit
-import DiContainer
+import WeaveDI
 
 import Firebase
 
@@ -9,7 +9,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     FirebaseApp.configure()
-    registerDependencies()
+
+    WeaveDI.Container.bootstrapInTask { @DIContainerActor _ in
+      await AppDIManager.shared.registerDefaultDependencies()
+    }
+
     return true
   }
   
@@ -25,11 +29,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     _ application: UIApplication,
     didDiscardSceneSessions sceneSessions: Set<UISceneSession>
   ) {
-  }
-  
-  private func registerDependencies() {
-    Task {
-      await AppDIContainer.shared.registerDefaultDependencies()
-    }
   }
 }

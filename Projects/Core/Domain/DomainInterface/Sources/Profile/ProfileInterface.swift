@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol ProfileInterface {
+public protocol ProfileInterface: Sendable {
   func editProfileManger(
     name: String,
     inviteCode: String,

@@ -8,26 +8,18 @@
 import Foundation
 import ProjectDescription
 
-// MARK: ProjectDescription.Path + App
+
+// MARK: - Presentation
 public extension ProjectDescription.Path {
-  static var app: Self {
-    return .relativeToRoot("Projects/\(ModulePath.App.name)")
+  static var Presentation: Self {
+      return .relativeToRoot("Projects/\(ModulePath.Presentations.name)")
+  }
+  static func Presentation(implementation module: ModulePath.Presentations) -> Self {
+      return .relativeToRoot("Projects/\(ModulePath.Presentations.name)/\(module.rawValue)")
   }
 }
 
-
-// MARK: ProjectDescription.Path + Presentation
-public extension ProjectDescription.Path {
-    static var Presentation: Self {
-        return .relativeToRoot("Projects/\(ModulePath.Presentations.name)")
-    }
-    
-    static func Presentation(implementation module: ModulePath.Presentations) -> Self {
-        return .relativeToRoot("Projects/\(ModulePath.Presentations.name)/\(module.rawValue)")
-    }
-}
-
-// MARK: ProjectDescription.Path + Core
+// MARK: - Core
 public extension ProjectDescription.Path {
   static var Core: Self {
     return .relativeToRoot("Projects/\(ModulePath.Cores.name)")
@@ -40,7 +32,6 @@ public extension ProjectDescription.Path {
 
 
 // MARK: ProjectDescription.Path + DesignSystem
-
 public extension ProjectDescription.Path {
   static var Shared: Self {
     return .relativeToRoot("Projects/\(ModulePath.Shareds.name)")
@@ -51,7 +42,7 @@ public extension ProjectDescription.Path {
   }
 }
 
-// MARK: ProjectDescription.Path +  Network
+// MARK: - Network
 public extension ProjectDescription.Path {
   static var Networking: Self {
     return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Networks.name)")
@@ -62,7 +53,7 @@ public extension ProjectDescription.Path {
   }
 }
 
-// MARK: ProjectDescription.Path +  Domain
+// MARK: - Domain
 public extension ProjectDescription.Path {
   static var Domain: Self {
     return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Domains.name)")
@@ -73,7 +64,7 @@ public extension ProjectDescription.Path {
   }
 }
 
-// MARK: ProjectDescription.Path +  Data
+// MARK: - Data
 public extension ProjectDescription.Path {
   static var Data: Self {
     return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Datas.name)")
@@ -83,16 +74,3 @@ public extension ProjectDescription.Path {
     return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Datas.name)/\(module.rawValue)")
   }
 }
-
-public extension ProjectDescription.Path {
-  static var Interface: Self {
-    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Interfaces.name)")
-  }
-
-  static func Interface(implementation module: ModulePath.Interfaces) -> Self {
-    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(ModulePath.Interfaces.name)/\(module.rawValue)")
-  }
-}
-
-
-

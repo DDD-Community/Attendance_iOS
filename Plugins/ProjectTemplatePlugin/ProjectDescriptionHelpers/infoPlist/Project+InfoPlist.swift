@@ -16,7 +16,7 @@ public extension InfoPlist {
       .setCFBundleExecutable("$(EXECUTABLE_NAME)")
       .setCFBundleIdentifier("$(PRODUCT_BUNDLE_IDENTIFIER)")
       .setCFBundleInfoDictionaryVersion("6.0")
-      .setCFBundleName("DDD 출석")
+      .setCFBundleName("${BUNDLE_DISPLAY_NAME}")
       .setCFBundlePackageType("APPL")
       .setCFBundleShortVersionString(.appVersion())
       .setAppTransportSecurity()

@@ -12,7 +12,7 @@ let project = Project.makeAppModule(
   settings:  .settings(),
   dependencies: [
     .SPM.composableArchitecture,
-    .SPM.diContainer,
+    .SPM.weaveDI,
     .Data(implements: .Repository),
     
   ],
