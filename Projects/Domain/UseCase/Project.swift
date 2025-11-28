@@ -6,12 +6,16 @@ import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
 let project = Project.makeModule(
-  name: "{{ name }}",
-  bundleId: .appBundleID(name: ".{{name}}"),
+  name: "UseCase",
+  bundleId: .appBundleID(name: ".UseCase"),
   product: .staticFramework,
   settings:  .settings(),
   dependencies: [
-
+    .SPM.composableArchitecture,
+    .SPM.weaveDI,
+    .Data(implements: .Repository),
+    
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: true
 )

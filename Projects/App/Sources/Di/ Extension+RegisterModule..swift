@@ -8,7 +8,6 @@
 
 import WeaveDI
 import Core
-import Repository
 
 public extension RegisterModule {
 

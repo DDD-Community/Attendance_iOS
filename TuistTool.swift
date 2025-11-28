@@ -722,48 +722,110 @@ func parseSPMLibraries() -> [String] {
   }
 }
 
+// MARK: - Module Auto Registration Helper
+func addModuleToPluginAutomatically(moduleName: String, layer: String) -> Bool {
+  let modulesFilePath = "Plugins/DependencyPlugin/ProjectDescriptionHelpers/TargetDependency+Module/Modules.swift"
+
+  guard FileManager.default.fileExists(atPath: modulesFilePath) else {
+    print("❌ Modules.swift 파일을 찾을 수 없습니다: \(modulesFilePath)")
+    return false
+  }
+
+  do {
+    var content = try String(contentsOfFile: modulesFilePath, encoding: .utf8)
+    let originalContent = content
+
+    // 레이어별 enum 이름 매핑
+    let enumName: String
+    switch layer {
+    case "Presentation":
+      enumName = "Presentations"
+    case "Shared":
+      enumName = "Shareds"
+    case "Domain", "Core/Domain":
+      enumName = "Domains"
+    case "Core/Interface":
+      enumName = "Interfaces"
+    case "Core/Network", "Network":
+      enumName = "Networks"
+    case "Data", "Core/Data":
+      enumName = "Datas"
+    case "Core":
+      enumName = "Cores"
+    default:
+      print("❌ 알 수 없는 레이어: \(layer)")
+      return false
+    }
+
+    // enum 찾기 및 case 추가
+    let enumPattern = "enum \(enumName): String, CaseIterable \\{([\\s\\S]*?)\\}"
+
+    guard let enumRegex = try? NSRegularExpression(pattern: enumPattern),
+          let enumMatch = enumRegex.firstMatch(in: content, range: NSRange(content.startIndex..., in: content)),
+          let enumRange = Range(enumMatch.range, in: content) else {
+      print("❌ \(enumName) enum을 찾을 수 없습니다")
+      return false
+    }
+
+    // enum 내부 검사하여 중복 확인
+    if let innerRange = Range(enumMatch.range(at: 1), in: content) {
+      let innerContent = String(content[innerRange])
+      if innerContent.contains("case \(moduleName)") {
+        print("ℹ️ 모듈 '\(moduleName)'이 이미 \(enumName)에 존재합니다")
+        return true
+      }
+    }
+
+    // 마지막 case 뒤에 새로운 case 추가
+    let enumEndIndex = content.index(before: enumRange.upperBound)
+    let newCase = "    case \(moduleName)\n  "
+    content.insert(contentsOf: newCase, at: enumEndIndex)
+
+    // 파일 업데이트
+    if content != originalContent {
+      try content.write(toFile: modulesFilePath, atomically: true, encoding: .utf8)
+      print("✅ \(enumName)에 '\(moduleName)' 모듈이 자동으로 추가되었습니다")
+      return true
+    }
+
+  } catch {
+    print("❌ Modules.swift 파일 업데이트 실패: \(error)")
+    return false
+  }
+
+  return false
+}
+
+// 기본 의존성을 자동으로 추가하는 함수
+func getDefaultDependencies(for layer: String) -> [String] {
+  var dependencies: [String] = []
+
+  // 모든 모듈에 공통 SPM 의존성 추가
+  dependencies.append(".SPM.composableArchitecture")
+  dependencies.append(".SPM.tcaCoordinator")
+
+  // ✨ Presentation 레이어만 추가 내부 모듈 의존성 자동 추가
+  switch layer {
+  case "Presentation":
+    dependencies.append(".Shared(implements: .Shareds)")
+    dependencies.append(".Shared(implements: .DesignSystem)")
+    dependencies.append(".Domain(implements: .UseCase)")
+
+  default:
+    // 다른 모든 레이어는 SPM 의존성만 추가 (내부 모듈 의존성은 수동 선택)
+    break
+  }
+
+  return dependencies
+}
+
 // MARK: - registerModule
 func registerModule() {
   print("\n🚀 새 모듈 등록을 시작합니다.")
   let moduleInput = prompt("모듈 이름을 입력하세요 (예: Presentation_Home, Shared_Logger, Domain_Auth 등)")
   let moduleName = prompt("생성할 모듈 이름을 입력하세요 (예: Home)")
 
-  var dependencies: [String] = []
-  while true {
-    print("의존성 종류 선택:")
-    print("  1) SPM")
-    print("  2) 내부 모듈")
-    print("  3) 종료")
-    let choice = prompt("번호 선택")
-    if choice == "3" { break }
-
-    if choice == "1" {
-      let options = parseSPMLibraries()
-      for (i, lib) in options.enumerated() { print("  \(i + 1). \(lib)") }
-      let selected = Int(prompt("선택할 번호 입력")) ?? 0
-      if (1...options.count).contains(selected) {
-        dependencies.append(".SPM.\(options[selected - 1])")
-      }
-    } else if choice == "2" {
-      let types = availableModuleTypes()
-      for (i, type) in types.enumerated() { print("  \(i + 1). \(type)") }
-      let typeIndex = Int(prompt("의존할 모듈 타입 번호 입력")) ?? 0
-      guard (1...types.count).contains(typeIndex) else { continue }
-      let keyword = types[typeIndex - 1]
-
-      let options = parseModulesFromFile(keyword: keyword)
-      for (i, opt) in options.enumerated() { print("  \(i + 1). \(opt)") }
-      let moduleIndex = Int(prompt("선택할 번호 입력")) ?? 0
-      if (1...options.count).contains(moduleIndex) {
-        dependencies.append(".\(keyword)(implements: .\(options[moduleIndex - 1]))")
-      }
-    }
-  }
-
-  let author = (try? runCapture("git", arguments: ["config", "--get", "user.name"])) ?? "Unknown"
-  let formatter = DateFormatter(); formatter.dateFormat = "yyyy-MM-dd"
-  let currentDate = formatter.string(from: Date())
-
+  // 레이어 자동 감지
   let layer: String = {
     let lower = moduleInput.lowercased()
     if lower.starts(with: "presentation") { return "Presentation" }
@@ -775,6 +837,72 @@ func registerModule() {
     else { return "Core" }
   }()
 
+  print("📍 감지된 레이어: \(layer)")
+
+  // 기본 의존성 자동 추가 (composable, tcacoordinator, domain, shared)
+  var dependencies = getDefaultDependencies(for: layer)
+  print("✅ 기본 의존성이 자동으로 추가되었습니다:")
+  for dep in dependencies {
+    print("  - \(dep)")
+  }
+
+  // 추가 의존성 선택 (선택사항)
+  print("\n🔧 추가 의존성을 선택하시겠습니까? (기본 의존성 외에)")
+  let wantAdditional = prompt("추가 의존성을 선택하시겠습니까? (y/N)").lowercased()
+
+  if wantAdditional == "y" {
+    while true {
+      print("\n추가 의존성 종류 선택:")
+      print("  1) SPM")
+      print("  2) 내부 모듈")
+      print("  3) 종료")
+      let choice = prompt("번호 선택")
+      if choice == "3" { break }
+
+      if choice == "1" {
+        let options = parseSPMLibraries()
+        print("\n사용 가능한 SPM 라이브러리:")
+        for (i, lib) in options.enumerated() { print("  \(i + 1). \(lib)") }
+        let selected = Int(prompt("선택할 번호 입력 (0: 건너뜀)")) ?? 0
+        if (1...options.count).contains(selected) {
+          let newDep = ".SPM.\(options[selected - 1])"
+          if !dependencies.contains(newDep) {
+            dependencies.append(newDep)
+            print("✅ 추가됨: \(newDep)")
+          } else {
+            print("ℹ️ 이미 추가된 의존성입니다")
+          }
+        }
+      } else if choice == "2" {
+        let types = availableModuleTypes()
+        print("\n사용 가능한 모듈 타입:")
+        for (i, type) in types.enumerated() { print("  \(i + 1). \(type)") }
+        let typeIndex = Int(prompt("의존할 모듈 타입 번호 입력 (0: 건너뜀)")) ?? 0
+        guard (1...types.count).contains(typeIndex) else { continue }
+        let keyword = types[typeIndex - 1]
+
+        let options = parseModulesFromFile(keyword: keyword)
+        print("\n사용 가능한 \(keyword) 모듈:")
+        for (i, opt) in options.enumerated() { print("  \(i + 1). \(opt)") }
+        let moduleIndex = Int(prompt("선택할 번호 입력 (0: 건너뜀)")) ?? 0
+        if (1...options.count).contains(moduleIndex) {
+          let newDep = ".\(keyword)(implements: .\(options[moduleIndex - 1]))"
+          if !dependencies.contains(newDep) {
+            dependencies.append(newDep)
+            print("✅ 추가됨: \(newDep)")
+          } else {
+            print("ℹ️ 이미 추가된 의존성입니다")
+          }
+        }
+      }
+    }
+  }
+
+  let author = (try? runCapture("git", arguments: ["config", "--get", "user.name"])) ?? "Unknown"
+  let formatter = DateFormatter(); formatter.dateFormat = "yyyy-MM-dd"
+  let currentDate = formatter.string(from: Date())
+
+  print("\n🔨 모듈 생성 중...")
   let result = run("tuist", arguments: [
     "scaffold", "Module",
     "--layer", layer,
@@ -784,23 +912,40 @@ func registerModule() {
   ])
 
   if result == 0 {
+    print("✅ Tuist 모듈 생성 완료")
+
+    // ✅ 자동으로 Modules.swift에 모듈 추가
+    print("\n📝 Modules.swift에 모듈 등록 중...")
+    if addModuleToPluginAutomatically(moduleName: moduleName, layer: layer) {
+      print("✅ Modules.swift 등록 완료")
+    } else {
+      print("⚠️ Modules.swift 등록 실패 - 수동으로 추가해주세요")
+    }
+
+    // Project.swift에 의존성 추가
     let projectFile = "Projects/\(layer)/\(moduleName)/Project.swift"
     if var content = try? String(contentsOfFile: projectFile, encoding: .utf8),
        let range = content.range(of: "dependencies: [") {
       let insertIndex = content.index(after: range.upperBound)
-      let dependencyList = dependencies.map { "  \($0)" }.joined(separator: ",\n")
-      content.insert(contentsOf: "\n\(dependencyList),", at: insertIndex)
-      try? content.write(toFile: projectFile, atomically: true, encoding: .utf8)
-      print("✅ 의존성 추가 완료:\n\(dependencyList)")
+      let dependencyList = dependencies.map { "    \($0)" }.joined(separator: ",\n")
+      if !dependencies.isEmpty {
+        content.insert(contentsOf: "\n\(dependencyList)\n  ", at: insertIndex)
+        try? content.write(toFile: projectFile, atomically: true, encoding: .utf8)
+        print("\n✅ 의존성 추가 완료:")
+        for dep in dependencies {
+          print("  - \(dep)")
+        }
+      }
     }
-    print("✅ 모듈 생성 완료: Projects/\(layer)/\(moduleName)")
+
+    print("\n✅ 모듈 생성 완료: Projects/\(layer)/\(moduleName)")
 
     // ──────────────────────────────
     // ✅ Domain 모듈일 경우 Interface 폴더 생성 여부 확인
-    if layer == "Core/Domain" {
+    if layer == "Domain" || layer == "Core/Domain" {
       let askInterface = prompt("이 Domain 모듈에 Interface 폴더를 생성할까요? (y/N)").lowercased()
       if askInterface == "y" {
-        let interfaceDir = "Projects/Core/Domain/\(moduleName)/Interface/Sources"
+        let interfaceDir = "Projects/\(layer)/\(moduleName)/Interface/Sources"
         let baseFilePath = "\(interfaceDir)/Base.swift"
 
         if !FileManager.default.fileExists(atPath: interfaceDir) {
@@ -823,9 +968,9 @@ func registerModule() {
           //
           //  Created by \(author) on \(currentDate).
           //
-          
+
           import Foundation
-          
+
           public protocol \(moduleName)Interface {
               // TODO: 정의 추가
           }
@@ -841,6 +986,12 @@ func registerModule() {
         }
       }
     }
+
+    print("\n🎉 모든 작업이 완료되었습니다!")
+    print("💡 다음 단계:")
+    print("   1. 'tuist generate' 명령어로 프로젝트를 새로고침하세요")
+    print("   2. Xcode에서 새로운 모듈을 확인하세요")
+
   } else {
     print("❌ 모듈 생성 실패")
   }

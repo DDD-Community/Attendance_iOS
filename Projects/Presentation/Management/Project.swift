@@ -6,11 +6,18 @@ import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
 let project = Project.makeModule(
-  name: "{{ name }}",
-  bundleId: .appBundleID(name: ".{{name}}"),
+  name: "Management",
+  bundleId: .appBundleID(name: ".Management"),
   product: .staticFramework,
   settings:  .settings(),
   dependencies: [
+
+    .SPM.composableArchitecture,
+    .SPM.tcaCoordinator,
+    .Shared(implements: .Shareds),
+    .Domain(implements: .UseCase),
+    .Presentation(implements: .Profile),
+    .Core(implements: .Core)
 
   ],
   sources: ["Sources/**"]

@@ -10,7 +10,13 @@ let project = Project.makeModule(
   settings:  .settings(),
   dependencies: [
     .Shared(implements: .Shareds),
-    .Core(implements: .Core)
+    .Core(implements: .Core),
+    .Presentation(implements: .Auth),
+    .Presentation(implements: .Splash),
+    .Presentation(implements: .Management),
+    .Presentation(implements: .Member),
+
+
   ],
   sources: ["Sources/**"]
 )

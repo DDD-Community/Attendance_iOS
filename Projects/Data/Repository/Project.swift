@@ -6,12 +6,16 @@ import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
 let project = Project.makeModule(
-  name: "{{ name }}",
-  bundleId: .appBundleID(name: ".{{name}}"),
+  name: "Repository",
+  bundleId: .appBundleID(name: ".Repository"),
   product: .staticFramework,
   settings:  .settings(),
   dependencies: [
+    .Data(implements: .Service),
+    .Domain(implements: .DomainInterface),
 
+      .SPM.googleSignIn
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: true
 )
