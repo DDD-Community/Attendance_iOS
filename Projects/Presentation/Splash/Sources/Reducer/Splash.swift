@@ -122,7 +122,7 @@ public struct Splash {
 
             if profileDTOData.isStaff == true {
               await send(.navigation(.presentCoreMember))
-            } else if  profileDTOData.role == .all {
+            } else if profileDTOData.role == .all {
               await send(.navigation(.presentLogin))
             } else {
               await send(.navigation(.presentMember))

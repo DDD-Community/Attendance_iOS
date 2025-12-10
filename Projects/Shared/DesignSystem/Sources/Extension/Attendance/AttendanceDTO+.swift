@@ -1,5 +1,5 @@
 //
-//  Extension+AttendanceDTO.swift
+//  AttendanceDTO+.swift
 //  DesignSystem
 //
 //  Created by Wonji Suh  on 11/4/24.

@@ -16,7 +16,7 @@ struct AppReducer {
   enum State {
     case splash(Splash.State)
     case auth(AuthCoordinator.State)
-    case coreMember(ManagementCoordinator.State)
+    case coreMember(StaffCoordinator.State)
     case member(MemberCoordinator.State)
 
     init() {
@@ -36,7 +36,7 @@ struct AppReducer {
 
     case splash(Splash.Action)
     case auth(AuthCoordinator.Action)
-    case coreMember(ManagementCoordinator.Action)
+    case coreMember(StaffCoordinator.Action)
     case member(MemberCoordinator.Action)
   }
 
@@ -56,7 +56,7 @@ struct AppReducer {
       AuthCoordinator()
     }
     .ifCaseLet(\.coreMember, action: \.view.coreMember) {
-      ManagementCoordinator()
+      StaffCoordinator()
     }
     .ifCaseLet(\.member, action: \.view.member) {
       MemberCoordinator()

@@ -1,5 +1,5 @@
 //
-//  Extension+Image.swift
+//  Image+.swift
 //  DesignSystem
 //
 //  Created by 서원지 on 7/13/24.

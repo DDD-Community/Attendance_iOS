@@ -1,5 +1,5 @@
 //
-//  Management.swift
+//  Staff.swift
 //  DDDAttendance
 //
 //  Created by 서원지 on 6/6/24.
@@ -16,7 +16,7 @@ import KeychainAccess
 import FirebaseAuth
 
 @Reducer
-public struct Management {
+public struct Staff {
   public init() {}
   
   @ObservableState

@@ -1,5 +1,5 @@
 //
-//  ManagementCoordinator.swift
+//  StaffCoordinator.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 11/4/24.
@@ -16,7 +16,7 @@ import KeychainAccess
 import TCACoordinators
 
 @Reducer
-public struct ManagementCoordinator {
+public struct StaffCoordinator {
   public init() {}
 
   @ObservableState
@@ -94,7 +94,7 @@ public struct ManagementCoordinator {
 
 }
 
-extension ManagementCoordinator {
+extension StaffCoordinator {
   private func routerAction(
     state: inout State,
     action: IndexedRouterActionOf<CoreMemberScreen>
@@ -159,10 +159,10 @@ extension ManagementCoordinator {
   }
 }
 
-extension ManagementCoordinator {
+extension StaffCoordinator {
   @Reducer(state: .equatable)
   public enum CoreMemberScreen{
-    case coreMember(Management)
+    case coreMember(Staff)
     case mangeProfile(ProfileReducer)
   }
 }

@@ -1,14 +1,14 @@
 //
-//  Extension+UIColor.swift
+//  Color+.swift
 //  DDDAttendance
 //
 //  Created by 서원지 on 6/6/24.
 //
 
-import UIKit
+import SwiftUI
 
-public extension UIColor {
-  convenience init(hex: String, alpha: Double? = .zero) {
+public extension Color {
+  init(hex: String) {
     let scanner = Scanner(string: hex)
     _ = scanner.scanString("#")
     
@@ -18,6 +18,6 @@ public extension UIColor {
     let r = Double((rgb >> 16) & 0xFF) / 255.0
     let g = Double((rgb >>  8) & 0xFF) / 255.0
     let b = Double((rgb >>  0) & 0xFF) / 255.0
-    self.init(red: r, green: g, blue: b, alpha: 100)
+    self.init(red: r, green: g, blue: b)
   }
 }

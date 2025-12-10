@@ -1,5 +1,5 @@
 //
-//  ManagementView.swift
+//  StaffView.swift
 //  DDDAttendance
 //
 //  Created by 서원지 on 6/6/24.
@@ -13,11 +13,11 @@ import Model
 import ComposableArchitecture
 import SDWebImageSwiftUI
 
-struct ManagementView: View {
-  @Bindable var store: StoreOf<Management>
+struct StaffView: View {
+  @Bindable var store: StoreOf<Staff>
   @State var isExpanded: Bool = false
   
-  init(store: StoreOf<Management>) {
+  init(store: StoreOf<Staff>) {
     self.store = store
   }
   
@@ -72,7 +72,7 @@ struct ManagementView: View {
   }
 }
 
-extension ManagementView {
+extension StaffView {
   
   @ViewBuilder
   fileprivate func navigationTrallingButton() -> some View {

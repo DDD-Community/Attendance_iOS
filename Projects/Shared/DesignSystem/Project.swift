@@ -15,5 +15,5 @@ let project = Project.makeModule(
     .Shared(implements: .ThirdParty)
   ],
   sources: ["Sources/**"],
-  resources: ["Resources/**", "FontAsset"]
+  resources: ["Resources/**", "FontAsset/**"]
 )

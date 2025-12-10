@@ -1,5 +1,5 @@
 //
-//  Extension+UIScreen.swift
+//  UIScreen+.swift
 //  DDDAttendance
 //
 //  Created by 서원지 on 6/6/24.

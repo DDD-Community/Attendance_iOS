@@ -1,5 +1,5 @@
 //
-//  ManagementCoordinatorView.swift
+//  StaffCoordinatorView.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 11/4/24.
@@ -11,11 +11,11 @@ import ComposableArchitecture
 import TCACoordinators
 import Profile
 
-public struct ManagementCoordinatorView: View {
-  @Bindable private var store: StoreOf<ManagementCoordinator>
+public struct StaffCoordinatorView: View {
+  @Bindable private var store: StoreOf<StaffCoordinator>
 
   public init(
-    store: StoreOf<ManagementCoordinator>
+    store: StoreOf<StaffCoordinator>
   ) {
     self.store = store
   }
@@ -24,7 +24,7 @@ public struct ManagementCoordinatorView: View {
     TCARouter(store.scope(state: \.routes, action: \.router)) { screens in
       switch screens.case {
       case .coreMember(let coreMember):
-        ManagementView(store: coreMember)
+        StaffView(store: coreMember)
           .navigationBarBackButtonHidden()
 
       case .mangeProfile(let managerProfileStore):

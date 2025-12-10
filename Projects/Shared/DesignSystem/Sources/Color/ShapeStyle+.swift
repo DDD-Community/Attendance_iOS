@@ -1,5 +1,5 @@
 //
-//  Extension+ShapeStyle.swift
+//  ShapeStyle+.swift
 //  DesignSystem
 //
 //  Created by Wonji Suh  on 12/5/24.
