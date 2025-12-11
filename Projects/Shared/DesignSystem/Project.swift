@@ -4,7 +4,7 @@ import DependencyPlugin
 import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
-let project = Project.makeAppModule(
+let project = Project.makeModule(
   name: "DesignSystem",
   bundleId: .appBundleID(name: ".DesignSystem"),
   product: .staticFramework,
@@ -15,5 +15,5 @@ let project = Project.makeAppModule(
     .Shared(implements: .ThirdParty)
   ],
   sources: ["Sources/**"],
-  resources: ["Resources/**", "FontAsset"]
+  resources: ["Resources/**", "FontAsset/**"]
 )

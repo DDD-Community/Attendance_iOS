@@ -29,7 +29,7 @@ struct AppView: View {
 
       case .coreMember:
         if let store = store.scope(state: \.coreMember, action: \.view.coreMember) {
-          CoreMemberCoordinatorView(store: store)
+          StaffCoordinatorView(store: store)
         }
 
       case .member:

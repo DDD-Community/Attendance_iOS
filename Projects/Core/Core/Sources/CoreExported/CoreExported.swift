@@ -8,3 +8,6 @@
 @_exported import Networks
 @_exported import UseCase
 @_exported import DomainInterface
+@_exported import Model
+@_exported import Repository
+
