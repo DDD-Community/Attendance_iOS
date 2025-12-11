@@ -23,7 +23,8 @@ public extension Project {
     resources: ProjectDescription.ResourceFileElements? = nil,
     infoPlist: ProjectDescription.InfoPlist = .default,
     entitlements: ProjectDescription.Entitlements? = nil,
-    schemes: [ProjectDescription.Scheme] = []
+    schemes: [ProjectDescription.Scheme] = [],
+    hasTests: Bool = false
   ) -> Project {
 
     let appTarget: Target = .target(
@@ -84,18 +85,21 @@ public extension Project {
       dependencies: dependencies
     )
 
-    let appTestTarget : Target = .target(
-      name: "\(name)Tests",
-      destinations: destinations,
-      product: .unitTests,
-      bundleId: "\(bundleId).\(name)Tests",
-      deploymentTargets: deploymentTarget,
-      infoPlist: .default,
-      sources: ["\(name)Tests/Sources/**"],
-      dependencies: [.target(name: name)]
-    )
+    var targets: [Target] = [appTarget, appDevTarget, appStageTarget, appProdTarget]
 
-    let targets = [appTarget, appDevTarget, appStageTarget, appProdTarget ,appTestTarget]
+    if hasTests {
+      let appTestTarget : Target = .target(
+        name: "\(name)Tests",
+        destinations: destinations,
+        product: .unitTests,
+        bundleId: "\(bundleId).\(name)Tests",
+        deploymentTargets: deploymentTarget,
+        infoPlist: .default,
+        sources: ["Tests/Sources/**"],
+        dependencies: [.target(name: name)]
+      )
+      targets.append(appTestTarget)
+    }
 
     return Project(
       name: name,
@@ -125,7 +129,8 @@ public extension Project {
     resources: ProjectDescription.ResourceFileElements? = nil,
     infoPlist: ProjectDescription.InfoPlist = .default,
     entitlements: ProjectDescription.Entitlements? = nil,
-    schemes: [ProjectDescription.Scheme] = []
+    schemes: [ProjectDescription.Scheme] = [],
+    hasTests: Bool = false
   ) -> Project {
     
     let appTarget: Target = .target(
@@ -141,33 +146,22 @@ public extension Project {
       scripts: scripts,
       dependencies: dependencies
     )
-    
-    let appDevTarget: Target = .target(
-      name: "\(name)-QA",
-      destinations: destinations,
-      product: product,
-      bundleId: "\(bundleId)",
-      deploymentTargets: deploymentTarget,
-      infoPlist: infoPlist,
-      sources: sources,
-      resources: resources,
-      entitlements: entitlements,
-      scripts: scripts,
-      dependencies: dependencies
-    )
-    
-    let appTestTarget : Target = .target(
-      name: "\(name)Tests",
-      destinations: destinations,
-      product: .unitTests,
-      bundleId: "\(bundleId).\(name)Tests",
-      deploymentTargets: deploymentTarget,
-      infoPlist: .default,
-      sources: ["\(name)Tests/Sources/**"],
-      dependencies: [.target(name: name)]
-    )
-    
-    let targets = [appTarget, appDevTarget, appTestTarget]
+
+    var targets: [Target] = [appTarget]
+
+    if hasTests {
+      let appTestTarget : Target = .target(
+        name: "\(name)Tests",
+        destinations: destinations,
+        product: .unitTests,
+        bundleId: "\(bundleId).\(name)Tests",
+        deploymentTargets: deploymentTarget,
+        infoPlist: .default,
+        sources: ["Tests/Sources/**"],
+        dependencies: [.target(name: name)]
+      )
+      targets.append(appTestTarget)
+    }
     
     return Project(
       name: name,

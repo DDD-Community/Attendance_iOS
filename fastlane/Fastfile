@@ -7,6 +7,7 @@ ENV["FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT"] = "600"
 # 앱 관련 변수
 APP_NAME = "DDDAttendance"
 SCHEME = "DDDAttendance"
+STAGE_SCHEME = "DDDAttendance-Stage"
 BUNDLE_ID = "io.DDD.Attendance"
 OUTPUT_DIR = "./fastlane/output"
 IPA_FILENAME = "#{APP_NAME}.ipa"
@@ -15,43 +16,11 @@ IPA_FILENAME = "#{APP_NAME}.ipa"
 APP_RELEASE_NAME = APP_NAME
 APP_RELEASE_SCHEME = SCHEME
 
+APP_STAGE_NAME = STAGE_SCHEME
+APP_STAGE_SCHEME = STAGE_SCHEME
+
 platform :ios do
 
-  # 🧹 output 폴더 정리
-  private_lane :cleanup_output_folder do
-    sh "rm -rf #{OUTPUT_DIR}"
-    sh "mkdir -p #{OUTPUT_DIR}"
-    UI.message("🧹 기존 output 폴더 초기화 완료")
-  end
-
-  # 🧼 ._ 파일 및 .DS_Store 제거
-  private_lane :clean_symbols_from_ipa do |options|
-    ipa_path = options[:ipa_path] || File.expand_path("#{OUTPUT_DIR}/#{IPA_FILENAME}")
-    extract_dir = "#{OUTPUT_DIR}/extracted"
-
-    unless File.exist?(ipa_path)
-      UI.user_error!("⚠️ IPA 파일이 존재하지 않습니다: #{ipa_path}")
-    end
-
-    UI.message("✅ .ipa 생성 완료. ._Symbols 제거 작업 시작...")
-
-    sh "rm -rf '#{extract_dir}'"
-    sh "unzip -q '#{ipa_path}' -d '#{extract_dir}'"
-    sh "find '#{extract_dir}' -name '._*' -delete"
-    sh "find '#{extract_dir}' -name '.DS_Store' -delete"
-
-    cleaned_ipa = ipa_path.sub(".ipa", "_clean.ipa")
-
-    Dir.chdir(extract_dir) do
-      sh "zip -rX '#{cleaned_ipa}' Payload"
-    end
-
-    sh "mv '#{ipa_path}' '#{ipa_path.sub('.ipa', '_original.ipa')}'"
-    sh "mv '#{cleaned_ipa}' '#{ipa_path}'"
-    sh "rm -rf '#{extract_dir}'"
-
-    UI.success("🎉 ._Symbols 제거 완료! 최종 IPA 준비 완료.")
-  end
 
   # 📦 Debug 빌드 + 정리
   desc "Build Debug IPA and clean ._Symbols"
@@ -62,7 +31,7 @@ platform :ios do
 
      build_app(
       workspace: "#{APP_NAME}.xcworkspace",
-      scheme: "#{SCHEME}",
+      scheme: "DDDAttendance_Stage",
       output_directory: OUTPUT_DIR,
       output_name: IPA_FILENAME,
       export_method: "app-store",
@@ -78,7 +47,6 @@ platform :ios do
       }
     )
 
-    # clean_symbols_from_ipa(ipa_path: ipa_path)
   end
 
   # 📦 Release 빌드 + 정리
@@ -116,7 +84,7 @@ platform :ios do
 
     ipa_path = build_app(
       workspace: "#{APP_NAME}.xcworkspace",
-      scheme: "#{SCHEME}",
+      scheme: "#{APP_STAGE_SCHEME}",
       output_directory: OUTPUT_DIR,
       output_name: IPA_FILENAME,
       export_method: "app-store",
@@ -132,12 +100,10 @@ platform :ios do
       }
     )
 
-    # clean_symbols_from_ipa(ipa_path: ipa_path)
-
     upload_to_testflight(
       ipa: ipa_path,
       changelog: "변경사항",
-      groups: ["DDD"],
+      groups: ["DDD", "ddd"],
       beta_app_description: "DDD 출석 앱입니다.",
       notify_external_testers: true,
       skip_waiting_for_build_processing: true

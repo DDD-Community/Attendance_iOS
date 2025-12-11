@@ -34,11 +34,12 @@ public extension ModulePath {
     case Presentation
     case Splash
     case Auth
+    case Management
     case Profile
     case Member
-    case Management
 
     public static let name: String = "Presentation"
+
   }
 }
 
