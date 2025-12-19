@@ -30,7 +30,7 @@ public struct LoginView: View {
         
         logoImageView()
         
-        socailLoginButton()
+        socialLoginButton()
       }
     }
   }
@@ -50,7 +50,7 @@ extension LoginView {
   }
   
   @ViewBuilder
-  private func socailLoginButton() -> some View {
+  private func socialLoginButton() -> some View {
     VStack {
       HStack(alignment: .center, spacing: 24) {
         ForEach(SocialType.allCases.filter { $0 != .none }) { type in
@@ -69,4 +69,15 @@ extension LoginView {
     }
     .padding(.horizontal, 20)
   }
+}
+
+
+#Preview {
+  LoginView(
+    store: .init(
+      initialState: Login.State(),
+      reducer: {
+        Login()
+      })
+  )
 }

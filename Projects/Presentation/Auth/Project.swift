@@ -8,7 +8,7 @@ import DependencyPackagePlugin
 let project = Project.makeModule(
   name: "Auth",
   bundleId: .appBundleID(name: ".Auth"),
-  product: .staticFramework,
+  product: Project.Environment.presentationProduct,
   settings:  .settings(),
   dependencies: [
     .SPM.composableArchitecture,

@@ -62,6 +62,9 @@ func generate() {
     // ✅ 프리뷰 모드 환경 변수 추가
     setenv("TUIST_FOR_PREVIEW", "TRUE", 1)
 
+    // ✅ 동적 링킹 환경 변수 설정 (Preview JIT 링킹 문제 해결)
+    setenv("TUIST_LINKING", "dynamic", 1)
+
     // ✅ tuist generate 실행
     run("tuist", arguments: ["generate"])
 }

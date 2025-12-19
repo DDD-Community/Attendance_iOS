@@ -8,7 +8,7 @@ import DependencyPackagePlugin
 let project = Project.makeModule(
   name: "Splash",
   bundleId: .appBundleID(name: ".Splash"),
-  product: .staticFramework,
+  product: Project.Environment.presentationProduct,
   settings:  .settings(),
   dependencies: [
     .SPM.composableArchitecture,

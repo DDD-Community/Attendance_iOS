@@ -20,5 +20,9 @@ public extension Project {
     public static let bundlePrefix = "io.DDD.Attendance"
     public static let appVersion = "1.0.0"
     public static let mainBundleId = "io.DDD.Attendance"
+    public static let presentationProduct: ProjectDescription.Product = {
+      let linking = ProcessInfo.processInfo.environment["TUIST_LINKING"]?.lowercased()
+      return linking == "dynamic" ? .framework : .staticFramework
+    }()
   }
 }
