@@ -19,8 +19,8 @@ let packageSettings = PackageSettings(
 let package = Package(
   name: "DDDAttendance",
   dependencies: [
-    .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "10.27.0"),
-    .package(url: "https://github.com/google/GoogleSignIn-iOS", from: "7.1.0"),
+    .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "12.7.0"),
+    .package(url: "https://github.com/google/GoogleSignIn-iOS", from: "9.0.0"),
     .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "2.0.0"),
     .package(url: "https://github.com/kishikawakatsumi/KeychainAccess", from: "4.2.2"),
     .package(url: "https://github.com/exyte/PopupView.git", from: "2.10.4"),
@@ -31,6 +31,7 @@ let package = Package(
     .package(url: "https://github.com/Roy-wonji/AsyncMoya",  from: "1.1.8"),
     .package(url: "https://github.com/SwiftUIX/SwiftUIX.git", from: "0.2.3"),
     .package(url: "https://github.com/WenchaoD/FSCalendar.git", from: "2.8.3"),
+    .package(url: "https://github.com/openid/AppAuth-iOS.git", from: "2.0.0"),
     .package(url: "https://github.com/Roy-wonji/WeaveDI.git", from: "3.3.4")
   ]
 )
