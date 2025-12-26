@@ -9,6 +9,7 @@ import ProjectDescription
 import Foundation
 
 let tuist = Tuist(
+  fullHandle:  "DDD/attendance",
   project: .tuist(
     compatibleXcodeVersions: .all,
     swiftVersion: .some("6.0.0"),

@@ -91,10 +91,10 @@ public struct Login {
     case presentMemberMain
   }
   
-  @Dependency(OAuthUseCaseImpl.self) var oAuthUseCase
-  @Dependency(AuthUseCaseImpl.self) var authUseCase
-  @Dependency(SignUpUseCaseImpl.self) var signUpUseCase
-  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
+  @Dependency(\.oAuthUseCase) var oAuthUseCase
+  @Dependency(\.authUseCase) var authUseCase
+  @Dependency(\.signUpUseCase) var signUpUseCase
+  @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   

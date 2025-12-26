@@ -62,7 +62,7 @@ public struct ScheduleManager {
   
   private struct ScheduleCancel: Hashable {}
   
-  @Dependency(ScheduleUseCaseImpl.self) var scheduleUseCase
+  @Dependency(\.scheduleUseCase) var scheduleUseCase
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.continuousClock) var  clock
   

@@ -83,7 +83,7 @@ public struct SignUpInviteCode {
   
   struct SignUpInviteCodeCancel: Hashable {}
   
-  @Dependency(SignUpUseCaseImpl.self) var signUpUseCase
+  @Dependency(\.signUpUseCase) var signUpUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   

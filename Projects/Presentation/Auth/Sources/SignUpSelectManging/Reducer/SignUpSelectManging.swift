@@ -64,7 +64,7 @@ public struct SignUpSelectManaging {
   
   struct SignUpSelectManagingCancel: Hashable {}
   
-  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
+  @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
