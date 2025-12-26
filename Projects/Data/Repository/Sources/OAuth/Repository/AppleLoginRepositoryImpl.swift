@@ -1,19 +1,19 @@
 //
-//  AppleLoginManager.swift
-//  Presentation
+//  AppleLoginRepositoryImpl.swift
+//  Repository
 //
-//  Created by Wonji Suh  on 10/29/24.
+//  Created by Wonji Suh  on 12/26/25.
 //
 
-import CryptoKit
+
 import Foundation
+
 import AuthenticationServices
 
-public protocol AppleAuthRequestPreparing {
-  func prepare(_ request: ASAuthorizationAppleIDRequest) -> String
-}
+import DomainInterface
+import CryptoKit
 
-public struct AppleLoginManager: AppleAuthRequestPreparing {
+public struct AppleLoginRepositoryImpl: AppleAuthRequestInterface {
 
   public init() {}
 
@@ -68,3 +68,4 @@ public struct AppleLoginManager: AppleAuthRequestPreparing {
     return result
   }
 }
+
