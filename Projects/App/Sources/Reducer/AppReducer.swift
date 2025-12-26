@@ -13,7 +13,7 @@ import ComposableArchitecture
 struct AppReducer {
 
   @ObservableState
-  enum State {
+  enum State: Equatable {
     case splash(Splash.State)
     case auth(AuthCoordinator.State)
     case coreMember(StaffCoordinator.State)
@@ -22,6 +22,19 @@ struct AppReducer {
     init() {
       self = .splash(.init())
     }
+
+    var screenType: ScreenType {
+      switch self {
+      case .splash: return .splash
+      case .auth: return .auth
+      case .coreMember: return .coreMember
+      case .member: return .member
+      }
+    }
+  }
+
+  enum ScreenType: Equatable {
+    case splash, auth, coreMember, member
   }
 
   enum Action: ViewAction {
@@ -86,19 +99,19 @@ extension AppReducer {
 
     case .splash(.navigation(.presentLogin)):
       return .run { send in
-        try await clock.sleep(for: .seconds(2))
+        try await clock.sleep(for: .seconds(1))
         await send(.view(.presentAuth))
       }
 
     case .splash(.navigation(.presentCoreMember)):
       return .run { send in
-        try await clock.sleep(for: .seconds(2))
+        try await clock.sleep(for: .seconds(1))
         await send(.view(.presentCoreMember))
       }
 
     case .splash(.navigation(.presentMember)):
       return .run { send in
-        try await clock.sleep(for: .seconds(2))
+        try await clock.sleep(for: .seconds(1))
         await send(.view(.presentMember))
       }
 

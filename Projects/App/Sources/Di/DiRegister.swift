@@ -7,49 +7,31 @@
 
 import Foundation
 
-import WeaveDI
+import DomainInterface
+import Repository
 import Core
 
-extension WeaveDI.Container {
-  private static let register = RegisterModule()
+import ComposableArchitecture
+import WeaveDI
 
-  /// 📦 Repository 등록
-  static func registerRepositories() async {
-    let repositories = [
-      register.authRepositoryImplModule(),
-      register.oAuthRepositoryImplModule(),
-      register.qrCodeRepositoryImplModule(),
-      register.signUpRepositoryImplModoule(),
-      register.profileRepositoryImplModule(),
-      register.scheduleRepositoryImplModule(),
-      register.attendanceRepositoryImplModule()
-    ]
+/// 🚀 **앱 전역 DI 관리자**
+public class AppDIManager: @unchecked Sendable {
+  public static let shared = AppDIManager()
 
-    await repositories.asyncForEach { module in
-      await module.register()
-    }
-  }
+  private init() {}
 
-  // 차후에 di 등록 여기에서 처리
-  static func registerDi() async {
-  }
-
-  /// 🔧 UseCase 등록
-  static func registerUseCases() async {
-
-    let useCases = [
-      register.authUseCaseImplModule(),
-      register.oAuthUseCaseImplModule(),
-      register.qrCodeUseCaseImplModule(),
-      register.signUpUseCaseImplModoule(),
-      register.profileUseCaseImplModule(),
-      register.scheduleUseCaseImplModule(),
-      register.attendanceUseCaseImplModule()
-      // 추가 UseCase들...
-    ]
-
-    await useCases.asyncForEach { module in
-      await module.register()
-    }
+  /// 🎯 기본 의존성들을 등록
+  public func registerDefaultDependencies() async {
+    // 🏗️ 1. WeaveDI.builder 패턴으로 실제 구현체들 등록
+    WeaveDI.builder
+      .register { AuthRepositoryImpl() as AuthInterface }
+      .register { SignUpRepositoryImpl() as SignUpInterface }
+      .register { AttendanceRepositoryImpl() as AttendanceInterface }
+      .register { ProfileRepositoryImpl() as ProfileInterface }
+      .register { ScheduleRepositoryImpl() as ScheduleInterface }
+      .register { QRCodeRepositoryImpl() as QRCodeInterface }
+      .register { OAuthRepositoryImpl() as OAuthInterface }
+      .configure()
+    print("✅ DI Repository 등록 및 TCA 연동 완료!")
   }
 }
