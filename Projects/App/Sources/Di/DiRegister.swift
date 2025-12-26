@@ -13,6 +13,7 @@ import Core
 
 import ComposableArchitecture
 import WeaveDI
+import Auth
 
 /// 🚀 **앱 전역 DI 관리자**
 public class AppDIManager: @unchecked Sendable {
@@ -31,6 +32,7 @@ public class AppDIManager: @unchecked Sendable {
       .register { ScheduleRepositoryImpl() as ScheduleInterface }
       .register { QRCodeRepositoryImpl() as QRCodeInterface }
       .register { OAuthRepositoryImpl() as OAuthInterface }
+      .register { AppleLoginRepositoryImpl() as AppleAuthRequestInterface }  
       .configure()
     print("✅ DI Repository 등록 및 TCA 연동 완료!")
   }
