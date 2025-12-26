@@ -9,7 +9,6 @@ import Foundation
 
 
 public enum SocialType: String, CaseIterable, Identifiable, Hashable {
-    case none
     case apple
     case google
 
@@ -17,8 +16,6 @@ public enum SocialType: String, CaseIterable, Identifiable, Hashable {
 
     var description: String {
         switch self {
-            case .none:
-                return "email"
             case .apple:
                 return "Apple"
             case .google:
@@ -34,8 +31,6 @@ public enum SocialType: String, CaseIterable, Identifiable, Hashable {
                 return "apple.logo"
             case .google:
                 return "google"
-            case .none:
-                return ""
         }
     }
 }

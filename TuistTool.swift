@@ -59,11 +59,25 @@ func generate() {
     // ✅ 루트 경로 환경 변수 설정
     setenv("TUIST_ROOT_DIR", FileManager.default.currentDirectoryPath, 1)
 
+//    // ✅ 프리뷰 모드 환경 변수 추가
+//    setenv("TUIST_FOR_PREVIEW", "TRUE", 1)
+//
+//    // ✅ 동적 링킹 환경 변수 설정 (Preview JIT 링킹 문제 해결)
+//    setenv("TUIST_LINKING", "dynamic", 1)
+
+    // ✅ tuist generate 실행
+    run("tuist", arguments: ["generate"])
+}
+
+func previewGenerate() {
+    // ✅ 루트 경로 환경 변수 설정
+    setenv("TUIST_ROOT_DIR", FileManager.default.currentDirectoryPath, 1)
+
     // ✅ 프리뷰 모드 환경 변수 추가
     setenv("TUIST_FOR_PREVIEW", "TRUE", 1)
 
     // ✅ 동적 링킹 환경 변수 설정 (Preview JIT 링킹 문제 해결)
-    setenv("TUIST_LINKING", "dynamic", 1)
+//    setenv("TUIST_LINKING", "dynamic", 1)
 
     // ✅ tuist generate 실행
     run("tuist", arguments: ["generate"])
@@ -1057,7 +1071,7 @@ private func updateXConfigFiles(newName: String) {
 
 // MARK: - Entrypoint
 enum Command: String {
-  case edit, generate, fetch, build, clean, install, cache, reset, moduleinit, newproject
+  case edit, generate, fetch, build, clean, install, cache, reset, moduleinit, newproject, preview
   case inspect, inspectimports = "inspect-imports", inspectcoverage = "inspect-coverage"
 }
 
@@ -1088,6 +1102,7 @@ guard let cmd = args.first, let command = Command(rawValue: cmd) else {
 switch command {
   case .edit:             edit()
   case .generate:         generate()
+  case .preview:          previewGenerate()
   case .fetch:            fetch()
   case .build:            build()
   case .clean:            clean()

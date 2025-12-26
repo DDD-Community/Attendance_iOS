@@ -58,9 +58,6 @@ struct SocialCircleButtonView: View {
           )
       }
       .buttonStyle(.plain)
-        
-    case .none:
-      EmptyView()
     }
   }
 }
