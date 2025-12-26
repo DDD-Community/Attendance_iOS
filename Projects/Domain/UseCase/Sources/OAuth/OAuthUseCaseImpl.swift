@@ -8,20 +8,13 @@
 import AuthenticationServices
 
 import DomainInterface
-import WeaveDI
-import Model
-import Repository
 
-import ComposableArchitecture
+import WeaveDI
 
 public struct OAuthUseCaseImpl: OAuthInterface {
-  private let repository: OAuthInterface
+  @Dependency(\.oAuthRepository) var repository
 
-  public init(
-    repository: OAuthInterface
-  ) {
-    self.repository = repository
-  }
+  public init() { }
 
   // MARK: - 애플 일반 로그인
 
@@ -57,12 +50,9 @@ public struct OAuthUseCaseImpl: OAuthInterface {
 }
 
 extension OAuthUseCaseImpl: DependencyKey {
-  static public var liveValue: OAuthInterface =  {
-    let repository =  UnifiedDI.register(OAuthInterface.self) {
-      OAuthRepositoryImpl()
-    }
-    return OAuthUseCaseImpl(repository: repository)
-  }()
+  static public var liveValue: OAuthInterface =  OAuthUseCaseImpl()
+  static public var testValue: OAuthInterface =  OAuthUseCaseImpl()
+  static public var previewValue: OAuthInterface  = liveValue
 }
 
 public extension DependencyValues {

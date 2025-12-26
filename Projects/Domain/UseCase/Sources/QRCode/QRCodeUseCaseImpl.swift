@@ -9,19 +9,13 @@ import SwiftUI
 
 import DomainInterface
 import Model
-import Repository
 
-import ComposableArchitecture
 import WeaveDI
 
 public struct QRCodeUseCaseImpl: QRCodeInterface {
-  private let repository: QRCodeInterface
+  @Dependency(\.qrCodeRepository) var repository
 
-  public init(
-    repository: QRCodeInterface
-  ) {
-    self.repository = repository
-  }
+  public init() { }
 
   public func createQRCode() async throws -> String {
     return try await repository.createQRCode()
@@ -40,12 +34,9 @@ public struct QRCodeUseCaseImpl: QRCodeInterface {
 }
 
 extension QRCodeUseCaseImpl: DependencyKey {
-  public static var liveValue: QRCodeInterface = {
-    let repository = UnifiedDI.register(QRCodeInterface.self) {
-      QRCodeRepositoryImpl()
-    }
-    return QRCodeUseCaseImpl(repository: repository)
-  }()
+  public static var liveValue: QRCodeInterface = QRCodeUseCaseImpl()
+  public static var testValue: QRCodeInterface = QRCodeUseCaseImpl()
+  public static var previewValue: QRCodeInterface = liveValue
 }
 
 public extension DependencyValues {
