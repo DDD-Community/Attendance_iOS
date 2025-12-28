@@ -6,14 +6,15 @@ import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
 let project = Project.makeModule(
-  name: "Model",
-  bundleId: .appBundleID(name: ".Model"),
+  name: "Entity",
+  bundleId: .appBundleID(name: ".Entity"),
   product: .staticFramework,
   settings:  .settings(),
   dependencies: [
-    .SPM.firebaseAuth,
-    .SPM.firebaseFirestore,
-    .Domain(implements: .Entity)
+
+    .SPM.composableArchitecture,
+    .SPM.tcaCoordinator
+  
   ],
   sources: ["Sources/**"]
 )

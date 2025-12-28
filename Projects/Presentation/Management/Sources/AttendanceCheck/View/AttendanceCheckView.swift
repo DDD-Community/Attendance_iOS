@@ -58,7 +58,7 @@ extension AttendanceCheckView {
         Spacer()
           .frame(width: 4)
 
-        Text(store.selectAttandanceDate.formattedDateTimeText(date: store.selectAttandanceDate))
+        Text(store.selectAttendanceDate.formattedDateTimeText(date: store.selectAttendanceDate))
           .pretendardCustomFont(textStyle: .body1NormalMedium)
           .foregroundStyle(.staticWhite)
 
@@ -172,7 +172,7 @@ extension AttendanceCheckView {
 
   @ViewBuilder
   fileprivate func selectPartAttandanceStatusCard() -> some View {
-    let filtered = store.sceheduleAttandanceModel?.data.flatMap {
+    let filtered = store.scheduleModelAttendanceModel?.data.flatMap {
       $0.attendancesSummary.filter { item in
         guard let team = SelectTeam(rawValue: item.profile.team.rawValue),
               let selected = store.selectPart else { return false }
