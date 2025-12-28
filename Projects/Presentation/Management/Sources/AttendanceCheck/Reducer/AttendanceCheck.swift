@@ -57,6 +57,7 @@ public struct AttendanceCheck {
   @Reducer(state: .equatable)
   public enum Destination {
     case selectDate(CustomDate)
+    case scheduleModal(ScheduleModal)
   }
   
   // MARK: - ViewAction
@@ -67,6 +68,7 @@ public struct AttendanceCheck {
     case swipePrevious
     case appearSelectDate
     case closeModal
+    case tapSelectDate
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
@@ -160,7 +162,11 @@ public struct AttendanceCheck {
     case .appearSelectDate:
       state.destination = .selectDate(.init())
       return .none
-      
+
+      case .tapSelectDate:
+        state.destination = .scheduleModal(.init())
+        return .none
+
     case .closeModal:
       state.destination = nil
       return .none

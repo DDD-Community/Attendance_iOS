@@ -32,7 +32,7 @@ public class AppDIManager: @unchecked Sendable {
       .register { ScheduleRepositoryImpl() as ScheduleInterface }
       .register { QRCodeRepositoryImpl() as QRCodeInterface }
       .register { OAuthRepositoryImpl() as OAuthInterface }
-      .register { AppleLoginRepositoryImpl() as AppleAuthRequestInterface }  
+      .register { AppleLoginRepositoryImpl() as AppleAuthRequestInterface }
       .configure()
     print("✅ DI Repository 등록 및 TCA 연동 완료!")
   }

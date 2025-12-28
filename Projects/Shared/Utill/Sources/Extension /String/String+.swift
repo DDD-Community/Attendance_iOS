@@ -58,7 +58,61 @@ public extension String {
       }
       return ""
     }
-  
+
+  static func monthOnlyString(from input: String) -> String? {
+    // "10:000" -> "10:00.000" 보정
+    let fixed = input.replacingOccurrences(
+      of: #"T(\d{2}):(\d{2})(\d{3})([+\-]\d{2}:\d{2})$"#,
+      with: #"T$1:$2.$3$4"#,
+      options: .regularExpression
+    )
+
+    let iso = ISO8601DateFormatter()
+    iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+    let date: Date?
+    if let d = iso.date(from: fixed) {
+      date = d
+    } else {
+      iso.formatOptions = [.withInternetDateTime]
+      date = iso.date(from: fixed)
+    }
+    guard let date else { return nil }
+
+    let out = DateFormatter()
+    out.locale = Locale(identifier: "ko_KR")
+    out.timeZone = TimeZone(identifier: "Asia/Seoul")
+    out.dateFormat = "MM월"   // ✅ 08월
+    return out.string(from: date)
+  }
+
+  static func dayOnlyString(from input: String) -> String? {
+    // "10:000" -> "10:00.000" 보정
+    let fixed = input.replacingOccurrences(
+      of: #"T(\d{2}):(\d{2})(\d{3})([+\-]\d{2}:\d{2})$"#,
+      with: #"T$1:$2.$3$4"#,
+      options: .regularExpression
+    )
+
+    let iso = ISO8601DateFormatter()
+    iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+    let date: Date?
+    if let d = iso.date(from: fixed) {
+      date = d
+    } else {
+      iso.formatOptions = [.withInternetDateTime]
+      date = iso.date(from: fixed)
+    }
+    guard let date else { return nil }
+
+    let out = DateFormatter()
+    out.locale = Locale(identifier: "ko_KR")
+    out.timeZone = TimeZone(identifier: "Asia/Seoul")
+    out.dateFormat = "d일"   // ✅ 16일
+    return out.string(from: date)
+  }
+
   static func splitBySlash(_ input: String) -> (left: String, right: String) {
     let components = input.components(separatedBy: " / ")
     let left = components.first ?? ""
