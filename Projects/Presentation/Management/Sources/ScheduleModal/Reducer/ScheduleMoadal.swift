@@ -22,6 +22,7 @@ public struct ScheduleModal {
     var scheduleModel: ScheduleModel?
     var loading: Bool = false
     var enableButton: Bool = false
+    var selectedSchedule: ScheduleResponseModel? = nil
 
     public init() {}
   }
@@ -38,7 +39,8 @@ public struct ScheduleModal {
   //MARK: - ViewAction
   @CasePathable
   public enum View {
-
+    case selectSchedule(item: ScheduleResponseModel)
+    case confirmSelection
   }
 
   //MARK: - AsyncAction 비동기 처리 액션
@@ -54,7 +56,7 @@ public struct ScheduleModal {
 
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-
+    case selectScheduleCompleted(selectedSchedule: ScheduleResponseModel)
   }
 
   nonisolated enum ScheduleMoadalCancel: Hashable {
@@ -93,7 +95,23 @@ extension ScheduleModal {
     action: View
   ) -> Effect<Action> {
     switch action {
+    case .selectSchedule(let item):
+      if state.selectedSchedule?.id == item.id {
+        state.selectedSchedule = nil
+      } else {
+        state.selectedSchedule = item
+      }
+      state.enableButton = state.selectedSchedule != nil
+      return .none
 
+    case .confirmSelection:
+      print("🟢 ScheduleModal: confirmSelection 액션 처리")
+      guard let selectedSchedule = state.selectedSchedule else {
+        print("🔴 ScheduleModal: 선택된 스케줄이 없음!")
+        return .none
+      }
+      print("🟢 ScheduleModal: selectScheduleCompleted navigation action 전송 - \(selectedSchedule.title)")
+      return .send(.navigation(.selectScheduleCompleted(selectedSchedule: selectedSchedule)))
     }
   }
 
@@ -103,7 +121,7 @@ extension ScheduleModal {
   ) -> Effect<Action> {
     switch action {
       case .fetchSchedule:
-        state.loading = true  // 로딩 시작
+        state.loading = true
         return .run { send in
           let result = await Result {
             try await scheduleUseCase.getSchedules()
@@ -125,7 +143,8 @@ extension ScheduleModal {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-
+      case .selectScheduleCompleted(_):
+      return .none
     }
   }
 
@@ -135,9 +154,11 @@ extension ScheduleModal {
   ) -> Effect<Action> {
     switch action {
       case .scheduleResponse(let result):
-        state.loading = false  // 로딩 완료
+        #logDebug("스케줄 응답 처리", "로딩 완료")
+        state.loading = false  
         switch result {
           case .success(let data):
+            #logDebug("스케줄 데이터 성공", "데이터 개수: \(data?.data.count ?? 0)")
             state.scheduleModel = data
           case .failure(let error):
             #logNetwork("네트워크 에러", error.localizedDescription)

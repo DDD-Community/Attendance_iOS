@@ -119,4 +119,23 @@ public extension String {
     let right = components.count > 1 ? components[1] : ""
     return (left, right)
   }
+
+  // ISO8601 문자열을 Date로 변환하는 유틸리티 메서드
+  func toDate() -> Date? {
+    // "10:000" -> "10:00.000" 보정
+    let fixed = self.replacingOccurrences(
+      of: #"T(\d{2}):(\d{2})(\d{3})([+\-]\d{2}:\d{2})$"#,
+      with: #"T$1:$2.$3$4"#,
+      options: .regularExpression
+    )
+
+    let iso = ISO8601DateFormatter()
+    iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+    // fractionalSeconds로 시도 후 실패하면 일반 포맷으로 재시도
+    return iso.date(from: fixed) ?? {
+      iso.formatOptions = [.withInternetDateTime]
+      return iso.date(from: fixed)
+    }()
+  }
 }

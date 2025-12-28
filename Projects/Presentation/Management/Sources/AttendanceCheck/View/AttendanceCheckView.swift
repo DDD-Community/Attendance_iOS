@@ -32,22 +32,13 @@ struct AttendanceCheckView: View {
       store.selectPart = newValue
       store.send(.inner(.fillterAttendance(team: newValue)))
     }
-    .sheet(item: $store.scope(state: \.destination?.selectDate, action: \.destination.selectDate)) { selectDateStore in
-      CustomDateView(store: selectDateStore, selectDate: $store.selectAttandanceDate) {
-        store.send(.async(.fetchScheduleAttedanceCheck))
-        store.send(.async(.filterAttendanceCount(startDate: store.selectAttandanceDate.formattedDates())))
-      }
-      .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
-      .presentationCornerRadius(20)
-      .presentationDragIndicator(.hidden)
-    }
-
     .sheet(item: $store.scope(state: \.destination?.scheduleModal, action: \.destination.scheduleModal)) { scheduleModalStore in
       ScheduleModalView(store: scheduleModalStore)
+        .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
+        .presentationCornerRadius(20)
+        .presentationDragIndicator(.hidden)
+
     }
-    .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
-    .presentationCornerRadius(20)
-    .presentationDragIndicator(.hidden)
   }
 }
 
@@ -67,7 +58,7 @@ extension AttendanceCheckView {
         Spacer()
           .frame(width: 4)
 
-        Text("\(store.selectAttandanceDate.formattedDateTimeText(date: store.selectAttandanceDate))")
+        Text(store.selectAttandanceDate.formattedDateTimeText(date: store.selectAttandanceDate))
           .pretendardCustomFont(textStyle: .body1NormalMedium)
           .foregroundStyle(.staticWhite)
 

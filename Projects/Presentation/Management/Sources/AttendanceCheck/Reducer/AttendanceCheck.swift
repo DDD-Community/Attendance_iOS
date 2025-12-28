@@ -11,6 +11,7 @@ import Core
 import Shareds
 
 import ComposableArchitecture
+import LogMacro
 import FirebaseAuth
 
 @Reducer
@@ -93,37 +94,60 @@ public struct AttendanceCheck {
   
   private struct AttendanceCheckCancel: Hashable {}
   
-  @Dependency(AttendanceUseCaseImpl.self) var attendanceUseCase
-  @Dependency(ScheduleUseCaseImpl.self) var scheduleUseCase
+  @Dependency(\.attendanceUseCase) var attendanceUseCase
+  @Dependency(\.scheduleUseCase) var scheduleUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
+
     Reduce { state, action in
       switch action {
-      case .binding(_):
+      case .binding:
         return .none
-        
-      case .destination(_):
-        return .none
-        
+
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
-        
+
       case .async(let asyncAction):
         return handleAsyncAction(state: &state, action: asyncAction)
-        
+
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
-        
+
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
+
+        case .destination(.presented(.scheduleModal(.navigation(.selectScheduleCompleted(let selectedSchedule))))):
+          #logDebug("스케줄 선택됨", "선택된 스케줄: \(selectedSchedule.title), 시작 시간: \(selectedSchedule.startTime)")
+
+          if let selectedDate = selectedSchedule.startTime.toDate() {
+            let oldDate = state.selectAttandanceDate
+            state.selectAttandanceDate = selectedDate
+            #logDebug("날짜 업데이트됨", "새로운 날짜: \(selectedDate)")
+          } else {
+            #logError("날짜 변환 실패", "ISO 문자열: \(selectedSchedule.startTime)")
+          }
+
+          state.destination = nil
+
+          // 모달이 완전히 닫힌 후 API 호출
+          return .run { send in
+            try await clock.sleep(for: .milliseconds(100))
+            await send(.async(.fetchAttendanceCount))
+            await send(.async(.fetchScheduleAttedanceCheck))
+          }
+
+
+
+      case .destination:
+        return .none
       }
     }
     .ifLet(\.$destination, action: \.destination)
-    .onChange(of: \.sceheduleAttandanceModel) { oldValue, newValue in
-      Reduce { state, action in
+    .onChange(of: \.sceheduleAttandanceModel) { _, newValue in
+      Reduce { state, _ in
         state.sceheduleAttandanceModel = newValue
         return .none
       }
@@ -164,6 +188,7 @@ public struct AttendanceCheck {
       return .none
 
       case .tapSelectDate:
+        #logDebug("스케줄 모달 열기", "ScheduleModal destination 설정")
         state.destination = .scheduleModal(.init())
         return .none
 
@@ -186,21 +211,27 @@ public struct AttendanceCheck {
       .debounce(id: AttendanceCheckCancel(), for: 0.3, scheduler: mainQueue)
       
     case .fetchAttendanceCount:
+      print("🔵 fetchAttendanceCount 액션 실행됨")
       return .run { [nowDate = state.selectAttandanceDate] send in
+        let formattedDate = nowDate.formattedDates()
+        print("🔵 API 호출 날짜: \(formattedDate)")
+
         let attendanceCountResult = await Result {
-          try await attendanceUseCase.attendanceCount(startDate: nowDate.formattedDates())
+          try await attendanceUseCase.attendanceCount(startDate: formattedDate)
         }
-        
+
         switch attendanceCountResult {
         case .success(let attendanceCountDTOData):
+          print("🔵 출석 카운트 API 성공")
           if let attendanceCountDTOData = attendanceCountDTOData {
             await send(.inner(.attendanceCountResponse(.success(attendanceCountDTOData))))
           }
-          
+
         case .failure(let error):
+          print("🔴 출석 카운트 API 실패: \(error.localizedDescription)")
           await send(.inner(.attendanceCountResponse(.failure(.encodingError(error.localizedDescription)))))
         }
-        
+
       }
       
     case .filterAttendanceCount(let startDate):
@@ -249,7 +280,7 @@ public struct AttendanceCheck {
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
-    
+    return .none
   }
   
   private func handleInnerAction(
@@ -260,7 +291,14 @@ public struct AttendanceCheck {
     case .attendanceCountResponse(let result):
       switch result {
       case .success(let attendanceCountDTO):
+        // DTO 모델 업데이트
         state.attendanceCountDTOModel = attendanceCountDTO
+
+        // 개별 카운트도 명시적으로 업데이트 (UI 새로고침 보장)
+        state.attendanceCount = attendanceCountDTO.attendanceCount
+        state.lateCount = attendanceCountDTO.lateCount
+        state.absentCount = attendanceCountDTO.absentCount
+
       case .failure(let error):
         #logNetwork("출석 카운트 조회 에러", error.localizedDescription)
       }

@@ -19,14 +19,14 @@ public struct ScheduleModalView: View {
 
   public var body: some View {
     ZStack {
-      Color.basicBlack
+      Color.staticWhite
         .edgesIgnoringSafeArea(.all)
 
       VStack {
         scheduleHeader()
 
         Spacer()
-          .frame(height: 16)
+          .frame(height: 20)
 
         if store.loading {
           Spacer()
@@ -38,10 +38,19 @@ public struct ScheduleModalView: View {
 
           Spacer()
         } else {
-          ScrollView(.vertical) {
-            scheduleList()
+          VStack(spacing: 0) {
+            ScrollView(.vertical) {
+              scheduleList()
+            }
+            .scrollIndicators(.hidden)
+
+            Spacer()
+              .frame(height: 16)
+
+            confirmButton()
+              .padding(.horizontal, 24)
+              .padding(.bottom, 16)
           }
-          .scrollIndicators(.hidden)
         }
       }
       .onAppear {
@@ -61,41 +70,52 @@ extension ScheduleModalView {
 
       Text("일정 선택")
         .pretendardCustomFont(textStyle: .title2NormalBold)
-        .foregroundStyle(.staticWhite)
+        .foregroundStyle(.borderInverse)
     }
   }
 
   @ViewBuilder
   private func scheduleList() -> some View {
-    LazyVStack {
-      ForEach(store.scheduleModel?.data ?? [], id: \.id) { item in
-        scheduleCard(
-          month: item.startTime,
-          day: item.startTime,
-          title: item.title,
-          description: item.description
-        )
-        .onTapGesture {
-          print("tap item \(item)")
-        }
+    let schedules = store.scheduleModel?.data ?? []
+
+    LazyVStack(spacing: 8) {
+      ForEach(schedules, id: \.id) { item in
+        scheduleCardRow(item: item)
       }
     }
+    .padding(.top, 8)
+    .padding(.bottom, 8)
+  }
+
+  @ViewBuilder
+  private func scheduleCardRow(
+    item: ScheduleResponseModel
+  ) -> some View {
+    let isSelected = store.selectedSchedule?.id == item.id
+
+    scheduleCard(item: item, isSelected: isSelected)
+      .onTapGesture {
+        handleScheduleSelection(item: item)
+      }
+  }
+
+  private func handleScheduleSelection(item: ScheduleResponseModel) {
+
+    store.send(.view(.selectSchedule(item: item)))
   }
 
   @ViewBuilder
   private func scheduleCard(
-    month: String,
-    day: String,
-    title: String,
-    description: String
+    item: ScheduleResponseModel,
+    isSelected: Bool
   ) -> some View {
     HStack(spacing: 12) {
       VStack(spacing: 2) {
-        Text(String.monthOnlyString(from: month) ?? "")
+        Text(String.monthOnlyString(from: item.startTime) ?? "")
           .pretendardCustomFont(textStyle: .body2NormalMedium)
           .foregroundColor(.staticBlack)
 
-        Text(String.dayOnlyString(from: day) ?? "")
+        Text(String.dayOnlyString(from: item.startTime) ?? "")
           .pretendardCustomFont(textStyle: .title3NormalMedium)
           .foregroundColor(.staticBlack)
       }
@@ -104,31 +124,36 @@ extension ScheduleModalView {
       .cornerRadius(10)
 
       VStack(alignment: .leading, spacing: 4) {
-        Text(title)
+        Text(item.title)
           .pretendardCustomFont(textStyle: .body1NormalBold)
-          .foregroundStyle(.staticWhite)
+          .foregroundStyle(.borderInverse)
 
-        Text(description)
+        Text(item.description)
           .pretendardCustomFont(textStyle: .body3NormalRegular)
-          .foregroundStyle(.textSecondary)
+          .foregroundStyle(.textSecondary100)
       }
 
       Spacer()
 
     }
     .padding()
-    .background(.gray90)
+    .background(.backGroundSecondary)
     .cornerRadius(12)
+    .background(
+      RoundedRectangle(cornerRadius: 12)
+        .stroke(isSelected ? .statusFocus : Color.clear, lineWidth: 3)
+    )
     .padding(.horizontal, 24)
+    .padding(.vertical, 2)
   }
 
 @ViewBuilder
   private func confirmButton() -> some View {
     CustomButton(
       action: {
-
+        store.send(.view(.confirmSelection))
       },
-      title: "다음",
+      title: "확인",
       config: CustomButtonConfig.create(),
       isEnable: store.enableButton
     )
