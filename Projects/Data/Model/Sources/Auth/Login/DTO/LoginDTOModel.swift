@@ -7,6 +7,8 @@
 
 import Foundation
 
+//TODO: 삭제 할 모델
+
 public typealias LoginDTOModel = BaseResponse<LoginResponseDTOModel>
 
 public struct LoginResponseDTOModel: Decodable {

@@ -19,7 +19,6 @@ public enum SocialType: String, CaseIterable, Identifiable, Hashable {
         return "APPLE"
       case .google:
         return "GOOGLE"
-
     }
   }
 

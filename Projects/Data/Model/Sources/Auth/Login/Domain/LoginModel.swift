@@ -7,6 +7,9 @@
 
 import Foundation
 
+
+//TODO: 삭제 할 모델
+
 public typealias LoginModel = BaseResponseDTO<LoginResponseModel>
 
 // MARK: - Welcome
