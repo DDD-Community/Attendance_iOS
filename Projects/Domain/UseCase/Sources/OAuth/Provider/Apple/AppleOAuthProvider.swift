@@ -20,18 +20,29 @@ public class AppleOAuthProvider {
   public func signInWithCredential(
     credential: ASAuthorizationAppleIDCredential,
     nonce: String
-  ) async throws -> String {
+  ) async throws -> AppleOAuthPayload {
     guard let identityTokenData = credential.identityToken,
           let identityToken = String(data: identityTokenData, encoding: .utf8)
     else {
       throw AuthError.missingIDToken
     }
 
-    let displayName = formatDisplayName(credential.fullName)
-    Log.info("Apple sign-in credential received for \(displayName ?? "unknown user")")
-    Log.info("Apple sign-in succeeded")
+    let authorizationCode: String?
+    if let authCodeData = credential.authorizationCode {
+      authorizationCode = String(data: authCodeData, encoding: .utf8)
+    } else {
+      authorizationCode = nil
+    }
 
-    return identityToken
+    let displayName = formatDisplayName(credential.fullName)
+
+
+    return AppleOAuthPayload(
+      idToken: identityToken,
+      authorizationCode: authorizationCode,
+      displayName: displayName,
+      nonce: nonce
+    )
   }
 
   private func formatDisplayName(_ components: PersonNameComponents?) -> String? {

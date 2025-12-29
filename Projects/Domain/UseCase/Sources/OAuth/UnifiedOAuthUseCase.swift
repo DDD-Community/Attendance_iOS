@@ -50,13 +50,13 @@ public extension UnifiedOAuthUseCase {
     credential: ASAuthorizationAppleIDCredential,
     nonce: String
   ) async throws -> LoginEntity {
-    let token = try await appleProvider.signInWithCredential(
+    let payload = try await appleProvider.signInWithCredential(
       credential: credential,
       nonce: nonce
     )
     return try await authRepository.login(
       provider: .apple,
-      token: token
+      token: payload.authorizationCode ?? payload.idToken
     )
   }
 
