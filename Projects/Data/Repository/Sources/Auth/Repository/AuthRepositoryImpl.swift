@@ -31,21 +31,12 @@ final public class AuthRepositoryImpl: AuthInterface, Sendable {
   // MARK: - 회원가입한 유저 조회
 
   // MARK: - 로그인 API
-  public func loginUser(
-    email: String,
-  ) async throws -> LoginModel? {
-    let loginModel: LoginDTOModel = try await provider.request(
-      .login(
-        email: email))
-    return loginModel.toDomanl()
-  }
-
   public func login(
     provider socialProvider: SocialType,
     token: String
   ) async throws -> LoginEntity {
     let dto: LoginResponseDTO = try await provider.request(
-      .loginOAuth(body: OAuthLoginRequest(provider: socialProvider.description, token: token))
+      .login(body: OAuthLoginRequest(provider: socialProvider.description, token: token))
      )
     return dto.toDomain()
   }

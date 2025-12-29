@@ -15,12 +15,6 @@ final public class DefaultAuthRepositoryImpl: AuthInterface {
 
   public init() {}
 
-  public func loginUser(
-    email: String
-  ) async throws -> LoginModel? {
-    return nil
-  }
-
   public func login(provider: Entity.SocialType, token: String) async throws -> Entity.LoginEntity {
     return LoginEntity(name: "", isNewUser: false, provider: .google, token: AuthTokens(accessToken: "", refreshToken: ""))
   }

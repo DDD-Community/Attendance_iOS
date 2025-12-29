@@ -17,15 +17,6 @@ public struct AuthUseCaseImpl: AuthInterface {
   public init() {}
 
   // MARK: - API로 통해서 로그인
-  public func loginUser(
-    email: String
-  ) async throws -> LoginModel? {
-    return try await authRepository
-      .loginUser(
-        email: email
-      )
-  }
-
   public func login(
     provider: Entity.SocialType,
     token: String

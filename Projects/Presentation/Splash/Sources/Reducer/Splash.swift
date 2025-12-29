@@ -21,7 +21,7 @@ public struct Splash {
   public struct State: Equatable {
    
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
-    var loginModel: LoginModel?
+//    var loginModel: LoginModel?
     var profileDTOModel: ProfileResponseModel?
     @Shared(.appStorage("AccessToken")) var accessToken: String = ""
     @Shared(.appStorage("UserEmail")) var userEmail: String = ""
@@ -49,7 +49,7 @@ public struct Splash {
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
-    case autoLogin
+//    case autoLogin
     case fetchUser
   }
   
@@ -57,7 +57,7 @@ public struct Splash {
   
   public enum InnerAction: Equatable {
     case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
-    case autoLoginResponse(Result<LoginModel?, CustomError>)
+//    case autoLoginResponse(Result<LoginModel?, CustomError>)
   }
   
   // MARK: - NavigationAction
@@ -135,28 +135,28 @@ public struct Splash {
         }
       }
 
-    case .autoLogin:
-      return .run { [userEmail = state.userEmail] send in
-        let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
-        let loginResult = await Result {
-          try await authUseCase.loginUser(email: userEmail)
-        }
-
-        switch loginResult {
-        case .success(let loginModel):
-          if let loginModel = loginModel {
-            await send(.inner(.autoLoginResponse(.success(loginModel))))
-
-            if loginModel.code == 200 {
-              await send(.async(.fetchUser))
-            }
-          }
-
-        case .failure(let error):
-          await send(.inner(.autoLoginResponse(.failure(.encodingError(error.localizedDescription)))))
-          await send(.navigation(.presentLogin))
-        }
-      }
+//    case .autoLogin:
+//      return .run { [userEmail = state.userEmail] send in
+//        let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
+//        let loginResult = await Result {
+//          try await authUseCase.loginUser(email: userEmail)
+//        }
+//
+//        switch loginResult {
+//        case .success(let loginModel):
+//          if let loginModel = loginModel {
+//            await send(.inner(.autoLoginResponse(.success(loginModel))))
+//
+//            if loginModel.code == 200 {
+//              await send(.async(.fetchUser))
+//            }
+//          }
+//
+//        case .failure(let error):
+//          await send(.inner(.autoLoginResponse(.failure(.encodingError(error.localizedDescription)))))
+//          await send(.navigation(.presentLogin))
+//        }
+//      }
     }
   }
 
@@ -177,23 +177,23 @@ public struct Splash {
       }
       return .none
 
-    case .autoLoginResponse(let result):
-      switch result {
-      case .success(let loginDTOData):
-        state.loginModel = loginDTOData
-        UserDefaults.standard.set(loginDTOData?.data.accessToken, forKey: "ACCESS_TOKEN")
-        state.$accessToken.withLock {$0 = loginDTOData?.data.accessToken ?? ""}
-        state.$userEntity.withLock {
-          $0.userEmail = loginDTOData?.data.email ?? ""
-          $0.accessToken = loginDTOData?.data.accessToken ?? ""
-          $0.refreshToken = loginDTOData?.data.refreshToken ?? ""
-        }
-
-
-      case .failure(let error):
-        #logNetwork("로그인 실패", error.localizedDescription)
-      }
-      return .none
+//    case .autoLoginResponse(let result):
+//      switch result {
+//      case .success(let loginDTOData):
+//        state.loginModel = loginDTOData
+//        UserDefaults.standard.set(loginDTOData?.data.accessToken, forKey: "ACCESS_TOKEN")
+//        state.$accessToken.withLock {$0 = loginDTOData?.data.accessToken ?? ""}
+//        state.$userEntity.withLock {
+//          $0.userEmail = loginDTOData?.data.email ?? ""
+//          $0.accessToken = loginDTOData?.data.accessToken ?? ""
+//          $0.refreshToken = loginDTOData?.data.refreshToken ?? ""
+//        }
+//
+//
+//      case .failure(let error):
+//        #logNetwork("로그인 실패", error.localizedDescription)
+//      }
+//      return .none
     }
   }
   

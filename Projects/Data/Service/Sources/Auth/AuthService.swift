@@ -13,8 +13,7 @@ import Foundations
 import AsyncMoya
 
 public enum AuthService {
-  case login(email: String)
-  case loginOAuth(body: OAuthLoginRequest)
+  case login(body: OAuthLoginRequest)
 
 }
 
@@ -28,10 +27,7 @@ extension AuthService: BaseTargetType {
 
   public var urlPath: String {
     switch self {
-    case .login:
-      return AuthAPI.login.authDescription
-
-      case .loginOAuth:
+      case .login:
         return AuthAPI.login.authDescription
 
     }
@@ -43,23 +39,15 @@ extension AuthService: BaseTargetType {
 
   public var method: Moya.Method {
     switch self {
-      case .login, .loginOAuth:
+      case .login:
       return .post
     }
   }
 
   public var parameters: [String : Any]? {
     switch self {
-    case .login(
-      let email):
-      let parameters: [String: Any] = [
-        "email": email,
-      ]
-      return parameters
-
-      case .loginOAuth(let body):
+      case .login(let body):
         return body.toDictionary
-
     }
   }
 
