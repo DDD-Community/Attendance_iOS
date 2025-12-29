@@ -51,7 +51,7 @@ public final class AppleOAuthRepositoryImpl: NSObject, AppleOAuthInterface, @unc
   @MainActor
   public func signIn() async throws -> AppleOAuthPayload {
     // 이미 진행 중인 로그인이 있으면 기다림
-    if isSigningIn, let continuation = signInContinuation {
+    if isSigningIn {
       return try await withCheckedThrowingContinuation { newContinuation in
         newContinuation.resume(throwing: AuthError.invalidCredential("이미 로그인이 진행 중입니다"))
       }
