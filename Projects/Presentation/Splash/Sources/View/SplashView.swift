@@ -45,7 +45,7 @@ public struct SplashView: View {
             $0.accessToken = store.accessToken
           }
         }
-        store.send(.async(.autoLogin))
+//        store.send(.async(.autoLogin))
       } else {
         store.send(.navigation(.presentLogin))
       }
