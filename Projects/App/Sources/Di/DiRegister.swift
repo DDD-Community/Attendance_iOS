@@ -38,7 +38,6 @@ public class AppDIManager: @unchecked Sendable {
       .register { ProfileRepositoryImpl() as ProfileInterface }
       .register { ScheduleRepositoryImpl() as ScheduleInterface }
       .register { QRCodeRepositoryImpl() as QRCodeInterface }
-      .register { OAuthRepositoryImpl() as OAuthInterface }
     
       .configure()
   }

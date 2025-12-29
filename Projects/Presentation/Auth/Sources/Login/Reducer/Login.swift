@@ -24,9 +24,7 @@ public struct Login {
   public struct State: Equatable {
     var nonce: String = ""
     var appleAccessToken: String = ""
-    var appleAuthCode: String = ""
     var appleLoginFullName: ASAuthorizationAppleIDCredential? = nil
-    var oAuthResponseModel: OAuthResponseModel? = nil
     @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     var userMember: UserDTOMember? = nil
     @Shared(.appStorage("UserEmail")) var userEmail: String = ""
@@ -77,7 +75,6 @@ public struct Login {
 
   // MARK: - 앱내에서 사용하는 액션
   public enum InnerAction {
-    case appleResponse(Result<ASAuthorization, Error>)
     case loginResponse(Result<LoginEntity, AuthError>)
   }
   
@@ -89,7 +86,6 @@ public struct Login {
     case presentMemberMain
   }
   
-  @Dependency(\.oAuthUseCase) var oAuthUseCase
   @Dependency(\.authUseCase) var authUseCase
   @Dependency(\.signUpUseCase) var signUpUseCase
   @Dependency(\.profileUseCase) var profileUseCase
@@ -152,8 +148,6 @@ public struct Login {
             return
           }
 
-          await send(.inner(.appleResponse(.success(auth))))
-
           // Apple credential을 직접 처리하여 로그인 완료
           let outcome = await unifiedOAuthUseCase.processOAuthFlow(
             with: .apple,
@@ -191,35 +185,6 @@ public struct Login {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-      case .appleResponse(let data):
-        switch data {
-          case .success(let authResult):
-            switch authResult.credential {
-              case let appleIDCredential as ASAuthorizationAppleIDCredential:
-                guard let tokenData = appleIDCredential.identityToken,
-                      let identityToken = String(data: tokenData, encoding: .utf8),
-                      let _ = appleIDCredential.authorizationCode
-                else {
-                  #logError("Identity token is missing")
-                  return .none
-                }
-                state.appleAccessToken = identityToken
-                state.appleLoginFullName = appleIDCredential
-                
-                let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
-                let uid = UserDefaults.standard.string(forKey: "UserUID") ?? ""
-                state.$userEntity.withLock {
-                  $0.userEmail = email
-                  $0.userUid = uid
-                }
-              default:
-                break
-            }
-          case .failure(let error):
-            #logError("애플로그인 에러", error)
-        }
-        return .none
-        
       case .loginResponse(let result):
         switch result {
           case .success(let loginEntity):
