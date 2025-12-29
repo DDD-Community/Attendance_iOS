@@ -40,3 +40,14 @@ struct AppView: View {
     }
   }
 }
+
+
+#Preview {
+  AuthCoordinatorView(
+    store: .init(
+      initialState: AuthCoordinator.State(),
+      reducer: {
+        AuthCoordinator()
+      })
+  )
+}

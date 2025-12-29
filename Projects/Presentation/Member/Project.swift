@@ -8,7 +8,7 @@ import DependencyPackagePlugin
 let project = Project.makeModule(
   name: "Member",
   bundleId: .appBundleID(name: ".Member"),
-  product: .staticFramework,
+  product: Project.Environment.presentationProduct,
   settings:  .settings(),
   dependencies: [
 
