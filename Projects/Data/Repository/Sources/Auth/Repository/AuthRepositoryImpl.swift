@@ -7,6 +7,7 @@
 
 import DomainInterface
 import Model
+import Entity
 
 import Service
 
@@ -17,6 +18,7 @@ import FirebaseFirestore
 @Observable
 final public class AuthRepositoryImpl: AuthInterface, Sendable {
 
+  
   private let provider: MoyaProvider<AuthService>
 
   public init(
@@ -36,5 +38,15 @@ final public class AuthRepositoryImpl: AuthInterface, Sendable {
       .login(
         email: email))
     return loginModel.toDomanl()
+  }
+
+  public func login(
+    provider socialProvider: SocialType,
+    token: String
+  ) async throws -> LoginEntity {
+    let dto: LoginResponseDTO = try await provider.request(
+      .loginOAuth(body: OAuthLoginRequest(provider: socialProvider.rawValue, token: token))
+     )
+    return dto.toDomain()
   }
 }

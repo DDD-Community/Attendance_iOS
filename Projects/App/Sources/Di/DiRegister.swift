@@ -26,13 +26,16 @@ public class AppDIManager: @unchecked Sendable {
     // 🏗️ 1. WeaveDI.builder 패턴으로 실제 구현체들 등록
     WeaveDI.builder
       .register { AuthRepositoryImpl() as AuthInterface }
+      .register { GoogleOAuthRepositoryImpl() as GoogleOAuthInterface }
+      .register { AppleLoginRepositoryImpl() as AppleAuthRequestInterface }
+      .register { AppleOAuthRepositoryImpl() as AppleOAuthInterface }
       .register { SignUpRepositoryImpl() as SignUpInterface }
       .register { AttendanceRepositoryImpl() as AttendanceInterface }
       .register { ProfileRepositoryImpl() as ProfileInterface }
       .register { ScheduleRepositoryImpl() as ScheduleInterface }
       .register { QRCodeRepositoryImpl() as QRCodeInterface }
       .register { OAuthRepositoryImpl() as OAuthInterface }
-      .register { AppleLoginRepositoryImpl() as AppleAuthRequestInterface }
+
       .configure()
     print("✅ DI Repository 등록 및 TCA 연동 완료!")
   }

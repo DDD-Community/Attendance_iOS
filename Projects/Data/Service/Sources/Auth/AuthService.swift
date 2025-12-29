@@ -14,6 +14,7 @@ import AsyncMoya
 
 public enum AuthService {
   case login(email: String)
+  case loginOAuth(body: OAuthLoginRequest)
 
 }
 
@@ -30,6 +31,9 @@ extension AuthService: BaseTargetType {
     case .login:
       return AuthAPI.login.authDescription
 
+      case .loginOAuth:
+        return AuthAPI.login.authDescription
+
     }
   }
 
@@ -39,7 +43,7 @@ extension AuthService: BaseTargetType {
 
   public var method: Moya.Method {
     switch self {
-    case .login:
+      case .login, .loginOAuth:
       return .post
     }
   }
@@ -52,6 +56,10 @@ extension AuthService: BaseTargetType {
         "email": email,
       ]
       return parameters
+
+      case .loginOAuth(let body):
+        return body.toDictionary
+
     }
   }
 

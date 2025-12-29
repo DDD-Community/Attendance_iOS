@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Entity
 
 public extension LoginDTOModel {
   func toDomanl() -> LoginModel {
@@ -21,6 +22,20 @@ public extension LoginDTOModel {
       code: self.code ?? .zero,
       message: self.message ?? "",
       data: data
+    )
+  }
+}
+
+
+public extension LoginResponseDTO {
+  func toDomain() -> LoginEntity {
+    let token = AuthTokens(accessToken: self.accessToken, refreshToken: self.refreshToken)
+
+    return LoginEntity(
+      name: self.name,
+      isNewUser: self.isNewUser,
+      provider: SocialType(rawValue: oauthProvider) ?? .apple,
+      token: token
     )
   }
 }
