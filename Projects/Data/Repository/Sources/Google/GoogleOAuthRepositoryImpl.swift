@@ -14,7 +14,7 @@ import Entity
 import GoogleSignIn
 import LogMacro
 
-public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface {
+public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface, @unchecked Sendable {
     private let configuration: GoogleOAuthConfiguration
 
     public init(configuration: GoogleOAuthConfiguration = .current) {

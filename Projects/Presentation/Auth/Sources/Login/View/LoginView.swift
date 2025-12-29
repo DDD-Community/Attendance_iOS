@@ -34,6 +34,7 @@ public struct LoginView: View {
         socialLoginButton()
       }
     }
+    .toastOverlay()
   }
 }
 

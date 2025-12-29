@@ -9,11 +9,11 @@ import Foundation
 import Dependencies
 import LogMacro
 import AuthenticationServices
-import Entity
+@preconcurrency import Entity
 import DomainInterface
 
-public class AppleOAuthProvider {
-  public let socialType: SocialType = .apple
+public final class AppleOAuthProvider: AppleOAuthProviderInterface, @unchecked Sendable {
+  @Dependency(\.appleOAuthRepository) private var appleRepository: AppleOAuthInterface
 
   public init() {}
 
@@ -21,28 +21,17 @@ public class AppleOAuthProvider {
     credential: ASAuthorizationAppleIDCredential,
     nonce: String
   ) async throws -> AppleOAuthPayload {
-    guard let identityTokenData = credential.identityToken,
-          let identityToken = String(data: identityTokenData, encoding: .utf8)
-    else {
-      throw AuthError.missingIDToken
-    }
+    // appleRepository.signInWithCredential 사용 (credential을 직접 처리)
+    let payload = try await appleRepository.signInWithCredential(credential, nonce: nonce)
+    Log.info("Apple sign-in completed through repository with credential")
+    return payload
+  }
 
-    let authorizationCode: String?
-    if let authCodeData = credential.authorizationCode {
-      authorizationCode = String(data: authCodeData, encoding: .utf8)
-    } else {
-      authorizationCode = nil
-    }
-
-    let displayName = formatDisplayName(credential.fullName)
-
-
-    return AppleOAuthPayload(
-      idToken: identityToken,
-      authorizationCode: authorizationCode,
-      displayName: displayName,
-      nonce: nonce
-    )
+  public func signIn() async throws -> AppleOAuthPayload {
+    // Repository를 통해 Apple 로그인 처리
+    let payload = try await appleRepository.signIn()
+    Log.info("Apple sign-in completed through repository (direct)")
+    return payload
   }
 
   private func formatDisplayName(_ components: PersonNameComponents?) -> String? {

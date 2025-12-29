@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AuthenticationServices
 import Entity
 
 public actor MockAppleOAuthRepository: AppleOAuthInterface {
@@ -96,7 +97,31 @@ public actor MockAppleOAuthRepository: AppleOAuthInterface {
   }
   
   // MARK: - AppleOAuthRepositoryProtocol Implementation
-  
+
+  public func signInWithCredential(_ credential: ASAuthorizationAppleIDCredential, nonce: String) async throws -> AppleOAuthPayload {
+    // Track call
+    signInCallCount += 1
+    lastSignInCall = Date()
+
+    // Apply delay
+    if configuration.delay > 0 {
+      try await Task.sleep(for: .seconds(configuration.delay))
+    }
+
+    // Handle failure scenarios
+    if !configuration.shouldSucceed, let error = configuration.error {
+      throw error
+    }
+
+    // Return success payload using provided nonce
+    return AppleOAuthPayload(
+      idToken: createMockIDToken(),
+      authorizationCode: createMockAuthCode(),
+      displayName: configuration.mockUserName.isEmpty ? nil : configuration.mockUserName,
+      nonce: nonce
+    )
+  }
+
   public func signIn() async throws -> AppleOAuthPayload {
     // Track call
     signInCallCount += 1

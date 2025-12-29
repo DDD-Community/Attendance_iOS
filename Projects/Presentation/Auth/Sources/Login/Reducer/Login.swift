@@ -14,6 +14,7 @@ import Entity
 import AsyncMoya
 import AuthenticationServices
 import ComposableArchitecture
+import DesignSystem
 
 @Reducer
 public struct Login {
@@ -36,6 +37,7 @@ public struct Login {
     var checkEmailModel: CheckEmailModel?
     var loginEntity: LoginEntity?
     var profileModel: ProfileResponseModel?
+    var currentSocialType: SocialType?
     
     public init(
       userEntity: UserEntity = .init()
@@ -66,13 +68,13 @@ public struct Login {
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
-  
+
   public enum AsyncAction {
     case prepareAppleRequest(ASAuthorizationAppleIDRequest)
     case appleLogin(Result<ASAuthorization, Error>, nonce: String)
     case login(socialType: SocialType)
   }
-  
+
   // MARK: - 앱내에서 사용하는 액션
   public enum InnerAction {
     case appleResponse(Result<ASAuthorization, Error>)
@@ -139,6 +141,7 @@ public struct Login {
         return .none
         
       case .appleLogin(let result, let nonce):
+        state.currentSocialType = .apple
         return .run { send in
           guard
             case .success(let auth) = result,
@@ -150,12 +153,20 @@ public struct Login {
           }
 
           await send(.inner(.appleResponse(.success(auth))))
-          try await clock.sleep(for: .seconds(0.4))
-          await send(.async(.login(socialType: .apple)))
+
+          // Apple credential을 직접 처리하여 로그인 완료
+          let outcome = await unifiedOAuthUseCase.processOAuthFlow(
+            with: .apple,
+            appleCredential: credential,
+            nonce: nonce,
+            googleToken: nil
+          )
+          await send(.inner(.loginResponse(outcome)))
         }
         .cancellable(id: CancelID.appleOAuth)
         
       case .login(let socialType):
+        state.currentSocialType = socialType
         return .run { [
           useEntity = state.userEntity,
           appleCredential = state.appleLoginFullName,
@@ -213,13 +224,15 @@ public struct Login {
         switch result {
           case .success(let loginEntity):
             state.loginEntity = loginEntity
-            UserDefaults.standard.set(loginEntity.token.accessToken, forKey: "ACCESS_TOKEN")
-            state.$accessToken.withLock {$0 = loginEntity.token.accessToken}
-            state.$userEntity.withLock {
-              $0.userName = loginEntity.name
-              $0.accessToken = loginEntity.token.accessToken
-              $0.refreshToken = loginEntity.token.refreshToken
-            }
+
+            //TODO: 차후에 해당 로직이 이동할 예정
+//            UserDefaults.standard.set(loginEntity.token.accessToken, forKey: "ACCESS_TOKEN")
+//            state.$accessToken.withLock {$0 = loginEntity.token.accessToken}
+//            state.$userEntity.withLock {
+//              $0.userName = loginEntity.name
+//              $0.accessToken = loginEntity.token.accessToken
+//              $0.refreshToken = loginEntity.token.refreshToken
+//            }
 
             if loginEntity.isNewUser  {
               return .send(.navigation(.presentSignUpInviteView))
@@ -229,8 +242,21 @@ public struct Login {
 
           case .failure(let error):
             #logNetwork("로그인 실패", error.localizedDescription)
-
-            return .none
+            let socialType = state.currentSocialType
+            return .run { _ in
+                await MainActor.run {
+                    let errorMessage: String
+                    switch socialType {
+                    case .apple:
+                        errorMessage = "Apple 인증에 실패하였습니다."
+                    case .google:
+                        errorMessage = "구글 인증에 실패하였습니다."
+                    default:
+                        errorMessage = "인증에 실패했어요. 다시 시도해주세요."
+                    }
+                    ToastManager.shared.showError(errorMessage)
+                }
+            }
         }
     }
     

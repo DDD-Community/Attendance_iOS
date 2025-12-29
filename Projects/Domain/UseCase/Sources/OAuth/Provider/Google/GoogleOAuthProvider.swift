@@ -8,12 +8,10 @@
 import Foundation
 import Dependencies
 import LogMacro
-import Entity
+@preconcurrency import Entity
 import DomainInterface
 
-public class GoogleOAuthProvider {
-    public let socialType: SocialType = .google
-
+public final class GoogleOAuthProvider: GoogleOAuthProviderInterface, @unchecked Sendable {
     @Dependency(\.googleOAuthRepository) private var googleRepository
 
     public init() {}

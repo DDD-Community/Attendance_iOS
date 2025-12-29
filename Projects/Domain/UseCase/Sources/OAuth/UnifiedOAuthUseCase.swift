@@ -8,14 +8,14 @@
 import Foundation
 import Dependencies
 import AuthenticationServices
-import Entity
+@preconcurrency import Entity
 import DomainInterface
 
 /// 통합 OAuth UseCase - 로그인/회원가입 플로우를 하나로 통합
 public struct UnifiedOAuthUseCase {
   @Dependency(\.authRepository) private var authRepository: AuthInterface
-  private let appleProvider = AppleOAuthProvider()
-  private let googleProvider = GoogleOAuthProvider()
+  @Dependency(\.appleOAuthProvider) private var appleProvider: AppleOAuthProviderInterface
+  @Dependency(\.googleOAuthProvider) private var googleProvider: GoogleOAuthProviderInterface
 
   public init() {}
 }

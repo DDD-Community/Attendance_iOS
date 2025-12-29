@@ -9,7 +9,7 @@ import Foundation
 import AuthenticationServices
 
 import DomainInterface
-import Entity
+@preconcurrency import Entity
 
 import LogMacro
 import WeaveDI
@@ -18,19 +18,47 @@ import WeaveDI
 import UIKit
 #endif
 
-public final class AppleOAuthRepositoryImpl: NSObject, AppleOAuthInterface {
+public final class AppleOAuthRepositoryImpl: NSObject, AppleOAuthInterface, @unchecked Sendable {
   private let logger = LogMacro.Log.self
   @Dependency(\.appleManger) var appleLoginManger
 
   private var currentNonce: String?
   private var signInContinuation: CheckedContinuation<AppleOAuthPayload, Error>?
+  private var isSigningIn: Bool = false
 
   public override init() {
 
   }
+  public func signInWithCredential(_ credential: ASAuthorizationAppleIDCredential, nonce: String) async throws -> AppleOAuthPayload {
+    // 받은 credential으로 직접 payload 생성
+    guard let identityTokenData = credential.identityToken,
+          let identityToken = String(data: identityTokenData, encoding: .utf8)
+    else {
+      throw AuthError.missingIDToken
+    }
+
+    let authorizationCode = credential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) }
+    let displayName = formatDisplayName(credential.fullName)
+
+    return AppleOAuthPayload(
+      idToken: identityToken,
+      authorizationCode: authorizationCode,
+      displayName: displayName,
+      nonce: nonce
+    )
+  }
+
   @MainActor
   public func signIn() async throws -> AppleOAuthPayload {
+    // 이미 진행 중인 로그인이 있으면 기다림
+    if isSigningIn, let continuation = signInContinuation {
+      return try await withCheckedThrowingContinuation { newContinuation in
+        newContinuation.resume(throwing: AuthError.invalidCredential("이미 로그인이 진행 중입니다"))
+      }
+    }
+
     return try await withCheckedThrowingContinuation { continuation in
+      self.isSigningIn = true
       self.signInContinuation = continuation
 
       let request = ASAuthorizationAppleIDProvider().createRequest()
@@ -88,6 +116,7 @@ extension AppleOAuthRepositoryImpl: ASAuthorizationControllerDelegate {
     signInContinuation?.resume(returning: payload)
     signInContinuation = nil
     currentNonce = nil
+    isSigningIn = false
   }
 
   public func authorizationController(
@@ -105,6 +134,7 @@ extension AppleOAuthRepositoryImpl: ASAuthorizationControllerDelegate {
 
     signInContinuation = nil
     currentNonce = nil
+    isSigningIn = false
   }
 }
 
