@@ -7,6 +7,7 @@
 
 import DomainInterface
 import Model
+import Entity
 
 import WeaveDI
 
@@ -23,6 +24,13 @@ public struct AuthUseCaseImpl: AuthInterface {
       .loginUser(
         email: email
       )
+  }
+
+  public func login(
+    provider: Entity.SocialType,
+    token: String
+  ) async throws -> Entity.LoginEntity {
+    return try await authRepository.login(provider: provider, token: token)
   }
 }
 

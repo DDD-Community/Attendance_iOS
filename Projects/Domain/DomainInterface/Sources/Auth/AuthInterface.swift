@@ -8,10 +8,12 @@
 
 import Foundation
 import WeaveDI
+import Entity
 
 /// Auth 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol AuthInterface: Sendable {
   func loginUser(email: String) async throws -> LoginModel?
+  func login(provider: SocialType, token: String) async throws -> LoginEntity
 }
 
 /// Auth Repository의 DependencyKey 구조체

@@ -8,6 +8,7 @@
 import AuthenticationServices
 
 import DomainInterface
+import Entity
 
 import WeaveDI
 
