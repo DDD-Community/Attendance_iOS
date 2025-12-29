@@ -29,12 +29,12 @@ public extension LoginDTOModel {
 
 public extension LoginResponseDTO {
   func toDomain() -> LoginEntity {
-    let token = AuthTokens(accessToken: self.accessToken, refreshToken: self.refreshToken)
+    let token = AuthTokens(accessToken: self.accessToken ?? "", refreshToken: self.refreshToken ?? "")
 
     return LoginEntity(
-      name: self.name,
+      name: self.name ?? "",
       isNewUser: self.isNewUser,
-      provider: SocialType(rawValue: oauthProvider) ?? .apple,
+      provider: SocialType(rawValue: oauthProvider ?? "") ?? .apple,
       token: token
     )
   }

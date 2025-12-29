@@ -221,7 +221,7 @@ public struct Login {
               $0.refreshToken = loginEntity.token.refreshToken
             }
 
-            if !loginEntity.isNewUser  {
+            if loginEntity.isNewUser  {
               return .send(.navigation(.presentSignUpInviteView))
             } else {
               return .send(.navigation(.presentCoreMemberMain))
