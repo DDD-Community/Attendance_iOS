@@ -16,10 +16,8 @@ let project = Project.makeModule(
     .SPM.sdwebImage,
     .SPM.collections,
     .SPM.popupView,
-    .SPM.collections,
     .SPM.swiftUIX,
     .SPM.fsCalendar,
-    .SPM.firebaseAuth,
     .SPM.googleSignIn,
     .SPM.keychainAccess,
     .SPM.firebaseAuth,
@@ -27,7 +25,6 @@ let project = Project.makeModule(
     .SPM.firebaseAnalytics,
     .SPM.firebaseCrashlytics,
     .SPM.firebaseRemoteConfig,
-    .SPM.firebaseDatabase,
   ],
   sources: ["Sources/**"]
 )

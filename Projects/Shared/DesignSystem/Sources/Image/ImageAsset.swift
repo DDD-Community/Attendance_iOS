@@ -29,7 +29,8 @@ public enum ImageAsset: String {
   
   case appleLogin
   case googleLogin
-  
+  case google
+
   // MARK: - 회원가입
   
   case backButton

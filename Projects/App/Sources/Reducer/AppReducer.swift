@@ -42,24 +42,25 @@ struct AppReducer {
 
   @Dependency(\.continuousClock) var clock
 
-  var body: some  ReducerOf<Self> {
+  var body: some ReducerOf<Self> {
+    EmptyReducer()
+      .ifCaseLet(\.splash, action: \.view.splash) {
+        Splash()
+      }
+      .ifCaseLet(\.auth, action: \.view.auth) {
+        AuthCoordinator()
+      }
+      .ifCaseLet(\.coreMember, action: \.view.coreMember) {
+        StaffCoordinator()
+      }
+      .ifCaseLet(\.member, action: \.view.member) {
+        MemberCoordinator()
+      }
     Reduce { state, action in
       switch action {
       case .view(let ViewAction):
         handleViewAction(&state, action: ViewAction)
       }
-    }
-    .ifCaseLet(\.splash, action: \.view.splash) {
-      Splash()
-    }
-    .ifCaseLet(\.auth, action: \.view.auth) {
-      AuthCoordinator()
-    }
-    .ifCaseLet(\.coreMember, action: \.view.coreMember) {
-      StaffCoordinator()
-    }
-    .ifCaseLet(\.member, action: \.view.member) {
-      MemberCoordinator()
     }
   }
 }
