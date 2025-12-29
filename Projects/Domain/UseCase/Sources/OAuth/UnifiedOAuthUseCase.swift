@@ -56,7 +56,7 @@ public extension UnifiedOAuthUseCase {
     )
     return try await authRepository.login(
       provider: .apple,
-      token: payload.authorizationCode ?? payload.idToken
+      token: payload.idToken
     )
   }
 
