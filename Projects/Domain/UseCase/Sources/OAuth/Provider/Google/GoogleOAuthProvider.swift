@@ -14,12 +14,15 @@ import DomainInterface
 public class GoogleOAuthProvider {
     public let socialType: SocialType = .google
 
+    @Dependency(\.googleOAuthRepository) private var googleRepository
+
     public init() {}
 
     public func signInWithToken(
         token: String
     ) async throws -> String {
-        Log.info("Google sign-in with token")
-        return token
+        Log.info("Starting Google OAuth flow")
+        let payload = try await googleRepository.signIn()
+        return payload.idToken
     }
 }

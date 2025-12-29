@@ -9,6 +9,7 @@ import AuthenticationServices
 import SwiftUI
 
 import DesignSystem
+import Entity
 
 import ComposableArchitecture
 

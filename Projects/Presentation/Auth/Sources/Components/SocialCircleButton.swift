@@ -5,8 +5,12 @@
 //  Created by Wonji Suh  on 12/19/25.
 //
 
+
 import SwiftUI
 import AuthenticationServices
+
+import Entity
+
 import ComposableArchitecture
 
 struct SocialCircleButtonView: View {
@@ -22,7 +26,6 @@ struct SocialCircleButtonView: View {
     switch type {
     case .apple:
       ZStack {
-        // 🔥 테스트: SignInWithAppleButton을 맨 앞으로
         SignInWithAppleButton(.signIn) { request in
           store.send(.async(.prepareAppleRequest(request)))
         } onCompletion: { result in
@@ -32,7 +35,6 @@ struct SocialCircleButtonView: View {
         .clipShape(Circle())
         .allowsHitTesting(true)
 
-        // 배경 원과 아이콘을 뒤에 배치
         Circle()
           .fill(.black)
           .frame(width: circleSize, height: circleSize)
@@ -71,9 +73,7 @@ struct SocialCircleButtonView: View {
           isPressed = pressing
         }
       }, perform: {})
-        
-    case .none:
-      EmptyView()
+
     }
   }
 }

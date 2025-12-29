@@ -13,12 +13,12 @@ public enum SocialType: String, CaseIterable, Identifiable, Hashable {
 
   public var id: String { rawValue }
 
-  var description: String {
+  public var description: String {
     switch self {
       case .apple:
-        return "Apple"
+        return "APPLE"
       case .google:
-        return "Google"
+        return "GOOGLE"
 
     }
   }

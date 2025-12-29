@@ -45,7 +45,7 @@ final public class AuthRepositoryImpl: AuthInterface, Sendable {
     token: String
   ) async throws -> LoginEntity {
     let dto: LoginResponseDTO = try await provider.request(
-      .loginOAuth(body: OAuthLoginRequest(provider: socialProvider.rawValue, token: token))
+      .loginOAuth(body: OAuthLoginRequest(provider: socialProvider.description, token: token))
      )
     return dto.toDomain()
   }
