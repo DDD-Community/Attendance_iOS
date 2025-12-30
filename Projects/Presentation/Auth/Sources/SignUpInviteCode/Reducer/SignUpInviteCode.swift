@@ -9,6 +9,8 @@ import Foundation
 
 import Core
 import Utill
+import Entity
+import Model
 
 import AsyncMoya
 import ComposableArchitecture
@@ -24,20 +26,22 @@ public struct SignUpInviteCode {
     var secondInviteCode: String = ""
     var thirdInviteCode: String = ""
     var lastInviteCode: String = ""
-    var validateInviteCodeDTOModel: InviteCodeModel?
+    var verifyInviteCodeModel: VerifyCodeEntity?
+
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
-    
+    @Presents public var alert: AlertState<AlertAction>?
+
     var totalInviteCode: String {
       return firstInviteCode + secondInviteCode + thirdInviteCode + lastInviteCode
     }
     var enableButton: Bool {
-      return !isNotAvaliableCode &&
+      return !isNotAvailableCode &&
       !firstInviteCode.isEmpty &&
       !secondInviteCode.isEmpty &&
       !thirdInviteCode.isEmpty &&
       !lastInviteCode.isEmpty
     }
-    var isNotAvaliableCode: Bool = false
+    var isNotAvailableCode: Bool = false
     
     @Shared var userSignUp: Member
     
@@ -47,12 +51,14 @@ public struct SignUpInviteCode {
       self._userSignUp = Shared(wrappedValue: userSignUp, .inMemory("Member"))
     }
   }
-  
+
+  @CasePathable
   public enum Action: ViewAction, BindableAction, FeatureAction {
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
+    case scope(ScopeAction)
     case navigation(NavigationAction)
   }
   
@@ -64,26 +70,41 @@ public struct SignUpInviteCode {
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
-  
+  @CasePathable
   public enum AsyncAction: Equatable {
-    case validataInviteCode(code: String)
+    case verifyInviteCode(code: String)
   }
   
   // MARK: - 앱내에서 사용하는 액션
-  
+  @CasePathable
   public enum InnerAction: Equatable {
-    case validataInviteCodeResponse(Result<InviteCodeModel, CustomError>)
+    case verifyInviteCodeResponse(Result<VerifyCodeEntity, SignUpError>)
   }
   
   // MARK: - NavigationAction
-  
+  @CasePathable
   public enum NavigationAction: Equatable {
     case presentSignUpName
   }
+
+  @CasePathable
+  public enum ScopeAction {
+      case alert(PresentationAction<AlertAction>)
+  }
+
+  @CasePathable
+  public enum AlertAction {
+      case confirmTapped
+  }
+
+  nonisolated enum CancelID: Hashable {
+    case verifyCode
+  }
+
+
   
-  struct SignUpInviteCodeCancel: Hashable {}
-  
-  @Dependency(\.signUpUseCase) var signUpUseCase
+
+  @Dependency(\.onBoardingUseCase) var onBoardingUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
@@ -102,11 +123,15 @@ public struct SignUpInviteCode {
         
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
-        
+
+        case .scope:
+          return .none
+
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
       }
     }
+    .ifLet(\.$alert, action: \.scope.alert)
   }
   
   private func handleViewAction(
@@ -128,27 +153,22 @@ public struct SignUpInviteCode {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-    case .validataInviteCode(let code):
+    case .verifyInviteCode(let code):
       return .run { send in
-        let validataCodeResult = await Result {
-          try await signUpUseCase.validateInviteCode(inviteCode: code)
+        let verifyCodeResult = await Result {
+          try await onBoardingUseCase.verifyCode(code: code)
         }
-        
-        switch validataCodeResult {
-        case .success(let validataCodeData):
-          if let validataCodeData = validataCodeData {
-            await send(.inner(.validataInviteCodeResponse(.success(validataCodeData))))
-
-            if validataCodeData.data.valid == true {
-              await send(.navigation(.presentSignUpName))
-            }
+          .mapError { error -> SignUpError in
+              if let authError = error as? SignUpError {
+                  return authError
+              } else {
+                  return .unknownError(error.localizedDescription)
+              }
           }
-        case .failure(let error):
-          await send(.inner(.validataInviteCodeResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
-        }
-      }
-      .debounce(id: SignUpInviteCodeCancel(), for: 0.3, scheduler: mainQueue)
+        return await send(.inner(.verifyInviteCodeResponse(verifyCodeResult)))
 
+      }
+      .cancellable(id: CancelID.verifyCode, cancelInFlight: true)
     }
   }
   
@@ -167,17 +187,28 @@ public struct SignUpInviteCode {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-    case .validataInviteCodeResponse(let result):
+    case .verifyInviteCodeResponse(let result):
       switch result {
-      case .success(let validateCodeData):
-        state.validateInviteCodeDTOModel = validateCodeData
-        state.$userEntity.withLock{ $0.userRole = UserRole(rawValue: state.validateInviteCodeDTOModel?.data.inviteType ?? "")
-          $0.inviteCodeId = state.validateInviteCodeDTOModel?.data.inviteCodeID ?? ""
-        }
+      case .success(let data):
+        state.verifyInviteCodeModel = data
+          //TODO: 차후에 수정 예정
+//        state.$userEntity.withLock{ $0.userRole = UserRole(rawValue: state.validateInviteCodeDTOModel?.data.inviteType ?? "")
+//          $0.inviteCodeId = state.validateInviteCodeDTOModel?.data.inviteCodeID ?? ""
+//        }
+          return .send(.navigation(.presentSignUpName))
 
       case .failure(let error):
-        #logError("코드에러", error.localizedDescription)
-        state.isNotAvaliableCode.toggle()
+        #logError("코드에러", error)
+        state.isNotAvailableCode.toggle()
+          state.alert = AlertState {
+              TextState("오류")
+          } actions: {
+            ButtonState(action: .confirmTapped) {
+                  TextState("확인")
+              }
+          } message: {
+            TextState("잘못된 초대 코드입니다. 다시 입력해 주세요.\n\(SignUpError.invalidInviteCode.errorDescription ?? "")")
+          }
       }
       return .none
     }
