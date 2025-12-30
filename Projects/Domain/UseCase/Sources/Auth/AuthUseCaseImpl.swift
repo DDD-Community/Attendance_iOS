@@ -6,7 +6,6 @@
 //
 
 import DomainInterface
-import Model
 import Entity
 
 import WeaveDI
@@ -26,13 +25,13 @@ public struct AuthUseCaseImpl: AuthInterface {
 }
 
 extension AuthUseCaseImpl: DependencyKey {
-  static public var liveValue: AuthInterface =  AuthUseCaseImpl()
-  static public var testValue:   AuthInterface =  AuthUseCaseImpl()
-  static public var previewValue: AuthInterface = liveValue
+  static public var liveValue = AuthUseCaseImpl()
+  static public var testValue = AuthUseCaseImpl()
+  static public var previewValue = AuthUseCaseImpl()
 }
 
 public extension DependencyValues {
-  var authUseCase: AuthInterface {
+  var authUseCase: AuthUseCaseImpl {
     get { self[AuthUseCaseImpl.self] }
     set { self[AuthUseCaseImpl.self] = newValue }
   }

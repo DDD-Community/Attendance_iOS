@@ -25,10 +25,12 @@ public struct SignUpRepositoryDependency: DependencyKey {
   }
 
   public static var testValue: SignUpInterface {
-    UnifiedDI.resolve(SignUpInterface.self) ?? DefaultSignUpRepositoryImpl()
+    DefaultSignUpRepositoryImpl.success()
   }
 
-  public static var previewValue: SignUpInterface = liveValue
+  public static var previewValue: SignUpInterface {
+    DefaultSignUpRepositoryImpl.success()
+  }
 }
 
 /// DependencyValues extension으로 간편한 접근 제공
