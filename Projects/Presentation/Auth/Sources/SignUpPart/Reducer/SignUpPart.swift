@@ -9,6 +9,7 @@ import Foundation
 
 import Core
 import Utill
+import Entity
 
 import ComposableArchitecture
 
@@ -21,7 +22,10 @@ public struct SignUpPart {
     public init() {}
     
     var activeSelectPart: Bool = false
-    var selectPart: SelectPart? = .all
+    var selectPart: SelectParts? = .all
+    var selectJobs: [SelectJob]? = []
+    var errorMessage: String?
+    var loading: Bool = false
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
   }
   
@@ -37,19 +41,20 @@ public struct SignUpPart {
   
   @CasePathable
   public enum View {
-    case selectPartButton(selectPart: SelectPart)
+    case selectPartButton(selectPart: SelectJob)
+    case onAppear
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
-    
+    case getJobList
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
-    
+    case jobListResponse(Result<[SelectJob], SignUpError>)
   }
   
   // MARK: - NavigationAction
@@ -59,7 +64,14 @@ public struct SignUpPart {
     case presentSelectTeam
     case presentNextStep
   }
-  
+
+
+  nonisolated enum CancelID: Hashable {
+    case fetchJobList
+  }
+
+  @Dependency(\.onBoardingUseCase) var onBoardingUseCase
+
   public var body: some ReducerOf<Self> {
     BindingReducer()
     Reduce { state, action in
@@ -88,20 +100,27 @@ public struct SignUpPart {
   ) -> Effect<Action> {
     switch action {
 
-    case .selectPartButton(let selectPart):
-      if state.selectPart == selectPart {
+    case .selectPartButton(let selectJob):
+      let selectedPart = selectJob.job
+
+      if state.selectPart == selectedPart {
         // 동일한 파트 재선택 → 해제
         state.selectPart = nil
-        state.$userEntity.withLock { $0.role = nil }
+        // TODO: - 차후에 수정
+//        state.$userEntity.withLock { $0.role = nil }
         state.activeSelectPart = false
         return .none
       }
-      
-      state.selectPart = selectPart
-      state.$userEntity.withLock { $0.role = selectPart }
+
+      state.selectPart = selectedPart
+        // TODO: - 차후에 수정
+//      state.$userEntity.withLock { $0.role = selectedPart }
       state.activeSelectPart = true
-      #logDebug("selectPart", state.userEntity.role)
+//      #logDebug("selectPart", state.userEntity.role)
       return .none
+
+      case .onAppear:
+        return .send(.async(.getJobList))
     }
   }
   
@@ -129,13 +148,44 @@ public struct SignUpPart {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    
+    switch action {
+      case .getJobList:
+        state.loading = true
+        return .run { send in
+          let jobListResult = await Result {
+            try await onBoardingUseCase.fetchJobs()
+          }
+            .mapError { error -> SignUpError in
+              if let authError = error as? SignUpError {
+                return authError
+              } else {
+                return .unknownError(error.localizedDescription)
+              }
+            }
+          return await send(.inner(.jobListResponse(jobListResult)))
+        }
+        .cancellable(id: CancelID.fetchJobList, cancelInFlight: true)
+    }
+
   }
   
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    
+    switch action {
+      case .jobListResponse(let result):
+        switch result {
+          case .success(let data):
+            state.loading = false
+            state.selectJobs = data
+
+          case .failure(let error):
+            state.errorMessage = error.errorDescription
+            #logError("네트워크 통신 실패", error.errorDescription)
+        }
+        return .none
+
+    }
   }
 }

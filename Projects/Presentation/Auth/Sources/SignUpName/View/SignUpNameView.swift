@@ -91,7 +91,7 @@ extension SignUpNameView {
       
       RoundedRectangle(cornerRadius: 16)
         .inset(by: 0.5)
-        .stroke(store.isNotAvaliableName ? .statusError : .borderInactive, lineWidth: 1)
+        .stroke(store.isNotAvailableName ? .statusError : .borderInactive, lineWidth: 1)
         .frame(height: 56)
         .overlay {
           HStack {
@@ -111,13 +111,13 @@ extension SignUpNameView {
             .onChange(of: store.userEntity.signUpName) { new, _ in
               if new.count > 5 {
                 store.userEntity.signUpName = String(new.prefix(5))
-                store.isNotAvaliableName = false
+                store.isNotAvailableName = false
               }
             }
             
             Spacer()
             
-            Image(asset: store.isNotAvaliableName ? .errorClose : .close)
+            Image(asset: store.isNotAvailableName ? .errorClose : .close)
               .resizable()
               .scaledToFit()
               .frame(width: 20, height: 20)
@@ -136,7 +136,7 @@ extension SignUpNameView {
   
   @ViewBuilder
   private func errorNameText() -> some View {
-    if store.isNotAvaliableName  {
+    if store.isNotAvailableName  {
       VStack {
         Spacer()
           .frame(height: 8)
@@ -167,7 +167,7 @@ extension SignUpNameView {
       
       CustomButton(
         action: {
-          store.send(.view(.checkIsAvaliableName))
+          store.send(.view(.checkIsAvailableName))
         },
         title: "다음",
         config: CustomButtonConfig.create(),
