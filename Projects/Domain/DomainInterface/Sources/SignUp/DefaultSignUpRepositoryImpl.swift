@@ -17,9 +17,6 @@ final public class DefaultSignUpRepositoryImpl: SignUpInterface, @unchecked Send
   public enum Configuration {
     case success
     case failure
-    case invalidEmail
-    case duplicateEmail
-    case weakPassword
     case invalidInviteCode
     case expiredInviteCode
     case networkError
@@ -30,8 +27,7 @@ final public class DefaultSignUpRepositoryImpl: SignUpInterface, @unchecked Send
       switch self {
       case .success, .customDelay:
         return true
-      case .failure, .invalidEmail, .duplicateEmail, .weakPassword,
-           .invalidInviteCode, .expiredInviteCode, .networkError, .serverError:
+      case .failure, .invalidInviteCode, .expiredInviteCode, .networkError, .serverError:
         return false
       }
     }
@@ -51,12 +47,6 @@ final public class DefaultSignUpRepositoryImpl: SignUpInterface, @unchecked Send
         return nil
       case .failure:
         return .accountCreationFailed
-      case .invalidEmail:
-        return .invalidEmail
-      case .duplicateEmail:
-        return .duplicateEmail
-      case .weakPassword:
-        return .weakPassword
       case .invalidInviteCode:
         return .invalidInviteCode
       case .expiredInviteCode:
@@ -129,22 +119,22 @@ final public class DefaultSignUpRepositoryImpl: SignUpInterface, @unchecked Send
       throw SignUpError.missingRequiredField("비밀번호")
     }
 
-    // 특정 이메일 패턴 검사
+    // 특정 패턴 검사 (간소화)
     if email == "invalid@" || !email.contains("@") {
-      throw SignUpError.invalidEmail
+      throw SignUpError.missingRequiredField("유효한 이메일")
     }
 
     if email == "duplicate@example.com" {
-      throw SignUpError.duplicateEmail
+      throw SignUpError.accountAlreadyExists
     }
 
     // 비밀번호 검증
     if password.count < 8 {
-      throw SignUpError.passwordTooShort
+      throw SignUpError.missingRequiredField("8자 이상의 비밀번호")
     }
 
     if password == "weak" || password == "123456" {
-      throw SignUpError.weakPassword
+      throw SignUpError.missingRequiredField("강력한 비밀번호")
     }
 
     // Configuration 기반 응답 처리
@@ -240,7 +230,7 @@ final public class DefaultSignUpRepositoryImpl: SignUpInterface, @unchecked Send
 
     // 이메일 형식 검증
     if !email.contains("@") || !email.contains(".") {
-      throw SignUpError.invalidEmail
+      throw SignUpError.missingRequiredField("유효한 이메일")
     }
 
     // 특정 이메일별 처리
@@ -276,21 +266,6 @@ public extension DefaultSignUpRepositoryImpl {
   /// Creates a pre-configured instance for failure scenario
   static func failure() -> DefaultSignUpRepositoryImpl {
     return DefaultSignUpRepositoryImpl(configuration: .failure)
-  }
-
-  /// Creates a pre-configured instance for invalid email scenario
-  static func invalidEmail() -> DefaultSignUpRepositoryImpl {
-    return DefaultSignUpRepositoryImpl(configuration: .invalidEmail)
-  }
-
-  /// Creates a pre-configured instance for duplicate email scenario
-  static func duplicateEmail() -> DefaultSignUpRepositoryImpl {
-    return DefaultSignUpRepositoryImpl(configuration: .duplicateEmail)
-  }
-
-  /// Creates a pre-configured instance for weak password scenario
-  static func weakPassword() -> DefaultSignUpRepositoryImpl {
-    return DefaultSignUpRepositoryImpl(configuration: .weakPassword)
   }
 
   /// Creates a pre-configured instance for invalid invite code scenario

@@ -31,6 +31,7 @@ public enum OnBoardingError: Error, LocalizedError {
 }
 
 public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchecked Sendable {
+  
 
   // MARK: - Configuration
   public enum Configuration {
@@ -96,6 +97,8 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
   private var configuration: Configuration = .success
   private var verifyCallCount = 0
   private var lastVerifyCall: Date?
+  private var fetchJobsCallCount = 0
+  private var lastFetchJobsCall: Date?
 
   // MARK: - Initialization
 
@@ -109,6 +112,8 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     self.configuration = configuration
     verifyCallCount = 0
     lastVerifyCall = nil
+    fetchJobsCallCount = 0
+    lastFetchJobsCall = nil
   }
 
   public func getVerifyCallCount() -> Int {
@@ -119,10 +124,20 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     return lastVerifyCall
   }
 
+  public func getFetchJobsCallCount() -> Int {
+    return fetchJobsCallCount
+  }
+
+  public func getLastFetchJobsCall() -> Date? {
+    return lastFetchJobsCall
+  }
+
   public func reset() {
     configuration = .success
     verifyCallCount = 0
     lastVerifyCall = nil
+    fetchJobsCallCount = 0
+    lastFetchJobsCall = nil
   }
 
   // MARK: - OnBoardingInterface Implementation
@@ -176,6 +191,63 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
         generationID: configuration.mockGenerationID,
         type: configuration.staffType
       )
+    }
+  }
+
+  public func fetchJobs() async throws -> [Entity.SelectJob] {
+    // Track call
+    fetchJobsCallCount += 1
+    lastFetchJobsCall = Date()
+
+    // Apply delay
+    if configuration.delay > 0 {
+      try await Task.sleep(for: .seconds(configuration.delay))
+    }
+
+    // Configuration 기반 응답 처리
+    if !configuration.shouldSucceed, let error = configuration.error {
+      throw error
+    }
+
+    // Mock jobs data - 다양한 직무를 순환하면서 반환
+    let mockJobs: [Entity.SelectJob] = [
+      Entity.SelectJob(
+        jobKeys: "BACKEND",
+        job: .backend
+      ),
+      Entity.SelectJob(
+        jobKeys: "FRONTEND",
+        job: .frontend
+      ),
+      Entity.SelectJob(
+        jobKeys: "DESIGNER",
+        job: .designer
+      ),
+      Entity.SelectJob(
+        jobKeys: "PM",
+        job: .pm
+      ),
+      Entity.SelectJob(
+        jobKeys: "ANDROID",
+        job: .android
+      ),
+      Entity.SelectJob(
+        jobKeys: "IOS",
+        job: .ios
+      )
+    ]
+
+    // Configuration에 따른 응답
+    switch configuration {
+    case .memberRole:
+      // 일반 멤버는 개발 직무들만
+      return mockJobs.filter { $0.job != .pm }
+    case .managerRole:
+      // 매니저는 PM 직무만
+      return [Entity.SelectJob(jobKeys: "PM", job: .pm)]
+    default:
+      // 기본적으로 모든 직무 반환
+      return mockJobs
     }
   }
 }

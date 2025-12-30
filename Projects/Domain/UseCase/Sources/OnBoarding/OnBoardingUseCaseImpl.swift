@@ -21,6 +21,11 @@ public struct OnBoardingUseCaseImpl: OnBoardingInterface {
   ) async throws -> Entity.VerifyCodeEntity {
     return try await repository.verifyCode(code: code)
   }
+
+  public func fetchJobs() async throws -> [Entity.SelectJob] {
+    return try await repository.fetchJobs()
+  }
+
 }
 
 

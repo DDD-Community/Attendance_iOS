@@ -15,9 +15,6 @@ public actor MockSignUpRepository: SignUpInterface {
   public enum Configuration {
     case success
     case failure
-    case invalidEmail
-    case duplicateEmail
-    case weakPassword
     case invalidInviteCode
     case expiredInviteCode
     case networkError
@@ -30,8 +27,7 @@ public actor MockSignUpRepository: SignUpInterface {
       switch self {
       case .success, .emailCheckedValid, .emailCheckedUsed, .customDelay:
         return true
-      case .failure, .invalidEmail, .duplicateEmail, .weakPassword,
-           .invalidInviteCode, .expiredInviteCode,
+      case .failure, .invalidInviteCode, .expiredInviteCode,
            .networkError, .serverError:
         return false
       }
@@ -48,7 +44,7 @@ public actor MockSignUpRepository: SignUpInterface {
 
     var isEmailUsed: Bool {
       switch self {
-      case .emailCheckedUsed, .duplicateEmail:
+      case .emailCheckedUsed:
         return true
       default:
         return false
@@ -61,12 +57,6 @@ public actor MockSignUpRepository: SignUpInterface {
         return nil
       case .failure:
         return .accountCreationFailed
-      case .invalidEmail:
-        return .invalidEmail
-      case .duplicateEmail:
-        return .duplicateEmail
-      case .weakPassword:
-        return .weakPassword
       case .invalidInviteCode:
         return .invalidInviteCode
       case .expiredInviteCode:
@@ -247,21 +237,6 @@ public extension MockSignUpRepository {
   /// Creates a pre-configured actor for failure scenario
   static func failure() -> MockSignUpRepository {
     return MockSignUpRepository(configuration: .failure)
-  }
-
-  /// Creates a pre-configured actor for invalid email scenario
-  static func invalidEmail() -> MockSignUpRepository {
-    return MockSignUpRepository(configuration: .invalidEmail)
-  }
-
-  /// Creates a pre-configured actor for duplicate email scenario
-  static func duplicateEmail() -> MockSignUpRepository {
-    return MockSignUpRepository(configuration: .duplicateEmail)
-  }
-
-  /// Creates a pre-configured actor for weak password scenario
-  static func weakPassword() -> MockSignUpRepository {
-    return MockSignUpRepository(configuration: .weakPassword)
   }
 
   /// Creates a pre-configured actor for invalid invite code scenario

@@ -13,6 +13,7 @@ import Entity
 
 public protocol OnBoardingInterface: Sendable {
   func verifyCode(code: String) async throws -> VerifyCodeEntity
+  func fetchJobs() async throws -> [SelectJob]
 }
 
 public struct OnBoardingRepositoryDependency: DependencyKey {
@@ -24,9 +25,7 @@ public struct OnBoardingRepositoryDependency: DependencyKey {
     UnifiedDI.resolve(OnBoardingInterface.self) ?? DefaultOnBoardingRepositoryImpl()
   }
 
-  public static var previewValue: OnBoardingInterface {
-    MockOnBoardingRepository.success()
-  }
+  public static var previewValue: OnBoardingInterface = liveValue
 }
 
 public extension DependencyValues {
