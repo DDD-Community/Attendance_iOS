@@ -14,6 +14,7 @@ import Entity
 @preconcurrency  import AsyncMoya
 
 final public class OnBoardingRepositoryImpl:OnBoardingInterface {
+  
   private let provider: MoyaProvider<OnBoardingService>
 
   public init(
@@ -28,4 +29,10 @@ final public class OnBoardingRepositoryImpl:OnBoardingInterface {
     let dto: VerifyCodeDTO = try await provider.request(.verifyCode(code: code))
     return dto.toDomain()
   }
+
+  public func fetchJobs() async throws -> [Entity.SelectJob] {
+    let dtoArray: [SelectJobsDTOResponse] = try await provider.request(.jobs)
+    return dtoArray.toDomain()
+  }
+
 }

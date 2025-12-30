@@ -13,6 +13,7 @@ import AsyncMoya
 
 public enum OnBoardingService {
   case verifyCode(code : String)
+  case jobs
 }
 
 
@@ -27,6 +28,9 @@ extension OnBoardingService: BaseTargetType {
     switch self {
       case .verifyCode:
         return OnBoardingAPI.verifyCode.description
+
+      case .jobs:
+        return OnBoardingAPI.jobs.description
     }
   }
   
@@ -38,12 +42,15 @@ extension OnBoardingService: BaseTargetType {
     switch self {
       case .verifyCode(let code):
         return code.toDictionary(key: "code")
+
+      case .jobs:
+        return nil
     }
   }
   
   public var method: Moya.Method {
     switch self {
-      case .verifyCode:
+      case .verifyCode, .jobs:
         return .get
     }
   }
