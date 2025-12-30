@@ -14,3 +14,10 @@ extension Encodable {
   }
 }
 
+extension String {
+  /// 문자열을 지정된 키로 API 파라미터용 Dictionary로 변환
+  func toDictionary(key: String) -> [String: Any] {
+    return [key: self]
+  }
+}
+

@@ -17,8 +17,6 @@ import FirebaseFirestore
 
 @Observable
 final public class AuthRepositoryImpl: AuthInterface, Sendable {
-
-  
   private let provider: MoyaProvider<AuthService>
 
   public init(
