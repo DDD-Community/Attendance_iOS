@@ -26,7 +26,7 @@ public struct SignUpPart {
     var selectJobs: [SelectJob]? = []
     var errorMessage: String?
     var loading: Bool = false
-    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
+    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -106,15 +106,13 @@ public struct SignUpPart {
       if state.selectPart == selectedPart {
         // 동일한 파트 재선택 → 해제
         state.selectPart = nil
-        // TODO: - 차후에 수정
-//        state.$userEntity.withLock { $0.role = nil }
+        state.$userSession.withLock { $0.selectPart = .all }
         state.activeSelectPart = false
         return .none
       }
 
       state.selectPart = selectedPart
-        // TODO: - 차후에 수정
-//      state.$userEntity.withLock { $0.role = selectedPart }
+        state.$userSession.withLock { $0.selectPart = selectedPart }
       state.activeSelectPart = true
 //      #logDebug("selectPart", state.userEntity.role)
       return .none
@@ -134,8 +132,8 @@ public struct SignUpPart {
     case .presentSelectTeam:
       return .none
     case .presentNextStep:
-      return .run { [isAdmin = state.userEntity.userRole] send in
-        if isAdmin == .moderator {
+        return .run { [isAdmin = state.userSession.userRole] send in
+        if isAdmin == .manger {
           await send(.navigation(.presentManaging))
         } else {
           await send(.navigation(.presentSelectTeam))
@@ -155,13 +153,7 @@ public struct SignUpPart {
           let jobListResult = await Result {
             try await onBoardingUseCase.fetchJobs()
           }
-            .mapError { error -> SignUpError in
-              if let authError = error as? SignUpError {
-                return authError
-              } else {
-                return .unknownError(error.localizedDescription)
-              }
-            }
+            .mapError(SignUpError.from)
           return await send(.inner(.jobListResponse(jobListResult)))
         }
         .cancellable(id: CancelID.fetchJobList, cancelInFlight: true)

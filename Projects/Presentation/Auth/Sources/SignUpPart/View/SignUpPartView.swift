@@ -89,7 +89,10 @@ extension SignUpPartView {
             },
             id: \.jobKeys
           ) { item in
-            SelectPartItem(content: item.job.desc, isActive: item.job == store.selectPart) {
+            SelectPartItem(
+              content: item.job.desc,
+              isActive: item.job == store.selectPart
+            ) {
               store.send(.view(.selectPartButton(selectPart: item)))
             }
           }

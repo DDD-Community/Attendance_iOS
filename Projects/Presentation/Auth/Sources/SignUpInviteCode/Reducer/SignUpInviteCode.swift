@@ -28,7 +28,7 @@ public struct SignUpInviteCode {
     var lastInviteCode: String = ""
     var verifyInviteCodeModel: VerifyCodeEntity?
 
-    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
+    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
     @Presents public var alert: AlertState<AlertAction>?
 
     var totalInviteCode: String {
@@ -43,13 +43,9 @@ public struct SignUpInviteCode {
     }
     var isNotAvailableCode: Bool = false
     
-    @Shared var userSignUp: Member
+
     
-    public init(
-      userSignUp: Member
-    ) {
-      self._userSignUp = Shared(wrappedValue: userSignUp, .inMemory("Member"))
-    }
+    public init() { }
   }
 
   @CasePathable
@@ -158,13 +154,7 @@ public struct SignUpInviteCode {
         let verifyCodeResult = await Result {
           try await onBoardingUseCase.verifyCode(code: code)
         }
-          .mapError { error -> SignUpError in
-              if let authError = error as? SignUpError {
-                  return authError
-              } else {
-                  return .unknownError(error.localizedDescription)
-              }
-          }
+          .mapError(SignUpError.from)
         return await send(.inner(.verifyInviteCodeResponse(verifyCodeResult)))
 
       }
@@ -191,10 +181,11 @@ public struct SignUpInviteCode {
       switch result {
       case .success(let data):
         state.verifyInviteCodeModel = data
-          //TODO: 차후에 수정 예정
-//        state.$userEntity.withLock{ $0.userRole = UserRole(rawValue: state.validateInviteCodeDTOModel?.data.inviteType ?? "")
-//          $0.inviteCodeId = state.validateInviteCodeDTOModel?.data.inviteCodeID ?? ""
-//        }
+          state.$userSession.withLock {
+            $0.userRole = state.verifyInviteCodeModel?.type ?? .member
+            $0.generationId = state.verifyInviteCodeModel?.generationID
+            $0.inviteCode = state.totalInviteCode
+          }
           return .send(.navigation(.presentSignUpName))
 
       case .failure(let error):

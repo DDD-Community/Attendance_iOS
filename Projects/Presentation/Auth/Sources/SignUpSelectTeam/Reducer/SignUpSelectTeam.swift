@@ -9,6 +9,7 @@ import Foundation
 
 import Core
 import Utill
+import Entity
 
 import ComposableArchitecture
 
@@ -22,7 +23,12 @@ public struct SignUpSelectTeam {
 
     var activeButton: Bool = false
     var editProfileDTO: ProfileResponseModel?
-    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
+    var selectTeam: SelectTeams? = .unknown
+    var loading: Bool = false
+    var teams: [SelectTeamEntity]? = []
+
+
+    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   }
 
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -37,21 +43,20 @@ public struct SignUpSelectTeam {
   
   @CasePathable
   public enum View {
-    case selectTeamButton(selectTeam: SelectTeam)
+    case selectTeamButton(selectTeam: SelectTeamEntity)
+    case onAppear
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
-    case editProfile
-    case editProfileManger
-    case editProfileMember
+    case getTeams
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
-    case editProfileResponse(Result<ProfileResponseModel, CustomError>)
+    case teamListResponse(Result<[SelectTeamEntity], SignUpError>)
   }
   
   // MARK: - NavigationAction
@@ -65,6 +70,7 @@ public struct SignUpSelectTeam {
   private struct SignUpSelectTeamCancel: Hashable {}
   
   @Dependency(\.signUpUseCase) var signUpUseCase
+  @Dependency(\.onBoardingUseCase) var onBoardingUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
@@ -97,15 +103,25 @@ public struct SignUpSelectTeam {
   ) -> Effect<Action> {
     switch action {
     case .selectTeamButton(let selectTeam):
-      if state.userEntity.memberTeam == selectTeam {
-        state.$userEntity.withLock { $0.memberTeam = nil}
-        state.activeButton = false
+        let selectTeam = selectTeam.teams
+
+        if state.selectTeam == selectTeam {
+          // 동일한 파트 재선택 → 해제
+          state.selectTeam = nil
+          state.$userSession.withLock { $0.selectTeam = .unknown }
+          state.activeButton = false
+          return .none
+        }
+
+        state.selectTeam = selectTeam
+          state.$userSession.withLock { $0.selectTeam = selectTeam }
+        state.activeButton = true
+  //      #logDebug("selectPart", state.userEntity.role)
         return .none
-      }
-      
-      state.$userEntity.withLock { $0.memberTeam = selectTeam }
-      state.activeButton = true
-      return .none
+
+        case .onAppear:
+          return .send(.async(.getTeams))
+
     }
   }
   
@@ -127,72 +143,19 @@ public struct SignUpSelectTeam {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-    case .editProfile:
-      return .run { [
-        userEntity = state.userEntity,
-      ]  send in
-        if userEntity.userRole == .moderator {
-          await send(.async(.editProfileManger))
-        } else {
-          await send(.async(.editProfileMember))
-        }
-      }
-      
-    case .editProfileManger:
-      return .run { [
-        userEntity = state.userEntity,
-      ] send in
-        let memberTeam = userEntity.memberTeam?.rawValue ?? ""
-        let isAdminRole = "\(userEntity.managing?.rawValue ?? "")"
-        let editProfileResult = await Result {
-          try await profileUseCase.editProfileManger(
-            name: userEntity.signUpName,
-            inviteCode: userEntity.inviteCodeId ?? "",
-            role: userEntity.role?.rawValue ?? "",
-            team: memberTeam,
-            responsibility: isAdminRole
-          )
-        }
-        
-        switch editProfileResult {
-        case .success(let profileDTOData):
-          if let profileDTOData = profileDTOData {
-            await send(.inner(.editProfileResponse(.success(profileDTOData))))
-            await send(.navigation(.presentCoreMember))
+      case .getTeams:
+        state.loading = true
+        return .run {
+          [userSession =  state.userSession]
+          send in
+          let teamResult = await Result {
+            try await onBoardingUseCase.fetchTeams(generationId: userSession.generationId ?? .zero)
           }
-          
-        case .failure(let error):
-          await send(.inner(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
+            .mapError(SignUpError.from)
+          return await send(.inner(.teamListResponse(teamResult)))
+
         }
-      }
-      .debounce(id: SignUpSelectTeamCancel(), for: 0.3, scheduler: mainQueue)
-      
-    case .editProfileMember:
-      return .run { [
-        userEntity = state.userEntity,
-      ] send in
-        let memberTeam = userEntity.memberTeam?.rawValue ?? ""
-        let editProfileResult = await Result {
-          try await profileUseCase.editProfileMember(
-            name: userEntity.signUpName,
-            inviteCode: userEntity.inviteCodeId ?? "",
-            role: userEntity.role?.rawValue ?? "",
-            team: memberTeam
-          )
-        }
-        
-        switch editProfileResult {
-        case .success(let profileDTOData):
-          if let profileDTOData = profileDTOData {
-            await send(.inner(.editProfileResponse(.success(profileDTOData))))
-            await send(.navigation(.presentMember))
-          }
-          
-        case .failure(let error):
-          await send(.inner(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
-        }
-      }
-      .debounce(id: SignUpSelectTeamCancel(), for: 0.3, scheduler: mainQueue)
+
       
     }
   }
@@ -202,15 +165,15 @@ public struct SignUpSelectTeam {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-    case .editProfileResponse(let result):
-      switch result {
-      case .success(let profileDT0):
-        state.editProfileDTO = profileDT0
-        
-      case .failure(let error):
-        #logNetwork("회원가입 프로핍 변경  에러", error.localizedDescription)
-      }
-      return .none
+      case .teamListResponse(let result):
+        switch result {
+          case .success(let data):
+            state.teams = data
+            state.loading = false
+          case .failure(let error):
+            #logError("네트워크 에러 ", error.errorDescription ?? "알 수 없음")
+        }
+        return .none
     }
   }
 }

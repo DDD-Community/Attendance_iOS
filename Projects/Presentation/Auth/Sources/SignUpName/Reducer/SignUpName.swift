@@ -9,6 +9,7 @@ import Foundation
 
 import Core
 import Utill
+import Entity
 
 import ComposableArchitecture
 
@@ -19,12 +20,13 @@ public struct SignUpName {
   @ObservableState
   public struct State: Equatable {
     public init() {}
-    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
-    
+
+    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+
     
     var isNotAvailableName: Bool = false
     var enableButton: Bool {
-      return !userEntity.signUpName.isEmpty && !isNotAvailableName
+      return !userSession.name.isEmpty && !isNotAvailableName
     }
   }
   
@@ -70,7 +72,7 @@ public struct SignUpName {
   ) -> Effect<Action> {
     switch action {
     case .checkIsAvailableName:
-      if state.userEntity.signUpName.count > 5 {
+      if state.userSession.name.count > 5 {
         state.isNotAvailableName = true
       } else {
         state.isNotAvailableName = false
@@ -82,7 +84,7 @@ public struct SignUpName {
       }
       
     case .initSignUpName:
-      state.$userEntity.withLock { $0.signUpName = "" }
+      state.$userSession.withLock { $0.name = "" }
       return .none
     }
   }

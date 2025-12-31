@@ -9,6 +9,7 @@ import Foundation
 
 import Core
 import Utill
+import Entity
 
 import ComposableArchitecture
 import TCACoordinators
@@ -19,13 +20,11 @@ public struct AuthCoordinator {
   
   @ObservableState
   public struct State: Equatable {
-    
     var routes: [Route<AuthScreen.State>]
-    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     
     public init() {
-      @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
-      self.routes = [.root(.login(.init(userEntity: userEntity)), embedInNavigationView: true)]
+      @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+      self.routes = [.root(.login(.init(userSession: userSession)), embedInNavigationView: true)]
     }
   }
   
@@ -99,7 +98,7 @@ public struct AuthCoordinator {
       
       // MARK: - 초대코드 입력
     case .routeAction(id: _, action: .login(.navigation(.presentSignUpInviteView))):
-      state.routes.push(.signUpInviteCode(.init(userSignUp: state.userSignUpMember)))
+      state.routes.push(.signUpInviteCode(.init()))
       return .none
       
     case .routeAction(id: _, action: .login(.navigation(.presentCoreMemberMain))):
