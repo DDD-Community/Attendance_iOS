@@ -21,3 +21,8 @@ extension String {
   }
 }
 
+extension Int {
+  func toDictionary(key: String) -> [String: Any] {
+    [key: self]
+  }
+}

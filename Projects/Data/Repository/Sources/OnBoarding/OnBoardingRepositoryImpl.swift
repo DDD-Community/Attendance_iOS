@@ -13,8 +13,8 @@ import Entity
 
 @preconcurrency  import AsyncMoya
 
-final public class OnBoardingRepositoryImpl:OnBoardingInterface {
-  
+final public class OnBoardingRepositoryImpl: OnBoardingInterface {
+
   private let provider: MoyaProvider<OnBoardingService>
 
   public init(
@@ -31,8 +31,13 @@ final public class OnBoardingRepositoryImpl:OnBoardingInterface {
   }
 
   public func fetchJobs() async throws -> [Entity.SelectJob] {
-    let dtoArray: [SelectJobsDTOResponse] = try await provider.request(.jobs)
-    return dtoArray.toDomain()
+    let dtoArray: SelectJobsDTO = try await provider.request(.jobs)
+    return dtoArray.data.toDomain()
+  }
+
+  public func fetchTeams(generationId: Int) async throws -> [SelectTeamEntity] {
+    let dto : SelectTeamsDTO = try await provider.request(.teams(generationId: generationId))
+    return dto.data.toDomain()
   }
 
 }
