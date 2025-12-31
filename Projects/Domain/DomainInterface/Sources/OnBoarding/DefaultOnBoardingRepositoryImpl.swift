@@ -99,6 +99,8 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
   private var lastVerifyCall: Date?
   private var fetchJobsCallCount = 0
   private var lastFetchJobsCall: Date?
+  private var fetchTeamsCallCount = 0
+  private var lastFetchTeamsCall: Date?
 
   // MARK: - Initialization
 
@@ -114,6 +116,8 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     lastVerifyCall = nil
     fetchJobsCallCount = 0
     lastFetchJobsCall = nil
+    fetchTeamsCallCount = 0
+    lastFetchTeamsCall = nil
   }
 
   public func getVerifyCallCount() -> Int {
@@ -132,12 +136,22 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     return lastFetchJobsCall
   }
 
+  public func getFetchTeamsCallCount() -> Int {
+    return fetchTeamsCallCount
+  }
+
+  public func getLastFetchTeamsCall() -> Date? {
+    return lastFetchTeamsCall
+  }
+
   public func reset() {
     configuration = .success
     verifyCallCount = 0
     lastVerifyCall = nil
     fetchJobsCallCount = 0
     lastFetchJobsCall = nil
+    fetchTeamsCallCount = 0
+    lastFetchTeamsCall = nil
   }
 
   // MARK: - OnBoardingInterface Implementation
@@ -248,6 +262,32 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     default:
       // 기본적으로 모든 직무 반환
       return mockJobs
+    }
+  }
+
+  public func fetchTeams(generationId: Int) async throws -> [SelectTeamEntity] {
+    // Track call
+    fetchTeamsCallCount += 1
+    lastFetchTeamsCall = Date()
+
+    // Apply delay
+    if configuration.delay > 0 {
+      try await Task.sleep(for: .seconds(configuration.delay))
+    }
+
+    // Configuration 기반 응답 처리
+    if !configuration.shouldSucceed, let error = configuration.error {
+      throw error
+    }
+
+    let availableTeams = SelectTeams.allCases.filter { $0 != .unknown }
+    let baseTeamId = max(generationId, 0) * 100
+
+    return availableTeams.enumerated().map { index, team in
+      SelectTeamEntity(
+        teamId: baseTeamId + index + 1,
+        teams: team
+      )
     }
   }
 }

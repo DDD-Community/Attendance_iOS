@@ -10,13 +10,14 @@ import Dependencies
 import AuthenticationServices
 @preconcurrency import Entity
 import DomainInterface
+import Sharing
 
 /// 통합 OAuth UseCase - 로그인/회원가입 플로우를 하나로 통합
 public struct UnifiedOAuthUseCase {
   @Dependency(\.authRepository) private var authRepository: AuthInterface
   @Dependency(\.appleOAuthProvider) private var appleProvider: AppleOAuthProviderInterface
   @Dependency(\.googleOAuthProvider) private var googleProvider: GoogleOAuthProviderInterface
-
+  @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   public init() {}
 }
 
@@ -54,6 +55,7 @@ public extension UnifiedOAuthUseCase {
       credential: credential,
       nonce: nonce
     )
+    self.$userSession.withLock { $0.token = payload.idToken }
     return try await authRepository.login(
       provider: .apple,
       token: payload.idToken
@@ -65,6 +67,7 @@ public extension UnifiedOAuthUseCase {
     token: String
   ) async throws -> LoginEntity {
     let processedToken = try await googleProvider.signInWithToken(token: token)
+    self.$userSession.withLock { $0.token = processedToken }
     return try await authRepository.login(
       provider: .google,
       token: processedToken

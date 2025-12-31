@@ -116,6 +116,12 @@ public enum SignUpError: Error, LocalizedError, Equatable {
 // MARK: - Convenience Methods
 
 public extension SignUpError {
+  static func from(_ error: Error) -> SignUpError {
+    if let signUpError = error as? SignUpError {
+      return signUpError
+    }
+    return .unknownError(error.localizedDescription)
+  }
 
   /// 초대 코드 관련 에러인지 확인
   var isInviteCodeError: Bool {

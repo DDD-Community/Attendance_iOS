@@ -16,7 +16,6 @@ public struct APIHeader {
   public static let contentType   = "Content-Type"
   public static let accessToken   = "Authorization"
   public static let accept        = "accept"
-  public static let xcsrftoken    = "X-CSRFTOKEN"
 
   // ← add `static` here
   @Shared(.inMemory("UserEntity"))

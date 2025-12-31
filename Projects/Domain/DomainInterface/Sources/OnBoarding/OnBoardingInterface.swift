@@ -14,6 +14,7 @@ import Entity
 public protocol OnBoardingInterface: Sendable {
   func verifyCode(code: String) async throws -> VerifyCodeEntity
   func fetchJobs() async throws -> [SelectJob]
+  func fetchTeams(generationId: Int) async throws -> [SelectTeamEntity]
 }
 
 public struct OnBoardingRepositoryDependency: DependencyKey {

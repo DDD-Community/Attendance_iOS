@@ -26,6 +26,10 @@ public struct OnBoardingUseCaseImpl: OnBoardingInterface {
     return try await repository.fetchJobs()
   }
 
+  public func fetchTeams(generationId: Int) async throws -> [SelectTeamEntity] {
+    return try await repository.fetchTeams(generationId: generationId)
+  }
+
 }
 
 
