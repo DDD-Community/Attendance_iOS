@@ -133,7 +133,7 @@ public struct SignUpPart {
       return .none
     case .presentNextStep:
         return .run { [isAdmin = state.userSession.userRole] send in
-        if isAdmin == .manger {
+        if isAdmin == .manager {
           await send(.navigation(.presentManaging))
         } else {
           await send(.navigation(.presentSelectTeam))

@@ -103,7 +103,7 @@ extension SignUpSelectTeamView {
       
       CustomButton(
         action: {
-
+          store.send(.async(.signUpUser))
         },
         title: "가입 완료",
         config: CustomButtonConfig.create(),

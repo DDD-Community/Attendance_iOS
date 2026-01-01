@@ -130,7 +130,7 @@ public struct AuthCoordinator {
     case .routeAction(id: _, action: .signUpManaging(.navigation(.presentCoreMember))):
       return .send(.navigation(.presentCoreMember))
       
-    case .routeAction(id: _, action: .signUpSelectTeam(.navigation(.presentCoreMember))):
+    case .routeAction(id: _, action: .signUpSelectTeam(.navigation(.presentManager))):
       return .send(.navigation(.presentCoreMember))
       
       // MARK: - 멤버 선택 할팀 선택

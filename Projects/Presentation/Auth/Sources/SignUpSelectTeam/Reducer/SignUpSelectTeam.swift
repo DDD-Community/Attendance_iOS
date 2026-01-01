@@ -25,7 +25,9 @@ public struct SignUpSelectTeam {
     var editProfileDTO: ProfileResponseModel?
     var selectTeam: SelectTeams? = .unknown
     var loading: Bool = false
+    var errorMessage: String?
     var teams: [SelectTeamEntity]? = []
+    var signUpUser: SignUpUser?
 
 
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
@@ -51,29 +53,32 @@ public struct SignUpSelectTeam {
   
   public enum AsyncAction: Equatable {
     case getTeams
+    case signUpUser
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
     case teamListResponse(Result<[SelectTeamEntity], SignUpError>)
+    case signUpUserResponse(Result<SignUpUser, SignUpError>)
   }
   
   // MARK: - NavigationAction
   
   public enum NavigationAction: Equatable {
     case presentMember
-    case presentCoreMember
+    case presentManager
   }
   
-  
-  private struct SignUpSelectTeamCancel: Hashable {}
+  nonisolated enum CancelID: Hashable {
+    case selectTeam
+    case signUpUser
+  }
+
   
   @Dependency(\.signUpUseCase) var signUpUseCase
   @Dependency(\.onBoardingUseCase) var onBoardingUseCase
   @Dependency(\.continuousClock) var clock
-  @Dependency(\.profileUseCase) var profileUseCase
-  @Dependency(\.mainQueue) var mainQueue
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
@@ -102,19 +107,27 @@ public struct SignUpSelectTeam {
     action: View
   ) -> Effect<Action> {
     switch action {
-    case .selectTeamButton(let selectTeam):
-        let selectTeam = selectTeam.teams
+    case .selectTeamButton(let selectTeams):
+        let selectTeam = selectTeams.teams
+        let teamId = selectTeams.teamId
 
         if state.selectTeam == selectTeam {
           // 동일한 파트 재선택 → 해제
           state.selectTeam = nil
-          state.$userSession.withLock { $0.selectTeam = .unknown }
+          state.$userSession.withLock {
+            $0.selectTeam = .unknown
+            $0.selectTeamId = nil
+          }
           state.activeButton = false
           return .none
         }
 
         state.selectTeam = selectTeam
-          state.$userSession.withLock { $0.selectTeam = selectTeam }
+        state.$userSession.withLock {
+          $0.selectTeam = selectTeam
+          $0.selectTeamId = teamId
+        }
+
         state.activeButton = true
   //      #logDebug("selectPart", state.userEntity.role)
         return .none
@@ -133,7 +146,7 @@ public struct SignUpSelectTeam {
     case .presentMember:
       return .none
       
-    case .presentCoreMember:
+    case .presentManager:
       return .none
     }
   }
@@ -149,11 +162,23 @@ public struct SignUpSelectTeam {
           [userSession =  state.userSession]
           send in
           let teamResult = await Result {
-            try await onBoardingUseCase.fetchTeams(generationId: userSession.generationId ?? .zero)
+            try await onBoardingUseCase.fetchTeams(generationId: userSession.generationId)
           }
             .mapError(SignUpError.from)
           return await send(.inner(.teamListResponse(teamResult)))
 
+        }
+        .cancellable(id: CancelID.selectTeam, cancelInFlight: true)
+
+      case .signUpUser:
+        return .run { [
+          userSession = state.userSession
+        ] send in
+          let signUpUserResult = await Result {
+            return try await signUpUseCase.registerUser(userSession: userSession)
+          }
+          .mapError(SignUpError.from)
+          return await send(.inner(.signUpUserResponse(signUpUserResult)))
         }
 
       
@@ -174,6 +199,23 @@ public struct SignUpSelectTeam {
             #logError("네트워크 에러 ", error.errorDescription ?? "알 수 없음")
         }
         return .none
+
+      case .signUpUserResponse(let result):
+        switch result {
+          case .success(let data):
+            state.signUpUser = data
+
+            if state.userSession.userRole == .manager {
+              return .send(.navigation(.presentManager))
+            } else {
+              return .send(.navigation(.presentMember))
+            }
+
+          case .failure(let error):
+            state.errorMessage = error.errorDescription
+            return .none
+        }
+
     }
   }
 }

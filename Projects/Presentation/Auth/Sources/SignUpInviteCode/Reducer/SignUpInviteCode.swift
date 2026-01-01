@@ -183,7 +183,7 @@ public struct SignUpInviteCode {
         state.verifyInviteCodeModel = data
           state.$userSession.withLock {
             $0.userRole = state.verifyInviteCodeModel?.type ?? .member
-            $0.generationId = state.verifyInviteCodeModel?.generationID
+            $0.generationId = state.verifyInviteCodeModel?.generationID ?? .zero
             $0.inviteCode = state.totalInviteCode
           }
           return .send(.navigation(.presentSignUpName))
