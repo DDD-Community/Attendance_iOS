@@ -15,6 +15,7 @@ public enum OnBoardingService {
   case verifyCode(code : String)
   case jobs
   case teams(generationId: Int)
+  case mangerRole
 }
 
 
@@ -35,29 +36,32 @@ extension OnBoardingService: BaseTargetType {
 
       case .teams:
         return OnBoardingAPI.teams.description
+
+      case .mangerRole:
+        return OnBoardingAPI.mangerRole.description
     }
   }
-  
+
   public var error: [Int : AsyncMoya.NetworkError]? {
     return nil
   }
-  
+
   public var parameters: [String : Any]? {
     switch self {
       case .verifyCode(let code):
         return code.toDictionary(key: "code")
 
-      case .jobs:
+      case .jobs, .mangerRole:
         return nil
 
       case .teams(let generationId):
         return generationId.toDictionary(key: "generationId")
     }
   }
-  
+
   public var method: Moya.Method {
     switch self {
-      case .verifyCode, .jobs, .teams:
+      case .verifyCode, .jobs, .teams, .mangerRole:
         return .get
     }
   }

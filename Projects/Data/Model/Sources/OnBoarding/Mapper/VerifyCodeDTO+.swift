@@ -13,7 +13,7 @@ public extension VerifyCodeDTO {
   func toDomain() -> VerifyCodeEntity {
     return VerifyCodeEntity(
       generationID: self.generationID,
-      type: Staff(rawValue: self.type) ?? .member
+      type: Staff.from(apiKey: self.type) ?? .member
     )
   }
 }
