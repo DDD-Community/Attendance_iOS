@@ -68,7 +68,7 @@ public struct QRCode {
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
 
-  @Dependency(QRCodeUseCaseImpl.self) var qrCodeUseCase
+  @Dependency(\.qrCodeUseCase) var qrCodeUseCase
 
   public var body: some ReducerOf<Self> {
     BindingReducer()

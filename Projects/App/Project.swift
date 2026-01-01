@@ -18,7 +18,8 @@ let project = Project.makeAppModule(
   dependencies: [
     .Shared(implements: .Shareds),
     .Core(implements: .Core),
-    .Presentation(implements: .Presentation)
+    .Presentation(implements: .Presentation),
+    .Data(implements: .Repository)
   ],
   sources: ["Sources/**"],
   resources: ["Resources/**"],

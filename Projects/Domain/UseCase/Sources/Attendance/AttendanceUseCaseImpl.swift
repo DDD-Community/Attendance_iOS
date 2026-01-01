@@ -7,19 +7,13 @@
 
 import DomainInterface
 import Model
-import Repository
 
-import ComposableArchitecture
 import WeaveDI
 
 public struct AttendanceUseCaseImpl: AttendanceInterface {
-  private let repository: AttendanceInterface
+  @Dependency(\.attendanceRepository) var repository
 
-  public init(
-    repository: AttendanceInterface
-  ) {
-    self.repository = repository
-  }
+  public init() { }
 
   // MARK: - 출석 현황 카운트 api
   public func attendanceCount(
@@ -71,16 +65,13 @@ public struct AttendanceUseCaseImpl: AttendanceInterface {
 }
 
 extension AttendanceUseCaseImpl: DependencyKey {
-  static public var liveValue: AttendanceInterface = {
-    let repository = UnifiedDI.register(AttendanceInterface.self) {
-      AttendanceRepositoryImpl()
-    }
-    return AttendanceUseCaseImpl(repository: repository)
-  }()
+  static public var liveValue: AttendanceInterface = AttendanceUseCaseImpl()
+  static public var testValue:  AttendanceInterface = AttendanceUseCaseImpl()
+  static public var previewValue: AttendanceInterface = liveValue
 }
 
 public extension DependencyValues {
-  var sattendanceUseCase: AttendanceInterface {
+  var attendanceUseCase: AttendanceInterface {
     get { self[AttendanceUseCaseImpl.self] }
     set { self[AttendanceUseCaseImpl.self] = newValue }
   }

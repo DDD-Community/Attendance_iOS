@@ -43,6 +43,7 @@ public extension InfoPlist {
       .setCFBundleDevelopmentRegion()
       .setGoogleReversedClientID("${REVERSED_CLIENT_ID}")
       .setGoogleClientID("${GOOGLE_CLIENT_ID}")
+      .setGoogleClientiOSID("${GOOGLE_IOS_CLIENT_ID}")
       .setGIDClientID("${GOOGLE_CLIENT_ID}")
       .setBaseURL("$(BASE_URL)")
   )

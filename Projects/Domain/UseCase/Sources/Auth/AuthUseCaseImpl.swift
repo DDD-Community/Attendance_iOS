@@ -7,39 +7,28 @@
 
 import DomainInterface
 import Model
-import Repository
+import Entity
 
-import ComposableArchitecture
 import WeaveDI
 
 public struct AuthUseCaseImpl: AuthInterface {
-  private let repository: AuthInterface
+  @Dependency(\.authRepository) var authRepository
 
-  public init(
-    repository: AuthInterface
-  ) {
-    self.repository = repository
-  }
-
+  public init() {}
 
   // MARK: - API로 통해서 로그인
-  public func loginUser(
-    email: String
-  ) async throws -> LoginModel? {
-    return try await repository
-      .loginUser(
-        email: email
-      )
+  public func login(
+    provider: Entity.SocialType,
+    token: String
+  ) async throws -> Entity.LoginEntity {
+    return try await authRepository.login(provider: provider, token: token)
   }
 }
 
 extension AuthUseCaseImpl: DependencyKey {
-  static public var liveValue: AuthInterface = {
-    let authRepository = UnifiedDI.register(AuthInterface.self) {
-      AuthRepositoryImpl()
-    }
-    return AuthUseCaseImpl(repository: authRepository)
-  }()
+  static public var liveValue: AuthInterface =  AuthUseCaseImpl()
+  static public var testValue:   AuthInterface =  AuthUseCaseImpl()
+  static public var previewValue: AuthInterface = liveValue
 }
 
 public extension DependencyValues {
@@ -48,4 +37,3 @@ public extension DependencyValues {
     set { self[AuthUseCaseImpl.self] = newValue }
   }
 }
-

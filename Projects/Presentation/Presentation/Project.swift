@@ -9,8 +9,6 @@ let project = Project.makeModule(
   product: Project.Environment.presentationProduct,
   settings:  .settings(),
   dependencies: [
-    .Shared(implements: .Shareds),
-    .Core(implements: .Core),
     .Presentation(implements: .Auth),
     .Presentation(implements: .Splash),
     .Presentation(implements: .Management),

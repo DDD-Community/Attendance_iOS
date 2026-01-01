@@ -7,20 +7,13 @@
 
 import DomainInterface
 import Model
-import Repository
 
-import ComposableArchitecture
 import WeaveDI
 
 public struct SignUpUseCaseImpl: SignUpInterface {
+  @Dependency(\.signUpRepository) var repository
 
-  private let repository: SignUpInterface
-
-  public init(
-    repository: SignUpInterface
-  ) {
-    self.repository = repository
-  }
+  public init() { }
 
   // MARK: - 회원가입 API
   public func registerAccount(
@@ -47,12 +40,9 @@ public struct SignUpUseCaseImpl: SignUpInterface {
 }
 
 extension SignUpUseCaseImpl: DependencyKey {
-  static public var liveValue: SignUpInterface = {
-    let repository = UnifiedDI.register(SignUpInterface.self) {
-      SignUpRepositoryImpl()
-    }
-    return SignUpUseCaseImpl(repository: repository)
-  }()
+  static public var liveValue: SignUpInterface = SignUpUseCaseImpl()
+  static public var testValue: SignUpInterface = SignUpUseCaseImpl()
+  static public var previewValue: SignUpInterface = liveValue
 }
 
 public extension DependencyValues {

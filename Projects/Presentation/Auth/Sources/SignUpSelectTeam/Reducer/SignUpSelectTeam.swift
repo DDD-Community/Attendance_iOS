@@ -64,9 +64,9 @@ public struct SignUpSelectTeam {
   
   private struct SignUpSelectTeamCancel: Hashable {}
   
-  @Dependency(SignUpUseCaseImpl.self) var signUpUseCase
+  @Dependency(\.signUpUseCase) var signUpUseCase
   @Dependency(\.continuousClock) var clock
-  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
+  @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
   
   public var body: some ReducerOf<Self> {

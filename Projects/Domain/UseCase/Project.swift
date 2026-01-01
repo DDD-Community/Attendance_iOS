@@ -11,9 +11,7 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings:  .settings(),
   dependencies: [
-    .SPM.composableArchitecture,
-    .SPM.weaveDI,
-    .Data(implements: .Repository),
+    .Domain(implements: .DomainInterface)
     
   ],
   sources: ["Sources/**"],

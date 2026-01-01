@@ -11,6 +11,7 @@ import Core
 import Shareds
 
 import ComposableArchitecture
+import LogMacro
 import FirebaseAuth
 
 @Reducer
@@ -20,8 +21,8 @@ public struct AttendanceCheck {
   @ObservableState
   public struct State: Equatable {
     
-    var selectAttandanceDate: Date = .now
-    var selectAttandanceDateMonth: Date = .now
+    var selectAttendanceDate: Date = .now
+    var selectAttendanceDateMonth: Date = .now
     var selectPart: SelectTeam? = .web1
     
     var dividerWidths: [SelectTeam: CGFloat] = [:]
@@ -36,7 +37,7 @@ public struct AttendanceCheck {
     
     var attendanceCountDTOModel: AttendanceCountResponseModel?
     var attendCheckModel: AttendanceListModel?
-    var sceheduleAttandanceModel: ScheduleModel?
+    var scheduleModelAttendanceModel: ScheduleModel?
 
     
     public init() {
@@ -57,6 +58,7 @@ public struct AttendanceCheck {
   @Reducer(state: .equatable)
   public enum Destination {
     case selectDate(CustomDate)
+    case scheduleModal(ScheduleModal)
   }
   
   // MARK: - ViewAction
@@ -67,6 +69,7 @@ public struct AttendanceCheck {
     case swipePrevious
     case appearSelectDate
     case closeModal
+    case tapSelectDate
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
@@ -74,7 +77,7 @@ public struct AttendanceCheck {
     case onAppear
     case fetchAttendanceCount
     case filterAttendanceCount(startDate: String)
-    case fetchScheduleAttedanceCheck
+    case fetchScheduleAttendanceCheck
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -91,38 +94,60 @@ public struct AttendanceCheck {
   
   private struct AttendanceCheckCancel: Hashable {}
   
-  @Dependency(AttendanceUseCaseImpl.self) var attendanceUseCase
-  @Dependency(ScheduleUseCaseImpl.self) var scheduleUseCase
+  @Dependency(\.attendanceUseCase) var attendanceUseCase
+  @Dependency(\.scheduleUseCase) var scheduleUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
+
     Reduce { state, action in
       switch action {
-      case .binding(_):
+      case .binding:
         return .none
-        
-      case .destination(_):
-        return .none
-        
+
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
-        
+
       case .async(let asyncAction):
         return handleAsyncAction(state: &state, action: asyncAction)
-        
+
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
-        
+
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
+
+        case .destination(.presented(.scheduleModal(.navigation(.selectScheduleCompleted(let selectedSchedule))))):
+          #logDebug("스케줄 선택됨", "선택된 스케줄: \(selectedSchedule.title), 시작 시간: \(selectedSchedule.startTime)")
+
+          if let selectedDate = selectedSchedule.startTime.toDate() {
+            state.selectAttendanceDate = selectedDate
+            #logDebug("날짜 업데이트됨", "새로운 날짜: \(selectedDate)")
+          } else {
+            #logError("날짜 변환 실패", "ISO 문자열: \(selectedSchedule.startTime)")
+          }
+
+          state.destination = nil
+
+          // 모달이 완전히 닫힌 후 API 호출
+          return .run { send in
+            try await clock.sleep(for: .milliseconds(100))
+            await send(.async(.fetchAttendanceCount))
+            await send(.async(.fetchScheduleAttendanceCheck))
+          }
+
+
+
+      case .destination:
+        return .none
       }
     }
     .ifLet(\.$destination, action: \.destination)
-    .onChange(of: \.sceheduleAttandanceModel) { oldValue, newValue in
-      Reduce { state, action in
-        state.sceheduleAttandanceModel = newValue
+    .onChange(of: \.scheduleModelAttendanceModel) { _, newValue in
+      Reduce { state, _ in
+        state.scheduleModelAttendanceModel = newValue
         return .none
       }
     }
@@ -160,7 +185,12 @@ public struct AttendanceCheck {
     case .appearSelectDate:
       state.destination = .selectDate(.init())
       return .none
-      
+
+      case .tapSelectDate:
+        #logDebug("스케줄 모달 열기", "ScheduleModal destination 설정")
+        state.destination = .scheduleModal(.init())
+        return .none
+
     case .closeModal:
       state.destination = nil
       return .none
@@ -175,26 +205,32 @@ public struct AttendanceCheck {
     case .onAppear:
       return .concatenate(
         .run{  await $0(.async(.fetchAttendanceCount)) },
-        .run { await $0(.async(.fetchScheduleAttedanceCheck)) }
+        .run { await $0(.async(.fetchScheduleAttendanceCheck)) }
       )
       .debounce(id: AttendanceCheckCancel(), for: 0.3, scheduler: mainQueue)
       
     case .fetchAttendanceCount:
-      return .run { [nowDate = state.selectAttandanceDate] send in
+      print("🔵 fetchAttendanceCount 액션 실행됨")
+      return .run { [nowDate = state.selectAttendanceDate] send in
+        let formattedDate = nowDate.formattedDates()
+        print("🔵 API 호출 날짜: \(formattedDate)")
+
         let attendanceCountResult = await Result {
-          try await attendanceUseCase.attendanceCount(startDate: nowDate.formattedDates())
+          try await attendanceUseCase.attendanceCount(startDate: formattedDate)
         }
-        
+
         switch attendanceCountResult {
         case .success(let attendanceCountDTOData):
+          print("🔵 출석 카운트 API 성공")
           if let attendanceCountDTOData = attendanceCountDTOData {
             await send(.inner(.attendanceCountResponse(.success(attendanceCountDTOData))))
           }
-          
+
         case .failure(let error):
+          print("🔴 출석 카운트 API 실패: \(error.localizedDescription)")
           await send(.inner(.attendanceCountResponse(.failure(.encodingError(error.localizedDescription)))))
         }
-        
+
       }
       
     case .filterAttendanceCount(let startDate):
@@ -218,8 +254,8 @@ public struct AttendanceCheck {
       }
       .debounce(id: AttendanceCheckCancel(), for: 0.3, scheduler: mainQueue)
 
-    case .fetchScheduleAttedanceCheck:
-      return .run { [startDate = state.selectAttandanceDate] send in
+    case .fetchScheduleAttendanceCheck:
+      return .run { [startDate = state.selectAttendanceDate] send in
         let attendanceCheckResult = await Result {
           try await scheduleUseCase.filtergetSchedules(startDate: startDate.formattedDates())
         }
@@ -243,7 +279,7 @@ public struct AttendanceCheck {
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
-    
+    return .none
   }
   
   private func handleInnerAction(
@@ -254,7 +290,14 @@ public struct AttendanceCheck {
     case .attendanceCountResponse(let result):
       switch result {
       case .success(let attendanceCountDTO):
+        // DTO 모델 업데이트
         state.attendanceCountDTOModel = attendanceCountDTO
+
+        // 개별 카운트도 명시적으로 업데이트 (UI 새로고침 보장)
+        state.attendanceCount = attendanceCountDTO.attendanceCount
+        state.lateCount = attendanceCountDTO.lateCount
+        state.absentCount = attendanceCountDTO.absentCount
+
       case .failure(let error):
         #logNetwork("출석 카운트 조회 에러", error.localizedDescription)
       }
@@ -282,12 +325,12 @@ public struct AttendanceCheck {
           )
         }
 
-        state.sceheduleAttandanceModel = ScheduleModel(
+        state.scheduleModelAttendanceModel = ScheduleModel(
           code: scheduleAttendanceData.code,
           message: scheduleAttendanceData.message,
           data: sortedData
         )
-        let filtered: [AttendancesSummary] = state.sceheduleAttandanceModel?.data.flatMap { schedule in
+        let filtered: [AttendancesSummary] = state.scheduleModelAttendanceModel?.data.flatMap { schedule in
           schedule.attendancesSummary.filter {
             $0.profile.team.rawValue == state.selectPart?.rawValue
           }
@@ -301,7 +344,7 @@ public struct AttendanceCheck {
       return .none
 
     case .fillterAttendance(let team):
-      let filteredSchedules = state.sceheduleAttandanceModel?.data.map { schedule in
+      let filteredSchedules = state.scheduleModelAttendanceModel?.data.map { schedule in
           let filteredAttendances = schedule.attendancesSummary.filter { item in
             guard let teamEnum = SelectTeam(rawValue: item.profile.team.rawValue) else { return false }
             return teamEnum == team

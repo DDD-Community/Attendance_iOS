@@ -15,29 +15,51 @@ struct AppView: View {
   @Bindable var store: StoreOf<AppReducer>
 
   var body: some View {
-    SwitchStore(store) { state in
-      switch state {
-      case .splash:
-        if let store = store.scope(state: \.splash, action: \.view.splash) {
-          SplashView(store: store)
-        }
+    ZStack(alignment: .topLeading) {
+      Color.backGroundPrimary
+        .edgesIgnoringSafeArea(.all)
 
-      case .auth:
-        if let store = store.scope(state: \.auth, action: \.view.auth) {
-          AuthCoordinatorView(store: store)
-        }
+      SwitchStore(store) { state in
+        switch state {
+        case .splash:
+          if let splashStore = store.scope(state: \.splash, action: \.view.splash) {
+            SplashView(store: splashStore)
+              .transition(.opacity.combined(with: .scale(scale: 0.98)))
+          }
 
-      case .coreMember:
-        if let store = store.scope(state: \.coreMember, action: \.view.coreMember) {
-          StaffCoordinatorView(store: store)
-        }
+        case .auth:
+          if let authStore = store.scope(state: \.auth, action: \.view.auth) {
+            AuthCoordinatorView(store: authStore)
+              .transition(.asymmetric(
+                insertion: .move(edge: .trailing),
+                removal: .move(edge: .leading)
+              ))
+          }
 
-      case .member:
-        if let store = store.scope(state: \.member, action: \.view.member) {
-          MemberCoordinatorView(store: store)
+        case .coreMember:
+          if let coreMemberStore = store.scope(state: \.coreMember, action: \.view.coreMember) {
+            StaffCoordinatorView(store: coreMemberStore)
+              .transition(.asymmetric(
+                insertion: .move(edge: .trailing),
+                removal: .move(edge: .leading)
+              ))
+          }
+
+        case .member:
+          if let memberStore = store.scope(state: \.member, action: \.view.member) {
+            MemberCoordinatorView(store: memberStore)
+              .transition(.asymmetric(
+                insertion: .move(edge: .trailing),
+                removal: .move(edge: .leading)
+              ))
+          }
         }
       }
     }
+    .animation(
+      .spring(response: 0.52, dampingFraction: 0.94, blendDuration: 0.14),
+      value: store.state.screenType
+    )
   }
 }
 

@@ -12,7 +12,8 @@ let project = Project.makeModule(
   settings:  .settings(),
   dependencies: [
     .SPM.firebaseAuth,
-    .SPM.firebaseFirestore
+    .SPM.firebaseFirestore,
+    .Domain(implements: .Entity)
   ],
   sources: ["Sources/**"]
 )

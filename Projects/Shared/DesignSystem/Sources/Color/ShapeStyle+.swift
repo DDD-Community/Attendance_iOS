@@ -24,6 +24,7 @@ public extension ShapeStyle where Self == Color {
   // MARK: - Static Background
   
   static var backGroundPrimary: Color { .init(hex: "0C0E0F") }
+  static var backGroundSecondary: Color { .init(hex: "F2F2F7") }
   static var backgroundInverse: Color { .init(hex: "FFFFFF") }
   
   // MARK: - Static Border
