@@ -12,7 +12,8 @@ let project = Project.makeModule(
   dependencies: [
     .Data(implements: .Model),
     .Shared(implements: .Utill),
-    .Shared(implements: .ThirdParty)
+    .Shared(implements: .ThirdParty),
+    .SPM.fsCalendar
   ],
   sources: ["Sources/**"],
   resources: ["Resources/**", "FontAsset/**"]

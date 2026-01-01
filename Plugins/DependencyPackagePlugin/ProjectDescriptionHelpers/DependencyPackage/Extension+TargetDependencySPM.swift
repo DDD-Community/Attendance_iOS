@@ -31,5 +31,7 @@ public extension TargetDependency.SPM {
   static let firebaseCrashlytics = TargetDependency.external(name: "FirebaseCrashlytics", condition: .none)
   static let firebaseRemoteConfig = TargetDependency.external(name: "FirebaseRemoteConfig", condition: .none)
   static let firebaseMessaging = TargetDependency.external(name: "FirebaseMessaging", condition: .none)
+  static let firebaseCore = TargetDependency.external(name: "FirebaseCore", condition: .none)
+  static let googleUtilities = TargetDependency.external(name: "GoogleUtilities", condition: .none)
 
 }

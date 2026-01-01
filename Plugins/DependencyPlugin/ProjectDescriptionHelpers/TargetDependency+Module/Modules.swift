@@ -86,6 +86,7 @@ public extension ModulePath {
 
 
     public static let name: String = "Domain"
+      case Entity
   }
 }
 

@@ -7,49 +7,38 @@
 
 import Foundation
 
-import WeaveDI
+import DomainInterface
+import Repository
 import Core
 
-extension WeaveDI.Container {
-  private static let register = RegisterModule()
+import ComposableArchitecture
+import WeaveDI
+import Auth
 
-  /// 📦 Repository 등록
-  static func registerRepositories() async {
-    let repositories = [
-      register.authRepositoryImplModule(),
-      register.oAuthRepositoryImplModule(),
-      register.qrCodeRepositoryImplModule(),
-      register.signUpRepositoryImplModoule(),
-      register.profileRepositoryImplModule(),
-      register.scheduleRepositoryImplModule(),
-      register.attendanceRepositoryImplModule()
-    ]
+/// 🚀 **앱 전역 DI 관리자**
+public class AppDIManager: @unchecked Sendable {
+  public static let shared = AppDIManager()
 
-    await repositories.asyncForEach { module in
-      await module.register()
-    }
-  }
+  private init() {}
 
-  // 차후에 di 등록 여기에서 처리
-  static func registerDi() async {
-  }
+  /// 🎯 기본 의존성들을 등록
+  public func registerDefaultDependencies() async {
+    // 🏗️ 1. WeaveDI.builder 패턴으로 실제 구현체들 등록
+    WeaveDI.builder
+      // MARK: -  로그인 관련
+      .register { AuthRepositoryImpl() as AuthInterface }
+      .register { GoogleOAuthRepositoryImpl() as GoogleOAuthInterface }
+      .register { AppleLoginRepositoryImpl() as AppleAuthRequestInterface }
+      .register { AppleOAuthRepositoryImpl() as AppleOAuthInterface }
+      .register { AppleOAuthProvider() as AppleOAuthProviderInterface }
+      .register { GoogleOAuthProvider() as GoogleOAuthProviderInterface }
 
-  /// 🔧 UseCase 등록
-  static func registerUseCases() async {
-
-    let useCases = [
-      register.authUseCaseImplModule(),
-      register.oAuthUseCaseImplModule(),
-      register.qrCodeUseCaseImplModule(),
-      register.signUpUseCaseImplModoule(),
-      register.profileUseCaseImplModule(),
-      register.scheduleUseCaseImplModule(),
-      register.attendanceUseCaseImplModule()
-      // 추가 UseCase들...
-    ]
-
-    await useCases.asyncForEach { module in
-      await module.register()
-    }
+      .register { SignUpRepositoryImpl() as SignUpInterface }
+      .register { AttendanceRepositoryImpl() as AttendanceInterface }
+      .register { ProfileRepositoryImpl() as ProfileInterface }
+      .register { ScheduleRepositoryImpl() as ScheduleInterface }
+      .register { QRCodeRepositoryImpl() as QRCodeInterface }
+    
+      .configure()
   }
 }

@@ -88,12 +88,12 @@ public extension Project {
     var targets: [Target] = [appTarget, appDevTarget, appStageTarget, appProdTarget]
 
     if hasTests {
-      let appTestTarget : Target = .target(
-        name: "\(name)Tests",
-        destinations: destinations,
-        product: .unitTests,
-        bundleId: "\(bundleId).\(name)Tests",
-        deploymentTargets: deploymentTarget,
+        let appTestTarget : Target = .target(
+          name: "\(name)Tests",
+          destinations: destinations,
+          product: .unitTests,
+          bundleId: "\(bundleId).\(name)Tests",
+          deploymentTargets: deploymentTarget,
         infoPlist: .default,
         sources: ["Tests/Sources/**"],
         dependencies: [.target(name: name)]

@@ -83,8 +83,8 @@ public struct ProfileReducer {
   
   fileprivate struct MangerProfileCancel: Hashable {}
   
-  @Dependency(AuthUseCaseImpl.self) var authUseCase
-  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
+  @Dependency(\.authUseCase) var authUseCase
+  @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.continuousClock) var clock
   

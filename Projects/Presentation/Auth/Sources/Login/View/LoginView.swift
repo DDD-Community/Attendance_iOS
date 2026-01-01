@@ -9,6 +9,7 @@ import AuthenticationServices
 import SwiftUI
 
 import DesignSystem
+import Entity
 
 import ComposableArchitecture
 
@@ -33,6 +34,7 @@ public struct LoginView: View {
         socialLoginButton()
       }
     }
+    .toastOverlay()
   }
 }
 

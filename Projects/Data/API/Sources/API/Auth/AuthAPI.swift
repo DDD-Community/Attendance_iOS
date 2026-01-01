@@ -15,7 +15,7 @@ public enum AuthAPI: String, CaseIterable {
   public var authDescription: String {
     switch self {
     case .login:
-      return "token/email/"
+      return "login"
       
     case .sessionToJwt:
       return "session-to-jwt/"

@@ -64,8 +64,8 @@ public final actor AuthInterceptor: RequestInterceptor {
       case 400, 401:
         Log.debug("401 Unauthorized detected, attempting to refresh token...")
         Task {
-          let retryResult = await AuthAPIManger.shared.getRefeshToken()
-          completion(retryResult)
+//          let retryResult = await AuthAPIManger.shared.getRefeshToken()
+//          completion(retryResult)
         }
       default:
         Log.debug("Status code is not 401, not retrying.")

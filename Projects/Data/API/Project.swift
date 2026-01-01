@@ -10,7 +10,7 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings:  .settings(),
   dependencies: [
-    .SPM.asyncMoya
+    .Network(implements: .ThirdPartys)
   ],
   sources: ["Sources/**"],
   infoPlist: .moduleInfoPlist

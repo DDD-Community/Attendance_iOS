@@ -7,19 +7,13 @@
 
 import DomainInterface
 import Model
-import Repository
 
-import ComposableArchitecture
 import WeaveDI
 
 public struct ScheduleUseCaseImpl: ScheduleInterface {
-  private let repository: ScheduleInterface
+  @Dependency(\.scheduleRepository) var repository
 
-  public init(
-    repository: ScheduleInterface
-  ) {
-    self.repository = repository
-  }
+  public init() { }
 
   // MARK: - 스케줄 조회
   public func getSchedules() async throws -> ScheduleModel? {
@@ -36,12 +30,9 @@ public struct ScheduleUseCaseImpl: ScheduleInterface {
 
 
 extension ScheduleUseCaseImpl: DependencyKey {
-  static public var liveValue: ScheduleInterface = {
-    let repository = UnifiedDI.register(ScheduleInterface.self) {
-      ScheduleRepositoryImpl()
-    }
-    return ScheduleUseCaseImpl(repository: repository)
-  }()
+  static public var liveValue: ScheduleInterface = ScheduleUseCaseImpl()
+  static public var testValue: ScheduleInterface = ScheduleUseCaseImpl()
+  static public var previewValue: ScheduleInterface = liveValue
 }
 
 public extension DependencyValues {

@@ -4,22 +4,15 @@
 //
 //  Created by Wonji Suh  on 7/23/25.
 //
-import WeaveDI
 import DomainInterface
 import Model
-import Repository
 
-import ComposableArchitecture
+import WeaveDI
 
 public struct ProfileUseCaseImpl: ProfileInterface {
-  private let repository: ProfileInterface
+  @Dependency(\.profileRepository) var repository
 
-  public init(
-    repository: ProfileInterface
-  ) {
-    self.repository = repository
-  }
-
+  public init() { }
   // MARK: - 프로필  수정
   public func editProfileManger(
     name: String,
@@ -73,12 +66,9 @@ public struct ProfileUseCaseImpl: ProfileInterface {
 }
 
 extension ProfileUseCaseImpl: DependencyKey {
-  static public var liveValue: ProfileInterface = {
-    let repository = UnifiedDI.register(ProfileInterface.self) {
-      ProfileRepositoryImpl()
-    }
-    return ProfileUseCaseImpl(repository: repository)
-  }()
+  static public var liveValue: ProfileInterface = ProfileUseCaseImpl()
+  static public var testValue: ProfileInterface = ProfileUseCaseImpl()
+  static public var previewValue: ProfileInterface = liveValue
 }
 
 public extension DependencyValues {

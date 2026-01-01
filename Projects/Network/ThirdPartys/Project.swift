@@ -11,8 +11,6 @@ let project = Project.makeModule(
   settings:  .settings(),
   dependencies: [
     .SPM.asyncMoya,
-    .SPM.firebaseFirestore,
-    .Network(implements: .ThirdPartys)
   ],
   sources: ["Sources/**"]
 )

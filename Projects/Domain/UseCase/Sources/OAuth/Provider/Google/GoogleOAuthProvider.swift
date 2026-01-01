@@ -1,0 +1,26 @@
+//
+//  GoogleOAuthProvider.swift
+//  UseCase
+//
+//  Created by Wonji Suh  on 12/29/25.
+//
+
+import Foundation
+import Dependencies
+import LogMacro
+@preconcurrency import Entity
+import DomainInterface
+
+public final class GoogleOAuthProvider: GoogleOAuthProviderInterface, @unchecked Sendable {
+    @Dependency(\.googleOAuthRepository) private var googleRepository
+
+    public init() {}
+
+    public func signInWithToken(
+        token: String
+    ) async throws -> String {
+        Log.info("Starting Google OAuth flow")
+        let payload = try await googleRepository.signIn()
+        return payload.idToken
+    }
+}

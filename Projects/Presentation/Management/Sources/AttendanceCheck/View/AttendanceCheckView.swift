@@ -16,14 +16,13 @@ struct AttendanceCheckView: View {
 
   var body: some View{
     VStack {
-      selectAttandanceDate()
+      selectAttendanceDate()
 
-      attandanceStatusView()
+      attendanceStatusView()
 
       selectPartType()
 
-
-      selectPartAttandanceStatus()
+      selectPartAttendanceStatus()
     }
     .onAppear {
       store.send(.async(.onAppear))
@@ -33,17 +32,12 @@ struct AttendanceCheckView: View {
       store.selectPart = newValue
       store.send(.inner(.fillterAttendance(team: newValue)))
     }
+    .sheet(item: $store.scope(state: \.destination?.scheduleModal, action: \.destination.scheduleModal)) { scheduleModalStore in
+      ScheduleModalView(store: scheduleModalStore)
+        .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
+        .presentationCornerRadius(20)
+        .presentationDragIndicator(.hidden)
 
-
-
-    .sheet(item: $store.scope(state: \.destination?.selectDate, action: \.destination.selectDate)) { selectDateStore in
-      CustomDateView(store: selectDateStore, selectDate: $store.selectAttandanceDate) {
-        store.send(.async(.fetchScheduleAttedanceCheck))
-        store.send(.async(.filterAttendanceCount(startDate: store.selectAttandanceDate.formattedDates())))
-      }
-      .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
-      .presentationCornerRadius(20)
-      .presentationDragIndicator(.hidden)
     }
   }
 }
@@ -52,7 +46,7 @@ struct AttendanceCheckView: View {
 extension AttendanceCheckView {
 
   @ViewBuilder
-  fileprivate func selectAttandanceDate() -> some View {
+  fileprivate func selectAttendanceDate() -> some View {
     LazyVStack {
       Spacer()
         .frame(height: 24)
@@ -64,21 +58,21 @@ extension AttendanceCheckView {
         Spacer()
           .frame(width: 4)
 
-        Text("\(store.selectAttandanceDate.formattedDateTimeText(date: store.selectAttandanceDate))")
+        Text(store.selectAttendanceDate.formattedDateTimeText(date: store.selectAttendanceDate))
           .pretendardCustomFont(textStyle: .body1NormalMedium)
           .foregroundStyle(.staticWhite)
 
         Spacer()
       }
       .onTapGesture {
-        store.send(.view(.appearSelectDate))
+        store.send(.view(.tapSelectDate))
       }
     }
     .padding(.horizontal, 24)
   }
 
   @ViewBuilder
-  fileprivate func attandanceStatusView() -> some View {
+  fileprivate func attendanceStatusView() -> some View {
     let attendanceCountDTOData = store.attendanceCountDTOModel
     LazyVStack {
       Spacer()
@@ -164,7 +158,7 @@ extension AttendanceCheckView {
   }
 
   @ViewBuilder
-  fileprivate func selectPartAttandanceStatus() -> some View {
+  fileprivate func selectPartAttendanceStatus() -> some View {
     if let selectPart = store.selectPart,
        [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart) {
       selectPartAttandanceStatusCard()
@@ -178,7 +172,7 @@ extension AttendanceCheckView {
 
   @ViewBuilder
   fileprivate func selectPartAttandanceStatusCard() -> some View {
-    let filtered = store.sceheduleAttandanceModel?.data.flatMap {
+    let filtered = store.scheduleModelAttendanceModel?.data.flatMap {
       $0.attendancesSummary.filter { item in
         guard let team = SelectTeam(rawValue: item.profile.team.rawValue),
               let selected = store.selectPart else { return false }

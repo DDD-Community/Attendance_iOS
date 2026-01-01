@@ -12,6 +12,7 @@ let project = Project.makeModule(
   settings:  .settings(),
   dependencies: [
     .Data(implements: .Model),
+    .SPM.weaveDI,
   ],
   sources: ["Sources/**"]
 )

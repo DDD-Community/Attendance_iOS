@@ -181,7 +181,11 @@ extension InfoPlistDictionary {
   func setGoogleClientID(_ value: String) -> InfoPlistDictionary {
     return self.merging(["GOOGLE_CLIENT_ID": .string(value)]) { (_, new) in new }
   }
-  
+
+  func setGoogleClientiOSID(_ value: String) -> InfoPlistDictionary {
+    return self.merging(["GOOGLE_IOS_CLIENT_ID": .string(value)]) { (_, new) in new }
+  }
+
   func setBaseURL(_ value: String) -> InfoPlistDictionary {
     return self.merging(["BASE_URL": .string(value)]) { (_, new) in new }
   }
