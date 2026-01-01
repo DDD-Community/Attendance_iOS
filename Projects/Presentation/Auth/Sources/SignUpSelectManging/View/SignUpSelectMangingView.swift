@@ -107,7 +107,7 @@ extension SignUpSelectManagingView {
           if store.userSession.managing.contains(.teamManaging) {
             store.send(.navigation(.presentSelectTeam))
           } else {
-
+            store.send(.async(.signUpUser))
           }
         },
         title: store.userSession.managing.contains(.teamManaging) ? "다음" : "가입완료",

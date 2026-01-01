@@ -11,26 +11,27 @@ import LogMacro
 import AuthenticationServices
 @preconcurrency import Entity
 import DomainInterface
+import Sharing
 
 public final class AppleOAuthProvider: AppleOAuthProviderInterface, @unchecked Sendable {
   @Dependency(\.appleOAuthRepository) private var appleRepository: AppleOAuthInterface
-
+  @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   public init() {}
 
   public func signInWithCredential(
     credential: ASAuthorizationAppleIDCredential,
     nonce: String
   ) async throws -> AppleOAuthPayload {
-    // appleRepository.signInWithCredential 사용 (credential을 직접 처리)
     let payload = try await appleRepository.signInWithCredential(credential, nonce: nonce)
     Log.info("Apple sign-in completed through repository with credential")
     return payload
   }
 
   public func signIn() async throws -> AppleOAuthPayload {
-    // Repository를 통해 Apple 로그인 처리
     let payload = try await appleRepository.signIn()
     Log.info("Apple sign-in completed through repository (direct)")
+    self.$userSession.withLock { $0.accessToken = payload.authorizationCode ?? ""
+    }
     return payload
   }
 
@@ -41,3 +42,4 @@ public final class AppleOAuthProvider: AppleOAuthProviderInterface, @unchecked S
     return name.isEmpty ? nil : name
   }
 }
+

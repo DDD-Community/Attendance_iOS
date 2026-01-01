@@ -10,7 +10,7 @@ public struct SignUpUserRequestDTO: Encodable {
   public let generationId: Int
   public let jobRole: String
   public let teamId: Int?
-  public let managerRoles: [String: String]?
+  public let managerRoles: [String]?
   public let provider: String
   public let token: String
   public let invitationCode: String
@@ -20,7 +20,7 @@ public struct SignUpUserRequestDTO: Encodable {
     generationId: Int,
     jobRole: String,
     teamId: Int?,
-    managerRoles: [String : String]?,
+    managerRoles: [String]?,
     provider: String,
     token: String,
     invitationCode: String

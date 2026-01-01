@@ -26,6 +26,9 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
     userSession: UserSession
   ) async throws -> SignUpUser {
     let isManager = userSession.userRole == .manager
+    if !isManager, userSession.selectTeamId == nil {
+      throw SignUpError.missingRequiredField("팀")
+    }
     let input = SignUpUserInput(
       name: userSession.name,
       generationId: userSession.generationId,

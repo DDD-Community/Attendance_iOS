@@ -35,9 +35,7 @@ final public class SignUpRepositoryImpl: SignUpInterface {
       generationId: input.generationId,
       jobRole: input.jobRole.apiKey,
       teamId: input.teamId,
-      managerRoles: input.managerRoles?.reduce(into: [String: String]()) { result, role in
-        result[role.apiKey] = role.desc
-      },
+      managerRoles: input.managerRoles?.map { $0.apiKey },
       provider: input.provider.description,
       token: input.token,
       invitationCode: input.invitationCode

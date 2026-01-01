@@ -11,6 +11,7 @@ import AuthenticationServices
 @preconcurrency import Entity
 import DomainInterface
 import Sharing
+import LogMacro
 
 /// 통합 OAuth UseCase - 로그인/회원가입 플로우를 하나로 통합
 public struct UnifiedOAuthUseCase {
@@ -55,10 +56,11 @@ public extension UnifiedOAuthUseCase {
       credential: credential,
       nonce: nonce
     )
+    Log.debug("apple authcode", payload.authorizationCode)
     self.$userSession.withLock { $0.token = payload.idToken }
     return try await authRepository.login(
       provider: .apple,
-      token: payload.idToken
+      token: payload.authorizationCode ?? ""
     )
   }
 
