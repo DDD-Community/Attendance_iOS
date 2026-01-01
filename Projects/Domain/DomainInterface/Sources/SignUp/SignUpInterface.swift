@@ -7,15 +7,13 @@
 //
 
 import Foundation
+import Entity
 import WeaveDI
 
 public protocol SignUpInterface: Sendable {
-  func registerAccount(
-    email: String,
-    password: String
-  ) async throws -> SignUpModel?
-  func validateInviteCode(inviteCode: String) async throws -> InviteCodeModel?
-  func checkEmail(email: String)  async throws -> CheckEmailModel?
+  func registerUser(
+    input: SignUpUserInput
+  ) async throws -> SignUpUser
 }
 
 /// SignUp Repository의 DependencyKey 구조체

@@ -64,7 +64,7 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     var staffType: Staff {
       switch self {
       case .managerRole:
-        return .manger
+        return .manager
       default:
         return .member
       }
@@ -101,6 +101,8 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
   private var lastFetchJobsCall: Date?
   private var fetchTeamsCallCount = 0
   private var lastFetchTeamsCall: Date?
+  private var fetchManagingCallCount = 0
+  private var lastFetchManagingCall: Date?
 
   // MARK: - Initialization
 
@@ -118,6 +120,8 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     lastFetchJobsCall = nil
     fetchTeamsCallCount = 0
     lastFetchTeamsCall = nil
+    fetchManagingCallCount = 0
+    lastFetchManagingCall = nil
   }
 
   public func getVerifyCallCount() -> Int {
@@ -144,6 +148,14 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     return lastFetchTeamsCall
   }
 
+  public func getFetchManagingCallCount() -> Int {
+    return fetchManagingCallCount
+  }
+
+  public func getLastFetchManagingCall() -> Date? {
+    return lastFetchManagingCall
+  }
+
   public func reset() {
     configuration = .success
     verifyCallCount = 0
@@ -152,6 +164,8 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     lastFetchJobsCall = nil
     fetchTeamsCallCount = 0
     lastFetchTeamsCall = nil
+    fetchManagingCallCount = 0
+    lastFetchManagingCall = nil
   }
 
   // MARK: - OnBoardingInterface Implementation
@@ -187,7 +201,7 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     case "5678", "admin", "manager":
       return VerifyCodeEntity(
         generationID: 2024,
-        type: .manger
+        type: .manager
       )
 
     case "error", "fail":
@@ -288,6 +302,36 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
         teamId: baseTeamId + index + 1,
         teams: team
       )
+    }
+  }
+
+  public func fetchManaging() async throws -> [SelectManaging] {
+    // Track call
+    fetchManagingCallCount += 1
+    lastFetchManagingCall = Date()
+
+    // Apply delay
+    if configuration.delay > 0 {
+      try await Task.sleep(for: .seconds(configuration.delay))
+    }
+
+    // Configuration 기반 응답 처리
+    if !configuration.shouldSucceed, let error = configuration.error {
+      throw error
+    }
+
+    let mockManaging = StaffManaging.allCases.map { managing in
+      SelectManaging(
+        managingKeys: managing.apiKey,
+        managing: managing
+      )
+    }
+
+    switch configuration {
+    case .memberRole:
+      return []
+    default:
+      return mockManaging
     }
   }
 }
