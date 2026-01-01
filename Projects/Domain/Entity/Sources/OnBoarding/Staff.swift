@@ -9,14 +9,18 @@ import Foundation
 
 public enum Staff: String, CaseIterable , Equatable{
   case member
-  case manger
+  case manager
 
   public var description: String {
     switch self {
       case .member:
         return "MEMBER"
-      case .manger:
+      case .manager:
         return "MANAGER"
     }
+  }
+
+  public static func from(apiKey: String) -> Staff? {
+    Staff(rawValue: apiKey.lowercased())
   }
 }

@@ -26,12 +26,16 @@ public struct OnBoardingUseCaseImpl: OnBoardingInterface {
     return try await repository.fetchJobs()
   }
 
-  public func fetchTeams(generationId: Int) async throws -> [SelectTeamEntity] {
+  public func fetchTeams(
+    generationId: Int
+  ) async throws -> [SelectTeamEntity] {
     return try await repository.fetchTeams(generationId: generationId)
   }
 
+  public func fetchManaging() async throws -> [SelectManaging] {
+    return try await repository.fetchManaging()
+  }
 }
-
 
 extension OnBoardingUseCaseImpl : DependencyKey {
   static public var liveValue = OnBoardingUseCaseImpl()

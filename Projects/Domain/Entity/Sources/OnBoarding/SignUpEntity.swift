@@ -11,22 +11,24 @@ public struct UserSession: Equatable {
   public var name: String
   public var selectPart: SelectParts
   public var userRole: Staff
-  public var managing: StaffManaging?
+  public var managing: [StaffManaging]
   public var provider: SocialType
   public var selectTeam: SelectTeams
+  public var selectTeamId: Int?
   public var token: String
-  public var generationId : Int?
+  public var generationId : Int
   public var inviteCode: String
 
   public init(
     name: String = "",
     selectPart: SelectParts = .all,
     userRole: Staff = .member,
-    managing: StaffManaging? = nil,
+    managing: [StaffManaging] = [],
     provider: SocialType = .apple,
     selectTeam: SelectTeams = .unknown,
+    selectTeamId: Int? = nil,
     token: String = "",
-    generationId: Int? = nil,
+    generationId: Int = .zero,
     inviteCode: String = ""
   ) {
     self.name = name
@@ -37,6 +39,7 @@ public struct UserSession: Equatable {
     self.selectTeam = selectTeam
     self.token = token
     self.generationId = generationId
+    self.selectTeamId = selectTeamId
     self.inviteCode = inviteCode
   }
 
