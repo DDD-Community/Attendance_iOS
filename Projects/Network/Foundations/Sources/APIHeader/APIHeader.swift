@@ -8,6 +8,7 @@
 import Foundation
 
 import ComposableArchitecture
+import WeaveDI
 import Model
 
 
@@ -17,23 +18,16 @@ public struct APIHeader {
   public static let accessToken   = "Authorization"
   public static let accept        = "accept"
 
-  // ← add `static` here
-  @Shared(.inMemory("UserEntity"))
-  static var userEntity: UserEntity = .init()
-
-  private static var _accessTokenKeyChain: String {
-    return  UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? "" // Returns an empty string if nil
-  }
+  @Dependency(\.tokenProvider) private var tokenProvider
 
   public static var accessTokenKeyChain: String {
-    get { _accessTokenKeyChain }
+    get { APIHeader().tokenProvider.accessToken() ?? "" }
     set { updateAccessToken(newValue) }
   }
 
   public static func updateAccessToken(_ token: String?) {
     guard let newToken = token, !newToken.isEmpty else { return }
-    UserDefaults.standard.set(newToken, forKey: "ACCESS_TOKEN")
-    self.$userEntity.withLock {  $0.accessToken = newToken }
+    APIHeader().tokenProvider.saveAccessToken(newToken)
   }
 
   public init() {}

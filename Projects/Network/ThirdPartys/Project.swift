@@ -11,6 +11,7 @@ let project = Project.makeModule(
   settings:  .settings(),
   dependencies: [
     .SPM.asyncMoya,
+    .SPM.weaveDI
   ],
   sources: ["Sources/**"]
 )
