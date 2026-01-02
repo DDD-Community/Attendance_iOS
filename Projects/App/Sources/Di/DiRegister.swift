@@ -9,8 +9,8 @@ import Foundation
 
 import DomainInterface
 import Repository
-import Core
 import Foundations
+import UseCase
 
 import ComposableArchitecture
 import WeaveDI

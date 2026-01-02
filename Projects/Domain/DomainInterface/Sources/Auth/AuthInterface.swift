@@ -14,6 +14,7 @@ import Entity
 public protocol AuthInterface: Sendable {
   func login(provider: SocialType, token: String) async throws -> LoginEntity
   func refresh()  async throws -> AuthTokens
+  func withDraw(token: String) async throws -> WithdrawEntity
 }
 
 /// Auth Repository의 DependencyKey 구조체

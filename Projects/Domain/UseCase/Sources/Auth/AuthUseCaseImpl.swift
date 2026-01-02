@@ -9,6 +9,7 @@ import DomainInterface
 import Entity
 
 import WeaveDI
+import Foundation
 
 public struct AuthUseCaseImpl: AuthInterface {
   @Dependency(\.authRepository) var authRepository
@@ -25,6 +26,10 @@ public struct AuthUseCaseImpl: AuthInterface {
 
   public func refresh() async throws -> Entity.AuthTokens {
     return try await authRepository.refresh()
+  }
+
+  public func withDraw(token: String) async throws -> WithdrawEntity {
+    return try await authRepository.withDraw(token: token)
   }
 }
 

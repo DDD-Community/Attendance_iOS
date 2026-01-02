@@ -12,7 +12,6 @@ import Entity
 
 /// Auth Repository의 기본 구현체 (테스트/프리뷰용)
 final public class DefaultAuthRepositoryImpl: AuthInterface {
-
   public init() {}
 
   public func login(provider: Entity.SocialType, token: String) async throws -> Entity.LoginEntity {
@@ -32,5 +31,9 @@ final public class DefaultAuthRepositoryImpl: AuthInterface {
       accessToken: "mock_refreshed_access_token_\(UUID().uuidString)",
       refreshToken: "mock_refreshed_refresh_token_\(UUID().uuidString)"
     )
+  }
+
+  public func withDraw(token: String) async throws -> WithdrawEntity {
+    return WithdrawEntity(isSuccess: true)
   }
 }

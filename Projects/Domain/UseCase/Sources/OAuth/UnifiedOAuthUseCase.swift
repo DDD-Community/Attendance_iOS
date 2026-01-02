@@ -58,7 +58,10 @@ public extension UnifiedOAuthUseCase {
       nonce: nonce
     )
     Log.debug("apple authcode", payload.authorizationCode)
-    self.$userSession.withLock { $0.token = payload.idToken }
+    self.$userSession.withLock {
+      $0.token = payload.idToken
+      $0.accessToken = payload.authorizationCode ?? ""
+    }
     let loginEntity = try await authRepository.login(
       provider: .apple,
       token: payload.authorizationCode ?? ""

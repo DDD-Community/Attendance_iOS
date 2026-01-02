@@ -30,8 +30,6 @@ public final class AppleOAuthProvider: AppleOAuthProviderInterface, @unchecked S
   public func signIn() async throws -> AppleOAuthPayload {
     let payload = try await appleRepository.signIn()
     Log.info("Apple sign-in completed through repository (direct)")
-    self.$userSession.withLock { $0.accessToken = payload.authorizationCode ?? ""
-    }
     return payload
   }
 
