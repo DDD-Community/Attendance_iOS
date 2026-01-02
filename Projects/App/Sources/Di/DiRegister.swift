@@ -33,6 +33,7 @@ public class AppDIManager: @unchecked Sendable {
       .register { AppleOAuthRepositoryImpl() as AppleOAuthInterface }
       .register { AppleOAuthProvider() as AppleOAuthProviderInterface }
       .register { GoogleOAuthProvider() as GoogleOAuthProviderInterface }
+      // MARK: - 토큰 등록 관련
       .register { KeychainManager() as KeychainManaging }
       .register { KeychainTokenProvider(keychainManager: KeychainManager()) as TokenProviding }
     // MARK: - 온보딩 관련

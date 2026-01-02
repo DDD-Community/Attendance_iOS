@@ -18,6 +18,7 @@ public struct UnifiedOAuthUseCase {
   @Dependency(\.authRepository) private var authRepository: AuthInterface
   @Dependency(\.appleOAuthProvider) private var appleProvider: AppleOAuthProviderInterface
   @Dependency(\.googleOAuthProvider) private var googleProvider: GoogleOAuthProviderInterface
+  @Dependency(\.keychainManager) private var keychainManager: KeychainManaging
   @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   public init() {}
 }
@@ -58,10 +59,15 @@ public extension UnifiedOAuthUseCase {
     )
     Log.debug("apple authcode", payload.authorizationCode)
     self.$userSession.withLock { $0.token = payload.idToken }
-    return try await authRepository.login(
+    let loginEntity = try await authRepository.login(
       provider: .apple,
       token: payload.authorizationCode ?? ""
     )
+    keychainManager.save(
+      accessToken: loginEntity.token.accessToken,
+      refreshToken: loginEntity.token.refreshToken
+    )
+    return loginEntity
   }
 
   /// Google 로그인 처리
@@ -70,10 +76,15 @@ public extension UnifiedOAuthUseCase {
   ) async throws -> LoginEntity {
     let processedToken = try await googleProvider.signInWithToken(token: token)
     self.$userSession.withLock { $0.token = processedToken }
-    return try await authRepository.login(
+    let loginEntity = try await authRepository.login(
       provider: .google,
       token: processedToken
     )
+    keychainManager.save(
+      accessToken: loginEntity.token.accessToken,
+      refreshToken: loginEntity.token.refreshToken
+    )
+    return loginEntity
   }
 
   /// OAuth 플로우 처리 (TCA용)

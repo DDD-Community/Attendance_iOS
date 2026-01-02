@@ -13,6 +13,7 @@ import Entity
 /// Auth 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol AuthInterface: Sendable {
   func login(provider: SocialType, token: String) async throws -> LoginEntity
+  func refresh()  async throws -> AuthTokens
 }
 
 /// Auth Repository의 DependencyKey 구조체

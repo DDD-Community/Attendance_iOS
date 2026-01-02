@@ -22,6 +22,10 @@ public struct AuthUseCaseImpl: AuthInterface {
   ) async throws -> Entity.LoginEntity {
     return try await authRepository.login(provider: provider, token: token)
   }
+
+  public func refresh() async throws -> Entity.AuthTokens {
+    return try await authRepository.refresh()
+  }
 }
 
 extension AuthUseCaseImpl: DependencyKey {

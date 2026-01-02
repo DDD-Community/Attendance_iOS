@@ -16,6 +16,21 @@ final public class DefaultAuthRepositoryImpl: AuthInterface {
   public init() {}
 
   public func login(provider: Entity.SocialType, token: String) async throws -> Entity.LoginEntity {
-    return LoginEntity(name: "", isNewUser: false, provider: .google, token: AuthTokens(accessToken: "", refreshToken: ""))
+    return LoginEntity(
+      name: "Mock User",
+      isNewUser: false,
+      provider: provider,
+      token: AuthTokens(
+        accessToken: "mock_access_token_\(UUID().uuidString)",
+        refreshToken: "mock_refresh_token_\(UUID().uuidString)"
+      )
+    )
+  }
+
+  public func refresh() async throws -> Entity.AuthTokens {
+    return AuthTokens(
+      accessToken: "mock_refreshed_access_token_\(UUID().uuidString)",
+      refreshToken: "mock_refreshed_refresh_token_\(UUID().uuidString)"
+    )
   }
 }
