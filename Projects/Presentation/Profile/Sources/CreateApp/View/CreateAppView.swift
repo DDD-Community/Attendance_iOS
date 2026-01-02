@@ -9,8 +9,8 @@ import SwiftUI
 
 import ComposableArchitecture
 import SwiftUIX
+import Model
 import DesignSystem
-import Core
 
 struct CreateAppView: View {
   @Bindable private var store: StoreOf<CreateApp>

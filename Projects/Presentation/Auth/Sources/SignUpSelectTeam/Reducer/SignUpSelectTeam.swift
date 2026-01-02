@@ -7,11 +7,12 @@
 
 import Foundation
 
-import Core
 import Utill
+import UseCase
 import Entity
 
 import ComposableArchitecture
+import LogMacro
 
 @Reducer
 public struct SignUpSelectTeam {
@@ -22,7 +23,6 @@ public struct SignUpSelectTeam {
     public init() {}
 
     var activeButton: Bool = false
-    var editProfileDTO: ProfileResponseModel?
     var selectTeam: SelectTeams? = .unknown
     var loading: Bool = false
     var errorMessage: String?

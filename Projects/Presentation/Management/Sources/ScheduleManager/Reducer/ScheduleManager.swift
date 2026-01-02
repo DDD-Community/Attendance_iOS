@@ -7,10 +7,10 @@
 
 import Foundation
 
-import Core
 import Shareds
 
 import ComposableArchitecture
+import LogMacro
 
 @Reducer
 public struct ScheduleManager {

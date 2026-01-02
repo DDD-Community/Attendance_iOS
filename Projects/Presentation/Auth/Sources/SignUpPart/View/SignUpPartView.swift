@@ -8,7 +8,6 @@
 import SwiftUI
 
 import DesignSystem
-import Core
 
 import SDWebImageSwiftUI
 import ComposableArchitecture

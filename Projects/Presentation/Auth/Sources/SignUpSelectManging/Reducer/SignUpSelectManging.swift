@@ -193,10 +193,11 @@ public struct SignUpSelectManaging {
         switch result {
         case .success(let data):
           state.signUpUser = data
+            return .send(.navigation(.presentCoreMember))
         case .failure(let error):
           state.errorMessage = error.errorDescription
+            return .none
         }
-        return .none
     }
     
   }
