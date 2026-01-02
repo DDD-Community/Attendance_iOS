@@ -10,6 +10,7 @@ import Foundation
 public enum AuthAPI: String, CaseIterable {
   case login
   case refresh
+  case withDraw
 
   public var description: String {
     switch self {
@@ -17,6 +18,8 @@ public enum AuthAPI: String, CaseIterable {
         return "login"
       case .refresh:
         return "refresh"
+      case .withDraw:
+        return "/me"
     }
   }
 }

@@ -7,10 +7,7 @@
 
 import Foundation
 
-import ComposableArchitecture
 import WeaveDI
-import Model
-
 
 public struct APIHeader {
 
