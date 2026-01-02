@@ -9,11 +9,14 @@ import Foundation
 
 public enum AuthAPI: String, CaseIterable {
   case login
+  case refresh
 
-  public var authDescription: String {
+  public var description: String {
     switch self {
       case .login:
         return "login"
+      case .refresh:
+        return "refresh"
     }
   }
 }

@@ -18,7 +18,7 @@ final public class ScheduleRepositoryImpl: ScheduleInterface {
   private let provider: MoyaProvider<ScheduleService>
 
   public init(
-    provider: MoyaProvider<ScheduleService> = MoyaProvider<ScheduleService>.withSession(AuthInterceptor.shared)
+    provider: MoyaProvider<ScheduleService> = MoyaProvider<ScheduleService>.authorized
   ) {
     self.provider = provider
   }
@@ -36,4 +36,3 @@ final public class ScheduleRepositoryImpl: ScheduleInterface {
     return scheduleModel.toDomain()
   }
 }
-
