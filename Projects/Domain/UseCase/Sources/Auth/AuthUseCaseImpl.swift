@@ -28,6 +28,10 @@ public struct AuthUseCaseImpl: AuthInterface {
     return try await authRepository.refresh()
   }
 
+  public func logout() async throws -> AuthExitEntity {
+    return try await authRepository.logout()
+  }
+
   public func withDraw(token: String) async throws -> WithdrawEntity {
     return try await authRepository.withDraw(token: token)
   }

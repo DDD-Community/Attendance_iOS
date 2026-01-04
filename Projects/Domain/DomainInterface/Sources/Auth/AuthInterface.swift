@@ -15,6 +15,7 @@ public protocol AuthInterface: Sendable {
   func login(provider: SocialType, token: String) async throws -> LoginEntity
   func refresh()  async throws -> AuthTokens
   func withDraw(token: String) async throws -> WithdrawEntity
+  func logout() async throws -> AuthExitEntity
 }
 
 /// Auth Repository의 DependencyKey 구조체
