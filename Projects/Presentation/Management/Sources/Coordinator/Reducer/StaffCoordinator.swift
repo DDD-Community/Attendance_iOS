@@ -101,16 +101,19 @@ extension StaffCoordinator {
     switch action {
       // MARK: - 운영진 프로필
     case .routeAction(id: _, action: .coreMember(.navigation(.presentManagerProfile))):
-      state.routes.push(.mangeProfile(.init()))
+      state.routes.push(.profile(.init()))
       return .none
 
 
       // MARK: - 로그아웃
-    case .routeAction(id: _, action: .mangeProfile(.navigation(.presentLogOut))):
+    case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
       return .run { send in
         try await clock.sleep(for: .seconds(0.5))
         await send(.navigation(.presentLogin))
       }
+
+      case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
+        return .send(.view(.backAction))
 
     default:
       return .none
@@ -162,6 +165,6 @@ extension StaffCoordinator {
   @Reducer(state: .equatable)
   public enum CoreMemberScreen{
     case coreMember(Staff)
-    case mangeProfile(ProfileReducer)
+    case profile(ProfileCoordinator)
   }
 }

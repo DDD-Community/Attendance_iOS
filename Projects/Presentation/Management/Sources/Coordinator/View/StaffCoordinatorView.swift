@@ -27,10 +27,8 @@ public struct StaffCoordinatorView: View {
         StaffView(store: coreMember)
           .navigationBarBackButtonHidden()
 
-      case .mangeProfile(let managerProfileStore):
-        ProfileView(store: managerProfileStore) {
-          store.send(.view(.backAction))
-        }
+      case .profile(let profileStore):
+       ProfileCoordinatorView(store: profileStore)
         .navigationBarBackButtonHidden()
       }
     }

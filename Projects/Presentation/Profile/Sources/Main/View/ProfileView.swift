@@ -327,7 +327,7 @@ extension ProfileView {
           .foregroundStyle(.staticWhite)
           .underline(true, color: .staticWhite)
           .onTapGesture {
-            store.send(.navigation(.presentLogOut))
+            store.send(.async(.logout))
           }
       }
     }
@@ -352,6 +352,9 @@ extension ProfileView {
         .pretendardCustomFont(textStyle: .body3NormalRegular)
         .foregroundStyle(.mediumGray)
         .underline(true, color: .mediumGray)
+        .onTapGesture {
+          store.send(.navigation(.presentPrivacyPolicy))
+        }
 
       Spacer()
         .frame(height: 40)

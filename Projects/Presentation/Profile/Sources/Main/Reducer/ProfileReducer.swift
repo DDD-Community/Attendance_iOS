@@ -31,6 +31,7 @@ public struct ProfileReducer {
 
     var profileModel: ProfileEntity?
     var deleteUser: WithdrawEntity?
+    var authExit: AuthExitEntity?
     var appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
 
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
@@ -78,6 +79,7 @@ public struct ProfileReducer {
   public enum AsyncAction: Equatable {
     case fetchUser
     case deleteUser
+    case logout
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -85,13 +87,15 @@ public struct ProfileReducer {
   public enum InnerAction: Equatable {
     case fetchUserResponse(Result<ProfileEntity, ProfileError>)
     case deleteUserResponse(Result<WithdrawEntity, AuthError>)
+    case logoutResponses(Result<AuthExitEntity, AuthError>)
   }
   
   // MARK: - 네비게이션 연결 액션
   @CasePathable
   public enum NavigationAction: Equatable {
     case presentLogOut
-    case presentCreatByApp
+    case presentCreateByApp
+    case presentPrivacyPolicy
   }
 
   @CasePathable
@@ -107,6 +111,7 @@ public struct ProfileReducer {
   nonisolated enum CancelID: Hashable {
     case fetchProfile
     case deleteUser
+    case logoutUser
   }
 
   @Dependency(\.authUseCase) var authUseCase
@@ -165,15 +170,7 @@ public struct ProfileReducer {
       return .none
 
     case .showWithdrawAlert:
-      state.alertItem = AlertItem(
-        title: "정말 탈퇴하시겠습니까?",
-        message: "탈퇴 시, 등록된 모든 출석 데이터가\n삭제됩니다.",
-        confirmTitle: "탈퇴하기",
-        cancelTitle: "취소",
-        isDestructive: true,
-        onConfirm: { },
-        onCancel: { }
-      )
+        state.alertItem = .withdrawAccount(onConfirm: {}, onCancel: {})
       return .none
 
     case .withdrawAlertConfirmed:
@@ -223,6 +220,16 @@ public struct ProfileReducer {
 
         }
         .cancellable(id: CancelID.deleteUser, cancelInFlight: true)
+
+      case .logout:
+        return .run { send in
+          let logoutResult = await Result {
+            try await authUseCase.logout()
+          }
+            .mapError(AuthError.from)
+          return await send(.inner(.logoutResponses(logoutResult)))
+        }
+        .cancellable(id: CancelID.logoutUser, cancelInFlight: true)
     }
   }
   
@@ -265,6 +272,25 @@ public struct ProfileReducer {
             return .none
 
         }
+
+      case .logoutResponses(let result):
+        switch result {
+          case .success(let data):
+            state.authExit = data
+            return .send(.navigation(.presentLogOut))
+
+          case .failure(let error):
+            state.alert = AlertState {
+              TextState("로그 아웃 실패")
+            } actions: {
+              ButtonState(action: .confirmTapped) {
+                TextState("확인")
+              }
+            } message: {
+              TextState("로그 아웃 실패: \(String(describing: AuthError.unknownError(error.errorDescription ?? "")))")
+            }
+            return .none
+        }
     }
   }
   
@@ -278,8 +304,11 @@ public struct ProfileReducer {
         try await clock.sleep(for: .seconds(2))
       }
       
-    case .presentCreatByApp:
+    case .presentCreateByApp:
       return .none
+
+      case .presentPrivacyPolicy:
+        return .none
     }
   }
 }

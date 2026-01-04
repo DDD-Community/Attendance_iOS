@@ -1,9 +1,10 @@
 //
-//  MemberCoordinator.swift
-//  Presentation
+//  ProfileCoordinator.swift
+//  Profile
 //
-//  Created by 홍은표 on 1/2/25.
+//  Created by Wonji Suh  on 1/4/26.
 //
+
 
 import Foundation
 
@@ -11,24 +12,23 @@ import Shareds
 
 import ComposableArchitecture
 import TCACoordinators
-import Profile
 
 @Reducer
-public struct MemberCoordinator {
+public struct ProfileCoordinator {
   public init() {}
 
   @ObservableState
   public struct State: Equatable {
-    var routes: [Route<MemberScreen.State>]
+    var routes: [Route<ProfileScreen.State>]
 
     public init() {
-      routes = [.root(.member(.init()), embedInNavigationView: true)]
+      routes = [.root(.profile(.init()), embedInNavigationView: true)]
     }
   }
 
   public enum Action: ViewAction, BindableAction, FeatureAction {
     case binding(BindingAction<State>)
-    case router(IndexedRouterActionOf<MemberScreen>)
+    case router(IndexedRouterActionOf<ProfileScreen>)
     case view(View)
     case inner(InnerAction)
     case async(AsyncAction)
@@ -46,11 +46,12 @@ public struct MemberCoordinator {
   }
 
   public enum InnerAction: Equatable {
-    case onResume
+
   }
 
   public enum NavigationAction: Equatable {
     case presentLogin
+    case presentRoot
   }
 
   @Dependency(\.continuousClock) var clock
@@ -84,24 +85,19 @@ public struct MemberCoordinator {
 
   private func handleRouterAction(
     state: inout State,
-    action: IndexedRouterActionOf<MemberScreen>
+    action: IndexedRouterActionOf<ProfileScreen>
   ) -> Effect<Action> {
     switch action {
-    case .routeAction(id: _, action: .member(.navigation(.routeToQRCode))):
-      state.routes.push(.qrCode(.init()))
-      return .none
-
-    case .routeAction(id: _, action: .member(.navigation(.routeToProfile))):
-      state.routes.push(.profile(.init()))
-      return .none
-
-    case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
+    case .routeAction(id: _, action: .profile(.navigation(.presentLogOut))):
       return .run { send in
-        try await clock.sleep(for: .seconds(0.5))
         await send(.navigation(.presentLogin))
       }
 
-      case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
+      case .routeAction(id: _, action: .profile(.navigation(.presentPrivacyPolicy))):
+        state.routes.push(.web(.init(url: "https://dddset.notion.site/DDD-2d424441b0b08080a518ed42f1315b20?source=copy_link")))
+        return .none
+
+      case .routeAction(id: _, action: .web(.backToRoot)):
         return .send(.view(.backAction))
 
     default:
@@ -117,7 +113,7 @@ public struct MemberCoordinator {
     case .backAction:
       state.routes.goBack()
       return .none
-      
+
     case .backToRootAction:
       return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
         $0.goBackToRoot()
@@ -130,10 +126,7 @@ public struct MemberCoordinator {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-    case .onResume:
-      return .send(
-        .router(.routeAction(id: 0, action: .member(.inner(.onResume))))
-      )
+
     }
   }
 
@@ -151,15 +144,17 @@ public struct MemberCoordinator {
     switch action {
     case .presentLogin:
       return .none
+
+      case .presentRoot:
+        return .none
     }
   }
 }
 
-extension MemberCoordinator {
+extension ProfileCoordinator {
   @Reducer(state: .equatable)
-  public enum MemberScreen {
-    case member(MemberMain)
-    case profile(ProfileCoordinator)
-    case qrCode(MemberQRCode)
+  public enum ProfileScreen {
+    case profile(ProfileReducer)
+    case web(WebReducer)
   }
 }
