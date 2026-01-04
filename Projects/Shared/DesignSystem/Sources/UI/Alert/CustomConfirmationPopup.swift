@@ -1,0 +1,264 @@
+//
+//  CustomConfirmationPopup.swift
+//  DesignSystem
+//
+//  Created by Wonji Suh on 1/4/26.
+//
+
+import SwiftUI
+
+public extension View {
+  /// 확인/취소 팝업을 띄우는 Modifier (Item 기반)
+  ///
+  /// - Parameters:
+  ///   - item: AlertItem? - 팝업 설정이 담긴 아이템 (nil이면 팝업 숨김)
+  func customConfirmationPopup(
+    item: AlertItem?
+  ) -> some View {
+    self.modifier(
+      CustomConfirmationPopupItemModifier(item: item)
+    )
+  }
+
+  /// 확인/취소 팝업을 띄우는 Modifier (개별 파라미터)
+  ///
+  /// - Parameters:
+  ///   - isPresented: 팝업 표시 여부
+  ///   - title: 제목
+  ///   - message: 메시지
+  ///   - confirmTitle: 확인 버튼 텍스트 (기본: "확인")
+  ///   - cancelTitle: 취소 버튼 텍스트 (기본: "취소")
+  ///   - isDestructive: 확인 버튼이 위험한 액션인지 여부 (기본: false)
+  ///   - onConfirm: 확인 버튼 터치 시 액션
+  ///   - onCancel: 취소 버튼 터치 시 액션
+  func customConfirmationPopup(
+    isPresented: Bool,
+    title: String,
+    message: String,
+    confirmTitle: String = "확인",
+    cancelTitle: String = "취소",
+    isDestructive: Bool = false,
+    onConfirm: @escaping () -> Void,
+    onCancel: @escaping () -> Void
+  ) -> some View {
+    self.modifier(
+      CustomConfirmationPopupModifier(
+        isPresented: isPresented,
+        title: title,
+        message: message,
+        confirmTitle: confirmTitle,
+        cancelTitle: cancelTitle,
+        isDestructive: isDestructive,
+        onConfirm: onConfirm,
+        onCancel: onCancel
+      )
+    )
+  }
+}
+
+// MARK: - Item-based Modifier
+
+struct CustomConfirmationPopupItemModifier: ViewModifier {
+  private let item: AlertItem?
+
+  init(item: AlertItem?) {
+    self.item = item
+  }
+
+  func body(content: Content) -> some View {
+    content
+      .overlay {
+        if let item = item {
+          CustomConfirmationPopup(
+            title: item.title,
+            message: item.message,
+            confirmTitle: item.confirmTitle,
+            cancelTitle: item.cancelTitle,
+            isDestructive: item.isDestructive,
+            onConfirm: item.onConfirm,
+            onCancel: item.onCancel
+          )
+        }
+      }
+  }
+}
+
+// MARK: - Parameter-based Modifier
+
+struct CustomConfirmationPopupModifier: ViewModifier {
+  private let isPresented: Bool
+  private let title: String
+  private let message: String
+  private let confirmTitle: String
+  private let cancelTitle: String
+  private let isDestructive: Bool
+  private let onConfirm: () -> Void
+  private let onCancel: () -> Void
+
+  init(
+    isPresented: Bool,
+    title: String,
+    message: String,
+    confirmTitle: String,
+    cancelTitle: String,
+    isDestructive: Bool,
+    onConfirm: @escaping () -> Void,
+    onCancel: @escaping () -> Void
+  ) {
+    self.isPresented = isPresented
+    self.title = title
+    self.message = message
+    self.confirmTitle = confirmTitle
+    self.cancelTitle = cancelTitle
+    self.isDestructive = isDestructive
+    self.onConfirm = onConfirm
+    self.onCancel = onCancel
+  }
+
+  func body(content: Content) -> some View {
+    content
+      .overlay {
+        if isPresented {
+          CustomConfirmationPopup(
+            title: title,
+            message: message,
+            confirmTitle: confirmTitle,
+            cancelTitle: cancelTitle,
+            isDestructive: isDestructive,
+            onConfirm: onConfirm,
+            onCancel: onCancel
+          )
+        }
+      }
+  }
+}
+
+struct CustomConfirmationPopup: View {
+  private let title: String
+  private let message: String
+  private let confirmTitle: String
+  private let cancelTitle: String
+  private let isDestructive: Bool
+  private let onConfirm: () -> Void
+  private let onCancel: () -> Void
+
+  init(
+    title: String,
+    message: String,
+    confirmTitle: String,
+    cancelTitle: String,
+    isDestructive: Bool,
+    onConfirm: @escaping () -> Void,
+    onCancel: @escaping () -> Void
+  ) {
+    self.title = title
+    self.message = message
+    self.confirmTitle = confirmTitle
+    self.cancelTitle = cancelTitle
+    self.isDestructive = isDestructive
+    self.onConfirm = onConfirm
+    self.onCancel = onCancel
+  }
+
+  var body: some View {
+    ZStack {
+      // Dark overlay background
+      Color.black
+        .opacity(0.6)
+        .edgesIgnoringSafeArea(.all)
+
+      VStack(alignment: .center, spacing: 24) {
+        // Title and Message
+        VStack(alignment: .center, spacing: 8) {
+          Text(title)
+            .pretendardCustomFont(textStyle: .title3NormalBold)
+            .foregroundStyle(.staticWhite)
+            .multilineTextAlignment(.center)
+
+          Text(message)
+            .pretendardCustomFont(textStyle: .body3NormalRegular)
+            .foregroundStyle(.textSecondary)
+            .multilineTextAlignment(.center)
+        }
+
+        // Button Stack
+        HStack(spacing: 12) {
+          // Confirm Button (Left)
+          Button {
+            onConfirm()
+          } label: {
+            Text(confirmTitle)
+              .pretendardFont(family: .Medium, size: 16)
+              .foregroundStyle(.staticWhite)
+              .frame(maxWidth: .infinity)
+              .frame(height: 48)
+          }
+          .background(.gray80)
+          .clipShape(.rect(cornerRadius: 20))
+          .contentShape(.rect(cornerRadius: 20))
+
+          // Cancel Button (Right)
+          Button {
+            onCancel()
+          } label: {
+            Text(cancelTitle)
+              .pretendardFont(family: .Medium, size: 16)
+              .foregroundStyle(.staticWhite)
+              .frame(maxWidth: .infinity)
+              .frame(height: 48)
+          }
+          .background(.blue40)
+          .clipShape(.rect(cornerRadius: 20))
+          .contentShape(.rect(cornerRadius: 20))
+        }
+      }
+      .padding(.vertical, 32)
+      .padding(.horizontal, 24)
+      .frame(width: 320)
+      .background(.gray90)
+      .clipShape(.rect(cornerRadius: 20))
+    }
+  }
+}
+
+// MARK: - Color Extension for Hex
+
+#Preview("Item Based") {
+  VStack {
+    Text("Background Content")
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .background(.gray.opacity(0.2))
+  }
+  .customConfirmationPopup(
+    item: .withdrawAccount(
+      onConfirm: {
+        print("탈퇴하기 선택")
+      },
+      onCancel: {
+        print("취소 선택")
+      }
+    )
+  )
+}
+
+#Preview("Parameter Based") {
+  VStack {
+    Text("Background Content")
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .background(.gray.opacity(0.2))
+  }
+  .customConfirmationPopup(
+    isPresented: true,
+    title: "정말 탈퇴하시겠습니까?",
+    message: "탈퇴 시, 등록된 모든 출석 데이터가 삭제됩니다.",
+    confirmTitle: "탈퇴하기",
+    cancelTitle: "취소",
+    isDestructive: true,
+    onConfirm: {
+      print("탈퇴하기 선택")
+    },
+    onCancel: {
+      print("취소 선택")
+    }
+  )
+}
