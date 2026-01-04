@@ -16,6 +16,7 @@ public enum AuthService {
   case login(body: OAuthLoginRequest)
   case refresh(refreshToken: String)
   case withdraw(token: String)
+  case logout
 
 }
 
@@ -24,7 +25,7 @@ extension AuthService: BaseTargetType {
 
   public var domain: AttendanceDomain {
     switch self {
-      case .login, .refresh:
+      case .login, .refresh, .logout:
         return .auth
       case .withdraw:
         return .user
@@ -41,6 +42,9 @@ extension AuthService: BaseTargetType {
 
       case .withdraw:
         return AuthAPI.withDraw.description
+
+      case .logout:
+        return AuthAPI.logout.description
     }
   }
 
@@ -50,7 +54,7 @@ extension AuthService: BaseTargetType {
 
   public var method: Moya.Method {
     switch self {
-      case .login, .refresh:
+      case .login, .refresh, .logout:
         return .post
       case .withdraw:
         return .delete
@@ -67,12 +71,15 @@ extension AuthService: BaseTargetType {
 
       case .withdraw(let token):
         return token.toDictionary(key: "token")
+
+      case .logout:
+        return nil
     }
   }
 
   public var headers: [String : String]? {
     switch self {
-      case .refresh, .withdraw:
+      case .refresh, .withdraw, .logout:
         return APIHeader.baseHeader
       default:
         return APIHeader.notAccessTokenHeader

@@ -49,6 +49,12 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
     return dto.toDomain()
   }
 
+  // MARK: - 로그아웃
+  public func logout() async throws -> AuthExitEntity {
+    let dto: LogOutDTO = try await provider.request(.logout)
+    return dto.toDomain()
+  }
+
   // MARK: - 계정 삭제
   public func withDraw(token: String) async throws -> WithdrawEntity {
     let response = try await provider.requestResponse(.withdraw(token: token))
