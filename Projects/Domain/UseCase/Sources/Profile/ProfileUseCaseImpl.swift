@@ -8,61 +8,19 @@ import DomainInterface
 import Model
 
 import WeaveDI
+import Entity
 
 public struct ProfileUseCaseImpl: ProfileInterface {
   @Dependency(\.profileRepository) var repository
 
   public init() { }
   // MARK: - 프로필  수정
-  public func editProfileManger(
-    name: String,
-    inviteCode: String,
-    role: String,
-    team: String,
-    responsibility: String
-  ) async throws -> ProfileResponseModel? {
-    return try await repository.editProfileManger(
-      name: name,
-      inviteCode: inviteCode,
-      role: role,
-      team: team,
-      responsibility: responsibility
-    )
-  }
+
   // MARK: - 프로필 조회
-  public func getProfile() async throws -> ProfileResponseModel? {
+  public func getProfile() async throws -> ProfileEntity {
     return try await repository.getProfile()
   }
 
-  // MARK: - 프로필수정 운영진 팀 없을때
-  public func editProfileMangerNoTeam(
-    name: String,
-    inviteCode: String,
-    role: String,
-    responsibility: String
-  ) async throws -> ProfileResponseModel? {
-    return try await repository.editProfileMangerNoTeam(
-      name: name,
-      inviteCode: inviteCode,
-      role: role,
-      responsibility: responsibility
-    )
-  }
-
-  // MARK: - 프로필 수정 멤버
-  public func editProfileMember(
-    name: String,
-    inviteCode: String,
-    role: String,
-    team: String
-  ) async throws -> ProfileResponseModel? {
-    return try await repository.editProfileMember(
-      name: name,
-      inviteCode: inviteCode,
-      role: role,
-      team: team
-    )
-  }
 }
 
 extension ProfileUseCaseImpl: DependencyKey {
