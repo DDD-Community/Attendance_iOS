@@ -13,6 +13,7 @@ import UseCase
 import AsyncMoya
 import ComposableArchitecture
 import Entity
+import DesignSystem
 
 @Reducer
 public struct ProfileReducer {
@@ -27,14 +28,20 @@ public struct ProfileReducer {
     var managerProfileManaging: String = "담당 업무"
     var managerProfileGeneration: String = "소속 기수"
     var logoutText: String = "로그아웃"
-    
-    var userMember: UserDTOMember? = nil
-    var profileDTOModel: ProfileResponseModel?
+
+    var profileModel: ProfileEntity?
     var deleteUser: WithdrawEntity?
+    var appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
 
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
     @Presents var destination: Destination.State?
+
+    // 기존 TCA AlertState 유지 (다른 곳에서 사용)
     @Presents public var alert: AlertState<AlertAction>?
+
+    // 추가: 커스텀 AlertItem (확인팝업용)
+    var alertItem: AlertItem?
+
     public init() {}
   }
   
@@ -51,16 +58,19 @@ public struct ProfileReducer {
     case inner(InnerAction)
     case scope(ScopeAction)
     case navigation(NavigationAction)
-    
+
   }
   
   // MARK: - View action
   @CasePathable
   public enum View {
-    case startLoading
-    case stopLoading
+
     case appearModal
     case closeModal
+    case showWithdrawAlert
+    case withdrawAlertConfirmed
+    case withdrawAlertCancelled
+    case dismissAlert
   }
   
   // MARK: - 비동기 처리 액션
@@ -73,7 +83,7 @@ public struct ProfileReducer {
   // MARK: - 앱내에서 사용하는 액션
   @CasePathable
   public enum InnerAction: Equatable {
-    case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
+    case fetchUserResponse(Result<ProfileEntity, ProfileError>)
     case deleteUserResponse(Result<WithdrawEntity, AuthError>)
   }
   
@@ -83,7 +93,6 @@ public struct ProfileReducer {
     case presentLogOut
     case presentCreatByApp
   }
-
 
   @CasePathable
   public enum ScopeAction {
@@ -131,12 +140,11 @@ public struct ProfileReducer {
         return handleInnerAction(state: &state, action: innerAction)
         
       // MARK: - NavigationAction
-        
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
 
-        case .scope:
-          return .none
+      case .scope:
+        return .none
       }
     }
     .ifLet(\.$destination, action: \.destination)
@@ -148,20 +156,38 @@ public struct ProfileReducer {
     action: View
   ) -> Effect<Action> {
     switch action {
-    case .startLoading:
-      state.isLoading = true
-      return .none
-      
-    case .stopLoading:
-      state.isLoading = false
-      return .none
-      
     case .appearModal:
       state.destination = .createApp(.init())
       return .none
-      
+
     case .closeModal:
       state.destination = nil
+      return .none
+
+    case .showWithdrawAlert:
+      state.alertItem = AlertItem(
+        title: "정말 탈퇴하시겠습니까?",
+        message: "탈퇴 시, 등록된 모든 출석 데이터가\n삭제됩니다.",
+        confirmTitle: "탈퇴하기",
+        cancelTitle: "취소",
+        isDestructive: true,
+        onConfirm: { },
+        onCancel: { }
+      )
+      return .none
+
+    case .withdrawAlertConfirmed:
+      // reducer에서 확인 처리
+      state.alertItem = nil
+      return .send(.async(.deleteUser))
+
+    case .withdrawAlertCancelled:
+      // reducer에서 취소 처리
+      state.alertItem = nil
+      return .none
+
+    case .dismissAlert:
+      state.alertItem = nil
       return .none
     }
   }
@@ -173,26 +199,14 @@ public struct ProfileReducer {
     switch action {
       
     case .fetchUser:
+        state.isLoading = true
       return .run { send in
         let fetchUserResult = await Result {
           try await profileUseCase.getProfile()
         }
-        
-        switch fetchUserResult {
-        case .success(let profileUserDTOData):
-          if let profileUserDTOData = profileUserDTOData {
-            await send(.view(.startLoading))
-            
-            try await clock.sleep(for: .seconds(1.5))
-            
-            await send(.view(.stopLoading))
-            
-            await send(.inner(.fetchUserResponse(.success(profileUserDTOData))))
+          .mapError(ProfileError.from)
 
-          }
-        case .failure(let error):
-          await send(.inner(.fetchUserResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
-        }
+        return await send(.inner(.fetchUserResponse(fetchUserResult)))
       }
       .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
 
@@ -209,9 +223,6 @@ public struct ProfileReducer {
 
         }
         .cancellable(id: CancelID.deleteUser, cancelInFlight: true)
-
-
-      
     }
   }
   
@@ -223,7 +234,8 @@ public struct ProfileReducer {
     case .fetchUserResponse(let result):
       switch result {
       case .success(let profileDTOData):
-        state.profileDTOModel = profileDTOData
+          state.isLoading = false
+        state.profileModel = profileDTOData
 
       case .failure(let error):
         #logError("유저 정보 가져오기", error.localizedDescription)
@@ -237,15 +249,6 @@ public struct ProfileReducer {
             state.deleteUser = data
             if data.isSuccess {
               return .send(.navigation(.presentLogOut))
-            }
-            state.alert = AlertState {
-              TextState("탈퇴실패")
-            } actions: {
-              ButtonState(action: .confirmTapped) {
-                TextState("확인")
-              }
-            } message: {
-              TextState("회원 탈퇴 실패: \(String(describing: data.message ?? "알 수 없는 오류"))")
             }
             return .none
 

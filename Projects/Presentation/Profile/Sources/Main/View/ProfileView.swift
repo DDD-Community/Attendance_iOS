@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-import Model
 
 import ComposableArchitecture
 import SDWebImageSwiftUI
@@ -34,9 +33,24 @@ public struct ProfileView: View {
         mangerProfileLoadingData()
       }
       .task {
-//        store.send(.async(.fetchUser))
+        store.send(.async(.fetchUser))
       }
       .alert($store.scope(state: \.alert, action: \.scope.alert))
+      .customConfirmationPopup(
+        item: store.alertItem != nil ? AlertItem(
+          title: store.alertItem?.title ?? "",
+          message: store.alertItem?.message ?? "",
+          confirmTitle: store.alertItem?.confirmTitle ?? "확인",
+          cancelTitle: store.alertItem?.cancelTitle ?? "취소",
+          isDestructive: store.alertItem?.isDestructive ?? false,
+          onConfirm: {
+            store.send(.view(.withdrawAlertConfirmed))
+          },
+          onCancel: {
+            store.send(.view(.withdrawAlertCancelled))
+          }
+        ) : nil
+      )
 
       if store.destination?.createApp != nil {
         VisualEffectBlur(blurStyle: .systemChromeMaterialDark)
@@ -99,44 +113,59 @@ extension ProfileView {
       mangerCardImage()
 
       logoutButton()
+
+      appInfoView()
     }
   }
 
   @ViewBuilder
   fileprivate func mangerCardImage() -> some View {
-    let memberTeam = store.profileDTOModel?.team ?? .notTeam
-    let mangingTeam = store.profileDTOModel?.crew ?? .notTeam
-    
+    let team = store.profileModel?.team ?? .unknown
+
     LazyVStack {
       Spacer()
         .frame(height: 17)
 
       VStack(alignment: .leading, spacing: .zero) {
 
-        if store.profileDTOModel?.isStaff == true {
+        HStack {
+          Text("멤버")
+            .pretendardCustomFont(textStyle: .body3NormalBold)
+            .foregroundStyle(.statusFocus)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 5)
+            .overlay {
+              RoundedRectangle(cornerRadius: 20)
+                .stroke(.statusFocus, lineWidth: 1)
+                .background(.clear)
+            }
+
+          Spacer()
+
           HStack {
-            Text("운영진")
-              .pretendardCustomFont(textStyle: .body3NormalBold)
-              .foregroundStyle(.statusFocus)
-              .padding(.horizontal, 14)
-              .padding(.vertical, 5)
-              .overlay {
-                RoundedRectangle(cornerRadius: 20)
-                  .stroke(.statusFocus, lineWidth: 1)
-                  .background(.clear)
-              }
+            Image(asset: .edit)
+              .resizable()
+              .scaledToFit()
+              .frame(width: 13, height: 15)
 
             Spacer()
+              .frame(width: 7)
+
+            Text("기수 변경")
+              .pretendardCustomFont(textStyle: .body3NormalMedium)
+              .foregroundStyle(.staticWhite)
+          }
+          .padding(.horizontal, 18)
+          .padding(.vertical, 10)
+          .background {
+            RoundedRectangle(cornerRadius: 20)
+              .fill(.dangerBlue.opacity(0.7))
           }
 
-          Spacer()
-            .frame(height: 6)
-        } else {
-          Spacer()
-            .frame(height: 8)
+          
         }
 
-        Text("\(store.profileDTOModel?.name ?? "")님")
+        Text("\(store.profileModel?.name ?? "")님")
           .pretendardCustomFont(textStyle: .headline5Bold)
           .foregroundStyle(.borderInverse)
 
@@ -145,33 +174,41 @@ extension ProfileView {
         VStack(alignment: .leading, spacing: 20) {
           managerTextComponent(
             title: store.managerProfileRoleType,
-            subTitle: store.profileDTOModel?.role.attendanceListDesc ?? "",
+            subTitle: store.profileModel?.jobRole.desc ?? "",
             managingTeam: "",
             isManaging: false,
             isGeneration: false
           )
 
-          if store.profileDTOModel?.isStaff == true {
-            managerTextComponent(
-              title: store.managerProfileManaging,
-              subTitle: store.profileDTOModel?.responsibility.managingDesc ?? "",
-              managingTeam: mangingTeam.attendanceListDescription,
-              isManaging: store.profileDTOModel?.responsibility == .projectTeamManaging ? true : false,
-              isGeneration: false
-            )
-          } else {
-            managerTextComponent(
-              title: store.memberSelectTeam,
-              subTitle: memberTeam.attendanceListDescription,
-              managingTeam: "",
-              isManaging: false,
-              isGeneration: false
-            )
-          }
+//          if store.profileModel?.isStaff == true {
+////            managerTextComponent(
+////              title: store.managerProfileManaging,
+////              subTitle: store.profileModel?.responsibility.managingDesc ?? "",
+////              managingTeam: team.attendanceListDescription,
+////              isManaging: store.profileModel?.responsibility == .projectTeamManaging ? true : false,
+////              isGeneration: false
+////            )
+//          } else {
+//            managerTextComponent(
+//              title: store.memberSelectTeam,
+//              subTitle: team.attendanceListDescription,
+//              managingTeam: "",
+//              isManaging: false,
+//              isGeneration: false
+//            )
+//          }
+
+          managerTextComponent(
+            title: store.memberSelectTeam,
+            subTitle: team.attendanceListDescription,
+            managingTeam: "",
+            isManaging: false,
+            isGeneration: false
+          )
 
           managerTextComponent(
             title: store.managerProfileGeneration,
-            subTitle: store.profileDTOModel?.cohort ?? "",
+            subTitle: store.profileModel?.generation ?? "",
             managingTeam: "",
             isManaging: false,
             isGeneration: true
@@ -270,19 +307,20 @@ extension ProfileView {
   private func logoutButton() -> some View {
     VStack {
       Spacer()
-        .frame(height: 23)
+        .frame(height: 36)
 
       HStack(alignment: .center) {
 
         Text("탈퇴하기")
           .pretendardCustomFont(textStyle: .body2NormalMedium)
-          .foregroundStyle(.red40)
+          .foregroundStyle(.mediumGray)
+          .underline(true, color: .mediumGray)
           .onTapGesture {
-            store.send(.async(.deleteUser))
+            store.send(.view(.showWithdrawAlert))
           }
 
       Spacer()
-          .frame(width: 10)
+          .frame(width: 64)
 
         Text(store.logoutText)
           .pretendardCustomFont(textStyle: .body2NormalMedium)
@@ -292,9 +330,32 @@ extension ProfileView {
             store.send(.navigation(.presentLogOut))
           }
       }
-
-      Spacer()
     }
     .padding(.horizontal, 24)
   }
+
+  @ViewBuilder
+  private func appInfoView() -> some View {
+    VStack {
+      Spacer()
+        .frame(height: 12)
+
+
+      Text("Version \(store.appVersion)")
+        .pretendardCustomFont(textStyle: .body3NormalRegular)
+        .foregroundStyle(.mediumGray100)
+
+      Spacer()
+        .frame(height: 4)
+
+      Text("개인정보처리방침 보기")
+        .pretendardCustomFont(textStyle: .body3NormalRegular)
+        .foregroundStyle(.mediumGray)
+        .underline(true, color: .mediumGray)
+
+      Spacer()
+        .frame(height: 40)
+    }
+  }
 }
+

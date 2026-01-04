@@ -8,6 +8,7 @@
 import Foundation
 
 import Shareds
+import Utill
 import UseCase
 
 import ComposableArchitecture
@@ -20,12 +21,8 @@ public struct Splash {
   
   @ObservableState
   public struct State: Equatable {
-   
+
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
-//    var loginModel: LoginModel?
-    var profileDTOModel: ProfileResponseModel?
-    @Shared(.appStorage("AccessToken")) var accessToken: String = ""
-    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
 
     public init() {
 
@@ -44,21 +41,20 @@ public struct Splash {
   
   @CasePathable
   public enum View {
-    
+    case onAppear
+
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
-//    case autoLogin
-    case fetchUser
+    case checkToken
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
-    case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
-//    case autoLoginResponse(Result<LoginModel?, CustomError>)
+
   }
   
   // MARK: - NavigationAction
@@ -73,6 +69,7 @@ public struct Splash {
   
   @Dependency(\.authUseCase) var authUseCase
   @Dependency(\.profileUseCase) var profileUseCase
+  @Dependency(\.keychainManager) var keychainManager
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
@@ -102,7 +99,11 @@ public struct Splash {
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    
+    switch action {
+      case .onAppear:
+        return .send(.async(.checkToken))
+    }
+
   }
   
   private func handleAsyncAction(
@@ -110,54 +111,31 @@ public struct Splash {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-    case .fetchUser:
+    case .checkToken:
       return .run { send in
-        let profileResult = await Result {
-          try await profileUseCase.getProfile()
+        // 토큰 확인
+        guard let accessToken = keychainManager.accessToken(),
+              !accessToken.isEmpty else {
+          await send(.navigation(.presentLogin))
+          return
         }
 
-        switch profileResult {
-        case .success(let profileDTOData):
-          if let profileDTOData = profileDTOData {
-            await send(.inner(.fetchUserResponse(.success(profileDTOData))))
-
-            if profileDTOData.isStaff == true {
-              await send(.navigation(.presentCoreMember))
-            } else if profileDTOData.role == .all {
-              await send(.navigation(.presentLogin))
-            } else {
-              await send(.navigation(.presentMember))
-            }
-          }
-        case .failure(let error):
-          await send(.inner(.fetchUserResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
+        // 만료 체크
+        guard !JWTUtils.isExpired(accessToken) else {
           await send(.navigation(.presentLogin))
-
+          return
+        }
+        
+        // type에 따른 화면 이동
+        switch JWTUtils.getUserType(from: accessToken)?.lowercased() {
+        case "manager", "staff":
+          await send(.navigation(.presentCoreMember))
+        case "member":
+          await send(.navigation(.presentMember))
+        default:
+          await send(.navigation(.presentLogin))
         }
       }
-
-//    case .autoLogin:
-//      return .run { [userEmail = state.userEmail] send in
-//        let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
-//        let loginResult = await Result {
-//          try await authUseCase.loginUser(email: userEmail)
-//        }
-//
-//        switch loginResult {
-//        case .success(let loginModel):
-//          if let loginModel = loginModel {
-//            await send(.inner(.autoLoginResponse(.success(loginModel))))
-//
-//            if loginModel.code == 200 {
-//              await send(.async(.fetchUser))
-//            }
-//          }
-//
-//        case .failure(let error):
-//          await send(.inner(.autoLoginResponse(.failure(.encodingError(error.localizedDescription)))))
-//          await send(.navigation(.presentLogin))
-//        }
-//      }
     }
   }
 
@@ -166,35 +144,6 @@ public struct Splash {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-    case .fetchUserResponse(let result):
-      switch result {
-      case .success(let profileDTOData):
-        state.profileDTOModel = profileDTOData
-        state.$userEntity.withLock{
-          $0.userName = profileDTOData.name
-        }
-      case .failure(let error):
-        #logError("유저 정보 가져오기", error.localizedDescription)
-      }
-      return .none
-
-//    case .autoLoginResponse(let result):
-//      switch result {
-//      case .success(let loginDTOData):
-//        state.loginModel = loginDTOData
-//        UserDefaults.standard.set(loginDTOData?.data.accessToken, forKey: "ACCESS_TOKEN")
-//        state.$accessToken.withLock {$0 = loginDTOData?.data.accessToken ?? ""}
-//        state.$userEntity.withLock {
-//          $0.userEmail = loginDTOData?.data.email ?? ""
-//          $0.accessToken = loginDTOData?.data.accessToken ?? ""
-//          $0.refreshToken = loginDTOData?.data.refreshToken ?? ""
-//        }
-//
-//
-//      case .failure(let error):
-//        #logNetwork("로그인 실패", error.localizedDescription)
-//      }
-//      return .none
     }
   }
   

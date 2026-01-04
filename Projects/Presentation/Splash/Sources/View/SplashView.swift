@@ -8,6 +8,7 @@
 import SwiftUI
 
 import DesignSystem
+import Shareds
 
 import ComposableArchitecture
 import SDWebImageSwiftUI
@@ -38,17 +39,7 @@ public struct SplashView: View {
       }
     }
     .onAppear {
-      
-      if !store.accessToken.isEmpty {
-        if store.userEntity.accessToken.isEmpty {
-          self.store.$userEntity.withLock {
-            $0.accessToken = store.accessToken
-          }
-        }
-//        store.send(.async(.autoLogin))
-      } else {
-        store.send(.navigation(.presentLogin))
-      }
+      store.send(.view(.onAppear))
     }
   }
 }
