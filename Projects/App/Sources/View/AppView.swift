@@ -8,6 +8,7 @@
 import SwiftUI
 
 import Presentation
+import Profile
 
 import ComposableArchitecture
 
@@ -70,6 +71,17 @@ struct AppView: View {
       initialState: AuthCoordinator.State(),
       reducer: {
         AuthCoordinator()
+      })
+  )
+}
+
+
+#Preview {
+  StaffCoordinatorView(
+    store: .init(
+      initialState: StaffCoordinator.State(),
+      reducer: {
+        StaffCoordinator()
       })
   )
 }

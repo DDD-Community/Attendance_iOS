@@ -78,6 +78,13 @@ struct AppReducer {
   }
 }
 
+// MARK: - Effect Cancellation IDs
+private enum CancelID: Hashable {
+  case splashNavigation
+  case coreMemberEffects
+  case memberEffects
+}
+
 extension AppReducer {
   func handleViewAction(
     _ state: inout State,
@@ -87,33 +94,46 @@ extension AppReducer {
       // MARK: - 로그인 화면으로
     case .presentAuth:
       state = .auth(.init())
-      return .none
+      return .merge(
+        .cancel(id: CancelID.splashNavigation),
+        .cancel(id: CancelID.coreMemberEffects),
+        .cancel(id: CancelID.memberEffects)
+      )
 
     case .presentCoreMember:
       state = .coreMember(.init())
-      return .none
+      return .merge(
+        .cancel(id: CancelID.splashNavigation),
+        .cancel(id: CancelID.memberEffects)
+      )
 
     case .presentMember:
       state = .member(.init())
-      return .none
+      return .merge(
+        .cancel(id: CancelID.splashNavigation),
+        .cancel(id: CancelID.coreMemberEffects)
+      )
 
     case .splash(.navigation(.presentLogin)):
       return .run { send in
         try await clock.sleep(for: .seconds(1))
         await send(.view(.presentAuth))
       }
+      .cancellable(id: CancelID.splashNavigation)
 
     case .splash(.navigation(.presentCoreMember)):
       return .run { send in
         try await clock.sleep(for: .seconds(1))
         await send(.view(.presentCoreMember))
       }
+      .cancellable(id: CancelID.splashNavigation)
 
     case .splash(.navigation(.presentMember)):
       return .run { send in
         try await clock.sleep(for: .seconds(1))
         await send(.view(.presentMember))
       }
+      .cancellable(id: CancelID.splashNavigation)
 
     case .auth(.navigation(.presentCoreMember)):
       return .send(.view(.presentCoreMember))
@@ -122,12 +142,18 @@ extension AppReducer {
       return .send(.view(.presentMember))
 
     case .coreMember(.navigation(.presentLogin)):
-      return .send(.view(.presentAuth))
+      return .merge(
+        .cancel(id: CancelID.coreMemberEffects),
+        .send(.view(.presentAuth))
+      )
 
     case .member(.navigation(.presentLogin)):
-      return .send(.view(.presentAuth))
+      return .merge(
+        .cancel(id: CancelID.memberEffects),
+        .send(.view(.presentAuth))
+      )
 
-    default:
+    case .splash, .auth, .coreMember, .member:
       return .none
     }
   }
