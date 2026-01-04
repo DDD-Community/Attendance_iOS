@@ -39,11 +39,14 @@ public class AppDIManager: @unchecked Sendable {
     // MARK: - 온보딩 관련
       .register { OnBoardingRepositoryImpl()  as OnBoardingInterface }
       .register { SignUpRepositoryImpl() as SignUpInterface }
+    // MARK: - 출석 관련
       .register { AttendanceRepositoryImpl() as AttendanceInterface }
+    // MARK: - 프로필 관련
       .register { ProfileRepositoryImpl() as ProfileInterface }
+    // MARK: - 스케줄 관련
       .register { ScheduleRepositoryImpl() as ScheduleInterface }
+    // MARK: - QRCode 관련
       .register { QRCodeRepositoryImpl() as QRCodeInterface }
-    
       .configure()
   }
 }
