@@ -57,7 +57,7 @@ public extension AlertItem {
   ) -> AlertItem {
     AlertItem(
       title: "정말 탈퇴하시겠습니까?",
-      message: "탈퇴 시, 등록된 모든 출석 데이터가 삭제됩니다.",
+      message: "탈퇴 시, 등록된 모든 출석 데이터가\n삭제됩니다.",
       confirmTitle: "탈퇴하기",
       cancelTitle: "취소",
       isDestructive: true,

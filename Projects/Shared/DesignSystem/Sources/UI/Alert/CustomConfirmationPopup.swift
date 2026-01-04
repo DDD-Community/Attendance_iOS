@@ -78,6 +78,8 @@ struct CustomConfirmationPopupItemModifier: ViewModifier {
             onConfirm: item.onConfirm,
             onCancel: item.onCancel
           )
+          .transition(.move(edge: .bottom).combined(with: .opacity))
+          .animation(.easeInOut(duration: 0.3), value: item != nil)
         }
       }
   }
@@ -128,6 +130,8 @@ struct CustomConfirmationPopupModifier: ViewModifier {
             onConfirm: onConfirm,
             onCancel: onCancel
           )
+          .transition(.move(edge: .bottom).combined(with: .opacity))
+          .animation(.easeInOut(duration: 0.3), value: isPresented)
         }
       }
   }
@@ -166,6 +170,9 @@ struct CustomConfirmationPopup: View {
       Color.black
         .opacity(0.6)
         .edgesIgnoringSafeArea(.all)
+        .onTapGesture {
+          onCancel()
+        }
 
       VStack(alignment: .center, spacing: 24) {
         // Title and Message
@@ -217,6 +224,9 @@ struct CustomConfirmationPopup: View {
       .frame(width: 320)
       .background(.gray90)
       .clipShape(.rect(cornerRadius: 20))
+      .onTapGesture {
+        // Prevent background tap when tapping on popup content
+      }
     }
   }
 }
