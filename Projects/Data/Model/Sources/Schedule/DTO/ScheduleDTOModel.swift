@@ -27,7 +27,7 @@ public struct ScheduleDTOResponseModel: Decodable {
 }
 
 struct AttendancesSummaryDTO: Decodable {
-  let profile: ProfileDTO?
+  let profile: ScheduleProfileDTO?
   let status, updatedAt: String?
   let method, note: String?
 
@@ -38,7 +38,7 @@ struct AttendancesSummaryDTO: Decodable {
   }
 }
 
-struct ProfileDTO: Decodable {
+struct ScheduleProfileDTO: Decodable {
   let id: String
   let userID: Int
   let name, role, team, cohort: String

@@ -10,7 +10,7 @@ import Combine
 import DomainInterface
 import Model
 import Service
-import Foundations
+import Entity
 
 @preconcurrency import AsyncMoya
 
@@ -26,66 +26,9 @@ final public class ProfileRepositoryImpl: ProfileInterface , Sendable{
   }
 
 
-
-  // MARK: - 프로필 수정
-  public func editProfileManger(
-    name: String,
-    inviteCode: String,
-    role: String,
-    team: String,
-    responsibility: String
-  ) async throws -> ProfileResponseModel? {
-    let response: BaseResponseDTO<ProfileResponseDTO> = try await provider.request(
-      .editProfileManger(
-        username: name,
-        inviteCodeId: inviteCode,
-        role: role,
-        team:team,
-        responsibility: responsibility
-      ),
-    )
-    return response.data.toDomain()
-  }
-
-  // MARK: - 프로필 수정 운영진
-  public func editProfileMangerNoTeam(
-    name: String,
-    inviteCode: String,
-    role: String,
-    responsibility: String
-  ) async throws -> ProfileResponseModel? {
-    let response: BaseResponseDTO<ProfileResponseDTO> = try await provider.request(
-      .editProfileMangerNoTeam(
-        username: name,
-        inviteCodeId: inviteCode,
-        role: role,
-        responsibility: responsibility
-      ),
-    )
-    return response.data.toDomain()
-  }
-
-  // MARK: - 멤버 프로필 수정
-  public func editProfileMember(
-    name: String,
-    inviteCode: String,
-    role: String,
-    team: String
-  ) async throws -> ProfileResponseModel? {
-    let response: BaseResponseDTO<ProfileResponseDTO> = try await provider.request(
-      .editProfileMember(
-        username: name,
-        inviteCodeId: inviteCode,
-        role: role,
-        team: team
-      ),
-    )
-    return response.data.toDomain()
-  }
-
   // MARK: - 프로필 조회
-  public func getProfile() async throws -> ProfileResponseModel? {
-    let response: BaseResponseDTO<ProfileResponseDTO> = try await provider.request(.getProfile)
-    return response.data.toDomain()
+  public func getProfile() async throws -> Entity.ProfileEntity {
+    let dto:ProfileDTO = try await provider.request(.getProfile)
+    return dto.toDomain()
   }
 }

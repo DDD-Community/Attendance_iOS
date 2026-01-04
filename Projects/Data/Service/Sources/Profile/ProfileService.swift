@@ -13,25 +13,6 @@ import Foundations
 import AsyncMoya
 
 public enum ProfileService{
-  case editProfileManger(
-    username: String,
-    inviteCodeId: String,
-    role: String,
-    team: String,
-    responsibility: String
-  )
-  case editProfileMangerNoTeam(
-      username: String,
-      inviteCodeId: String,
-      role: String,
-      responsibility: String
-  )
-  case editProfileMember(
-    username: String,
-    inviteCodeId: String,
-    role: String,
-    team: String
-  )
   case getProfile
 }
 
@@ -40,16 +21,16 @@ extension ProfileService: BaseTargetType {
   public typealias Domain = AttendanceDomain
 
   public var domain: AttendanceDomain {
-    return .profile
+    switch self {
+      case .getProfile:
+        return .user
+    }
   }
   
   public var urlPath: String {
     switch self {
-    case .editProfileManger, .editProfileMangerNoTeam, .editProfileMember:
-      return ProfileAPI.editProfile.profileDescription
-      
     case .getProfile:
-      return ProfileAPI.getProfile.profileDescription
+      return ProfileAPI.getUser.profileDescription
     }
   }
   
@@ -59,9 +40,6 @@ extension ProfileService: BaseTargetType {
 
   public var method: Moya.Method {
     switch self {
-    case .editProfileManger, .editProfileMangerNoTeam , .editProfileMember:
-      return .patch
-      
     case .getProfile:
       return .get
     }
@@ -70,51 +48,6 @@ extension ProfileService: BaseTargetType {
 
   public var parameters: [String : Any]? {
     switch self {
-    case .editProfileManger(
-      let username,
-      let inviteCodeId,
-      let role,
-      let team,
-      let responsibility):
-      let parameters: [String: Any] = [
-        "name":  username,
-        "invite_code_id": inviteCodeId,
-        "role":  role,
-        "team":  team,
-        "cohort": "12",
-        "responsibility":responsibility
-      ]
-      return parameters
-      
-    case .editProfileMangerNoTeam(
-      let username,
-      let inviteCodeId,
-      let role,
-      let responsibility):
-      let parameters: [String: Any] = [
-      "name" :  username,
-      "invite_code_id": inviteCodeId,
-      "role":  role,
-      "cohort": "12",
-      "responsibility":responsibility
-    ]
-    return parameters
-      
-    case .editProfileMember(
-      let username,
-      let inviteCodeId,
-      let role,
-      let team):
-      let parameters: [String: Any] = [
-        "name":  username,
-        "invite_code_id": inviteCodeId,
-        "role":  role,
-        "team":  team,
-        "cohort": "12",
-      ]
-      return parameters
-      
-          
     case .getProfile:
       return nil
     }

@@ -12,8 +12,11 @@ import DomainInterface
 import Entity
 import WeaveDI
 
+
 final class AuthSessionManager {
   static let shared = AuthSessionManager()
+
+  @Dependency(\.keychainManager) var keychainManager
 
   let authenticator: AccessTokenAuthenticator
   let interceptor: AuthenticationInterceptor<AccessTokenAuthenticator>
@@ -22,12 +25,15 @@ final class AuthSessionManager {
   private init(authenticator: AccessTokenAuthenticator = AccessTokenAuthenticator()) {
     self.authenticator = authenticator
 
-    let initialCredential = AuthSessionManager.loadCredentialFromKeychain()
+    // 먼저 nil로 초기화
     self.interceptor = AuthenticationInterceptor(
       authenticator: authenticator,
-      credential: initialCredential
+      credential: nil
     )
     self.session = Session(interceptor: interceptor)
+
+    // 모든 프로퍼티 초기화 후 credential 설정
+    setupInitialCredential()
   }
 
   func updateCredential(with tokens: AuthTokens) {
@@ -48,8 +54,13 @@ final class AuthSessionManager {
 }
 
 private extension AuthSessionManager {
-  static func loadCredentialFromKeychain() -> AccessTokenCredential? {
-    let keychainManager = UnifiedDI.resolve(KeychainManaging.self) ?? InMemoryKeychainManager()
+  func setupInitialCredential() {
+    if let credential = loadCredentialFromKeychain() {
+      interceptor.credential = credential
+    }
+  }
+
+  func loadCredentialFromKeychain() -> AccessTokenCredential? {
     guard
       let accessToken = keychainManager.accessToken(),
       let refreshToken = keychainManager.refreshToken()
