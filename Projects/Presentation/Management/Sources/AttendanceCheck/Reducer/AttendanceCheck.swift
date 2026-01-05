@@ -152,7 +152,9 @@ public struct AttendanceCheck {
       }
     }
   }
-  
+}
+
+extension AttendanceCheck {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -161,7 +163,7 @@ public struct AttendanceCheck {
     case .selectPartButton(let selectPart):
       state.selectPart = selectPart
       return .none
-      
+
     case .swipeNext:
       guard let selectPart = state.selectPart else { return .none }
 
@@ -173,7 +175,7 @@ public struct AttendanceCheck {
       }
 
       return .none
-      
+
     case .swipePrevious:
       guard let selectPart = state.selectPart else { return .none }
       if let currentIndex = SelectTeam.allCases.firstIndex(of: selectPart),
@@ -181,7 +183,7 @@ public struct AttendanceCheck {
         state.selectPart = SelectTeam.allCases[currentIndex - 1]
       }
       return .none
-      
+
     case .appearSelectDate:
       state.destination = .selectDate(.init())
       return .none
@@ -196,7 +198,7 @@ public struct AttendanceCheck {
       return .none
     }
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
@@ -208,7 +210,7 @@ public struct AttendanceCheck {
         .run { await $0(.async(.fetchScheduleAttendanceCheck)) }
       )
       .debounce(id: AttendanceCheckCancel(), for: 0.3, scheduler: mainQueue)
-      
+
     case .fetchAttendanceCount:
       print("🔵 fetchAttendanceCount 액션 실행됨")
       return .run { [nowDate = state.selectAttendanceDate] send in
@@ -232,25 +234,25 @@ public struct AttendanceCheck {
         }
 
       }
-      
+
     case .filterAttendanceCount(let startDate):
       return .run {  send in
         let attendanceCountResult = await Result {
           try await attendanceUseCase.attendanceCount(startDate: startDate)
         }
-        
+
         switch attendanceCountResult {
         case .success(let attendanceCountDTOData):
           if let attendanceCountDTOData = attendanceCountDTOData {
             await send(.inner(.attendanceCountResponse(.success(attendanceCountDTOData))))
-            
+
             await send(.view(.closeModal))
           }
-          
+
         case .failure(let error):
           await send(.inner(.attendanceCountResponse(.failure(.encodingError(error.localizedDescription)))))
         }
-        
+
       }
       .debounce(id: AttendanceCheckCancel(), for: 0.3, scheduler: mainQueue)
 
@@ -274,14 +276,14 @@ public struct AttendanceCheck {
       }
     }
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
     return .none
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction

@@ -155,7 +155,9 @@ public struct ProfileReducer {
     .ifLet(\.$destination, action: \.destination)
     .ifLet(\.$alert, action: \.scope.alert)
   }
-  
+}
+
+extension ProfileReducer {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -188,13 +190,13 @@ public struct ProfileReducer {
       return .none
     }
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-      
+
     case .fetchUser:
         state.isLoading = true
       return .run { send in
@@ -232,7 +234,7 @@ public struct ProfileReducer {
         .cancellable(id: CancelID.logoutUser, cancelInFlight: true)
     }
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
@@ -293,7 +295,7 @@ public struct ProfileReducer {
         }
     }
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
@@ -303,7 +305,7 @@ public struct ProfileReducer {
       return .run {  send in
         try await clock.sleep(for: .seconds(2))
       }
-      
+
     case .presentCreateByApp:
       return .none
 

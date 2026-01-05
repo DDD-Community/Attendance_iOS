@@ -94,7 +94,9 @@ public struct Splash {
       }
     }
   }
-  
+}
+
+extension Splash {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -105,7 +107,7 @@ public struct Splash {
     }
 
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
@@ -125,7 +127,7 @@ public struct Splash {
           await send(.navigation(.presentLogin))
           return
         }
-        
+
         // type에 따른 화면 이동
         switch JWTUtils.getUserType(from: accessToken)?.lowercased() {
         case "manager", "staff":
@@ -146,7 +148,7 @@ public struct Splash {
     switch action {
     }
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
@@ -154,10 +156,10 @@ public struct Splash {
     switch action {
     case .presentLogin:
       return .none
-      
+
     case .presentCoreMember:
       return .none
-      
+
     case .presentMember:
       return .none
     }

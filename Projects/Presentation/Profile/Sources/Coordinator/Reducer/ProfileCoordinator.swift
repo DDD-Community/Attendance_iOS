@@ -82,7 +82,9 @@ public struct ProfileCoordinator {
     }
     .forEachRoute(\.routes, action: \.router)
   }
+}
 
+extension ProfileCoordinator {
   private func handleRouterAction(
     state: inout State,
     action: IndexedRouterActionOf<ProfileScreen>

@@ -103,7 +103,9 @@ public struct Login {
       }
     }
   }
-  
+}
+
+extension Login {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -113,7 +115,7 @@ public struct Login {
         return .send(.async(.login(socialType: social)))
     }
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
@@ -123,7 +125,7 @@ public struct Login {
         let nonce = appleLoginManger.prepare(request)
         state.nonce = nonce
         return .none
-        
+
       case .appleLogin(let result, let nonce):
         state.currentSocialType = .apple
         return .run { send in
@@ -146,7 +148,7 @@ public struct Login {
           await send(.inner(.loginResponse(outcome)))
         }
         .cancellable(id: CancelID.appleOAuth)
-        
+
       case .login(let socialType):
         state.currentSocialType = socialType
         state.$userSession.withLock { $0.provider = socialType }
@@ -164,11 +166,11 @@ public struct Login {
           return await send(.inner(.loginResponse(outcome)))
         }
         .cancellable(id: socialType == .apple ? CancelID.appleOAuth : CancelID.googleOAuth)
-        
+
     }
-    
+
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
@@ -204,9 +206,9 @@ public struct Login {
             }
         }
     }
-    
+
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
@@ -214,10 +216,10 @@ public struct Login {
     switch action {
       case .presentSignUpInviteView:
         return .none
-        
+
       case .presentCoreMemberMain:
         return .none
-        
+
       case .presentMemberMain:
         return .none
     }

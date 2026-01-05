@@ -81,7 +81,9 @@ public struct MemberCoordinator {
     }
     .forEachRoute(\.routes, action: \.router)
   }
+}
 
+extension MemberCoordinator {
   private func handleRouterAction(
     state: inout State,
     action: IndexedRouterActionOf<MemberScreen>
@@ -117,7 +119,7 @@ public struct MemberCoordinator {
     case .backAction:
       state.routes.goBack()
       return .none
-      
+
     case .backToRootAction:
       return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
         $0.goBackToRoot()

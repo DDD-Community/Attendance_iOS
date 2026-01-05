@@ -105,7 +105,9 @@ public struct MemberMain {
       }
     }
   }
+}
 
+extension MemberMain {
   private func handleViewAction(
     state: inout State,
     action: View

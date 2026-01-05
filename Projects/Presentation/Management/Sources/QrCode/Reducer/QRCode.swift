@@ -92,7 +92,9 @@ public struct QRCode {
       }
     }
   }
+}
 
+extension QRCode {
   private func handleViewAction(
     state: inout State,
     action: View

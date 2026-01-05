@@ -26,8 +26,8 @@ public struct AuthCoordinatorView: View {
         LoginView(store: loginStore)
           .navigationBarBackButtonHidden()
         
-      case .signUpInviteCode(let signUpInviteCodeStore):
-        SignUpInviteCodeView(store: signUpInviteCodeStore) {
+      case .InviteCode(let InviteCodeStore):
+        OnBoardingInviteCodeView(store: InviteCodeStore) {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()
