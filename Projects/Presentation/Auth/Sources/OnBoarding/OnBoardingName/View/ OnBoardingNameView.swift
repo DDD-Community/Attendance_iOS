@@ -13,12 +13,12 @@ import SwiftUIX
 import ComposableArchitecture
 
 
-public struct SignUpNameView: View {
-  @Bindable var store: StoreOf<SignUpName>
+public struct  OnBoardingNameView: View {
+  @Bindable var store: StoreOf<OnBoardingName>
   var backAction: () -> Void = {}
   
   public init(
-    store: StoreOf<SignUpName>,
+    store: StoreOf<OnBoardingName>,
     backAction: @escaping () -> Void
   ) {
     self.store = store
@@ -71,7 +71,7 @@ public struct SignUpNameView: View {
   }
 }
 
-extension SignUpNameView {
+extension  OnBoardingNameView {
   
   @ViewBuilder
   private func signUpNameText() -> some View {

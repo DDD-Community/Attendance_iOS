@@ -1,23 +1,21 @@
 //
-//  SignUpSelectTeamView.swift
+//  OnBoardingSelectManagingView.swift
 //  Presentation
 //
-//  Created by Wonji Suh  on 11/4/24.
+//  Created by Wonji Suh  on 11/3/24.
 //
 
 import SwiftUI
-
 import DesignSystem
-
 import ComposableArchitecture
 import SDWebImageSwiftUI
 
-public struct SignUpSelectTeamView: View {
-  @Bindable var store: StoreOf<SignUpSelectTeam>
-  var backAction: () -> Void
+public struct SelectManagingView: View {
+  @Bindable var store: StoreOf<SelectManagingReducer>
+  var backAction: () -> Void = {}
   
   public init(
-    store: StoreOf<SignUpSelectTeam>,
+    store: StoreOf<SelectManagingReducer>,
     backAction: @escaping () -> Void
   ) {
     self.store = store
@@ -35,8 +33,7 @@ public struct SignUpSelectTeamView: View {
         
         StepNavigationBar(activeStep: 3, buttonAction: backAction)
         
-        signUpSelectTeamText()
-
+        signUpSelectManagingText()
 
         if store.loading {
           VStack {
@@ -50,43 +47,46 @@ public struct SignUpSelectTeamView: View {
             Spacer()
           }
         } else {
-          selectTeamList()
+          selectManagingList()
 
-          signUpSelectTeamButton()
+          signUpSelectMangeButton()
         }
+
       }
       .onAppear {
-        store.userSession.selectTeam = .unknown
+        store.userSession.managing = []
         store.send(.view(.onAppear))
       }
     }
   }
 }
 
-extension SignUpSelectTeamView {
+
+extension SelectManagingView {
   
   @ViewBuilder
-  private func signUpSelectTeamText() -> some View {
+  private func signUpSelectManagingText() -> some View {
     SignUpPartText(
-      content: "팀을 선택해주세요",
-      title: "프로젝트 참여하시는 팀을 선택해 주세요.",
+      content: "담당 업무를 선택해주세요",
+      title: "프로젝트 참여하시는 직무을 선택해 주세요.",
       subtitle: ""
     )
   }
   
   @ViewBuilder
-  private func selectTeamList() -> some View {
+  private func selectManagingList() -> some View {
     VStack {
       Spacer()
         .frame(height: 40)
       
       ScrollView {
         VStack {
-          ForEach(store.teams ?? [], id: \.teamId) { item in
-            SelectTeamIteam(
-              content: item.teams.selectTeamDescription,
-              isActive: item.teams == store.userSession.selectTeam) {
-                store.send(.view(.selectTeamButton(selectTeam: item)))
+          ForEach(store.selectMangers ?? [], id: \.managingKeys) { item in
+            SelectPartItem(
+              content: item.managing.desc,
+              isActive: store.userSession.managing.contains(item.managing)) {
+
+                store.send(.view(.selectManagingButton(selectManaging: item)))
               }
           }
         }
@@ -96,16 +96,21 @@ extension SignUpSelectTeamView {
     }
   }
   
+  
   @ViewBuilder
-  private func signUpSelectTeamButton() -> some View {
+  private func signUpSelectMangeButton() -> some View {
     VStack {
       Spacer()
       
       CustomButton(
         action: {
-          store.send(.async(.signUpUser))
+          if store.userSession.managing.contains(.teamManaging) {
+            store.send(.navigation(.presentSelectTeam))
+          } else {
+            store.send(.async(.signUpUser))
+          }
         },
-        title: "가입 완료",
+        title: store.userSession.managing.contains(.teamManaging) ? "다음" : "가입완료",
         config: CustomButtonConfig.create(),
         isEnable: store.activeButton
       )

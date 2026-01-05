@@ -1,5 +1,5 @@
 //
-//  SignUpInviteCodeView.swift
+//  OnBoardingInviteCodeView.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 11/2/24.
@@ -12,16 +12,13 @@ import DesignSystem
 import ComposableArchitecture
 import SwiftUIX
 
-public struct SignUpInviteCodeView : View {
-  @Bindable var store: StoreOf<SignUpInviteCode>
-  @FocusState var firstInviteCodeFocus: Bool
-  @FocusState var secodInviteCodeFocus: Bool
-  @FocusState var thirdlnviteCodeFocus: Bool
-  @FocusState var lastlnviteCodeFocus: Bool
+public struct InviteCodeView : View {
+  @Bindable var store: StoreOf<InviteCodeReducer>
+  @FocusState private var focusedField: InviteCodeReducer.FocusField?
   var backAction: ()  -> Void = {}
   
   public init(
-    store: StoreOf<SignUpInviteCode>,
+    store: StoreOf<InviteCodeReducer>,
     backAction: @escaping () -> Void
   ) {
     self.store = store
@@ -60,9 +57,18 @@ public struct SignUpInviteCodeView : View {
         }
         .onTapGesture {
           UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+          focusedField = nil
         }
         .onAppear {
           store.send(.view(.initInviteCode))
+        }
+        .onChange(of: focusedField) { _, newValue in
+          guard store.focusedField != newValue else { return }
+          store.send(.view(.focusChanged(newValue)))
+        }
+        .onChange(of: store.focusedField) { _, newValue in
+          guard focusedField != newValue else { return }
+          focusedField = newValue
         }
         .alert($store.scope(state: \.alert, action: \.scope.alert))
       }
@@ -72,8 +78,8 @@ public struct SignUpInviteCodeView : View {
 }
 
 
-extension SignUpInviteCodeView {
-  
+extension InviteCodeView {
+
   @ViewBuilder
   private func inviteCodeInPutTextView() -> some View {
     SignUpPartText(
@@ -114,45 +120,45 @@ extension SignUpInviteCodeView {
         inputCodeText(
           text: $store.firstInviteCode,
           isErrorCode: store.isNotAvailableCode,
-          isFocs: $firstInviteCodeFocus) { moveBack in
+          field: .first) { moveBack in
             if moveBack {
-              firstInviteCodeFocus = true
+              focusedField = .first
               store.isNotAvailableCode = false
             } else {
-              secodInviteCodeFocus = true
+              focusedField = .second
             }
           }
         
         inputCodeText(
           text: $store.secondInviteCode,
           isErrorCode:  store.isNotAvailableCode,
-          isFocs: $secodInviteCodeFocus) { moveBack in
+          field: .second) { moveBack in
             if moveBack {
-              firstInviteCodeFocus = true
+              focusedField = .first
               store.isNotAvailableCode = false
             } else {
-              thirdlnviteCodeFocus = true
+              focusedField = .third
             }
           }
         
         inputCodeText(
           text: $store.thirdInviteCode,
           isErrorCode:  store.isNotAvailableCode,
-          isFocs: $thirdlnviteCodeFocus) { moveBack in
+          field: .third) { moveBack in
             if moveBack {
-              secodInviteCodeFocus = true
+              focusedField = .second
               store.isNotAvailableCode = false
             } else {
-              lastlnviteCodeFocus = true
+              focusedField = .last
             }
           }
         
         inputCodeText(
           text: $store.lastInviteCode,
           isErrorCode: store.isNotAvailableCode,
-          isFocs: $lastlnviteCodeFocus) { moveBack in
+          field: .last) { moveBack in
             if moveBack {
-              thirdlnviteCodeFocus = true
+              focusedField = .third
               store.isNotAvailableCode = false
             }
           }
@@ -167,7 +173,7 @@ extension SignUpInviteCodeView {
   private func inputCodeText(
     text: Binding<String>,
     isErrorCode: Bool,
-    isFocs: FocusState<Bool>.Binding,
+    field: InviteCodeReducer.FocusField,
     completion: @escaping (Bool) -> Void
   ) -> some View {
     RoundedRectangle(cornerRadius: 16)
@@ -189,7 +195,7 @@ extension SignUpInviteCodeView {
           .multilineTextAlignment(.center)
           .frame(maxWidth: .infinity)
           .keyboardType(.numberPad)
-          .focused(isFocs)
+          .focused($focusedField, equals: field)
           .onChange(of: text.wrappedValue) { _, newValue in
             if newValue.count > 1 {
               text.wrappedValue = String(newValue.prefix(1))

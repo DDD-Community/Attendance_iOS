@@ -1,5 +1,5 @@
 //
-//  SignUpPart.swift
+//  SelectPartReducer.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 11/3/24.
@@ -14,7 +14,7 @@ import ComposableArchitecture
 import LogMacro
 
 @Reducer
-public struct SignUpPart {
+public struct SelectPartReducer {
   public init() {}
   
   @ObservableState
@@ -93,7 +93,9 @@ public struct SignUpPart {
       }
     }
   }
-  
+}
+
+extension SelectPartReducer {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -121,7 +123,7 @@ public struct SignUpPart {
         return .send(.async(.getJobList))
     }
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
@@ -141,7 +143,7 @@ public struct SignUpPart {
       }
     }
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
@@ -160,7 +162,7 @@ public struct SignUpPart {
     }
 
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction

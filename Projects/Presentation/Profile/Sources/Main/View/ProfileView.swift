@@ -83,7 +83,6 @@ extension ProfileView {
         CustomNavigationBar(backAction: backAction, addAction: {
           store.send(.view(.appearModal))
         }, image: .info)
-        .padding(.horizontal, 16)
 
         ProfileSkeletonView()
       }
@@ -101,7 +100,6 @@ extension ProfileView {
       CustomNavigationBar(backAction: backAction, addAction: {
         store.send(.view(.appearModal))
       }, image: .info)
-      .padding(.horizontal, 16)
 
       mangerCardImage()
 
@@ -380,7 +378,7 @@ extension ProfileView {
         }
 
       Spacer()
-        .frame(height: 40)
+        .frame(height: 20)
     }
   }
 }

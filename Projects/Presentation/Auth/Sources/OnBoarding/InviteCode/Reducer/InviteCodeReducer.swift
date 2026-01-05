@@ -1,5 +1,5 @@
 //
-//  SignUpInviteCode.swift
+//  InviteCodeReducer.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 11/2/24.
@@ -15,8 +15,15 @@ import AsyncMoya
 import ComposableArchitecture
 
 @Reducer
-public struct SignUpInviteCode {
+public struct InviteCodeReducer {
   public init() {}
+
+  public enum FocusField: Hashable {
+    case first
+    case second
+    case third
+    case last
+  }
   
   @ObservableState
   public struct State: Equatable {
@@ -26,6 +33,7 @@ public struct SignUpInviteCode {
     var thirdInviteCode: String = ""
     var lastInviteCode: String = ""
     var verifyInviteCodeModel: VerifyCodeEntity?
+    var focusedField: FocusField? = .first
 
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
     @Presents public var alert: AlertState<AlertAction>?
@@ -62,6 +70,7 @@ public struct SignUpInviteCode {
   @CasePathable
   public enum View {
     case initInviteCode
+    case focusChanged(FocusField?)
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
@@ -128,7 +137,9 @@ public struct SignUpInviteCode {
     }
     .ifLet(\.$alert, action: \.scope.alert)
   }
-  
+}
+
+extension InviteCodeReducer {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -139,10 +150,14 @@ public struct SignUpInviteCode {
       state.secondInviteCode = ""
       state.thirdInviteCode = ""
       state.lastInviteCode = ""
+      state.focusedField = .first
+      return .none
+    case .focusChanged(let field):
+      state.focusedField = field
       return .none
     }
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
@@ -160,7 +175,7 @@ public struct SignUpInviteCode {
       .cancellable(id: CancelID.verifyCode, cancelInFlight: true)
     }
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
@@ -170,7 +185,7 @@ public struct SignUpInviteCode {
       return .none
     }
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction

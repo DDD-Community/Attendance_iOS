@@ -1,21 +1,23 @@
 //
-//  SignUpSelectManagingView.swift
+//  SelectPartView.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 11/3/24.
 //
 
 import SwiftUI
-import DesignSystem
-import ComposableArchitecture
-import SDWebImageSwiftUI
 
-public struct SignUpSelectManagingView: View {
-  @Bindable var store: StoreOf<SignUpSelectManaging>
+import DesignSystem
+
+import SDWebImageSwiftUI
+import ComposableArchitecture
+
+public struct SelectPartView: View {
+  @Bindable var store: StoreOf<SelectPartReducer>
   var backAction: () -> Void = {}
   
   public init(
-    store: StoreOf<SignUpSelectManaging>,
+    store: StoreOf<SelectPartReducer>,
     backAction: @escaping () -> Void
   ) {
     self.store = store
@@ -31,10 +33,10 @@ public struct SignUpSelectManagingView: View {
         Spacer()
           .frame(height: 12)
         
-        StepNavigationBar(activeStep: 3, buttonAction: backAction)
+        StepNavigationBar(activeStep: 2, buttonAction: backAction)
         
-        signUpSelectManagingText()
-
+        signUpPartText()
+        
         if store.loading {
           VStack {
             Spacer()
@@ -47,47 +49,51 @@ public struct SignUpSelectManagingView: View {
             Spacer()
           }
         } else {
-          selectManagingList()
+          selectPartList()
 
-          signUpSelectMangeButton()
+          signUpPartButton()
         }
 
       }
-      .onAppear {
-        store.userSession.managing = []
+      .task {
         store.send(.view(.onAppear))
       }
     }
   }
 }
 
+extension SelectPartView {
 
-extension SignUpSelectManagingView {
-  
   @ViewBuilder
-  private func signUpSelectManagingText() -> some View {
+  private func signUpPartText() -> some View {
     SignUpPartText(
-      content: "담당 업무를 선택해주세요",
+      content: "직무를 선택해 주세요",
       title: "프로젝트 참여하시는 직무을 선택해 주세요.",
       subtitle: ""
     )
   }
   
+  
   @ViewBuilder
-  private func selectManagingList() -> some View {
+  private func selectPartList() -> some View {
     VStack {
       Spacer()
         .frame(height: 40)
       
       ScrollView {
-        VStack {
-          ForEach(store.selectMangers ?? [], id: \.managingKeys) { item in
+        LazyVStack {
+          ForEach(
+            (store.selectJobs ?? []).sorted {
+              $0.job.desc.localizedCaseInsensitiveCompare($1.job.desc) == .orderedAscending
+            },
+            id: \.jobKeys
+          ) { item in
             SelectPartItem(
-              content: item.managing.desc,
-              isActive: store.userSession.managing.contains(item.managing)) {
-
-                store.send(.view(.selectManagingButton(selectManaging: item)))
-              }
+              content: item.job.desc,
+              isActive: item.job == store.selectPart
+            ) {
+              store.send(.view(.selectPartButton(selectPart: item)))
+            }
           }
         }
       }
@@ -97,27 +103,26 @@ extension SignUpSelectManagingView {
   }
   
   
+  
   @ViewBuilder
-  private func signUpSelectMangeButton() -> some View {
+  private func signUpPartButton() -> some View {
     VStack {
       Spacer()
       
       CustomButton(
         action: {
-          if store.userSession.managing.contains(.teamManaging) {
-            store.send(.navigation(.presentSelectTeam))
-          } else {
-            store.send(.async(.signUpUser))
-          }
+          store.send(.navigation(.presentNextStep))
         },
-        title: store.userSession.managing.contains(.teamManaging) ? "다음" : "가입완료",
+        title: "다음",
         config: CustomButtonConfig.create(),
-        isEnable: store.activeButton
+        isEnable: store.activeSelectPart
       )
       
       Spacer()
-      
+        .frame(height: 20)
     }
     .padding(.horizontal, 24)
   }
 }
+
+

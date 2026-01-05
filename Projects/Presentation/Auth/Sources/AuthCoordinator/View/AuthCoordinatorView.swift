@@ -27,31 +27,31 @@ public struct AuthCoordinatorView: View {
           .navigationBarBackButtonHidden()
         
       case .InviteCode(let InviteCodeStore):
-        OnBoardingInviteCodeView(store: InviteCodeStore) {
+        InviteCodeView(store: InviteCodeStore) {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()
         
-      case .signUpName(let signUpStore):
-        SignUpNameView(store: signUpStore) {
+      case .onBoardingName(let onBoardingNameStore):
+         OnBoardingNameView(store: onBoardingNameStore) {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()
         
-      case .signUpPart(let signUpPartStore):
-        SignUpPartView(store: signUpPartStore) {
+      case .selectPart(let selectPartStore):
+        SelectPartView(store: selectPartStore) {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()
         
-      case .signUpManaging(let signUpManagingStore):
-        SignUpSelectManagingView(store: signUpManagingStore) {
+      case .selectManaging(let selectManagingStore):
+        SelectManagingView(store: selectManagingStore) {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()
         
-      case .signUpSelectTeam(let signUpSelectTeamStore):
-        SignUpSelectTeamView(store: signUpSelectTeamStore) {
+      case .selectTeam(let signUpSelectTeamStore):
+        SelectTeamView(store: signUpSelectTeamStore) {
           store.send(.view(.backAction))
         }
         .navigationBarBackButtonHidden()

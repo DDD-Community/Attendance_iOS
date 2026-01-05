@@ -1,5 +1,5 @@
 //
-//  SignUpSelectTeam.swift
+//  SelectTeam.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 11/4/24.
@@ -15,7 +15,7 @@ import ComposableArchitecture
 import LogMacro
 
 @Reducer
-public struct SignUpSelectTeam {
+public struct SelectTeam {
   public init() {}
 
   @ObservableState
@@ -101,7 +101,9 @@ public struct SignUpSelectTeam {
       }
     }
   }
-  
+}
+
+extension SelectTeam {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -134,10 +136,11 @@ public struct SignUpSelectTeam {
 
         case .onAppear:
           return .send(.async(.getTeams))
+            .cancellable(id: CancelID.selectTeam, cancelInFlight: true)
 
     }
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
@@ -145,12 +148,12 @@ public struct SignUpSelectTeam {
     switch action {
     case .presentMember:
       return .none
-      
+
     case .presentManager:
       return .none
     }
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
@@ -181,10 +184,10 @@ public struct SignUpSelectTeam {
           return await send(.inner(.signUpUserResponse(signUpUserResult)))
         }
 
-      
+
     }
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction

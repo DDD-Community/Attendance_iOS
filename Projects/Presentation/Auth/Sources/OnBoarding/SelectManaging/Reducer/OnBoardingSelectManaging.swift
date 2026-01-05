@@ -1,5 +1,5 @@
 //
-//  SignUpSelectManaging.swift
+//  OnBoardingSelectManaging.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 11/3/24.
@@ -15,7 +15,7 @@ import AsyncMoya
 import ComposableArchitecture
 
 @Reducer
-public struct SignUpSelectManaging {
+public struct SelectManagingReducer {
   public init() {}
 
   @ObservableState
@@ -100,7 +100,9 @@ public struct SignUpSelectManaging {
       }
     }
   }
+}
 
+extension SelectManagingReducer {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -199,6 +201,6 @@ public struct SignUpSelectManaging {
             return .none
         }
     }
-    
+
   }
 }

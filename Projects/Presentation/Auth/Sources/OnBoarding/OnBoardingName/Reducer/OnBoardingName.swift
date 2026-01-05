@@ -1,5 +1,5 @@
 //
-//  SignUpName.swift
+//  OnBoardingName.swift
 //  Presentation
 //
 //  Created by Wonji Suh  on 11/3/24.
@@ -13,7 +13,7 @@ import Entity
 import ComposableArchitecture
 
 @Reducer
-public struct SignUpName {
+public struct OnBoardingName {
   public init() {}
   
   @ObservableState
@@ -64,7 +64,9 @@ public struct SignUpName {
       }
     }
   }
-  
+}
+
+extension OnBoardingName {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -81,13 +83,13 @@ public struct SignUpName {
           await send(.navigation(.presentSignUpPart))
         }
       }
-      
+
     case .initSignUpName:
       state.$userSession.withLock { $0.name = "" }
       return .none
     }
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
