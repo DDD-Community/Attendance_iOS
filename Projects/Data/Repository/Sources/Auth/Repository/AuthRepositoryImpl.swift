@@ -51,8 +51,26 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
 
   // MARK: - 로그아웃
   public func logout() async throws -> AuthExitEntity {
-    let dto: LogOutDTO = try await provider.request(.logout)
-    return dto.toDomain()
+    let response = try await authProvider.requestResponse(.logout)
+    let decoder = JSONDecoder()
+
+    if (200...299).contains(response.statusCode) {
+      keychainManager.clear()
+      if response.data.isEmpty {
+        return AuthExitEntity()
+      }
+      if let successDTO = try? decoder.decode(LogOutDTO.self, from: response.data) {
+        return successDTO.toDomain()
+      }
+      return AuthExitEntity()
+    }
+
+    if let errorDTO = try? decoder.decode(LogOutDTO.self, from: response.data) {
+      return errorDTO.toDomain()
+    }
+    
+    let errorMessage = String(data: response.data, encoding: .utf8)
+    return AuthExitEntity(message: errorMessage)
   }
 
   // MARK: - 계정 삭제

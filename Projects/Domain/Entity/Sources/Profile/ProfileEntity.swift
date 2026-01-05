@@ -12,6 +12,7 @@ public struct ProfileEntity: Equatable {
   public let generation: String
   public let team: SelectTeams?
   public let jobRole: SelectParts
+  public let role: Staff
   public let manger: [StaffManaging]?
 
   public init(
@@ -19,12 +20,14 @@ public struct ProfileEntity: Equatable {
     generation: String,
     team: SelectTeams?,
     jobRole: SelectParts,
+    role: Staff,
     manger: [StaffManaging]?
   ) {
     self.name = name
     self.generation = generation
     self.team = team
     self.jobRole = jobRole
+    self.role = role
     self.manger = manger
   }
 }

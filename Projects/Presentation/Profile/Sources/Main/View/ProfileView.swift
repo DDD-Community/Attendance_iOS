@@ -37,19 +37,21 @@ public struct ProfileView: View {
       }
       .alert($store.scope(state: \.alert, action: \.scope.alert))
       .customConfirmationPopup(
-        item: store.alertItem != nil ? AlertItem(
-          title: store.alertItem?.title ?? "",
-          message: store.alertItem?.message ?? "",
-          confirmTitle: store.alertItem?.confirmTitle ?? "확인",
-          cancelTitle: store.alertItem?.cancelTitle ?? "취소",
-          isDestructive: store.alertItem?.isDestructive ?? false,
-          onConfirm: {
-            store.send(.view(.withdrawAlertConfirmed))
-          },
-          onCancel: {
-            store.send(.view(.withdrawAlertCancelled))
-          }
-        ) : nil
+        item: store.alertItem.map { alertItem in
+          AlertItem(
+            title: alertItem.title,
+            message: alertItem.message,
+            confirmTitle: alertItem.confirmTitle,
+            cancelTitle: alertItem.cancelTitle,
+            isDestructive: alertItem.isDestructive,
+            onConfirm: {
+              store.send(.view(.withdrawAlertConfirmed))
+            },
+            onCancel: {
+              store.send(.view(.withdrawAlertCancelled))
+            }
+          )
+        }
       )
 
       if store.destination?.createApp != nil {
@@ -73,31 +75,21 @@ public struct ProfileView: View {
 extension ProfileView {
   @ViewBuilder
   fileprivate func mangerProfileLoadingData() -> some View {
-//    if store.profileDTOModel == nil {
-//      if store.isLoading  {
-//        VStack {
-//          Spacer()
-//            .frame(height: 12)
-//
-//          CustomNavigationBar(backAction: backAction, addAction: {
-//            store.send(.view(.appearModal))
-//          }, image: .info)
-//
-//          Spacer()
-//
-//          profileLoadingView()
-//
-//          Spacer()
-//
-//          logoutButton()
-//
-//
-//        }
-//      }
-//    } else {
-//      mangerProfileData()
-//    }
-    mangerProfileData()
+    if store.profileModel == nil && store.isLoading {
+      VStack {
+        Spacer()
+          .frame(height: 12)
+
+        CustomNavigationBar(backAction: backAction, addAction: {
+          store.send(.view(.appearModal))
+        }, image: .info)
+        .padding(.horizontal, 16)
+
+        ProfileSkeletonView()
+      }
+    } else {
+      mangerProfileData()
+    }
   }
 
   @ViewBuilder
@@ -109,6 +101,7 @@ extension ProfileView {
       CustomNavigationBar(backAction: backAction, addAction: {
         store.send(.view(.appearModal))
       }, image: .info)
+      .padding(.horizontal, 16)
 
       mangerCardImage()
 
@@ -127,9 +120,13 @@ extension ProfileView {
         .frame(height: 17)
 
       VStack(alignment: .leading, spacing: .zero) {
+        if store.profileModel?.role == .manager {
+          Spacer()
+            .frame(height: 24)
+        }
 
         HStack {
-          Text("멤버")
+          Text(store.profileModel?.role == .manager ? "매니저" : "멤버")
             .pretendardCustomFont(textStyle: .body3NormalBold)
             .foregroundStyle(.statusFocus)
             .padding(.horizontal, 14)
@@ -169,9 +166,15 @@ extension ProfileView {
           .pretendardCustomFont(textStyle: .headline5Bold)
           .foregroundStyle(.borderInverse)
 
-        Spacer()
+        if store.profileModel?.role == .manager {
+          Spacer()
+            .frame(height: 20)
+        } else {
+          Spacer()
+        }
 
         VStack(alignment: .leading, spacing: 20) {
+          // 1. 직군 (항상 표시)
           managerTextComponent(
             title: store.managerProfileRoleType,
             subTitle: store.profileModel?.jobRole.desc ?? "",
@@ -180,43 +183,64 @@ extension ProfileView {
             isGeneration: false
           )
 
-//          if store.profileModel?.isStaff == true {
-////            managerTextComponent(
-////              title: store.managerProfileManaging,
-////              subTitle: store.profileModel?.responsibility.managingDesc ?? "",
-////              managingTeam: team.attendanceListDescription,
-////              isManaging: store.profileModel?.responsibility == .projectTeamManaging ? true : false,
-////              isGeneration: false
-////            )
-//          } else {
-//            managerTextComponent(
-//              title: store.memberSelectTeam,
-//              subTitle: team.attendanceListDescription,
-//              managingTeam: "",
-//              isManaging: false,
-//              isGeneration: false
-//            )
-//          }
+          if store.profileModel?.role == .manager {
+            // Manager 순서: 직군 → 담당 팀 → 소속 기수 → 담당 업무
 
-          managerTextComponent(
-            title: store.memberSelectTeam,
-            subTitle: team.attendanceListDescription,
-            managingTeam: "",
-            isManaging: false,
-            isGeneration: false
-          )
+            // 2. 담당 팀
+            managerTextComponent(
+              title: store.memberSelectTeam,
+              subTitle: "매니징",
+              managingTeam: team.attendanceListDescription,
+              isManaging: true,
+              isGeneration: false
+            )
 
-          managerTextComponent(
-            title: store.managerProfileGeneration,
-            subTitle: store.profileModel?.generation ?? "",
-            managingTeam: "",
-            isManaging: false,
-            isGeneration: true
-          )
+            // 3. 소속 기수
+            managerTextComponent(
+              title: store.managerProfileGeneration,
+              subTitle: store.profileModel?.generation ?? "",
+              managingTeam: "",
+              isManaging: false,
+              isGeneration: true
+            )
+
+            // 4. 담당 업무 (해당 업무가 있는 경우만)
+            if let managerRoles = store.profileModel?.manger, !managerRoles.isEmpty {
+              managerTextComponent(
+                title: store.managerProfileManaging,
+                subTitle: managerRoles.map { $0.desc }.joined(separator: " / "),
+                managingTeam: "",
+                isManaging: false,
+                isGeneration: false
+              )
+            }
+
+          } else if store.profileModel?.role == .member {
+            // Member 순서: 직군 → 소속 팀 → 소속 기수
+
+            // 2. 소속 팀
+            managerTextComponent(
+              title: store.memberSelectTeam,
+              subTitle: team.attendanceListDescription,
+              managingTeam: "",
+              isManaging: false,
+              isGeneration: false
+            )
+
+            // 3. 소속 기수
+            managerTextComponent(
+              title: store.managerProfileGeneration,
+              subTitle: store.profileModel?.generation ?? "",
+              managingTeam: "",
+              isManaging: false,
+              isGeneration: true
+            )
+          }
+
         }
 
         Spacer()
-          .frame(height: 40)
+         
 
         HStack {
           Spacer()
@@ -227,16 +251,21 @@ extension ProfileView {
 
           Spacer()
         }
+
+        if store.profileModel?.role == .manager {
+          Spacer()
+            .frame(height: 24)
+        }
       }
       .padding(24)
       .background(
         Image(asset: .profileBack)
           .resizable()
           .scaledToFit()
-          .frame(height: UIScreen.screenHeight * 0.7)
+          .frame(height: UIScreen.screenHeight * 0.68)
           .cornerRadius(20)
       )
-      .frame(height: UIScreen.screenHeight * 0.7)
+      .frame(height: UIScreen.screenHeight * 0.68)
     }
     .padding(.horizontal, 24)
   }
@@ -271,7 +300,7 @@ extension ProfileView {
         }
       } else if isGeneration {
         HStack {
-          Text("\(subTitle)기")
+          Text("\(subTitle)")
             .pretendardCustomFont(textStyle: .title2NormalMedium)
             .foregroundStyle(.borderInverse)
 
@@ -279,9 +308,16 @@ extension ProfileView {
         }
       } else {
         HStack {
-          Text(subTitle)
-            .pretendardCustomFont(textStyle: .title2NormalMedium)
-            .foregroundStyle(.borderInverse)
+          if title == "담당 업무" {
+            Text(subTitle)
+              .pretendardFont(family: .Regular, size: 16)
+              .foregroundStyle(.textSecondary100)
+
+          } else {
+            Text(subTitle)
+              .pretendardCustomFont(textStyle: .title2NormalMedium)
+              .foregroundStyle(.borderInverse)
+          }
 
           Spacer()
         }
@@ -289,19 +325,6 @@ extension ProfileView {
     }
   }
 
-  @ViewBuilder
-  fileprivate func profileLoadingView() -> some View {
-    VStack {
-      Spacer()
-
-      AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(true))
-        .resizable()
-        .scaledToFit()
-        .frame(width: 200, height: 200)
-
-      Spacer()
-    }
-  }
 
   @ViewBuilder
   private func logoutButton() -> some View {

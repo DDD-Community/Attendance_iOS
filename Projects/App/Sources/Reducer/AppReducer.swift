@@ -56,24 +56,23 @@ struct AppReducer {
   @Dependency(\.continuousClock) var clock
 
   var body: some ReducerOf<Self> {
-    EmptyReducer()
-      .ifCaseLet(\.splash, action: \.view.splash) {
-        Splash()
-      }
-      .ifCaseLet(\.auth, action: \.view.auth) {
-        AuthCoordinator()
-      }
-      .ifCaseLet(\.coreMember, action: \.view.coreMember) {
-        StaffCoordinator()
-      }
-      .ifCaseLet(\.member, action: \.view.member) {
-        MemberCoordinator()
-      }
     Reduce { state, action in
       switch action {
       case .view(let ViewAction):
-        handleViewAction(&state, action: ViewAction)
+        return handleViewAction(&state, action: ViewAction)
       }
+    }
+    .ifCaseLet(\.splash, action: \.view.splash) {
+      Splash()
+    }
+    .ifCaseLet(\.auth, action: \.view.auth) {
+      AuthCoordinator()
+    }
+    .ifCaseLet(\.coreMember, action: \.view.coreMember) {
+      StaffCoordinator()
+    }
+    .ifCaseLet(\.member, action: \.view.member) {
+      MemberCoordinator()
     }
   }
 }
@@ -81,6 +80,7 @@ struct AppReducer {
 // MARK: - Effect Cancellation IDs
 private enum CancelID: Hashable {
   case splashNavigation
+  case authEffects
   case coreMemberEffects
   case memberEffects
 }
@@ -104,6 +104,7 @@ extension AppReducer {
       state = .coreMember(.init())
       return .merge(
         .cancel(id: CancelID.splashNavigation),
+        .cancel(id: CancelID.authEffects),
         .cancel(id: CancelID.memberEffects)
       )
 
@@ -111,6 +112,7 @@ extension AppReducer {
       state = .member(.init())
       return .merge(
         .cancel(id: CancelID.splashNavigation),
+        .cancel(id: CancelID.authEffects),
         .cancel(id: CancelID.coreMemberEffects)
       )
 
@@ -121,7 +123,7 @@ extension AppReducer {
       }
       .cancellable(id: CancelID.splashNavigation)
 
-    case .splash(.navigation(.presentCoreMember)):
+    case .splash(.navigation(.presentStaff)):
       return .run { send in
         try await clock.sleep(for: .seconds(1))
         await send(.view(.presentCoreMember))
@@ -136,10 +138,18 @@ extension AppReducer {
       .cancellable(id: CancelID.splashNavigation)
 
     case .auth(.navigation(.presentCoreMember)):
-      return .send(.view(.presentCoreMember))
+      return .merge(
+        .send(.view(.auth(.navigation(.cleanup)))),
+        .send(.view(.presentCoreMember))
+      )
+      .cancellable(id: CancelID.authEffects)
 
     case .auth(.navigation(.presentMember)):
-      return .send(.view(.presentMember))
+      return .merge(
+        .send(.view(.auth(.navigation(.cleanup)))),
+        .send(.view(.presentMember))
+      )
+      .cancellable(id: CancelID.authEffects)
 
     case .coreMember(.navigation(.presentLogin)):
       return .merge(
@@ -153,8 +163,16 @@ extension AppReducer {
         .send(.view(.presentAuth))
       )
 
-    case .splash, .auth, .coreMember, .member:
+    case .splash, .coreMember, .member:
       return .none
+
+    case .auth:
+      // auth 액션이 들어왔는데 현재 상태가 auth가 아니면 무시
+      if case .auth = state {
+        return .none
+      } else {
+        return .none
+      }
     }
   }
 }

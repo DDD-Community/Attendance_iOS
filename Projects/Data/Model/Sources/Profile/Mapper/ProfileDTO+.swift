@@ -14,7 +14,8 @@ public extension ProfileDTO {
       name: self.name,
       generation: self.generation,
       team: SelectTeams(rawValue: self.team ?? ""),
-      jobRole: SelectParts(rawValue: self.team ?? "") ?? .all,
+      jobRole: SelectParts.from(apiKey: self.jobRole) ?? .all,
+      role: Staff.from(apiKey: self.role) ?? .member,
       manger: self.managerRoles.compactMap { StaffManaging.from(apiKey: $0) },
     )
   }

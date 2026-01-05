@@ -14,10 +14,11 @@ public struct ProfileDTO: Decodable {
   let generation: String
   let team: String?
   let jobRole: String
+  let role: String
   let managerRoles: [String]
 
   enum CodingKeys: String, CodingKey {
     case userID = "userId"
-    case name, email, generation, team, jobRole, managerRoles
+    case name, email, generation, team, jobRole, managerRoles, role
   }
 }

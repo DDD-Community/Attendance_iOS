@@ -10,6 +10,7 @@ import Foundation
 import Shareds
 import Utill
 import UseCase
+import Entity
 
 import ComposableArchitecture
 import FirebaseAuth
@@ -23,6 +24,7 @@ public struct Splash {
   public struct State: Equatable {
 
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
+    var profileModel: ProfileEntity?
 
     public init() {
 
@@ -48,28 +50,29 @@ public struct Splash {
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
-    case checkToken
+    case fetchProfile
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
-
+    case fetchUserResponse(Result<ProfileEntity, ProfileError>)
   }
   
   // MARK: - NavigationAction
   
   public enum NavigationAction: Equatable {
     case presentLogin
-    case presentCoreMember
+    case presentStaff
     case presentMember
   }
   
-  fileprivate struct SplashCancel: Hashable {}
-  
-  @Dependency(\.authUseCase) var authUseCase
+  nonisolated enum CancelID: Hashable {
+    case fetchProfile
+  }
+
   @Dependency(\.profileUseCase) var profileUseCase
-  @Dependency(\.keychainManager) var keychainManager
+
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
@@ -103,7 +106,7 @@ extension Splash {
   ) -> Effect<Action> {
     switch action {
       case .onAppear:
-        return .send(.async(.checkToken))
+        return .send(.async(.fetchProfile))
     }
 
   }
@@ -113,31 +116,14 @@ extension Splash {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-    case .checkToken:
-      return .run { send in
-        // 토큰 확인
-        guard let accessToken = keychainManager.accessToken(),
-              !accessToken.isEmpty else {
-          await send(.navigation(.presentLogin))
-          return
+    case .fetchProfile:
+        return .run { send in
+          let profileResult = await Result {
+            try await profileUseCase.getProfile()
+          }
+            .mapError(ProfileError.from)
+          return await send(.inner(.fetchUserResponse(profileResult)))
         }
-
-        // 만료 체크
-        guard !JWTUtils.isExpired(accessToken) else {
-          await send(.navigation(.presentLogin))
-          return
-        }
-
-        // type에 따른 화면 이동
-        switch JWTUtils.getUserType(from: accessToken)?.lowercased() {
-        case "manager", "staff":
-          await send(.navigation(.presentCoreMember))
-        case "member":
-          await send(.navigation(.presentMember))
-        default:
-          await send(.navigation(.presentLogin))
-        }
-      }
     }
   }
 
@@ -146,6 +132,22 @@ extension Splash {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
+      case .fetchUserResponse(let result):
+        switch result {
+          case .success(let profileData):
+            state.profileModel = profileData
+
+            if state.profileModel?.role == .manager {
+              return .send(.navigation(.presentStaff))
+            } else {
+              return .send(.navigation(.presentMember))
+            }
+
+          case .failure(let error):
+            #logDebug("네트워크 통신 에러 ", error.localizedDescription)
+            return .send(.navigation(.presentLogin))
+
+        }
     }
   }
 
@@ -157,7 +159,7 @@ extension Splash {
     case .presentLogin:
       return .none
 
-    case .presentCoreMember:
+    case .presentStaff:
       return .none
 
     case .presentMember:

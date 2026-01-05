@@ -85,3 +85,13 @@ struct AppView: View {
       })
   )
 }
+
+#Preview {
+  ProfileCoordinatorView(
+    store: .init(
+      initialState: ProfileCoordinator.State(),
+      reducer: {
+        ProfileCoordinator()
+      })
+  )
+}

@@ -61,6 +61,7 @@ private extension AuthSessionManager {
   }
 
   func loadCredentialFromKeychain() -> AccessTokenCredential? {
+    @Dependency(\.keychainManager) var keychainManager;
     guard
       let accessToken = keychainManager.accessToken(),
       let refreshToken = keychainManager.refreshToken()

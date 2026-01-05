@@ -18,6 +18,7 @@ public protocol SignUpUseCaseInterface: Sendable {
 
 public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
   @Dependency(\.signUpRepository) var repository
+  @Dependency(\.authUseCase) var authUseCase
 
   public init() { }
 
@@ -33,13 +34,21 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
       name: userSession.name,
       generationId: userSession.generationId,
       jobRole: userSession.selectPart,
-      teamId: isManager ? nil : userSession.selectTeamId,
+      teamId: userSession.selectTeamId,
       managerRoles: isManager ? userSession.managing : nil,
       provider: userSession.provider,
       token: userSession.token,
       invitationCode: userSession.inviteCode
     )
-    return try await repository.registerUser(input: input)
+
+    let signUpUser = try await repository.registerUser(input: input)
+
+    _ = try await authUseCase.login(
+      provider: userSession.provider,
+      token: userSession.token
+    )
+
+    return signUpUser
   }
 }
 

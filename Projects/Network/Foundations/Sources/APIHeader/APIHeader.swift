@@ -9,22 +9,26 @@ import Foundation
 
 import WeaveDI
 
+private struct StaticDependencies {
+    @Dependency(\.tokenProvider) var tokenProvider
+}
+
 public struct APIHeader {
 
   public static let contentType   = "Content-Type"
   public static let accessToken   = "Authorization"
   public static let accept        = "accept"
 
-  @Dependency(\.tokenProvider) private var tokenProvider
+  private static var dependencies = StaticDependencies()
 
   public static var accessTokenKeyChain: String {
-    get { APIHeader().tokenProvider.accessToken() ?? "" }
+    get { dependencies.tokenProvider.accessToken() ?? "" }
     set { updateAccessToken(newValue) }
   }
 
   public static func updateAccessToken(_ token: String?) {
     guard let newToken = token, !newToken.isEmpty else { return }
-    APIHeader().tokenProvider.saveAccessToken(newToken)
+    dependencies.tokenProvider.saveAccessToken(newToken)
   }
 
   public init() {}

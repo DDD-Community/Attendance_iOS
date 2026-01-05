@@ -241,9 +241,9 @@ extension ProfileReducer {
   ) -> Effect<Action> {
     switch action {
     case .fetchUserResponse(let result):
+      state.isLoading = false
       switch result {
       case .success(let profileDTOData):
-          state.isLoading = false
         state.profileModel = profileDTOData
 
       case .failure(let error):

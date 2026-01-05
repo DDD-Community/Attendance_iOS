@@ -52,6 +52,7 @@ private extension DefaultProfileRepositoryImpl {
       generation: "2기",
       team: .ios1,
       jobRole: .ios,
+      role: .member,
       manger: nil
     )
   }
@@ -62,6 +63,7 @@ private extension DefaultProfileRepositoryImpl {
       generation: "1기",
       team: .and1,
       jobRole: .android,
+      role: .manager,
       manger: [.teamManaging]
     )
   }
@@ -72,6 +74,7 @@ private extension DefaultProfileRepositoryImpl {
       generation: "0기",
       team: nil,
       jobRole: .pm,
+      role: .manager,
       manger: [.teamManaging, .scheduleReminder, .attendanceCheck]
     )
   }
