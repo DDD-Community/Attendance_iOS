@@ -1,31 +1,28 @@
 //
-//  SignUpUserRequestDTO.swift
+//  EditProfileRequestDTO.swift
 //  Service
 //
-//  Created by Wonji Suh  on 1/1/26.
+//  Created by Claude on 1/6/26.
 //
 
-public struct SignUpUserRequestDTO: Encodable {
+import Foundation
+
+public struct EditProfileRequestDTO: Encodable {
   public let profile: BaseUserProfileDTO
-  public let authentication: AuthenticationDTO
 
   public init(
-    profile: BaseUserProfileDTO,
-    authentication: AuthenticationDTO
+    profile: BaseUserProfileDTO
   ) {
     self.profile = profile
-    self.authentication = authentication
   }
 
-  // 기존 방식과의 호환성을 위한 편의 이니셜라이저
+  // 편의 이니셜라이저
   public init(
     name: String,
     generationId: Int,
     jobRole: String,
     teamId: Int?,
     managerRoles: [String]?,
-    provider: String,
-    token: String,
     invitationCode: String
   ) {
     self.profile = BaseUserProfileDTO(
@@ -35,10 +32,6 @@ public struct SignUpUserRequestDTO: Encodable {
       teamId: teamId,
       managerRoles: managerRoles,
       invitationCode: invitationCode
-    )
-    self.authentication = AuthenticationDTO(
-      provider: provider,
-      token: token,
     )
   }
 
@@ -51,13 +44,19 @@ public struct SignUpUserRequestDTO: Encodable {
     try container.encode(profile.jobRole, forKey: .jobRole)
     try container.encode(profile.teamId, forKey: .teamId)
     try container.encode(profile.managerRoles, forKey: .managerRoles)
-    try container.encode(authentication.provider, forKey: .provider)
-    try container.encode(authentication.token, forKey: .token)
     try container.encode(profile.invitationCode, forKey: .invitationCode)
   }
 
   private enum CodingKeys: String, CodingKey {
-    case name, generationId, jobRole, teamId, managerRoles
-    case provider, token, invitationCode
+    case name, generationId, jobRole, teamId, managerRoles, invitationCode
+  }
+}
+
+// MARK: - Dictionary 변환 (SignUpUserRequestDTO와 동일)
+extension EditProfileRequestDTO {
+  /// DTO를 Dictionary로 변환 (Moya parameters용)
+  public var toDictionary: [String: Any]? {
+    guard let data = try? JSONEncoder().encode(self) else { return nil }
+    return try? JSONSerialization.jsonObject(with: data) as? [String: Any]
   }
 }

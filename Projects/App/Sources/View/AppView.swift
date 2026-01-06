@@ -37,8 +37,8 @@ struct AppView: View {
               ))
           }
 
-        case .coreMember:
-          if let coreMemberStore = store.scope(state: \.coreMember, action: \.view.coreMember) {
+        case .staff:
+            if let coreMemberStore = store.scope(state: \.staff, action: \.view.staff) {
             StaffCoordinatorView(store: coreMemberStore)
               .transition(.asymmetric(
                 insertion: .move(edge: .trailing),

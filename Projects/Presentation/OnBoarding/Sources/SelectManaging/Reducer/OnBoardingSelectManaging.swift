@@ -53,14 +53,12 @@ public struct SelectManagingReducer {
 
   public enum AsyncAction: Equatable {
     case fetchMangerList
-    case signUpUser
   }
 
   // MARK: - 앱내에서 사용하는 액션
 
   public enum InnerAction: Equatable {
     case mangerListResponse(Result<[SelectManaging], SignUpError>)
-    case signUpUserResponse(Result<SignUpUser, SignUpError>)
   }
 
   // MARK: - NavigationAction
@@ -75,7 +73,6 @@ public struct SelectManagingReducer {
   }
 
   @Dependency(\.onBoardingUseCase) var onBoardingUseCase
-  @Dependency(\.signUpUseCase) var signUpUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
 
@@ -160,17 +157,6 @@ extension SelectManagingReducer {
         }
         .cancellable(id: CancelID.fetchMangerList, cancelInFlight: true)
 
-      case .signUpUser:
-        return .run { [
-          userSession = state.userSession
-        ] send in
-          let signUpResult = await Result {
-            try await signUpUseCase.registerUser(userSession: userSession)
-          }
-            .mapError(SignUpError.from)
-          return await send(.inner(.signUpUserResponse(signUpResult)))
-        }
-
     }
   }
 
@@ -190,16 +176,6 @@ extension SelectManagingReducer {
 
         }
         return .none
-
-      case .signUpUserResponse(let result):
-        switch result {
-        case .success(let data):
-          state.signUpUser = data
-            return .send(.navigation(.presentCoreMember))
-        case .failure(let error):
-          state.errorMessage = error.errorDescription
-            return .none
-        }
     }
 
   }

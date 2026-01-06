@@ -28,9 +28,11 @@ public struct SelectTeam {
     var errorMessage: String?
     var teams: [SelectTeamEntity]? = []
     var signUpUser: SignUpUser?
+    var editProfile: ProfileEntity?
 
 
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+    @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
   }
 
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -47,6 +49,7 @@ public struct SelectTeam {
   public enum View {
     case selectTeamButton(selectTeam: SelectTeamEntity)
     case onAppear
+    case signUp
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
@@ -54,6 +57,7 @@ public struct SelectTeam {
   public enum AsyncAction: Equatable {
     case getTeams
     case signUpUser
+    case editProfile
   }
   
   // MARK: - 앱내에서 사용하는 액션
@@ -61,6 +65,7 @@ public struct SelectTeam {
   public enum InnerAction: Equatable {
     case teamListResponse(Result<[SelectTeamEntity], SignUpError>)
     case signUpUserResponse(Result<SignUpUser, SignUpError>)
+    case editProfileResponse(Result<ProfileEntity, ProfileError>)
   }
   
   // MARK: - NavigationAction
@@ -78,6 +83,7 @@ public struct SelectTeam {
   
   @Dependency(\.signUpUseCase) var signUpUseCase
   @Dependency(\.onBoardingUseCase) var onBoardingUseCase
+  @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.continuousClock) var clock
   
   public var body: some ReducerOf<Self> {
@@ -137,6 +143,18 @@ extension SelectTeam {
         case .onAppear:
           return .send(.async(.getTeams))
             .cancellable(id: CancelID.selectTeam, cancelInFlight: true)
+            .cancellable(id: "allAuthRelatedEffects")
+
+      case .signUp:
+        return .run { [
+          editGeneration = state.editGeneration
+        ] send in
+          if editGeneration == true {
+            await send(.async(.editProfile))
+          } else {
+            await send(.async(.signUpUser))
+          }
+        }
 
     }
   }
@@ -172,6 +190,7 @@ extension SelectTeam {
 
         }
         .cancellable(id: CancelID.selectTeam, cancelInFlight: true)
+        .cancellable(id: "allAuthRelatedEffects")
 
       case .signUpUser:
         return .run { [
@@ -185,6 +204,16 @@ extension SelectTeam {
         }
 
 
+      case .editProfile:
+        return .run { [
+          userSession = state.userSession
+        ] send in
+          let editProfileResult = await Result {
+            return try await profileUseCase.editUser(userSession: userSession)
+          }
+          .mapError(ProfileError.from)
+          return await send(.inner(.editProfileResponse(editProfileResult)))
+        }
     }
   }
 
@@ -207,6 +236,23 @@ extension SelectTeam {
         switch result {
           case .success(let data):
             state.signUpUser = data
+
+            if state.userSession.userRole == .manager {
+              return .send(.navigation(.presentManager))
+            } else {
+              return .send(.navigation(.presentMember))
+            }
+
+          case .failure(let error):
+            state.errorMessage = error.errorDescription
+            return .none
+        }
+
+      case .editProfileResponse(let result):
+        switch result {
+          case .success(let data):
+            state.editProfile = data
+            state.$editGeneration.withLock { $0 = false }
 
             if state.userSession.userRole == .manager {
               return .send(.navigation(.presentManager))

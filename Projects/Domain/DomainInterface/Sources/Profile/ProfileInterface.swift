@@ -13,6 +13,7 @@ import Entity
 /// Profile 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol ProfileInterface: Sendable {
   func getProfile() async throws -> ProfileEntity
+  func editProfile(input: EditProfileInput) async throws -> ProfileEntity
 }
 
 

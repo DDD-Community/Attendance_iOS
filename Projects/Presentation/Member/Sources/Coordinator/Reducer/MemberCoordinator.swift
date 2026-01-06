@@ -51,6 +51,7 @@ public struct MemberCoordinator {
 
   public enum NavigationAction: Equatable {
     case presentLogin
+    case presentStaff
   }
 
   @Dependency(\.continuousClock) var clock
@@ -106,6 +107,12 @@ extension MemberCoordinator {
       case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
         return .send(.view(.backAction))
 
+      case .routeAction(id: _, action: .profile(.navigation(.presentMember))):
+        return .send(.view(.backToRootAction))
+
+      case .routeAction(id: _, action: .profile(.navigation(.presentStaff))):
+        return .send(.navigation(.presentStaff))
+
     default:
       return .none
     }
@@ -153,6 +160,8 @@ extension MemberCoordinator {
     switch action {
     case .presentLogin:
       return .none
+      case .presentStaff:
+        return .none
     }
   }
 }

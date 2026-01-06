@@ -156,6 +156,9 @@ extension ProfileView {
             RoundedRectangle(cornerRadius: 20)
               .fill(.dangerBlue.opacity(0.7))
           }
+          .onTapGesture {
+            store.send(.navigation(.presentEditGeneration))
+          }
 
           
         }

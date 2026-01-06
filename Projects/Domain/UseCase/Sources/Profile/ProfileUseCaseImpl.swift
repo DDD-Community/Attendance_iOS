@@ -10,7 +10,15 @@ import Model
 import WeaveDI
 import Entity
 
-public struct ProfileUseCaseImpl: ProfileInterface {
+public protocol ProfileUseCaseInterface: Sendable {
+  func getProfile() async throws -> ProfileEntity
+  func editUser(
+    userSession: UserSession
+  ) async throws -> ProfileEntity
+}
+
+
+public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
   @Dependency(\.profileRepository) var repository
 
   public init() { }
@@ -21,16 +29,34 @@ public struct ProfileUseCaseImpl: ProfileInterface {
     return try await repository.getProfile()
   }
 
+  public func editUser(
+    userSession: UserSession
+  ) async throws -> ProfileEntity {
+    let input = EditProfileInput(
+      name: userSession.name,
+      generationId: userSession.generationId,
+      jobRole: userSession.selectPart,
+      teamId: userSession.selectTeamId,
+      managerRoles: userSession.managing,
+      inviteCode: userSession.inviteCode
+    )
+    return try await editProfile(input: input)
+  }
+
+  public func editProfile(input: EditProfileInput) async throws -> ProfileEntity {
+    return try await repository.editProfile(input: input)
+  }
+
 }
 
 extension ProfileUseCaseImpl: DependencyKey {
-  static public var liveValue: ProfileInterface = ProfileUseCaseImpl()
-  static public var testValue: ProfileInterface = ProfileUseCaseImpl()
-  static public var previewValue: ProfileInterface = liveValue
+  static public var liveValue: ProfileUseCaseInterface = ProfileUseCaseImpl()
+  static public var testValue: ProfileUseCaseInterface = ProfileUseCaseImpl()
+  static public var previewValue: ProfileUseCaseInterface = liveValue
 }
 
 public extension DependencyValues {
-  var profileUseCase: ProfileInterface {
+  var profileUseCase: ProfileUseCaseInterface {
     get { self[ProfileUseCaseImpl.self] }
     set { self[ProfileUseCaseImpl.self] = newValue }
   }

@@ -9,6 +9,7 @@ import SwiftUI
 
 import ComposableArchitecture
 import TCACoordinators
+import OnBoarding
 
 public struct ProfileCoordinatorView: View {
   @Bindable var store: StoreOf<ProfileCoordinator>
@@ -32,6 +33,9 @@ public struct ProfileCoordinatorView: View {
           WebView(store: webStore)
             .navigationBarBackButtonHidden()
 
+        case .onBoarding(let onBoardingStore):
+          OnBoardingCoordinatorView(store: onBoardingStore)
+            .navigationBarBackButtonHidden()
       }
     }
   }

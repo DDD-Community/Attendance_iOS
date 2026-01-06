@@ -60,6 +60,7 @@ public struct StaffCoordinator {
 
   public enum NavigationAction: Equatable {
     case presentLogin
+    case presentMember
   }
 
   
@@ -115,6 +116,12 @@ extension StaffCoordinator {
       case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
         return .send(.view(.backAction))
 
+      case .routeAction(id: _, action: .profile(.navigation(.presentMember))):
+        return .send(.navigation(.presentMember))
+
+      case .routeAction(id: _, action: .profile(.navigation(.presentStaff))):
+        return .send(.view(.backToRootAction))
+
     default:
       return .none
     }
@@ -143,6 +150,9 @@ extension StaffCoordinator {
     switch action {
     case .presentLogin:
       return .none
+
+      case .presentMember:
+        return .none
     }
   }
 

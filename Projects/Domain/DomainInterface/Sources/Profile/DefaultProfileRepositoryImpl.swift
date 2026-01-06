@@ -30,6 +30,42 @@ final public class DefaultProfileRepositoryImpl: ProfileInterface {
     }
   }
 
+  public func editProfile(input: Entity.EditProfileInput) async throws -> Entity.ProfileEntity {
+    // 네트워크 호출 시뮬레이션
+    try await Task.sleep(nanoseconds: 800_000_000) // 0.8초 대기
+
+    // generationId를 문자열로 변환
+    let generation = "\(input.generationId)기"
+
+    // teamId를 SelectTeams enum으로 변환 (Mock용 간단 매핑)
+    let team: SelectTeams? = {
+      guard let teamId = input.teamId else { return nil }
+      switch teamId {
+      case 1: return .ios1
+      case 2: return .ios2
+      case 3: return .and1
+      case 4: return .and2
+      default: return .ios1 // 기본값
+      }
+    }()
+
+    // 매니저 역할이 있으면 manager, 없으면 member로 설정
+    let role: Staff = (input.managerRoles?.isEmpty == false) ? .manager : .member
+
+    // 수정된 프로필 반환
+    let updatedProfile = ProfileEntity(
+      name: input.name,
+      generation: generation,
+      team: team,
+      jobRole: input.jobRole,
+      role: role,
+      manger: input.managerRoles
+    )
+
+    // Mock이므로 업데이트된 값 그대로 반환
+    return updatedProfile
+  }
+
   /// Mock 사용자 타입 변경
   public func setMockUserType(_ type: MockUserType) {
     self.mockUserType = type

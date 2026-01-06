@@ -12,6 +12,7 @@ import Shareds
 
 import ComposableArchitecture
 import TCACoordinators
+import OnBoarding
 
 @Reducer
 public struct ProfileCoordinator {
@@ -52,6 +53,8 @@ public struct ProfileCoordinator {
   public enum NavigationAction: Equatable {
     case presentLogin
     case presentRoot
+    case presentStaff
+    case presentMember
   }
 
   @Dependency(\.continuousClock) var clock
@@ -99,8 +102,21 @@ extension ProfileCoordinator {
         state.routes.push(.web(.init(url: "https://dddset.notion.site/DDD-2d424441b0b08080a518ed42f1315b20?source=copy_link")))
         return .none
 
+
+      case .routeAction(id: _, action: .profile(.navigation(.presentEditGeneration))):
+        state.routes.push(.onBoarding(.init()))
+        return .none
+
       case .routeAction(id: _, action: .web(.backToRoot)):
         return .send(.view(.backAction))
+
+      case .routeAction(id: _, action: .onBoarding(.navigation(.presentStaff))):
+        return .send(.navigation(.presentStaff))
+
+
+      case .routeAction(id: _, action: .onBoarding(.navigation(.presentMember))):
+        return .send(.navigation(.presentMember))
+
 
     default:
       return .none
@@ -147,6 +163,12 @@ extension ProfileCoordinator {
 
       case .presentRoot:
         return .none
+
+      case .presentMember:
+        return .none
+
+      case .presentStaff:
+        return .none
     }
   }
 }
@@ -156,5 +178,6 @@ extension ProfileCoordinator {
   public enum ProfileScreen {
     case profile(ProfileReducer)
     case web(WebReducer)
+    case onBoarding(OnBoardingCoordinator)
   }
 }

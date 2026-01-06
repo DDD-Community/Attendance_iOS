@@ -31,4 +31,13 @@ final public class ProfileRepositoryImpl: ProfileInterface , Sendable{
     let dto:ProfileDTO = try await provider.request(.getProfile)
     return dto.toDomain()
   }
+
+  // MARK: - 프로필 수정
+  public func editProfile(
+    input: EditProfileInput
+  ) async throws -> Entity.ProfileEntity {
+    let body = input.toRequestDTO()
+    let dto: ProfileDTO = try await provider.request(.editProfile(body: body))
+    return dto.toDomain()
+  }
 }

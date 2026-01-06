@@ -36,6 +36,7 @@ public struct ProfileReducer {
 
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
     @Presents var destination: Destination.State?
+    @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
 
     // 기존 TCA AlertState 유지 (다른 곳에서 사용)
     @Presents public var alert: AlertState<AlertAction>?
@@ -96,6 +97,7 @@ public struct ProfileReducer {
     case presentLogOut
     case presentCreateByApp
     case presentPrivacyPolicy
+    case presentEditGeneration
   }
 
   @CasePathable
@@ -310,6 +312,10 @@ extension ProfileReducer {
       return .none
 
       case .presentPrivacyPolicy:
+        return .none
+
+      case .presentEditGeneration:
+        state.$editGeneration.withLock { $0.toggle() }
         return .none
     }
   }
