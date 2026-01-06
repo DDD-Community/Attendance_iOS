@@ -48,6 +48,10 @@ public struct AuthUseCaseImpl: AuthInterface {
     self.keychainManager.clear()
     return withDrawResult
   }
+
+  public func updateSessionCredential(with tokens: AuthTokens) {
+    authRepository.updateSessionCredential(with: tokens)
+  }
 }
 
 extension AuthUseCaseImpl: DependencyKey {

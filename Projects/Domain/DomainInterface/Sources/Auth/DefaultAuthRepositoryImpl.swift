@@ -45,4 +45,8 @@ final public class DefaultAuthRepositoryImpl: AuthInterface {
       detail: "사용자 세션이 종료되었습니다."
     )
   }
+
+  public func updateSessionCredential(with tokens: AuthTokens) {
+    // Mock 구현체에서는 아무것도 하지 않음 (테스트/프리뷰용)
+  }
 }

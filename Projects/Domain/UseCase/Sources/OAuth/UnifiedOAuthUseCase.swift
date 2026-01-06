@@ -73,6 +73,9 @@ public extension UnifiedOAuthUseCase {
       refreshToken: loginEntity.token.refreshToken
     )
 
+    // AuthSessionManager의 credential도 업데이트
+    authRepository.updateSessionCredential(with: loginEntity.token)
+
     if loginEntity.isNewUser == true {
 
     } else {
@@ -98,6 +101,9 @@ public extension UnifiedOAuthUseCase {
       accessToken: loginEntity.token.accessToken,
       refreshToken: loginEntity.token.refreshToken
     )
+
+    // AuthSessionManager의 credential도 업데이트
+    authRepository.updateSessionCredential(with: loginEntity.token)
 
     if loginEntity.isNewUser == true {
 

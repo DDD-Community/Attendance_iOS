@@ -15,17 +15,6 @@ public struct ProfileSkeletonView: View {
 
   public var body: some View {
     VStack {
-      Spacer()
-        .frame(height: 12)
-
-      // NavigationBar 영역
-      HStack {
-        skeletonText(width: 24, height: 24) // 뒤로가기 버튼
-        Spacer()
-        skeletonText(width: 24, height: 24) // info 버튼
-      }
-      .padding(.horizontal, 24)
-
       skeletonProfileCard()
 
       Spacer()
@@ -39,7 +28,6 @@ public struct ProfileSkeletonView: View {
       skeletonAppInfo()
 
       Spacer()
-        .frame(height: 20)
     }
     .onAppear {
       withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
@@ -108,11 +96,11 @@ extension ProfileSkeletonView {
         Image(asset: .profileBack)
           .resizable()
           .scaledToFit()
-          .frame(height: UIScreen.screenHeight * 0.7)
           .cornerRadius(20)
           .opacity(0.3) // skeleton이므로 약간 투명하게
+          .padding(.horizontal, 10)
       )
-      .frame(height: UIScreen.screenHeight * 0.7)
+      .frame(height: UIScreen.screenHeight * 0.65)
     }
     .padding(.horizontal, 24)
   }

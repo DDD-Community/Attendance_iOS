@@ -97,4 +97,9 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
     )
   }
 
+  // MARK: - 세션 Credential 업데이트
+  public func updateSessionCredential(with tokens: AuthTokens) {
+    AuthSessionManager.shared.updateCredential(with: tokens)
+  }
+
 }

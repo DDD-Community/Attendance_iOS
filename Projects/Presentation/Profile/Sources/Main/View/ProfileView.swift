@@ -106,6 +106,8 @@ extension ProfileView {
       logoutButton()
 
       appInfoView()
+
+      Spacer()
     }
   }
 
@@ -262,11 +264,11 @@ extension ProfileView {
       .background(
         Image(asset: .profileBack)
           .resizable()
-          .scaledToFit()
-          .frame(height: UIScreen.screenHeight * 0.7)
           .cornerRadius(20)
+          .padding(.horizontal, 10)
       )
-      .frame(height: UIScreen.screenHeight * 0.7)
+      .frame(height: UIScreen.screenHeight * 0.65)
+
     }
     .padding(.horizontal, 24)
   }
