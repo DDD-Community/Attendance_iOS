@@ -174,6 +174,7 @@ extension ProfileView {
             .frame(height: 20)
         } else {
           Spacer()
+          
         }
 
         VStack(alignment: .leading, spacing: 20) {
@@ -242,8 +243,14 @@ extension ProfileView {
 
         }
 
-        Spacer()
-         
+        if store.profileModel?.role == .manager {
+          Spacer()
+
+        } else {
+          Spacer()
+            .frame(height: 40)
+        }
+
 
         HStack {
           Spacer()

@@ -11,6 +11,7 @@ import Alamofire
 import Dependencies
 import DomainInterface
 import Entity
+import UseCase
 
 enum TokenRefreshError: Error {
   case missingRefreshToken
@@ -21,7 +22,7 @@ final class AccessTokenAuthenticator: Authenticator, @unchecked Sendable {
   typealias Credential = AccessTokenCredential
 
   @Dependency(\.authRepository) private var authRepository
-  @Dependency(\.keychainManager) private var keychainManager
+  private let keychainManager = KeychainManager()
 
   func apply(_ credential: Credential, to urlRequest: inout URLRequest) {
     urlRequest.headers.add(.authorization(bearerToken: credential.accessToken))

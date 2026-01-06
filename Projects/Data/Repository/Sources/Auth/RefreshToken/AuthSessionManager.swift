@@ -11,13 +11,13 @@ import Alamofire
 import DomainInterface
 import Entity
 import WeaveDI
+import UseCase
 
 
 final class AuthSessionManager {
   static let shared = AuthSessionManager()
 
-  @Dependency(\.keychainManager) var keychainManager
-
+  private let keychainManager = KeychainManager()
   let authenticator: AccessTokenAuthenticator
   let interceptor: AuthenticationInterceptor<AccessTokenAuthenticator>
   let session: Session
@@ -61,7 +61,6 @@ private extension AuthSessionManager {
   }
 
   func loadCredentialFromKeychain() -> AccessTokenCredential? {
-    @Dependency(\.keychainManager) var keychainManager;
     guard
       let accessToken = keychainManager.accessToken(),
       let refreshToken = keychainManager.refreshToken()

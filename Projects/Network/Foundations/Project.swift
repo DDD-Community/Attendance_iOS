@@ -10,7 +10,7 @@ let project = Project.makeModule(
   settings:  .settings(),
   dependencies: [
     .Network(implements: .ThirdPartys),
-    
+    .Domain(implements: .UseCase)
   ],
   sources: ["Sources/**"]
 )
