@@ -48,6 +48,14 @@ public struct AuthUseCaseImpl: AuthInterface {
     self.keychainManager.clear()
     return withDrawResult
   }
+
+  public func refresh() async throws -> Entity.AuthTokens {
+    return try await authRepository.refresh()
+  }
+
+  public func withDraw(token: String) async throws -> WithdrawEntity {
+    return try await authRepository.withDraw(token: token)
+  }
 }
 
 extension AuthUseCaseImpl: DependencyKey {

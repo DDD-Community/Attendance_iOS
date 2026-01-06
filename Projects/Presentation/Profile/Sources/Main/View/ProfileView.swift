@@ -33,7 +33,7 @@ public struct ProfileView: View {
         mangerProfileLoadingData()
       }
       .task {
-        store.send(.async(.fetchUser))
+//        store.send(.async(.fetchUser))
       }
       .alert($store.scope(state: \.alert, action: \.scope.alert))
       .customConfirmationPopup(
