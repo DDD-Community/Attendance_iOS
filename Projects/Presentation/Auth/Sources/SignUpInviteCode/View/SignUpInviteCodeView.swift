@@ -64,6 +64,7 @@ public struct SignUpInviteCodeView : View {
         .onAppear {
           store.send(.view(.initInviteCode))
         }
+        .alert($store.scope(state: \.alert, action: \.scope.alert))
       }
       
     }
@@ -90,7 +91,7 @@ extension SignUpInviteCodeView {
       
       CustomButton(
         action: {
-          store.send(.async(.validataInviteCode(code: store.totalInviteCode)))
+          store.send(.async(.verifyInviteCode(code: store.totalInviteCode)))
         },
         title: "다음",
         config: CustomButtonConfig.create(),
@@ -112,11 +113,11 @@ extension SignUpInviteCodeView {
         
         inputCodeText(
           text: $store.firstInviteCode,
-          isErrorCode: store.isNotAvaliableCode,
+          isErrorCode: store.isNotAvailableCode,
           isFocs: $firstInviteCodeFocus) { moveBack in
             if moveBack {
               firstInviteCodeFocus = true
-              store.isNotAvaliableCode = false
+              store.isNotAvailableCode = false
             } else {
               secodInviteCodeFocus = true
             }
@@ -124,11 +125,11 @@ extension SignUpInviteCodeView {
         
         inputCodeText(
           text: $store.secondInviteCode,
-          isErrorCode:  store.isNotAvaliableCode,
+          isErrorCode:  store.isNotAvailableCode,
           isFocs: $secodInviteCodeFocus) { moveBack in
             if moveBack {
               firstInviteCodeFocus = true
-              store.isNotAvaliableCode = false
+              store.isNotAvailableCode = false
             } else {
               thirdlnviteCodeFocus = true
             }
@@ -136,11 +137,11 @@ extension SignUpInviteCodeView {
         
         inputCodeText(
           text: $store.thirdInviteCode,
-          isErrorCode:  store.isNotAvaliableCode,
+          isErrorCode:  store.isNotAvailableCode,
           isFocs: $thirdlnviteCodeFocus) { moveBack in
             if moveBack {
               secodInviteCodeFocus = true
-              store.isNotAvaliableCode = false
+              store.isNotAvailableCode = false
             } else {
               lastlnviteCodeFocus = true
             }
@@ -148,11 +149,11 @@ extension SignUpInviteCodeView {
         
         inputCodeText(
           text: $store.lastInviteCode,
-          isErrorCode: store.isNotAvaliableCode,
+          isErrorCode: store.isNotAvailableCode,
           isFocs: $lastlnviteCodeFocus) { moveBack in
             if moveBack {
               thirdlnviteCodeFocus = true
-              store.isNotAvaliableCode = false
+              store.isNotAvailableCode = false
             }
           }
         
@@ -209,7 +210,7 @@ extension SignUpInviteCodeView {
 
   @ViewBuilder
   private func isNotValidateCodeErrorText() -> some View {
-    if store.isNotAvaliableCode {
+    if store.isNotAvailableCode {
       VStack {
         Spacer()
           .frame(height: 16)

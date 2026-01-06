@@ -9,16 +9,17 @@ import Foundation
 
 public enum AuthAPI: String, CaseIterable {
   case login
-  case sessionToJwt
-  
-  
-  public var authDescription: String {
+  case refresh
+  case withDraw
+
+  public var description: String {
     switch self {
-    case .login:
-      return "login"
-      
-    case .sessionToJwt:
-      return "session-to-jwt/"
+      case .login:
+        return "login"
+      case .refresh:
+        return "refresh"
+      case .withDraw:
+        return "/me"
     }
   }
 }

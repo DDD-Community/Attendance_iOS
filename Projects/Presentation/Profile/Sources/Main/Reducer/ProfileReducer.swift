@@ -7,12 +7,12 @@
 
 import Foundation
 
-import Core
 import Shareds
+import UseCase
 
 import AsyncMoya
 import ComposableArchitecture
-import KeychainAccess
+import Entity
 
 @Reducer
 public struct ProfileReducer {
@@ -28,13 +28,13 @@ public struct ProfileReducer {
     var managerProfileGeneration: String = "소속 기수"
     var logoutText: String = "로그아웃"
     
-    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
-    @Shared(.appStorage("AccessToken")) var accessToken: String = ""
-    
     var userMember: UserDTOMember? = nil
     var profileDTOModel: ProfileResponseModel?
+    var deleteUser: WithdrawEntity?
 
+    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
     @Presents var destination: Destination.State?
+    @Presents public var alert: AlertState<AlertAction>?
     public init() {}
   }
   
@@ -49,12 +49,13 @@ public struct ProfileReducer {
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
+    case scope(ScopeAction)
     case navigation(NavigationAction)
     
   }
   
   // MARK: - View action
-  
+  @CasePathable
   public enum View {
     case startLoading
     case stopLoading
@@ -63,26 +64,42 @@ public struct ProfileReducer {
   }
   
   // MARK: - 비동기 처리 액션
-  
+  @CasePathable
   public enum AsyncAction: Equatable {
     case fetchUser
+    case deleteUser
   }
   
   // MARK: - 앱내에서 사용하는 액션
-  
+  @CasePathable
   public enum InnerAction: Equatable {
     case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
+    case deleteUserResponse(Result<WithdrawEntity, AuthError>)
   }
   
   // MARK: - 네비게이션 연결 액션
-  
+  @CasePathable
   public enum NavigationAction: Equatable {
     case presentLogOut
     case presentCreatByApp
   }
-  
-  fileprivate struct MangerProfileCancel: Hashable {}
-  
+
+
+  @CasePathable
+  public enum ScopeAction {
+      case alert(PresentationAction<AlertAction>)
+  }
+
+  @CasePathable
+  public enum AlertAction {
+      case confirmTapped
+  }
+
+  nonisolated enum CancelID: Hashable {
+    case fetchProfile
+    case deleteUser
+  }
+
   @Dependency(\.authUseCase) var authUseCase
   @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
@@ -117,9 +134,13 @@ public struct ProfileReducer {
         
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
+
+        case .scope:
+          return .none
       }
     }
     .ifLet(\.$destination, action: \.destination)
+    .ifLet(\.$alert, action: \.scope.alert)
   }
   
   private func handleViewAction(
@@ -173,7 +194,22 @@ public struct ProfileReducer {
           await send(.inner(.fetchUserResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
         }
       }
-      .debounce(id: MangerProfileCancel(), for: 0.01, scheduler: mainQueue)
+      .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
+
+      case .deleteUser:
+        return .run {
+          [
+          userSession = state.userSession
+        ] send in
+          let deleteUserResult = await Result {
+            try await authUseCase.withDraw(token: userSession.accessToken)
+          }
+            .mapError(AuthError.from)
+          return await send(.inner(.deleteUserResponse(deleteUserResult)))
+
+        }
+        .cancellable(id: CancelID.deleteUser, cancelInFlight: true)
+
 
       
     }
@@ -193,6 +229,39 @@ public struct ProfileReducer {
         #logError("유저 정보 가져오기", error.localizedDescription)
       }
       return .none
+
+
+      case .deleteUserResponse(let result):
+        switch result {
+          case .success(let data):
+            state.deleteUser = data
+            if data.isSuccess {
+              return .send(.navigation(.presentLogOut))
+            }
+            state.alert = AlertState {
+              TextState("탈퇴실패")
+            } actions: {
+              ButtonState(action: .confirmTapped) {
+                TextState("확인")
+              }
+            } message: {
+              TextState("회원 탈퇴 실패: \(String(describing: data.message ?? "알 수 없는 오류"))")
+            }
+            return .none
+
+          case .failure(let error):
+            state.alert = AlertState {
+              TextState("탈퇴실패")
+            } actions: {
+              ButtonState(action: .confirmTapped) {
+                TextState("확인")
+              }
+            } message: {
+              TextState("회원 탈퇴 실패: \(String(describing: error.errorDescription ?? error.localizedDescription))")
+            }
+            return .none
+
+        }
     }
   }
   
@@ -202,7 +271,6 @@ public struct ProfileReducer {
   ) -> Effect<Action> {
     switch action {
     case .presentLogOut:
-      state.$accessToken.withLock { $0 = ""}
       return .run {  send in
         try await clock.sleep(for: .seconds(2))
       }
@@ -212,4 +280,3 @@ public struct ProfileReducer {
     }
   }
 }
-

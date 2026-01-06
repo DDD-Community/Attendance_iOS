@@ -91,7 +91,7 @@ extension SignUpNameView {
       
       RoundedRectangle(cornerRadius: 16)
         .inset(by: 0.5)
-        .stroke(store.isNotAvaliableName ? .statusError : .borderInactive, lineWidth: 1)
+        .stroke(store.isNotAvailableName ? .statusError : .borderInactive, lineWidth: 1)
         .frame(height: 56)
         .overlay {
           HStack {
@@ -100,7 +100,7 @@ extension SignUpNameView {
             
             TextField(
               "",
-              text: $store.userEntity.signUpName,
+              text: $store.userSession.name,
               prompt: Text("이름을 입력해주세요.")
                 .font(.pretendardFontFamily(family: .Medium, size: 16))
                 .foregroundColor(.white.opacity(0.6))   // placeholder 색
@@ -108,21 +108,21 @@ extension SignUpNameView {
             .pretendardCustomFont(textStyle: .body2NormalMedium)  // 입력 글자 스타일
             .foregroundStyle(.staticWhite)                        // 입력 글자 색
             .frame(maxWidth: .infinity)
-            .onChange(of: store.userEntity.signUpName) { new, _ in
+            .onChange(of: store.userSession.name) { new, _ in
               if new.count > 5 {
-                store.userEntity.signUpName = String(new.prefix(5))
-                store.isNotAvaliableName = false
+                store.userSession.name = String(new.prefix(5))
+                store.isNotAvailableName = false
               }
             }
             
             Spacer()
             
-            Image(asset: store.isNotAvaliableName ? .errorClose : .close)
+            Image(asset: store.isNotAvailableName ? .errorClose : .close)
               .resizable()
               .scaledToFit()
               .frame(width: 20, height: 20)
               .onTapGesture {
-                store.userEntity.signUpName = ""
+                store.userSession.name = ""
               }
             
             Spacer()
@@ -136,7 +136,7 @@ extension SignUpNameView {
   
   @ViewBuilder
   private func errorNameText() -> some View {
-    if store.isNotAvaliableName  {
+    if store.isNotAvailableName  {
       VStack {
         Spacer()
           .frame(height: 8)
@@ -167,7 +167,7 @@ extension SignUpNameView {
       
       CustomButton(
         action: {
-          store.send(.view(.checkIsAvaliableName))
+          store.send(.view(.checkIsAvailableName))
         },
         title: "다음",
         config: CustomButtonConfig.create(),

@@ -10,7 +10,6 @@ bundleId: .appBundleID(name: ".{{name}}"),
 product: .staticFramework,
 settings:  .appDemoSetting,
 dependencies: [
-        .Core(implements: .Core),
         .Shared(implements: .Shareds),
         .Networking(implements: .Networkings)
 ],

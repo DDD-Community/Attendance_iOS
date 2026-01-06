@@ -63,7 +63,7 @@ public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface, @unchecked S
 
         let payload = GoogleOAuthPayload(
             idToken: idToken,
-            accessToken: "",
+            accessToken: result.user.refreshToken.tokenString,
             authorizationCode: result.serverAuthCode,
             displayName: result.user.profile?.name
         )

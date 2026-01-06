@@ -10,10 +10,11 @@ import Dependencies
 import LogMacro
 @preconcurrency import Entity
 import DomainInterface
+import Sharing
 
 public final class GoogleOAuthProvider: GoogleOAuthProviderInterface, @unchecked Sendable {
     @Dependency(\.googleOAuthRepository) private var googleRepository
-
+  @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
     public init() {}
 
     public func signInWithToken(
@@ -21,6 +22,8 @@ public final class GoogleOAuthProvider: GoogleOAuthProviderInterface, @unchecked
     ) async throws -> String {
         Log.info("Starting Google OAuth flow")
         let payload = try await googleRepository.signIn()
+      self.$userSession.withLock { $0.accessToken = payload.accessToken ?? "" }
+      Log.debug("gooogle access", payload.accessToken)
         return payload.idToken
     }
 }

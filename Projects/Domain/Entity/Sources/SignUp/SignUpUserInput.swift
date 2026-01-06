@@ -1,0 +1,39 @@
+//
+//  SignUpUserInput.swift
+//  Entity
+//
+//  Created by Wonji Suh  on 1/1/26.
+//
+
+import Foundation
+
+public struct SignUpUserInput  {
+  public let name: String
+  public let generationId: Int
+  public let jobRole: SelectParts
+  public let teamId: Int?
+  public let managerRoles: [StaffManaging]?
+  public let provider: SocialType
+  public let token: String
+  public let invitationCode: String
+
+  public init(
+    name: String,
+    generationId: Int,
+    jobRole: SelectParts,
+    teamId: Int?,
+    managerRoles: [StaffManaging]?,
+    provider: SocialType,
+    token: String,
+    invitationCode: String
+  ) {
+    self.name = name
+    self.generationId = generationId
+    self.jobRole = jobRole
+    self.teamId = teamId
+    self.managerRoles = managerRoles
+    self.provider = provider
+    self.token = token
+    self.invitationCode = invitationCode
+  }
+}

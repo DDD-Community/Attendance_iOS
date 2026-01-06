@@ -8,21 +8,12 @@
 import Foundation
 
 public enum SignUpAPI: String , CaseIterable {
-  case registerAccount
-  case verifyInviteCode
-  case checkEmail
-  
-  
+  case signUpUser
+
   public var signUpDescription: String {
     switch self {
-    case .registerAccount:
-      return "registration/"
-      
-    case .verifyInviteCode:
-      return "validate/"
-      
-    case .checkEmail:
-      return "check-email/"
+      case .signUpUser:
+        return ""
     }
   }
   

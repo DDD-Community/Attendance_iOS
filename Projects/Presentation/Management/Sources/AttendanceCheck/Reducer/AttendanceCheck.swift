@@ -7,12 +7,12 @@
 
 import Foundation
 
-import Core
 import Shareds
 
 import ComposableArchitecture
 import LogMacro
 import FirebaseAuth
+import Entity
 
 @Reducer
 public struct AttendanceCheck {

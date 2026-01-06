@@ -8,7 +8,7 @@
 import SwiftUI
 import DesignSystem
 import ComposableArchitecture
-import Model
+import SDWebImageSwiftUI
 
 public struct SignUpSelectManagingView: View {
   @Bindable var store: StoreOf<SignUpSelectManaging>
@@ -34,14 +34,28 @@ public struct SignUpSelectManagingView: View {
         StepNavigationBar(activeStep: 3, buttonAction: backAction)
         
         signUpSelectManagingText()
-        
-        selectManagingList()
-        
-        signUpSelectMangeButton()
-        
+
+        if store.loading {
+          VStack {
+            Spacer()
+
+            AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(true))
+              .resizable()
+              .scaledToFit()
+              .frame(width: 200, height: 200)
+
+            Spacer()
+          }
+        } else {
+          selectManagingList()
+
+          signUpSelectMangeButton()
+        }
+
       }
       .onAppear {
-        store.userEntity.managing = nil
+        store.userSession.managing = []
+        store.send(.view(.onAppear))
       }
     }
   }
@@ -67,11 +81,11 @@ extension SignUpSelectManagingView {
       
       ScrollView {
         VStack {
-          ForEach(Managing.managingList, id: \.self) { item in
+          ForEach(store.selectMangers ?? [], id: \.managingKeys) { item in
             SelectPartItem(
-              content: item.managingDesc,
-              isActive: item == store.userEntity.managing) {
-                
+              content: item.managing.desc,
+              isActive: store.userSession.managing.contains(item.managing)) {
+
                 store.send(.view(.selectManagingButton(selectManaging: item)))
               }
           }
@@ -90,13 +104,13 @@ extension SignUpSelectManagingView {
       
       CustomButton(
         action: {
-          if store.userEntity.managing == .projectTeamManaging {
+          if store.userSession.managing.contains(.teamManaging) {
             store.send(.navigation(.presentSelectTeam))
           } else {
-            store.send(.async(.editProfile))
+            store.send(.async(.signUpUser))
           }
         },
-        title: store.userEntity.managing == .projectTeamManaging ? "다음" : "가입완료",
+        title: store.userSession.managing.contains(.teamManaging) ? "다음" : "가입완료",
         config: CustomButtonConfig.create(),
         isEnable: store.activeButton
       )

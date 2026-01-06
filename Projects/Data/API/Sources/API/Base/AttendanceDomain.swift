@@ -12,6 +12,7 @@ import AsyncMoya
 public enum AttendanceDomain {
   case auth
   case onboarding
+  case user
   case invite
   case profile
   case qr
@@ -26,22 +27,22 @@ extension AttendanceDomain: DomainType {
 
   public var url: String {
     switch self {
-    case .auth:
-      return "api/auth/"
-
+      case .auth:
+        return "api/auth/"
       case .onboarding:
         return "api/onboarding/"
-    case .invite:
-      return "api/v1/invites/"
-    case .profile:
-      return "api/v1/profiles/"
-    case .qr:
-      return "api/v1/qrcodes/"
-    case .schedule:
-      return "api/v1/schedules/"
-    case .attendance:
-      return "api/v1/attendances/"
+      case .user:
+        return "api/users"
+      case .invite:
+        return "api/v1/invites/"
+      case .profile:
+        return "api/v1/profiles/"
+      case .qr:
+        return "api/v1/qrcodes/"
+      case .schedule:
+        return "api/v1/schedules/"
+      case .attendance:
+        return "api/v1/attendances/"
     }
   }
 }
-

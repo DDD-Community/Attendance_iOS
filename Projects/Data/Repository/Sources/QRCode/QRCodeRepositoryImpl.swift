@@ -20,7 +20,7 @@ final public class QRCodeRepositoryImpl: QRCodeInterface {
   private let provider: MoyaProvider<QRService>
 
   public init(
-    provider: MoyaProvider<QRService> = MoyaProvider<QRService>.withSession(AuthInterceptor.shared)
+    provider: MoyaProvider<QRService> = MoyaProvider<QRService>.authorized
   ) {
     self.provider = provider
   }
@@ -66,4 +66,3 @@ final public class QRCodeRepositoryImpl: QRCodeInterface {
     return qrModel.toDomain()
   }
 }
-
