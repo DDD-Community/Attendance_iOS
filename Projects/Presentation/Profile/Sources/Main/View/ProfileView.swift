@@ -32,9 +32,6 @@ public struct ProfileView: View {
       VStack {
         mangerProfileLoadingData()
       }
-      .task {
-//        store.send(.async(.fetchUser))
-      }
       .alert($store.scope(state: \.alert, action: \.scope.alert))
       .customConfirmationPopup(
         item: store.alertItem.map { alertItem in
@@ -53,6 +50,9 @@ public struct ProfileView: View {
           )
         }
       )
+      .onAppear {
+        store.send(.async(.fetchUser))
+      }
 
       if store.destination?.createApp != nil {
         VisualEffectBlur(blurStyle: .systemChromeMaterialDark)

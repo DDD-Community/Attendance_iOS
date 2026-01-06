@@ -137,7 +137,7 @@ public struct ProfileReducer {
         return handleViewAction(state: &state, action: viewAction)
         
       // MARK: - AsyncAction
-        
+
       case .async(let asyncAction):
         return handleAsyncAction(state: &state, action: asyncAction)
         

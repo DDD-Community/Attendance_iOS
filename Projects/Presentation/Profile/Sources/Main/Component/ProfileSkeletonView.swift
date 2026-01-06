@@ -16,7 +16,15 @@ public struct ProfileSkeletonView: View {
   public var body: some View {
     VStack {
       Spacer()
-        .frame(height: 17)
+        .frame(height: 12)
+
+      // NavigationBar 영역
+      HStack {
+        skeletonText(width: 24, height: 24) // 뒤로가기 버튼
+        Spacer()
+        skeletonText(width: 24, height: 24) // info 버튼
+      }
+      .padding(.horizontal, 24)
 
       skeletonProfileCard()
 
@@ -31,9 +39,8 @@ public struct ProfileSkeletonView: View {
       skeletonAppInfo()
 
       Spacer()
-        .frame(height: 40)
+        .frame(height: 20)
     }
-    .padding(.horizontal, 24)
     .onAppear {
       withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
         isAnimating = true
