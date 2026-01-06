@@ -43,7 +43,19 @@ public struct EditProfileRequestDTO: Encodable {
     try container.encode(profile.generationId, forKey: .generationId)
     try container.encode(profile.jobRole, forKey: .jobRole)
     try container.encode(profile.teamId, forKey: .teamId)
-    try container.encode(profile.managerRoles, forKey: .managerRoles)
+
+    // 역할에 따른 managerRoles 처리
+    // Manager일 경우: managerRoles 포함 (null 가능)
+    // Member일 경우: managerRoles 필드 제거
+    if let managerRoles = profile.managerRoles, !managerRoles.isEmpty {
+      // Manager: managerRoles 배열 포함
+      try container.encode(managerRoles, forKey: .managerRoles)
+    } else if profile.managerRoles != nil {
+      // Manager이지만 managerRoles가 빈 배열인 경우: null 포함
+      try container.encodeNil(forKey: .managerRoles)
+    }
+    // Member인 경우 (managerRoles == nil): 필드 자체를 포함하지 않음
+
     try container.encode(profile.invitationCode, forKey: .invitationCode)
   }
 

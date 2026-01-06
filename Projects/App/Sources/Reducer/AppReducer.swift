@@ -56,12 +56,7 @@ struct AppReducer {
   @Dependency(\.continuousClock) var clock
 
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
-      case .view(let ViewAction):
-        return handleViewAction(&state, action: ViewAction)
-      }
-    }
+   EmptyReducer()
     .ifCaseLet(\.splash, action: \.view.splash) {
       Splash()
     }
@@ -73,6 +68,12 @@ struct AppReducer {
     }
     .ifCaseLet(\.member, action: \.view.member) {
       MemberCoordinator()
+    }
+    Reduce { state, action in
+      switch action {
+      case .view(let ViewAction):
+        return handleViewAction(&state, action: ViewAction)
+      }
     }
   }
 }

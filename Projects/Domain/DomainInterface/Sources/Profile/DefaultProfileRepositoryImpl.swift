@@ -10,7 +10,7 @@ import Entity
 /// Mock 구현체 - 테스트/프리뷰용 ProfileRepository
 final public class DefaultProfileRepositoryImpl: ProfileInterface {
 
-  private var mockUserType: MockUserType
+  private let mockUserType: MockUserType
 
   public init(mockUserType: MockUserType = .member) {
     self.mockUserType = mockUserType
@@ -64,11 +64,6 @@ final public class DefaultProfileRepositoryImpl: ProfileInterface {
 
     // Mock이므로 업데이트된 값 그대로 반환
     return updatedProfile
-  }
-
-  /// Mock 사용자 타입 변경
-  public func setMockUserType(_ type: MockUserType) {
-    self.mockUserType = type
   }
 }
 

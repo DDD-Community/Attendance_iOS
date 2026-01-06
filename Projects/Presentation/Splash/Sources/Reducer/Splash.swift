@@ -24,6 +24,7 @@ public struct Splash {
   public struct State: Equatable {
 
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
+    @Shared(.appStorage("staffRole")) var staffRole: Staff?
     var profileModel: ProfileEntity?
 
     public init() {
@@ -50,13 +51,11 @@ public struct Splash {
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
-    case fetchProfile
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
-    case fetchUserResponse(Result<ProfileEntity, ProfileError>)
   }
   
   // MARK: - NavigationAction
@@ -68,10 +67,9 @@ public struct Splash {
   }
   
   nonisolated enum CancelID: Hashable {
-    case fetchProfile
+
   }
 
-  @Dependency(\.profileUseCase) var profileUseCase
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
@@ -85,10 +83,10 @@ public struct Splash {
         
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
-        
+
       case .async(let asyncAction):
         return handleAsyncAction(state: &state, action: asyncAction)
-        
+
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
         
@@ -106,9 +104,16 @@ extension Splash {
   ) -> Effect<Action> {
     switch action {
       case .onAppear:
-        return .run { send in
-          try await clock.sleep(for: .seconds(0.5))
-          await send(.async(.fetchProfile))
+        return .run { [
+          staffRole = state.staffRole
+        ] send in
+          if staffRole == .manager {
+            return await send(.navigation(.presentStaff))
+          } else if staffRole == .member {
+            return await send(.navigation(.presentMember))
+          } else {
+            return await send(.navigation(.presentLogin))
+          }
         }
     }
 
@@ -118,16 +123,7 @@ extension Splash {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    switch action {
-    case .fetchProfile:
-        return .run { send in
-          let profileResult = await Result {
-            try await profileUseCase.getProfile()
-          }
-            .mapError(ProfileError.from)
-          return await send(.inner(.fetchUserResponse(profileResult)))
-        }
-    }
+
   }
 
   private func handleInnerAction(
@@ -135,22 +131,7 @@ extension Splash {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-      case .fetchUserResponse(let result):
-        switch result {
-          case .success(let profileData):
-            state.profileModel = profileData
-
-            if state.profileModel?.role == .manager {
-              return .send(.navigation(.presentStaff))
-            } else {
-              return .send(.navigation(.presentMember))
-            }
-
-          case .failure(let error):
-            #logDebug("네트워크 통신 에러 ", error.localizedDescription)
-            return .send(.navigation(.presentLogin))
-
-        }
+     
     }
   }
 

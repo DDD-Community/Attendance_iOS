@@ -15,7 +15,7 @@ public struct ProfileDTO: Decodable {
   let team: String?
   let jobRole: String
   let role: String
-  let managerRoles: [String]
+  let managerRoles: [String]?
 
   enum CodingKeys: String, CodingKey {
     case userID = "userId"

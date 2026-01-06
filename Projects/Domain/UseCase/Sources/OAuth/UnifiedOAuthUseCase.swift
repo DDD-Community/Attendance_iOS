@@ -20,6 +20,7 @@ public struct UnifiedOAuthUseCase {
   @Dependency(\.googleOAuthProvider) private var googleProvider: GoogleOAuthProviderInterface
   @Dependency(\.keychainManager) private var keychainManager: KeychainManaging
   @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+  @Dependency(\.profileUseCase) var profileUseCase
   public init() {}
 }
 
@@ -66,10 +67,20 @@ public extension UnifiedOAuthUseCase {
       provider: .apple,
       token: payload.authorizationCode ?? ""
     )
+
     keychainManager.save(
       accessToken: loginEntity.token.accessToken,
       refreshToken: loginEntity.token.refreshToken
     )
+
+    if loginEntity.isNewUser == true {
+
+    } else {
+      let profile = try await profileUseCase.getProfile()
+      self.$userSession.withLock {
+        $0.userRole = profile.role
+      }
+    }
     return loginEntity
   }
 
@@ -87,6 +98,16 @@ public extension UnifiedOAuthUseCase {
       accessToken: loginEntity.token.accessToken,
       refreshToken: loginEntity.token.refreshToken
     )
+
+    if loginEntity.isNewUser == true {
+
+    } else {
+      let profile = try await profileUseCase.getProfile()
+      self.$userSession.withLock {
+        $0.userRole = profile.role
+      }
+    }
+
     return loginEntity
   }
 

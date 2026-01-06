@@ -9,6 +9,7 @@ import Model
 
 import WeaveDI
 import Entity
+import ComposableArchitecture
 
 public protocol ProfileUseCaseInterface: Sendable {
   func getProfile() async throws -> ProfileEntity
@@ -20,24 +21,31 @@ public protocol ProfileUseCaseInterface: Sendable {
 
 public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
   @Dependency(\.profileRepository) var repository
+  @Shared(.appStorage("staffRole")) var staffRole: Staff?
 
   public init() { }
   // MARK: - 프로필  수정
 
   // MARK: - 프로필 조회
   public func getProfile() async throws -> ProfileEntity {
-    return try await repository.getProfile()
+    let profileResult = try await repository.getProfile()
+    self.$staffRole.withLock {
+      $0 = profileResult.role
+    }
+    return profileResult
+
   }
 
   public func editUser(
     userSession: UserSession
   ) async throws -> ProfileEntity {
+    let isManager = userSession.userRole == .manager
     let input = EditProfileInput(
       name: userSession.name,
       generationId: userSession.generationId,
       jobRole: userSession.selectPart,
       teamId: userSession.selectTeamId,
-      managerRoles: userSession.managing,
+      managerRoles: isManager ? userSession.managing : nil,
       inviteCode: userSession.inviteCode
     )
     return try await editProfile(input: input)
