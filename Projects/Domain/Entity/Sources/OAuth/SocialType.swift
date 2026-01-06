@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum SocialType: String, CaseIterable, Identifiable, Hashable {
+public enum SocialType: String, CaseIterable, Identifiable, Hashable, Equatable {
   case apple
   case google
 

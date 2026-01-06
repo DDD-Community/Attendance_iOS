@@ -6,49 +6,52 @@
 //
 
 import DomainInterface
-import Model
+import Entity
 
 import WeaveDI
 
-public struct SignUpUseCaseImpl: SignUpInterface {
+public protocol SignUpUseCaseInterface: Sendable {
+  func registerUser(
+    userSession: UserSession
+  ) async throws -> SignUpUser
+}
+
+public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
   @Dependency(\.signUpRepository) var repository
 
   public init() { }
 
   // MARK: - 회원가입 API
-  public func registerAccount(
-    email: String,
-    password: String
-  ) async throws -> SignUpModel? {
-    return try await repository.registerAccount(
-      email: email,
-      password: password
+  public func registerUser(
+    userSession: UserSession
+  ) async throws -> SignUpUser {
+    let isManager = userSession.userRole == .manager
+    if !isManager, userSession.selectTeamId == nil {
+      throw SignUpError.missingRequiredField("팀")
+    }
+    let input = SignUpUserInput(
+      name: userSession.name,
+      generationId: userSession.generationId,
+      jobRole: userSession.selectPart,
+      teamId: isManager ? nil : userSession.selectTeamId,
+      managerRoles: isManager ? userSession.managing : nil,
+      provider: userSession.provider,
+      token: userSession.token,
+      invitationCode: userSession.inviteCode
     )
-  }
-
-  // MARK: -초대코드 확인
-  public func validateInviteCode(
-    inviteCode: String
-  ) async throws -> InviteCodeModel? {
-    return try await repository.validateInviteCode(inviteCode: inviteCode)
-  }
-
-  // MARK: - 이메일 검증
-  public func checkEmail(email: String) async throws -> CheckEmailModel? {
-    return try await repository.checkEmail(email: email)
+    return try await repository.registerUser(input: input)
   }
 }
 
 extension SignUpUseCaseImpl: DependencyKey {
-  static public var liveValue: SignUpInterface = SignUpUseCaseImpl()
-  static public var testValue: SignUpInterface = SignUpUseCaseImpl()
-  static public var previewValue: SignUpInterface = liveValue
+  static public var liveValue: SignUpUseCaseInterface = SignUpUseCaseImpl()
+  static public var testValue: SignUpUseCaseInterface = SignUpUseCaseImpl()
+  static public var previewValue: SignUpUseCaseInterface = liveValue
 }
 
 public extension DependencyValues {
-  var signUpUseCase: SignUpInterface {
+  var signUpUseCase: SignUpUseCaseInterface {
     get { self[SignUpUseCaseImpl.self] }
     set { self[SignUpUseCaseImpl.self] = newValue  }
   }
 }
-

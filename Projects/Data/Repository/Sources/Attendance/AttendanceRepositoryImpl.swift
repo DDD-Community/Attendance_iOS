@@ -17,7 +17,7 @@ final public class AttendanceRepositoryImpl: AttendanceInterface , Sendable {
   private let provider: MoyaProvider<AttendanceService>
 
   public init(
-    provider: MoyaProvider<AttendanceService> = MoyaProvider<AttendanceService>.withSession(AuthInterceptor.shared)
+    provider: MoyaProvider<AttendanceService> = MoyaProvider<AttendanceService>.authorized
   ) {
     self.provider = provider
   }
@@ -90,4 +90,3 @@ final public class AttendanceRepositoryImpl: AttendanceInterface , Sendable {
     return response.data.toDomain()
   }
 }
-

@@ -13,7 +13,7 @@ let project = Project.makeModule(
   dependencies: [
     .Shared(implements: .Shareds),
     .Shared(implements: .DesignSystem),
-    .Core(implements: .Core)
+    .Domain(implements: .UseCase)
   ],
   sources: ["Sources/**"]
 )

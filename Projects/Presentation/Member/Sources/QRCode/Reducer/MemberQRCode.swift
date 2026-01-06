@@ -8,10 +8,10 @@
 import Foundation
 import SwiftUI
 
-import Core
 import Shareds
 
 import ComposableArchitecture
+import LogMacro
 
 @Reducer
 public struct MemberQRCode {

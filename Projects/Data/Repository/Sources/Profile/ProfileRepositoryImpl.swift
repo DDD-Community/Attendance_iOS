@@ -20,7 +20,7 @@ final public class ProfileRepositoryImpl: ProfileInterface , Sendable{
   private let provider: MoyaProvider<ProfileService>
 
   public init(
-    provider: MoyaProvider<ProfileService> = MoyaProvider<ProfileService>.withSession(AuthInterceptor.shared)
+    provider: MoyaProvider<ProfileService> = MoyaProvider<ProfileService>.authorized
   ) {
     self.provider = provider
   }
@@ -89,4 +89,3 @@ final public class ProfileRepositoryImpl: ProfileInterface , Sendable{
     return response.data.toDomain()
   }
 }
-

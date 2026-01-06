@@ -7,7 +7,6 @@
 
 import Foundation
 
-import Core
 import Utill
 import Entity
 
@@ -25,22 +24,15 @@ public struct Login {
     var nonce: String = ""
     var appleAccessToken: String = ""
     var appleLoginFullName: ASAuthorizationAppleIDCredential? = nil
-    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
-    var userMember: UserDTOMember? = nil
-    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
-    @Shared(.appStorage("AccessToken")) var accessToken: String = ""
-    
-    @Shared var userEntity: UserEntity
-    var signUpModel: SignUpModel?
-    var checkEmailModel: CheckEmailModel?
+
+    @Shared var userSession: UserSession
     var loginEntity: LoginEntity?
-    var profileModel: ProfileResponseModel?
     var currentSocialType: SocialType?
     
     public init(
-      userEntity: UserEntity = .init()
+      userSession: UserSession = .empty
     ) {
-      self._userEntity = Shared(wrappedValue: userEntity, .inMemory("UserEntity"))
+      self._userSession = Shared(wrappedValue: userSession, .inMemory("UserSession"))
     }
     
   }
@@ -79,16 +71,12 @@ public struct Login {
   }
   
   // MARK: - NavigationAction
-  
   public enum NavigationAction: Equatable {
     case presentSignUpInviteView
     case presentCoreMemberMain
     case presentMemberMain
   }
-  
-  @Dependency(\.authUseCase) var authUseCase
-  @Dependency(\.signUpUseCase) var signUpUseCase
-  @Dependency(\.profileUseCase) var profileUseCase
+
   @Dependency(\.appleManger) var appleLoginManger
   @Dependency(\.unifiedOAuthUseCase) var unifiedOAuthUseCase
   @Dependency(\.continuousClock) var clock
@@ -161,8 +149,9 @@ public struct Login {
         
       case .login(let socialType):
         state.currentSocialType = socialType
+        state.$userSession.withLock { $0.provider = socialType }
         return .run { [
-          useEntity = state.userEntity,
+          useEntity = state.userSession,
           appleCredential = state.appleLoginFullName,
           nonce = state.nonce
         ] send in
@@ -170,7 +159,7 @@ public struct Login {
             with: socialType,
             appleCredential: appleCredential,
             nonce: nonce,
-            googleToken: useEntity.userEmail
+            googleToken: useEntity.token
           )
           return await send(.inner(.loginResponse(outcome)))
         }
@@ -189,15 +178,6 @@ public struct Login {
         switch result {
           case .success(let loginEntity):
             state.loginEntity = loginEntity
-
-            //TODO: 차후에 해당 로직이 이동할 예정
-//            UserDefaults.standard.set(loginEntity.token.accessToken, forKey: "ACCESS_TOKEN")
-//            state.$accessToken.withLock {$0 = loginEntity.token.accessToken}
-//            state.$userEntity.withLock {
-//              $0.userName = loginEntity.name
-//              $0.accessToken = loginEntity.token.accessToken
-//              $0.refreshToken = loginEntity.token.refreshToken
-//            }
 
             if loginEntity.isNewUser  {
               return .send(.navigation(.presentSignUpInviteView))

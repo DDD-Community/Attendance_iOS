@@ -10,13 +10,16 @@ import Dependencies
 import AuthenticationServices
 @preconcurrency import Entity
 import DomainInterface
+import Sharing
+import LogMacro
 
 /// 통합 OAuth UseCase - 로그인/회원가입 플로우를 하나로 통합
 public struct UnifiedOAuthUseCase {
   @Dependency(\.authRepository) private var authRepository: AuthInterface
   @Dependency(\.appleOAuthProvider) private var appleProvider: AppleOAuthProviderInterface
   @Dependency(\.googleOAuthProvider) private var googleProvider: GoogleOAuthProviderInterface
-
+  @Dependency(\.keychainManager) private var keychainManager: KeychainManaging
+  @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   public init() {}
 }
 
@@ -54,10 +57,20 @@ public extension UnifiedOAuthUseCase {
       credential: credential,
       nonce: nonce
     )
-    return try await authRepository.login(
+    Log.debug("apple authcode", payload.authorizationCode)
+    self.$userSession.withLock {
+      $0.token = payload.idToken
+      $0.accessToken = payload.authorizationCode ?? ""
+    }
+    let loginEntity = try await authRepository.login(
       provider: .apple,
-      token: payload.idToken
+      token: payload.authorizationCode ?? ""
     )
+    keychainManager.save(
+      accessToken: loginEntity.token.accessToken,
+      refreshToken: loginEntity.token.refreshToken
+    )
+    return loginEntity
   }
 
   /// Google 로그인 처리
@@ -65,10 +78,16 @@ public extension UnifiedOAuthUseCase {
     token: String
   ) async throws -> LoginEntity {
     let processedToken = try await googleProvider.signInWithToken(token: token)
-    return try await authRepository.login(
+    self.$userSession.withLock { $0.token = processedToken }
+    let loginEntity = try await authRepository.login(
       provider: .google,
       token: processedToken
     )
+    keychainManager.save(
+      accessToken: loginEntity.token.accessToken,
+      refreshToken: loginEntity.token.refreshToken
+    )
+    return loginEntity
   }
 
   /// OAuth 플로우 처리 (TCA용)

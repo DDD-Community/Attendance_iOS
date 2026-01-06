@@ -7,11 +7,12 @@
 
 import Foundation
 
-import Core
 import Shareds
+import UseCase
 
 import ComposableArchitecture
 import FirebaseAuth
+import LogMacro
 
 @Reducer
 public struct MemberMain {

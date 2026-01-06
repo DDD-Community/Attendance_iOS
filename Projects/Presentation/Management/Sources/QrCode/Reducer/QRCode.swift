@@ -6,10 +6,11 @@
 //
 
 import Foundation
-import ComposableArchitecture
 
-import Core
 import Shareds
+
+import ComposableArchitecture
+import LogMacro
 
 @Reducer
 public struct QRCode {

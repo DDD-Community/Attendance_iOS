@@ -9,7 +9,8 @@ import Foundation
 
 import DomainInterface
 import Repository
-import Core
+import Foundations
+import UseCase
 
 import ComposableArchitecture
 import WeaveDI
@@ -32,7 +33,11 @@ public class AppDIManager: @unchecked Sendable {
       .register { AppleOAuthRepositoryImpl() as AppleOAuthInterface }
       .register { AppleOAuthProvider() as AppleOAuthProviderInterface }
       .register { GoogleOAuthProvider() as GoogleOAuthProviderInterface }
-
+      // MARK: - 토큰 등록 관련
+      .register { KeychainManager() as KeychainManaging }
+      .register { KeychainTokenProvider(keychainManager: KeychainManager()) as TokenProviding }
+    // MARK: - 온보딩 관련
+      .register { OnBoardingRepositoryImpl()  as OnBoardingInterface }
       .register { SignUpRepositoryImpl() as SignUpInterface }
       .register { AttendanceRepositoryImpl() as AttendanceInterface }
       .register { ProfileRepositoryImpl() as ProfileInterface }

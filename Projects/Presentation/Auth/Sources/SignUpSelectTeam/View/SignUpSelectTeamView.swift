@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+
 import DesignSystem
+
 import ComposableArchitecture
-import Model
+import SDWebImageSwiftUI
 
 public struct SignUpSelectTeamView: View {
   @Bindable var store: StoreOf<SignUpSelectTeam>
@@ -34,13 +36,28 @@ public struct SignUpSelectTeamView: View {
         StepNavigationBar(activeStep: 3, buttonAction: backAction)
         
         signUpSelectTeamText()
-        
-        selectTeamList()
-        
-        signUpSelectTeamButton()
+
+
+        if store.loading {
+          VStack {
+            Spacer()
+
+            AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(true))
+              .resizable()
+              .scaledToFit()
+              .frame(width: 200, height: 200)
+
+            Spacer()
+          }
+        } else {
+          selectTeamList()
+
+          signUpSelectTeamButton()
+        }
       }
       .onAppear {
-        store.userEntity.memberTeam = nil
+        store.userSession.selectTeam = .unknown
+        store.send(.view(.onAppear))
       }
     }
   }
@@ -65,10 +82,10 @@ extension SignUpSelectTeamView {
       
       ScrollView {
         VStack {
-          ForEach(SelectTeam.teamList, id: \.self) { item in
+          ForEach(store.teams ?? [], id: \.teamId) { item in
             SelectTeamIteam(
-              content: item.selectTeamDescription,
-              isActive:  item == store.userEntity.memberTeam) {
+              content: item.teams.selectTeamDescription,
+              isActive: item.teams == store.userSession.selectTeam) {
                 store.send(.view(.selectTeamButton(selectTeam: item)))
               }
           }
@@ -86,7 +103,7 @@ extension SignUpSelectTeamView {
       
       CustomButton(
         action: {
-          store.send(.async(.editProfile))
+          store.send(.async(.signUpUser))
         },
         title: "가입 완료",
         config: CustomButtonConfig.create(),
@@ -99,4 +116,3 @@ extension SignUpSelectTeamView {
     .padding(.horizontal, 24)
   }
 }
-

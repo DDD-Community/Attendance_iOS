@@ -7,7 +7,8 @@
 
 import Foundation
 
-import Core
+import UseCase
+import Entity
 import Utill
 
 import AsyncMoya
@@ -21,10 +22,14 @@ public struct SignUpSelectManaging {
   public struct State: Equatable {
     public init() {}
 
-
+    var loading: Bool = false
     var activeButton: Bool = false
-    var editProfileDTO: ProfileResponseModel?
-    @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
+    var errorMessage: String?
+    var selectMangers: [SelectManaging]? = [ ]
+    var signUpUser: SignUpUser?
+
+    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+
 
   }
 
@@ -40,137 +45,160 @@ public struct SignUpSelectManaging {
 
   @CasePathable
   public enum View {
-    case selectManagingButton(selectManaging: Managing)
+    case onAppear
+    case selectManagingButton(selectManaging: SelectManaging)
   }
-  
+
   // MARK: - AsyncAction 비동기 처리 액션
-  
+
   public enum AsyncAction: Equatable {
-    case editProfile
+    case fetchMangerList
+    case signUpUser
   }
-  
+
   // MARK: - 앱내에서 사용하는 액션
-  
+
   public enum InnerAction: Equatable {
-    case editProfileResponse(Result<ProfileResponseModel, CustomError>)
+    case mangerListResponse(Result<[SelectManaging], SignUpError>)
+    case signUpUserResponse(Result<SignUpUser, SignUpError>)
   }
-  
+
   // MARK: - NavigationAction
-  
+
   public enum NavigationAction: Equatable {
     case presentCoreMember
     case presentSelectTeam
   }
-  
-  struct SignUpSelectManagingCancel: Hashable {}
-  
-  @Dependency(\.profileUseCase) var profileUseCase
+
+  nonisolated enum CancelID: Hashable {
+    case fetchMangerList
+  }
+
+  @Dependency(\.onBoardingUseCase) var onBoardingUseCase
+  @Dependency(\.signUpUseCase) var signUpUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
-  
+
   public var body: some ReducerOf<Self> {
     BindingReducer()
     Reduce { state, action in
       switch action {
-      case .binding(_):
-        return .none
-        
-      case .view(let viewAction):
-        return handleViewAction(state: &state, action: viewAction)
-        
-      case .async(let asyncAction):
-        return handleAsyncAction(state: &state, action: asyncAction)
-        
-      case .inner(let innerAction):
-        return handleInnerAction(state: &state, action: innerAction)
-        
-      case .navigation(let navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+        case .binding(_):
+          return .none
+
+        case .view(let viewAction):
+          return handleViewAction(state: &state, action: viewAction)
+
+        case .async(let asyncAction):
+          return handleAsyncAction(state: &state, action: asyncAction)
+
+        case .inner(let innerAction):
+          return handleInnerAction(state: &state, action: innerAction)
+
+        case .navigation(let navigationAction):
+          return handleNavigationAction(state: &state, action: navigationAction)
       }
     }
   }
-  
+
   private func handleViewAction(
     state: inout State,
     action: View
   ) -> Effect<Action> {
     switch action {
-    case .selectManagingButton(let selectManaging):
-      if state.userEntity.managing == selectManaging {
-        state.$userEntity.withLock { $0.managing = nil }
-        state.activeButton = false
+      case .onAppear:
+        return .send(.async(.fetchMangerList))
+
+      case .selectManagingButton(let selectManaging):
+        let selectedManaging = selectManaging.managing
+        var updatedManaging: [StaffManaging] = []
+
+        state.$userSession.withLock {
+          var current = $0.managing
+          if let index = current.firstIndex(of: selectedManaging) {
+            current.remove(at: index)
+          } else {
+            current.append(selectedManaging)
+          }
+          $0.managing = current
+          updatedManaging = current
+        }
+
+        state.activeButton = !updatedManaging.isEmpty
         return .none
-      }
-      state.$userEntity.withLock { $0.managing = selectManaging }
-      if let selectManaging = Managing(rawValue: selectManaging.managingDesc) {
-        state.$userEntity.withLock { $0.managing = selectManaging }
-      }
-      state.activeButton = true
-      return .none
     }
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presentCoreMember:
-      return .none
-      
-    case .presentSelectTeam:
-      return .none
+      case .presentCoreMember:
+        return .none
+
+      case .presentSelectTeam:
+        return .none
     }
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-    case .editProfile:
-      return .run { [
-        userEntity = state.userEntity,
-      ] send in
-        let editProfileResult = await Result {
-          try await profileUseCase.editProfileMangerNoTeam(
-            name: userEntity.signUpName,
-            inviteCode: userEntity.inviteCodeId ?? "",
-            role: userEntity.role?.rawValue ?? "",
-            responsibility: userEntity.managing?.rawValue ?? ""
-          )
-        }
-        
-        switch editProfileResult {
-        case .success(let profileDTOData):
-          if let profileDTOData = profileDTOData {
-            await send(.inner(.editProfileResponse(.success(profileDTOData))))
-            await send(.navigation(.presentCoreMember))
+      case .fetchMangerList:
+        state.loading = true
+        return .run { send in
+          let mangerResult = await Result {
+            try await onBoardingUseCase.fetchManaging()
           }
-          
-        case .failure(let error):
-          await send(.inner(.editProfileResponse(.failure(.encodingError("프로필업데이트 실패 : \(error.localizedDescription)")))))
+            .mapError(SignUpError.from)
+          return await send(.inner(.mangerListResponse(mangerResult)))
         }
-      }
-      .debounce(id: SignUpSelectManagingCancel(), for: 0.3, scheduler: mainQueue)
+        .cancellable(id: CancelID.fetchMangerList, cancelInFlight: true)
+
+      case .signUpUser:
+        return .run { [
+          userSession = state.userSession
+        ] send in
+          let signUpResult = await Result {
+            try await signUpUseCase.registerUser(userSession: userSession)
+          }
+            .mapError(SignUpError.from)
+          return await send(.inner(.signUpUserResponse(signUpResult)))
+        }
 
     }
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-    case .editProfileResponse(let result):
-      switch result {
-      case .success(let profileDT0):
-        state.editProfileDTO = profileDT0
-        
-      case .failure(let error):
-        #logNetwork("회원가입 프로핍 변경  에러", error.localizedDescription)
-      }
-      return .none
+      case .mangerListResponse(let result):
+        switch result {
+          case .success(let data):
+            state.loading = false
+            state.selectMangers = data
+
+          case .failure(let error):
+            state.errorMessage =  error.errorDescription
+
+        }
+        return .none
+
+      case .signUpUserResponse(let result):
+        switch result {
+        case .success(let data):
+          state.signUpUser = data
+            return .send(.navigation(.presentCoreMember))
+        case .failure(let error):
+          state.errorMessage = error.errorDescription
+            return .none
+        }
     }
+    
   }
 }

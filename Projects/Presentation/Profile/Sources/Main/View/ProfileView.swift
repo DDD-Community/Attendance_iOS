@@ -34,8 +34,9 @@ public struct ProfileView: View {
         mangerProfileLoadingData()
       }
       .task {
-        store.send(.async(.fetchUser))
+//        store.send(.async(.fetchUser))
       }
+      .alert($store.scope(state: \.alert, action: \.scope.alert))
 
       if store.destination?.createApp != nil {
         VisualEffectBlur(blurStyle: .systemChromeMaterialDark)
@@ -58,13 +59,31 @@ public struct ProfileView: View {
 extension ProfileView {
   @ViewBuilder
   fileprivate func mangerProfileLoadingData() -> some View {
-    if store.profileDTOModel == nil {
-      if store.isLoading  {
-        profileLoadingView()
-      }
-    } else {
-      mangerProfileData()
-    }
+//    if store.profileDTOModel == nil {
+//      if store.isLoading  {
+//        VStack {
+//          Spacer()
+//            .frame(height: 12)
+//
+//          CustomNavigationBar(backAction: backAction, addAction: {
+//            store.send(.view(.appearModal))
+//          }, image: .info)
+//
+//          Spacer()
+//
+//          profileLoadingView()
+//
+//          Spacer()
+//
+//          logoutButton()
+//
+//
+//        }
+//      }
+//    } else {
+//      mangerProfileData()
+//    }
+    mangerProfileData()
   }
 
   @ViewBuilder
@@ -254,13 +273,24 @@ extension ProfileView {
         .frame(height: 23)
 
       HStack(alignment: .center) {
+
+        Text("탈퇴하기")
+          .pretendardCustomFont(textStyle: .body2NormalMedium)
+          .foregroundStyle(.red40)
+          .onTapGesture {
+            store.send(.async(.deleteUser))
+          }
+
+      Spacer()
+          .frame(width: 10)
+
         Text(store.logoutText)
           .pretendardCustomFont(textStyle: .body2NormalMedium)
           .foregroundStyle(.staticWhite)
           .underline(true, color: .staticWhite)
-      }
-      .onTapGesture {
-        store.send(.navigation(.presentLogOut))
+          .onTapGesture {
+            store.send(.navigation(.presentLogOut))
+          }
       }
 
       Spacer()

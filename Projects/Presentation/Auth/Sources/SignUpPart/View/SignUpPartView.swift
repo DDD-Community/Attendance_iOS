@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
-import ComposableArchitecture
+
 import DesignSystem
-import Core
+
+import SDWebImageSwiftUI
+import ComposableArchitecture
 
 public struct SignUpPartView: View {
   @Bindable var store: StoreOf<SignUpPart>
@@ -35,10 +37,26 @@ public struct SignUpPartView: View {
         
         signUpPartText()
         
-        selectPartList()
-        
-        signUpPartButton()
-        
+        if store.loading {
+          VStack {
+            Spacer()
+
+            AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(true))
+              .resizable()
+              .scaledToFit()
+              .frame(width: 200, height: 200)
+
+            Spacer()
+          }
+        } else {
+          selectPartList()
+
+          signUpPartButton()
+        }
+
+      }
+      .task {
+        store.send(.view(.onAppear))
       }
     }
   }
@@ -63,13 +81,19 @@ extension SignUpPartView {
         .frame(height: 40)
       
       ScrollView {
-        VStack {
-          ForEach(SelectPart.allParts, id: \.self) { item in
+        LazyVStack {
+          ForEach(
+            (store.selectJobs ?? []).sorted {
+              $0.job.desc.localizedCaseInsensitiveCompare($1.job.desc) == .orderedAscending
+            },
+            id: \.jobKeys
+          ) { item in
             SelectPartItem(
-              content: item.desc,
-              isActive: item == store.selectPart) {
-                store.send(.view(.selectPartButton(selectPart: item)))
-              }
+              content: item.job.desc,
+              isActive: item.job == store.selectPart
+            ) {
+              store.send(.view(.selectPartButton(selectPart: item)))
+            }
           }
         }
       }

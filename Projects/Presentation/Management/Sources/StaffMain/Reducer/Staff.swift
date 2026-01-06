@@ -8,8 +8,8 @@
 import Foundation
 import SwiftUI
 
-import Core
 import Shareds
+import Entity
 
 import ComposableArchitecture
 import KeychainAccess

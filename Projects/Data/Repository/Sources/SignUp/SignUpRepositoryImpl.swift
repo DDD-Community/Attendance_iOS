@@ -9,6 +9,7 @@ import Combine
 
 import DomainInterface
 import Model
+import Entity
 import Service
 
 @preconcurrency import AsyncMoya
@@ -26,30 +27,20 @@ final public class SignUpRepositoryImpl: SignUpInterface {
   }
 
   // Mark : -  API 회원가입
-  public func registerAccount(
-    email: String,
-    password: String
-  ) async throws -> SignUpModel? {
-    let signUpModel: SignUpDTOModel  = try await provider.request(
-      .registerAccount(
-        email: email,
-        password1: password,
-        password2: password))
-    return signUpModel.toDomain()
-  }
-
-  // Mark : - 초대 코드 검증
-  public func validateInviteCode(
-    inviteCode: String
-  ) async throws -> InviteCodeModel? {
-    let model: InviteCodeDTOModel  = try await provider.request(
-      .verifyInviteCode(inviteCode: inviteCode))
-    return model.toDomain()
-  }
-
-  // MARK: - 이메일 검증
-  public func checkEmail(email: String) async throws -> CheckEmailModel? {
-    let model: CheckEmailDTOModel = try await provider.request(.checkEmail(email: email))
-    return model.toDomain()
+  public func registerUser(
+    input: SignUpUserInput
+  ) async throws -> SignUpUser {
+    let body = SignUpUserRequestDTO(
+      name: input.name,
+      generationId: input.generationId,
+      jobRole: input.jobRole.apiKey,
+      teamId: input.teamId,
+      managerRoles: input.managerRoles?.map { $0.apiKey },
+      provider: input.provider.description,
+      token: input.token,
+      invitationCode: input.invitationCode
+    )
+    let dto: SignUpUserDTO = try await provider.request(.signUpUser(body: body))
+    return dto.toDomain()
   }
 }

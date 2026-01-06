@@ -6,10 +6,10 @@
 //
 
 import DomainInterface
-import Model
 import Entity
 
 import WeaveDI
+import Foundation
 
 public struct AuthUseCaseImpl: AuthInterface {
   @Dependency(\.authRepository) var authRepository
@@ -23,16 +23,24 @@ public struct AuthUseCaseImpl: AuthInterface {
   ) async throws -> Entity.LoginEntity {
     return try await authRepository.login(provider: provider, token: token)
   }
+
+  public func refresh() async throws -> Entity.AuthTokens {
+    return try await authRepository.refresh()
+  }
+
+  public func withDraw(token: String) async throws -> WithdrawEntity {
+    return try await authRepository.withDraw(token: token)
+  }
 }
 
 extension AuthUseCaseImpl: DependencyKey {
-  static public var liveValue: AuthInterface =  AuthUseCaseImpl()
-  static public var testValue:   AuthInterface =  AuthUseCaseImpl()
-  static public var previewValue: AuthInterface = liveValue
+  static public var liveValue = AuthUseCaseImpl()
+  static public var testValue = AuthUseCaseImpl()
+  static public var previewValue = AuthUseCaseImpl()
 }
 
 public extension DependencyValues {
-  var authUseCase: AuthInterface {
+  var authUseCase: AuthUseCaseImpl {
     get { self[AuthUseCaseImpl.self] }
     set { self[AuthUseCaseImpl.self] = newValue }
   }
