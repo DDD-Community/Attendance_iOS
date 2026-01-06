@@ -137,7 +137,7 @@ extension AppReducer {
       }
       .cancellable(id: CancelID.splashNavigation)
 
-    case .auth(.navigation(.presentCoreMember)):
+    case .auth(.navigation(.presentStaff)):
       return .merge(
         .send(.view(.auth(.navigation(.cleanup)))),
         .send(.view(.presentCoreMember))

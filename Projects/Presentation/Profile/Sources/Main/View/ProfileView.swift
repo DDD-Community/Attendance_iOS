@@ -260,10 +260,10 @@ extension ProfileView {
         Image(asset: .profileBack)
           .resizable()
           .scaledToFit()
-          .frame(height: UIScreen.screenHeight * 0.68)
+          .frame(height: UIScreen.screenHeight * 0.7)
           .cornerRadius(20)
       )
-      .frame(height: UIScreen.screenHeight * 0.68)
+      .frame(height: UIScreen.screenHeight * 0.7)
     }
     .padding(.horizontal, 24)
   }

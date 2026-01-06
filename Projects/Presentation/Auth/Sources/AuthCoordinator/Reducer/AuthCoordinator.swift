@@ -12,6 +12,7 @@ import Entity
 
 import ComposableArchitecture
 import TCACoordinators
+import OnBoarding
 
 @Reducer
 public struct AuthCoordinator {
@@ -59,7 +60,7 @@ public struct AuthCoordinator {
   // MARK: - NavigationAction
   
   public enum NavigationAction: Equatable {
-    case presentCoreMember
+    case presentStaff
     case presentMember
     case cleanup
   }
@@ -107,48 +108,23 @@ extension AuthCoordinator {
 
       // MARK: - 초대코드 입력
     case .routeAction(id: _, action: .login(.navigation(.presentSignUpInviteView))):
-      state.routes.push(.InviteCode(.init()))
+      state.routes.push(.onboarding(.init()))
       return .none
 
     case .routeAction(id: _, action: .login(.navigation(.presentCoreMemberMain))):
-      return .send(.navigation(.presentCoreMember))
+      return .send(.navigation(.presentStaff))
 
     case .routeAction(id: _, action: .login(.navigation(.presentMemberMain))):
       return .send(.navigation(.presentMember))
 
-      // MARK: - 이름 입력
-    case .routeAction(id: _, action: .InviteCode(.navigation(.presentSignUpName))):
-      state.routes.push(.onBoardingName(.init()))
-      return .none
 
-    case .routeAction(id: _, action: .onBoardingName(.navigation(.presentSignUpPart))):
-      state.routes.push(.selectPart(.init()))
-      return .none
+      case .routeAction(id: _, action: .onboarding(.navigation(.presentStaff))):
+        return .send(.navigation(.presentStaff))
 
-      // MARK: - 운영진 담당업무 선택
+      case .routeAction(id: _, action: .onboarding(.navigation(.presentMember))):
+        return .send(.navigation(.presentMember))
 
-    case .routeAction(id: _, action: .selectPart(.navigation(.presentManaging))):
-      state.routes.push(.selectManaging(.init()))
-      return .none
 
-      // MARK: -  운영진 매니징 업무선택시  팀매니징 선택시 팀선택
-    case .routeAction(id: _, action: .selectManaging(.navigation(.presentSelectTeam))):
-      state.routes.push(.selectTeam(.init()))
-      return .none
-
-    case .routeAction(id: _, action: .selectManaging(.navigation(.presentCoreMember))):
-      return .send(.navigation(.presentCoreMember))
-
-    case .routeAction(id: _, action: .selectTeam(.navigation(.presentManager))):
-      return .send(.navigation(.presentCoreMember))
-
-      // MARK: - 멤버 선택 할팀 선택
-    case .routeAction(id: _, action: .selectPart(.navigation(.presentSelectTeam))):
-      state.routes.push(.selectTeam(.init()))
-      return .none
-
-    case .routeAction(id: _, action: .selectTeam(.navigation(.presentMember))):
-      return .send(.navigation(.presentMember))
 
     default:
       return .none
@@ -176,7 +152,7 @@ extension AuthCoordinator {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presentCoreMember:
+    case .presentStaff:
       return .none
 
     case .presentMember:
@@ -210,10 +186,6 @@ extension AuthCoordinator {
   @Reducer(state: .equatable)
   public enum AuthScreen {
     case login(Login)
-    case InviteCode(InviteCodeReducer)
-    case onBoardingName(OnBoardingName)
-    case selectPart(SelectPartReducer)
-    case selectManaging(SelectManagingReducer)
-    case selectTeam(SelectTeam)
+  case onboarding(OnBoardingCoordinator)
   }
 }

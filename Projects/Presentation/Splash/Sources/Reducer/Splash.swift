@@ -106,7 +106,10 @@ extension Splash {
   ) -> Effect<Action> {
     switch action {
       case .onAppear:
-        return .send(.async(.fetchProfile))
+        return .run { send in
+          try await clock.sleep(for: .seconds(0.5))
+          await send(.async(.fetchProfile))
+        }
     }
 
   }

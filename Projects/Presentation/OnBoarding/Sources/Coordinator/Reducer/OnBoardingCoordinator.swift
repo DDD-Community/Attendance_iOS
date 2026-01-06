@@ -1,10 +1,9 @@
 //
-//  ProfileCoordinator.swift
-//  Profile
+//  OnBoardingCoordinator.swift
+//  OnBoarding
 //
-//  Created by Wonji Suh  on 1/4/26.
+//  Created by Wonji Suh  on 1/6/26.
 //
-
 
 import Foundation
 
@@ -14,21 +13,21 @@ import ComposableArchitecture
 import TCACoordinators
 
 @Reducer
-public struct ProfileCoordinator {
+public struct OnBoardingCoordinator {
   public init() {}
 
   @ObservableState
   public struct State: Equatable {
-    var routes: [Route<ProfileScreen.State>]
+    var routes: [Route<OnBoardingScreen.State>]
 
     public init() {
-      routes = [.root(.profile(.init()), embedInNavigationView: true)]
+      routes = [.root(.InviteCode(.init()), embedInNavigationView: true)]
     }
   }
 
   public enum Action: ViewAction, BindableAction, FeatureAction {
     case binding(BindingAction<State>)
-    case router(IndexedRouterActionOf<ProfileScreen>)
+    case router(IndexedRouterActionOf<OnBoardingScreen>)
     case view(View)
     case inner(InnerAction)
     case async(AsyncAction)
@@ -50,8 +49,8 @@ public struct ProfileCoordinator {
   }
 
   public enum NavigationAction: Equatable {
-    case presentLogin
-    case presentRoot
+    case presentStaff
+    case presentMember
   }
 
   @Dependency(\.continuousClock) var clock
@@ -84,23 +83,45 @@ public struct ProfileCoordinator {
   }
 }
 
-extension ProfileCoordinator {
+extension OnBoardingCoordinator {
   private func handleRouterAction(
     state: inout State,
-    action: IndexedRouterActionOf<ProfileScreen>
+    action: IndexedRouterActionOf<OnBoardingScreen>
   ) -> Effect<Action> {
     switch action {
-    case .routeAction(id: _, action: .profile(.navigation(.presentLogOut))):
-      return .run { send in
-        await send(.navigation(.presentLogin))
-      }
-
-      case .routeAction(id: _, action: .profile(.navigation(.presentPrivacyPolicy))):
-        state.routes.push(.web(.init(url: "https://dddset.notion.site/DDD-2d424441b0b08080a518ed42f1315b20?source=copy_link")))
+        // MARK: - 이름 입력
+      case .routeAction(id: _, action: .InviteCode(.navigation(.presentSignUpName))):
+        state.routes.push(.onBoardingName(.init()))
         return .none
 
-      case .routeAction(id: _, action: .web(.backToRoot)):
-        return .send(.view(.backAction))
+      case .routeAction(id: _, action: .onBoardingName(.navigation(.presentSignUpPart))):
+        state.routes.push(.selectPart(.init()))
+        return .none
+
+        // MARK: - 운영진 담당업무 선택
+
+      case .routeAction(id: _, action: .selectPart(.navigation(.presentManaging))):
+        state.routes.push(.selectManaging(.init()))
+        return .none
+
+        // MARK: -  운영진 매니징 업무선택시  팀매니징 선택시 팀선택
+      case .routeAction(id: _, action: .selectManaging(.navigation(.presentSelectTeam))):
+        state.routes.push(.selectTeam(.init()))
+        return .none
+
+      case .routeAction(id: _, action: .selectManaging(.navigation(.presentCoreMember))):
+        return .send(.navigation(.presentStaff))
+
+      case .routeAction(id: _, action: .selectTeam(.navigation(.presentManager))):
+        return .send(.navigation(.presentStaff))
+
+        // MARK: - 멤버 선택 할팀 선택
+      case .routeAction(id: _, action: .selectPart(.navigation(.presentSelectTeam))):
+        state.routes.push(.selectTeam(.init()))
+        return .none
+
+      case .routeAction(id: _, action: .selectTeam(.navigation(.presentMember))):
+        return .send(.navigation(.presentMember))
 
     default:
       return .none
@@ -127,7 +148,7 @@ extension ProfileCoordinator {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-   
+
   }
 
   private func handleAsyncAction(
@@ -142,19 +163,22 @@ extension ProfileCoordinator {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presentLogin:
+    case .presentStaff:
       return .none
 
-      case .presentRoot:
+      case .presentMember:
         return .none
     }
   }
 }
 
-extension ProfileCoordinator {
+extension OnBoardingCoordinator {
   @Reducer(state: .equatable)
-  public enum ProfileScreen {
-    case profile(ProfileReducer)
-    case web(WebReducer)
+  public enum OnBoardingScreen {
+    case InviteCode(InviteCodeReducer)
+    case onBoardingName(OnBoardingName)
+    case selectPart(SelectPartReducer)
+    case selectManaging(SelectManagingReducer)
+    case selectTeam(SelectTeam)
   }
 }

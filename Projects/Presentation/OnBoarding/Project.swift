@@ -6,15 +6,17 @@ import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
 let project = Project.makeModule(
-  name: "Member",
-  bundleId: .appBundleID(name: ".Member"),
-  product: Project.Environment.presentationProduct,
+  name: "OnBoarding",
+  bundleId: .appBundleID(name: ".OnBoarding"),
+  product: .staticFramework,
   settings:  .settings(),
   dependencies: [
-    .Shared(implements: .Shareds),
-    .Presentation(implements: .Profile),
-    .Domain(implements: .UseCase)
 
+    .SPM.composableArchitecture,
+    .SPM.tcaCoordinator,
+    .Domain(implements: .UseCase),
+    .Shared(implements: .Shareds)
+  
   ],
   sources: ["Sources/**"]
 )
