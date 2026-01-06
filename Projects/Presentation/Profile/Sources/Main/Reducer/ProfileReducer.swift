@@ -206,7 +206,7 @@ extension ProfileReducer {
           try await profileUseCase.getProfile()
         }
           .mapError(ProfileError.from)
-
+        try await clock.sleep(for: .seconds(2))
         return await send(.inner(.fetchUserResponse(fetchUserResult)))
       }
       .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)

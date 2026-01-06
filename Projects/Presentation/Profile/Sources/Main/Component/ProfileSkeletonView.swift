@@ -42,7 +42,7 @@ public struct ProfileSkeletonView: View {
         .frame(height: 20)
     }
     .onAppear {
-      withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+      withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
         isAnimating = true
       }
     }
@@ -52,68 +52,114 @@ public struct ProfileSkeletonView: View {
 extension ProfileSkeletonView {
   @ViewBuilder
   private func skeletonProfileCard() -> some View {
-    VStack(alignment: .leading, spacing: .zero) {
-      // 상단 멤버 태그 & 기수 변경 버튼
-      HStack {
-        skeletonRoundedButton(width: 60, height: 30)
+    LazyVStack {
+      Spacer()
+        .frame(height: 17)
+
+      VStack(alignment: .leading, spacing: .zero) {
+        // 매니저 케이스를 가정한 상단 여백
+        Spacer()
+          .frame(height: 24)
+
+        HStack {
+          // 역할 태그 (매니저/멤버)
+          skeletonRoleTag()
+
+          Spacer()
+
+          // 기수 변경 버튼
+          skeletonEditButton()
+        }
+
+        Spacer()
+          .frame(height: 20)
+
+        // 사용자 이름
+        skeletonText(width: 120, height: 28)
+
+        Spacer()
+          .frame(height: 20)
+
+        // 정보 섹션 (매니저 기준 4개 항목)
+        VStack(alignment: .leading, spacing: 20) {
+          skeletonInfoRow(titleWidth: 40, valueWidth: 80) // 직군
+          skeletonInfoRow(titleWidth: 60, valueWidth: 120) // 담당 팀
+          skeletonInfoRow(titleWidth: 60, valueWidth: 80) // 소속 기수
+          skeletonInfoRow(titleWidth: 60, valueWidth: 140) // 담당 업무
+        }
 
         Spacer()
 
-        skeletonRoundedButton(width: 100, height: 35)
-      }
+        // 하단 DDD 텍스트
+        HStack {
+          Spacer()
 
-      Spacer()
-        .frame(height: 20)
+          skeletonText(width: 180, height: 16)
 
-      // 사용자 이름
-      skeletonText(width: 120, height: 24)
+          Spacer()
+        }
 
-      Spacer()
-        .frame(height: 40)
-
-      // 직군, 팀, 기수 정보
-      VStack(alignment: .leading, spacing: 20) {
-        skeletonInfoRow()
-        skeletonInfoRow()
-        skeletonInfoRow()
-      }
-
-      Spacer()
-        .frame(height: 40)
-
-      // 하단 Dynamic Developer Designers
-      HStack {
+        // 매니저 케이스를 가정한 하단 여백
         Spacer()
-        skeletonText(width: 180, height: 16)
-        Spacer()
+          .frame(height: 24)
       }
+      .padding(24)
+      .background(
+        Image(asset: .profileBack)
+          .resizable()
+          .scaledToFit()
+          .frame(height: UIScreen.screenHeight * 0.7)
+          .cornerRadius(20)
+          .opacity(0.3) // skeleton이므로 약간 투명하게
+      )
+      .frame(height: UIScreen.screenHeight * 0.7)
     }
-    .padding(24)
-    .background(
-      RoundedRectangle(cornerRadius: 20)
-        .fill(.gray80.opacity(0.5))
-    )
-    .frame(height: UIScreen.screenHeight * 0.7)
+    .padding(.horizontal, 24)
   }
 
   @ViewBuilder
-  private func skeletonInfoRow() -> some View {
+  private func skeletonInfoRow(titleWidth: CGFloat, valueWidth: CGFloat) -> some View {
     VStack(alignment: .leading, spacing: 2) {
-      skeletonText(width: 60, height: 14)
-      skeletonText(width: 100, height: 20)
+      skeletonText(width: titleWidth, height: 14)
+      skeletonText(width: valueWidth, height: 20)
     }
+  }
+
+  @ViewBuilder
+  private func skeletonRoleTag() -> some View {
+    skeletonText(width: 50, height: 24)
+      .overlay(
+        RoundedRectangle(cornerRadius: 20)
+          .stroke(.statusFocus.opacity(0.3), lineWidth: 1)
+          .background(.clear)
+      )
+  }
+
+  @ViewBuilder
+  private func skeletonEditButton() -> some View {
+    HStack(spacing: 7) {
+      skeletonText(width: 13, height: 15) // edit 아이콘
+      skeletonText(width: 50, height: 16) // "기수 변경" 텍스트
+    }
+    .padding(.horizontal, 18)
+    .padding(.vertical, 10)
+    .background(
+      RoundedRectangle(cornerRadius: 20)
+        .fill(.dangerBlue.opacity(0.3))
+    )
   }
 
   @ViewBuilder
   private func skeletonLogoutButtons() -> some View {
-    HStack {
-      skeletonText(width: 60, height: 16)
+    HStack(alignment: .center) {
+      skeletonText(width: 60, height: 16) // "탈퇴하기"
 
       Spacer()
         .frame(width: 64)
 
-      skeletonText(width: 60, height: 16)
+      skeletonText(width: 60, height: 16) // "로그아웃"
     }
+    .padding(.horizontal, 24)
   }
 
   @ViewBuilder
@@ -127,14 +173,14 @@ extension ProfileSkeletonView {
   @ViewBuilder
   private func skeletonText(width: CGFloat, height: CGFloat) -> some View {
     RoundedRectangle(cornerRadius: 4)
-      .fill(.gray90.opacity(isAnimating ? 0.4 : 0.8))
+      .fill(.gray90.opacity(isAnimating ? 0.3 : 0.7))
       .frame(width: width, height: height)
   }
 
   @ViewBuilder
   private func skeletonRoundedButton(width: CGFloat, height: CGFloat) -> some View {
     RoundedRectangle(cornerRadius: 20)
-      .fill(.gray90.opacity(isAnimating ? 0.4 : 0.8))
+      .fill(.gray90.opacity(isAnimating ? 0.3 : 0.7))
       .frame(width: width, height: height)
   }
 }
