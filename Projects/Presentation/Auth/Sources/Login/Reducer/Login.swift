@@ -73,7 +73,7 @@ public struct Login {
   // MARK: - NavigationAction
   public enum NavigationAction: Equatable {
     case presentSignUpInviteView
-    case presentCoreMemberMain
+    case presentStaffMain
     case presentMemberMain
   }
 
@@ -183,8 +183,10 @@ extension Login {
 
             if loginEntity.isNewUser  {
               return .send(.navigation(.presentSignUpInviteView))
-            } else {
-              return .send(.navigation(.presentCoreMemberMain))
+            } else if state.userSession.userRole == .manager {
+              return .send(.navigation(.presentStaffMain))
+            } else  {
+              return .send(.navigation(.presentMemberMain))
             }
 
           case .failure(let error):
@@ -217,7 +219,7 @@ extension Login {
       case .presentSignUpInviteView:
         return .none
 
-      case .presentCoreMemberMain:
+      case .presentStaffMain:
         return .none
 
       case .presentMemberMain:

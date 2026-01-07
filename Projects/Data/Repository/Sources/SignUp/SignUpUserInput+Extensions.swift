@@ -21,6 +21,7 @@ extension SignUpUserInput {
       managerRoles: managerRoles?.map { $0.apiKey },
       provider: provider.description,
       token: token,
+      oauthRefreshToken: oauthRefreshToken,
       invitationCode: invitationCode
     )
   }
@@ -39,6 +40,7 @@ extension SignUpUserInput {
     let authentication = AuthenticationDTO(
       provider: provider.description,
       token: token,
+      oauthRefreshToken: oauthRefreshToken
     )
 
     return SignUpUserRequestDTO(

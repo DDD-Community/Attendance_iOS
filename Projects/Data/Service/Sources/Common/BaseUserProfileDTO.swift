@@ -37,12 +37,15 @@ public struct BaseUserProfileDTO: Encodable {
 public struct AuthenticationDTO: Encodable {
   public let provider: String
   public let token: String
+  public let oauthRefreshToken: String?
 
   public init(
     provider: String,
     token: String,
+    oauthRefreshToken: String? = nil
   ) {
     self.provider = provider
     self.token = token
+    self.oauthRefreshToken = oauthRefreshToken
   }
 }

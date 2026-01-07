@@ -26,6 +26,7 @@ public struct SignUpUserRequestDTO: Encodable {
     managerRoles: [String]?,
     provider: String,
     token: String,
+    oauthRefreshToken: String? = nil,
     invitationCode: String
   ) {
     self.profile = BaseUserProfileDTO(
@@ -39,25 +40,44 @@ public struct SignUpUserRequestDTO: Encodable {
     self.authentication = AuthenticationDTO(
       provider: provider,
       token: token,
+      oauthRefreshToken: oauthRefreshToken
     )
   }
 
   // Flat 구조로 인코딩하기 위한 커스텀 인코딩
   public func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
+    var container = encoder.container(keyedBy: DynamicCodingKeys.self)
 
-    try container.encode(profile.name, forKey: .name)
-    try container.encode(profile.generationId, forKey: .generationId)
-    try container.encode(profile.jobRole, forKey: .jobRole)
-    try container.encode(profile.teamId, forKey: .teamId)
-    try container.encode(profile.managerRoles, forKey: .managerRoles)
-    try container.encode(authentication.provider, forKey: .provider)
-    try container.encode(authentication.token, forKey: .token)
-    try container.encode(profile.invitationCode, forKey: .invitationCode)
+    // 기본 프로필 정보
+    try container.encode(profile.name, forKey: DynamicCodingKeys(stringValue: "name")!)
+    try container.encode(profile.generationId, forKey: DynamicCodingKeys(stringValue: "generationId")!)
+    try container.encode(profile.jobRole, forKey: DynamicCodingKeys(stringValue: "jobRole")!)
+    try container.encode(profile.teamId, forKey: DynamicCodingKeys(stringValue: "teamId")!)
+    try container.encode(profile.managerRoles, forKey: DynamicCodingKeys(stringValue: "managerRoles")!)
+    try container.encode(authentication.provider, forKey: DynamicCodingKeys(stringValue: "provider")!)
+    try container.encode(profile.invitationCode, forKey: DynamicCodingKeys(stringValue: "invitationCode")!)
+
+    // provider에 따라 다른 토큰 키 사용
+    try container.encode(authentication.token, forKey: DynamicCodingKeys(stringValue: "token")!)
+
+    if authentication.provider.lowercased() == "apple", let refreshToken = authentication.oauthRefreshToken {
+      // Apple의 경우 oauthRefreshToken도 추가로 인코딩
+      try container.encode(refreshToken, forKey: DynamicCodingKeys(stringValue: "oauthRefreshToken")!)
+    }
   }
 
-  private enum CodingKeys: String, CodingKey {
-    case name, generationId, jobRole, teamId, managerRoles
-    case provider, token, invitationCode
+  // 동적 CodingKey를 위한 헬퍼 구조체
+  private struct DynamicCodingKeys: CodingKey {
+    var stringValue: String
+    var intValue: Int?
+
+    init?(stringValue: String) {
+      self.stringValue = stringValue
+    }
+
+    init?(intValue: Int) {
+      self.intValue = intValue
+      self.stringValue = String(intValue)
+    }
   }
 }

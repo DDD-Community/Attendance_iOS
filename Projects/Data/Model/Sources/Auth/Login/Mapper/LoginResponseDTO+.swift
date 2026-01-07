@@ -10,7 +10,11 @@ import Entity
 
 public extension LoginResponseDTO {
   func toDomain() -> LoginEntity {
-    let token = AuthTokens(accessToken: self.accessToken ?? "", refreshToken: self.refreshToken ?? "")
+    let token = AuthTokens(
+      accessToken: self.accessToken ?? "",
+      refreshToken: self.refreshToken ?? "",
+      oauthRefreshToken: self.oauthRefreshToken
+    )
 
     return LoginEntity(
       name: self.name ?? "",

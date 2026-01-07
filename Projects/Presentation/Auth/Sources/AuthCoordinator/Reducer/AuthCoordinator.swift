@@ -111,7 +111,7 @@ extension AuthCoordinator {
       state.routes.push(.onboarding(.init()))
       return .none
 
-    case .routeAction(id: _, action: .login(.navigation(.presentCoreMemberMain))):
+    case .routeAction(id: _, action: .login(.navigation(.presentStaffMain))):
       return .send(.navigation(.presentStaff))
 
     case .routeAction(id: _, action: .login(.navigation(.presentMemberMain))):

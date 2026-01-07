@@ -13,7 +13,8 @@ import Foundations
 import AsyncMoya
 
 public enum ProfileService{
-  case getProfile
+  case getUserProfile
+  case getAdminProfile
   case editProfile(body:EditProfileRequestDTO)
 }
 
@@ -23,15 +24,24 @@ extension ProfileService: BaseTargetType {
 
   public var domain: AttendanceDomain {
     switch self {
-      case .getProfile, .editProfile:
+      case .getUserProfile:
+        return .me
+
+      case .getAdminProfile:
+        return .admin
+
+      case .editProfile:
         return .user
     }
   }
   
   public var urlPath: String {
     switch self {
-    case .getProfile:
+      case .getUserProfile:
       return ProfileAPI.getUser.profileDescription
+
+      case .getAdminProfile:
+        return ProfileAPI.getAdmin.profileDescription
 
       case .editProfile:
         return ProfileAPI.editUser.profileDescription
@@ -44,7 +54,7 @@ extension ProfileService: BaseTargetType {
 
   public var method: Moya.Method {
     switch self {
-    case .getProfile:
+      case .getUserProfile, .getAdminProfile:
       return .get
 
       case .editProfile:
@@ -55,7 +65,7 @@ extension ProfileService: BaseTargetType {
 
   public var parameters: [String : Any]? {
     switch self {
-    case .getProfile:
+      case .getUserProfile, .getAdminProfile:
       return nil
 
       case .editProfile(let body):

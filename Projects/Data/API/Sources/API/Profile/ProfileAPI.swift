@@ -9,6 +9,7 @@ import Foundation
 
 public enum ProfileAPI: String , CaseIterable {
   case getUser
+  case getAdmin
   case editUser
 
   
@@ -16,6 +17,9 @@ public enum ProfileAPI: String , CaseIterable {
   public var profileDescription: String {
     switch self {
       case .getUser:
+        return ""
+
+      case .getAdmin:
         return "/me"
 
       case .editUser:

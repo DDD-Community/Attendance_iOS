@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Entity
 
 import API
 import Foundations

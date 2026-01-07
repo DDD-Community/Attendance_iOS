@@ -60,8 +60,9 @@ public extension UnifiedOAuthUseCase {
     )
     Log.debug("apple authcode", payload.authorizationCode)
     self.$userSession.withLock {
-      $0.token = payload.idToken
-      $0.accessToken = payload.authorizationCode ?? ""
+      $0.token = payload.authorizationCode ?? ""
+      $0.accessToken = payload.idToken
+      $0.oauthRefreshToken = payload.idToken
     }
     let loginEntity = try await authRepository.login(
       provider: .apple,
@@ -75,6 +76,11 @@ public extension UnifiedOAuthUseCase {
 
     // AuthSessionManager의 credential도 업데이트
     authRepository.updateSessionCredential(with: loginEntity.token)
+
+    // UserSession에 oauthRefreshToken 설정 (Apple 로그인의 경우)
+    self.$userSession.withLock {
+      $0.oauthRefreshToken = loginEntity.token.oauthRefreshToken
+    }
 
     if loginEntity.isNewUser == true {
 

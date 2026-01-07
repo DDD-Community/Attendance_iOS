@@ -16,6 +16,7 @@ public struct AuthUseCaseImpl: AuthInterface {
   @Dependency(\.authRepository) var authRepository
   @Shared(.appStorage("staffRole")) var staffRole: Staff?
   @Dependency(\.keychainManager) private var keychainManager: KeychainManaging
+  @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
 
   public init() {}
 
@@ -25,10 +26,14 @@ public struct AuthUseCaseImpl: AuthInterface {
     token: String
   ) async throws -> Entity.LoginEntity {
     let authResult =  try await authRepository.login(provider: provider, token: token)
+    $userSession.withLock {
+      $0.oauthRefreshToken = authResult.token.oauthRefreshToken
+    }
     keychainManager.save(
       accessToken: authResult.token.accessToken,
       refreshToken: authResult.token.refreshToken
     )
+
     return authResult
   }
 

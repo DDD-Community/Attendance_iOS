@@ -19,6 +19,7 @@ public protocol SignUpUseCaseInterface: Sendable {
 public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
   @Dependency(\.signUpRepository) var repository
   @Dependency(\.authUseCase) var authUseCase
+  @Dependency(\.keychainManager) private var keychainManager
 
   public init() { }
 
@@ -37,16 +38,24 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
       teamId: userSession.selectTeamId,
       managerRoles: isManager ? userSession.managing : nil,
       provider: userSession.provider,
-      token: userSession.token,
+      token: userSession.accessToken,
+      oauthRefreshToken: userSession.provider == .apple ? userSession.oauthRefreshToken : nil,
       invitationCode: userSession.inviteCode
     )
 
     let signUpUser = try await repository.registerUser(input: input)
 
-    _ = try await authUseCase.login(
+    let loginEntity = try await authUseCase.login(
       provider: userSession.provider,
-      token: userSession.token
+      token: userSession.provider == .apple ? userSession.accessToken : userSession.token
     )
+
+    keychainManager.save(
+      accessToken: loginEntity.token.accessToken,
+      refreshToken: loginEntity.token.refreshToken
+    )
+
+    print("keychain \(keychainManager.accessToken())")
 
     return signUpUser
   }
