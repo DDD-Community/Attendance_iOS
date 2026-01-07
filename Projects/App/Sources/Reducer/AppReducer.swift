@@ -8,37 +8,40 @@
 import Presentation
 
 import ComposableArchitecture
+import Entity
 
 @Reducer
 struct AppReducer {
 
+  // MARK: - State
   @ObservableState
-  enum State: Equatable {
-    case splash(Splash.State)
-    case auth(AuthCoordinator.State)
-    case staff(StaffCoordinator.State)
-    case member(MemberCoordinator.State)
+  struct State: Equatable {
+    var splash: Splash.State?
+    var auth: AuthCoordinator.State?
+    var staff: StaffCoordinator.State?
+    var member: MemberCoordinator.State?
+//    @Shared(.appStorage("staffRole")) var staffRole: Staff?
 
     init() {
-      self = .splash(.init())
-    }
-
-    var screenType: ScreenType {
-      switch self {
-      case .splash: return .splash
-      case .auth: return .auth
-      case .staff: return .coreMember
-      case .member: return .member
-      }
+      self.splash = .init()
+      self.auth = nil
+      self.staff = nil
+      self.member = nil
     }
   }
 
-  enum ScreenType: Equatable {
-    case splash, auth, coreMember, member
-  }
-
+  // MARK: - Action
   enum Action: ViewAction {
     case view(View)
+    case inner(InnerAction)
+    case scope(ScopeAction)
+  }
+
+  enum Flow {
+    case splash
+    case auth
+    case staff
+    case member
   }
 
   @CasePathable
@@ -46,7 +49,16 @@ struct AppReducer {
     case presentAuth
     case presentStaff
     case presentMember
+  }
 
+  enum InnerAction {
+    case setAuthState
+    case setStaffState
+    case setMemberState
+  }
+
+  @CasePathable
+  enum ScopeAction {
     case splash(Splash.Action)
     case auth(AuthCoordinator.Action)
     case staff(StaffCoordinator.Action)
@@ -55,36 +67,55 @@ struct AppReducer {
 
   @Dependency(\.continuousClock) var clock
 
+  nonisolated enum CancelID: Hashable {
+    case splashNavigation
+    case authEffects
+    case coreMemberEffects
+    case memberEffects
+    case allAuthRelatedEffects
+  }
+
+  // MARK: - body
   var body: some ReducerOf<Self> {
-   EmptyReducer()
-    .ifCaseLet(\.splash, action: \.view.splash) {
-      Splash()
-    }
-    .ifCaseLet(\.auth, action: \.view.auth) {
-      AuthCoordinator()
-    }
-    .ifCaseLet(\.staff, action: \.view.staff) {
-      StaffCoordinator()
-    }
-    .ifCaseLet(\.member, action: \.view.member) {
-      MemberCoordinator()
-    }
     Reduce { state, action in
       switch action {
-      case .view(let ViewAction):
-        return handleViewAction(&state, action: ViewAction)
+      case .view(let viewAction):
+        return handleViewAction(&state, action: viewAction)
+      case .inner(let innerAction):
+        return handleInnerAction(&state, action: innerAction)
+      case .scope(let scopeAction):
+        return handleScopeAction(&state, action: scopeAction)
       }
+    }
+    .ifLet(\.splash, action: \.scope.splash) {
+      Splash()
+    }
+    .ifLet(\.auth, action: \.scope.auth) {
+      AuthCoordinator()
+    }
+    .ifLet(\.staff, action: \.scope.staff) {
+      StaffCoordinator()
+    }
+    .ifLet(\.member, action: \.scope.member) {
+      MemberCoordinator()
     }
   }
 }
 
-// MARK: - Effect Cancellation IDs
-private enum CancelID: Hashable {
-  case splashNavigation
-  case authEffects
-  case coreMemberEffects
-  case memberEffects
-  case allAuthRelatedEffects
+extension AppReducer.State {
+  var flow: AppReducer.Flow {
+    if member != nil { return .member }
+    if staff != nil { return .staff }
+    if auth != nil { return .auth }
+    return .splash
+  }
+
+  var caseKey: String {
+    if member != nil { return "member" }
+    if staff != nil { return "staff" }
+    if auth != nil { return "auth" }
+    return "splash"
+  }
 }
 
 extension AppReducer {
@@ -93,33 +124,65 @@ extension AppReducer {
     action: View
   ) -> Effect<Action> {
     switch action {
-      // MARK: - 로그인 화면으로
     case .presentAuth:
-      state = .auth(.init())
       return .merge(
         .cancel(id: CancelID.splashNavigation),
         .cancel(id: CancelID.coreMemberEffects),
-        .cancel(id: CancelID.memberEffects)
+        .cancel(id: CancelID.memberEffects),
+        .send(.inner(.setAuthState))
       )
 
     case .presentStaff:
-      state = .staff(.init())
       return .merge(
         .cancel(id: CancelID.splashNavigation),
         .cancel(id: CancelID.authEffects),
-        .cancel(id: "allAuthRelatedEffects"),
-        .cancel(id: CancelID.memberEffects)
+        .cancel(id: CancelID.memberEffects),
+        .send(.inner(.setStaffState))
       )
 
     case .presentMember:
-      state = .member(.init())
       return .merge(
         .cancel(id: CancelID.splashNavigation),
         .cancel(id: CancelID.authEffects),
-        .cancel(id: "allAuthRelatedEffects"),
-        .cancel(id: CancelID.coreMemberEffects)
+        .cancel(id: CancelID.coreMemberEffects),
+        .send(.inner(.setMemberState))
       )
+    }
+  }
 
+  func handleInnerAction(
+    _ state: inout State,
+    action: InnerAction
+  ) -> Effect<Action> {
+    switch action {
+    case .setAuthState:
+      state.auth = .init()
+      state.splash = nil
+      state.staff = nil
+      state.member = nil
+      return .none
+
+    case .setStaffState:
+      state.staff = .init()
+      state.splash = nil
+      state.auth = nil
+      state.member = nil
+      return .none
+
+    case .setMemberState:
+      state.member = .init()
+      state.splash = nil
+      state.auth = nil
+      state.staff = nil
+      return .none
+    }
+  }
+
+  func handleScopeAction(
+    _ state: inout State,
+    action: ScopeAction
+  ) -> Effect<Action> {
+    switch action {
     case .splash(.navigation(.presentLogin)):
       return .run { send in
         try await clock.sleep(for: .seconds(1))
@@ -143,14 +206,14 @@ extension AppReducer {
 
     case .auth(.navigation(.presentStaff)):
       return .merge(
-        .cancel(id: "allAuthRelatedEffects"),
+        .cancel(id: CancelID.allAuthRelatedEffects),
         .send(.view(.presentStaff))
       )
       .cancellable(id: CancelID.authEffects, cancelInFlight: true)
 
     case .auth(.navigation(.presentMember)):
       return .merge(
-        .cancel(id: "allAuthRelatedEffects"),
+        .cancel(id: CancelID.allAuthRelatedEffects),
         .send(.view(.presentMember))
       )
       .cancellable(id: CancelID.authEffects, cancelInFlight: true)
@@ -161,8 +224,8 @@ extension AppReducer {
         .send(.view(.presentAuth))
       )
 
-      case .staff(.navigation(.presentMember)):
-        return .send(.view(.presentMember))
+    case .staff(.navigation(.presentMember)):
+      return .send(.view(.presentMember))
 
     case .member(.navigation(.presentLogin)):
       return .merge(
@@ -170,18 +233,11 @@ extension AppReducer {
         .send(.view(.presentAuth))
       )
 
-      case .member(.navigation(.presentStaff)):
-        return .send(.view(.presentStaff))
+    case .member(.navigation(.presentStaff)):
+      return .send(.view(.presentStaff))
 
-    case .splash, .staff, .member:
+    default:
       return .none
-
-    case .auth:
-      if case .auth = state {
-        return .none
-      } else {
-        return .none
-      }
     }
   }
 }

@@ -51,11 +51,13 @@ public struct Splash {
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
+    case fetchUser
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
+    case fetchUserResponse(Result<ProfileEntity, ProfileError>)
   }
   
   // MARK: - NavigationAction
@@ -67,14 +69,16 @@ public struct Splash {
   }
   
   nonisolated enum CancelID: Hashable {
-
+    case fetchProfile
   }
 
 
+
   @Dependency(\.continuousClock) var clock
+  @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
   
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {
@@ -108,7 +112,7 @@ extension Splash {
           staffRole = state.staffRole
         ] send in
           if staffRole == .manager {
-            return await send(.navigation(.presentStaff))
+            return await send(.navigation(.presentLogin))
           } else if staffRole == .member {
             return await send(.navigation(.presentMember))
           } else {
@@ -123,7 +127,18 @@ extension Splash {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-
+    switch action {
+      case .fetchUser:
+        return .run { send in
+          let fetchUserResult = await Result {
+            try await profileUseCase.getProfile()
+          }
+            .mapError(ProfileError.from)
+          try await clock.sleep(for: .seconds(1))
+          return await send(.inner(.fetchUserResponse(fetchUserResult)))
+        }
+        .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
+    }
   }
 
   private func handleInnerAction(
@@ -131,7 +146,15 @@ extension Splash {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-     
+      case .fetchUserResponse(let result):
+        switch result {
+        case .success(let profileDTOData):
+          state.profileModel = profileDTOData
+
+        case .failure(let error):
+          #logError("유저 정보 가져오기", error.localizedDescription)
+        }
+        return .none
     }
   }
 

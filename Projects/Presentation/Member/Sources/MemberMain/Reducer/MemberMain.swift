@@ -83,7 +83,7 @@ public struct MemberMain {
   @Dependency(ProfileUseCaseImpl.self) var profileUseCase
   @Dependency(AttendanceUseCaseImpl.self) var attendanceUseCase
 
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
 
     Reduce { state, action in

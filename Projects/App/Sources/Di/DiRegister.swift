@@ -28,6 +28,7 @@ public class AppDIManager: @unchecked Sendable {
     WeaveDI.builder
       .register { KeychainManager() as KeychainManaging }
       .register { KeychainTokenProvider(keychainManager: KeychainManager()) as TokenProviding }
+      .register(ProfileInterface.self) { ProfileRepositoryImpl() }
       // MARK: -  로그인 관련
       .register { AuthRepositoryImpl() as AuthInterface }
       .register { GoogleOAuthRepositoryImpl() as GoogleOAuthInterface }
@@ -36,7 +37,6 @@ public class AppDIManager: @unchecked Sendable {
       .register { AppleOAuthProvider() as AppleOAuthProviderInterface }
       .register { GoogleOAuthProvider() as GoogleOAuthProviderInterface }
       // MARK: - 토큰 등록 관련
-      .register { ProfileRepositoryImpl() as ProfileInterface }
     // MARK: - 온보딩 관련
       .register { OnBoardingRepositoryImpl()  as OnBoardingInterface }
       .register { SignUpRepositoryImpl() as SignUpInterface }

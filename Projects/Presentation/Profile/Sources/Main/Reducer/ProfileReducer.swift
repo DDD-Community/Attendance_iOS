@@ -121,7 +121,7 @@ public struct ProfileReducer {
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.continuousClock) var clock
   
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {
@@ -209,7 +209,6 @@ extension ProfileReducer {
         try await clock.sleep(for: .seconds(1))
         return await send(.inner(.fetchUserResponse(fetchUserResult)))
       }
-      .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
 
       case .deleteUser:
         return .run {
@@ -304,9 +303,7 @@ extension ProfileReducer {
   ) -> Effect<Action> {
     switch action {
     case .presentLogOut:
-      return .run {  send in
-        try await clock.sleep(for: .seconds(2))
-      }
+      return .none
 
     case .presentCreateByApp:
       return .none

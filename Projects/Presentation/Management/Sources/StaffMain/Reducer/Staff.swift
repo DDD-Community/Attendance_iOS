@@ -84,7 +84,7 @@ public struct Staff {
   }
   
   
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {

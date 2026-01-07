@@ -72,7 +72,7 @@ public struct SelectPartReducer {
 
   @Dependency(\.onBoardingUseCase) var onBoardingUseCase
 
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {

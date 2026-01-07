@@ -64,6 +64,9 @@ private extension AccessTokenAuthenticator {
       let tokens = try await authRepository.refresh()
       keychainManager.save(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
 
+      // AuthSessionManager의 credential도 업데이트
+      AuthSessionManager.shared.updateCredential(with: tokens)
+
       guard let refreshedCredential = AccessTokenCredential.make(
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken

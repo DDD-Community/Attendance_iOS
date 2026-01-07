@@ -6,12 +6,7 @@
 //
 
 import Foundation
-
-import WeaveDI
-
-private struct StaticDependencies {
-    @Dependency(\.tokenProvider) var tokenProvider
-}
+import UseCase
 
 public struct APIHeader {
 
@@ -19,16 +14,16 @@ public struct APIHeader {
   public static let accessToken   = "Authorization"
   public static let accept        = "accept"
 
-  private static var dependencies = StaticDependencies()
+  private static let keychainManager = KeychainManager()
 
   public static var accessTokenKeyChain: String {
-    get { dependencies.tokenProvider.accessToken() ?? "" }
+    get { keychainManager.accessToken() ?? "" }
     set { updateAccessToken(newValue) }
   }
 
   public static func updateAccessToken(_ token: String?) {
     guard let newToken = token, !newToken.isEmpty else { return }
-    dependencies.tokenProvider.saveAccessToken(newToken)
+    keychainManager.saveAccessToken(newToken)
   }
 
   public init() {}
@@ -61,7 +56,7 @@ extension APIHeader {
   public static var mutiPartbaseHeader: Dictionary<String, String> {
     [
       contentType: APIHeaderManger.multipartContentType,
-      accessToken: accessTokenKeyChain,
+      accessToken: "Bearer \(accessTokenKeyChain)",
     ]
   }
 

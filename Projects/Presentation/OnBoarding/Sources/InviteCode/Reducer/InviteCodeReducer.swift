@@ -112,7 +112,7 @@ public struct InviteCodeReducer {
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {

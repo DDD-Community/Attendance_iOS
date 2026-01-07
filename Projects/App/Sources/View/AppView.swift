@@ -20,46 +20,44 @@ struct AppView: View {
       Color.backGroundPrimary
         .edgesIgnoringSafeArea(.all)
 
-      SwitchStore(store) { state in
-        switch state {
-        case .splash:
-          if let splashStore = store.scope(state: \.splash, action: \.view.splash) {
-            SplashView(store: splashStore)
-              .transition(.opacity.combined(with: .scale(scale: 0.98)))
-          }
+      switch store.flow {
+      case .splash:
+        if let splashStore = store.scope(state: \.splash, action: \.scope.splash) {
+          SplashView(store: splashStore)
+            .transition(.opacity.combined(with: .scale(scale: 0.98)))
+        }
 
-        case .auth:
-          if let authStore = store.scope(state: \.auth, action: \.view.auth) {
-            AuthCoordinatorView(store: authStore)
-              .transition(.asymmetric(
-                insertion: .move(edge: .trailing),
-                removal: .move(edge: .leading)
-              ))
-          }
+      case .auth:
+        if let authStore = store.scope(state: \.auth, action: \.scope.auth) {
+          AuthCoordinatorView(store: authStore)
+            .transition(.asymmetric(
+              insertion: .move(edge: .trailing),
+              removal: .move(edge: .leading)
+            ))
+        }
 
-        case .staff:
-            if let coreMemberStore = store.scope(state: \.staff, action: \.view.staff) {
-            StaffCoordinatorView(store: coreMemberStore)
-              .transition(.asymmetric(
-                insertion: .move(edge: .trailing),
-                removal: .move(edge: .leading)
-              ))
-          }
+      case .staff:
+        if let coreMemberStore = store.scope(state: \.staff, action: \.scope.staff) {
+          StaffCoordinatorView(store: coreMemberStore)
+            .transition(.asymmetric(
+              insertion: .move(edge: .trailing),
+              removal: .move(edge: .leading)
+            ))
+        }
 
-        case .member:
-          if let memberStore = store.scope(state: \.member, action: \.view.member) {
-            MemberCoordinatorView(store: memberStore)
-              .transition(.asymmetric(
-                insertion: .move(edge: .trailing),
-                removal: .move(edge: .leading)
-              ))
-          }
+      case .member:
+        if let memberStore = store.scope(state: \.member, action: \.scope.member) {
+          MemberCoordinatorView(store: memberStore)
+            .transition(.asymmetric(
+              insertion: .move(edge: .trailing),
+              removal: .move(edge: .leading)
+            ))
         }
       }
     }
     .animation(
       .spring(response: 0.52, dampingFraction: 0.94, blendDuration: 0.14),
-      value: store.state.screenType
+      value: store.flow
     )
   }
 }
