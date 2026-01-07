@@ -6,7 +6,11 @@
 //
 
 import Foundation
-import UseCase
+import ComposableArchitecture
+
+private struct StaticDependencies {
+    @Dependency(\.tokenProvider) var tokenProvider
+}
 
 public struct APIHeader {
 
@@ -14,16 +18,16 @@ public struct APIHeader {
   public static let accessToken   = "Authorization"
   public static let accept        = "accept"
 
-  private static let keychainManager = KeychainManager()
+  private static var dependencies = StaticDependencies()
 
   public static var accessTokenKeyChain: String {
-    get { keychainManager.accessToken() ?? "" }
+    get { dependencies.tokenProvider.accessToken() ?? "" }
     set { updateAccessToken(newValue) }
   }
 
   public static func updateAccessToken(_ token: String?) {
     guard let newToken = token, !newToken.isEmpty else { return }
-    keychainManager.saveAccessToken(newToken)
+    dependencies.tokenProvider.saveAccessToken(newToken)
   }
 
   public init() {}

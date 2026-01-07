@@ -112,7 +112,7 @@ extension Splash {
           staffRole = state.staffRole
         ] send in
           if staffRole == .manager {
-            return await send(.navigation(.presentLogin))
+            return await send(.navigation(.presentStaff))
           } else if staffRole == .member {
             return await send(.navigation(.presentMember))
           } else {

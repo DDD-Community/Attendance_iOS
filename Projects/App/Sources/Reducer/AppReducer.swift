@@ -246,18 +246,10 @@ extension AppReducer {
     case .member(.navigation(.presentStaff)):
       return .send(.view(.presentStaff))
 
-    case .auth(.router(.routeAction(id: _, action: .onboarding(.router(.routeAction(id: _, action: .selectTeam(.view(.onAppear)))))))):
-      // auth state가 nil인 경우 selectTeam onAppear 액션 무시
+    case let .auth(authAction):
+      // auth state가 nil인 경우 모든 auth 액션 무시
       guard state.auth != nil else {
-        print("🚫 [AppReducer] Ignoring selectTeam onAppear action - auth state is nil")
-        return .none
-      }
-      return .none
-
-    case .auth:
-      // 기타 auth action들 - auth state가 nil인 경우 무시
-      guard state.auth != nil else {
-        print("🚫 [AppReducer] Ignoring auth action - auth state is nil")
+        print("🚫 [AppReducer] Ignoring auth action - auth state is nil: \(authAction)")
         return .none
       }
       return .none
