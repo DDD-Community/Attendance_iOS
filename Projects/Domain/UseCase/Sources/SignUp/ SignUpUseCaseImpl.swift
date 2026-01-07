@@ -20,6 +20,7 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
   @Dependency(\.signUpRepository) var repository
   @Dependency(\.authUseCase) var authUseCase
   @Dependency(\.keychainManager) private var keychainManager
+  @Dependency(\.profileUseCase) private var profileUseCase
 
   public init() { }
 
@@ -54,6 +55,9 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
       accessToken: loginEntity.token.accessToken,
       refreshToken: loginEntity.token.refreshToken
     )
+
+    
+    authUseCase.updateSessionCredential(with: loginEntity.token)
 
     print("keychain \(keychainManager.accessToken())")
 

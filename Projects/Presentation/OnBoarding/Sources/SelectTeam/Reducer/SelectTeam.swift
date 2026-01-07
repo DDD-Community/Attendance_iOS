@@ -143,7 +143,6 @@ extension SelectTeam {
         case .onAppear:
           return .send(.async(.getTeams))
             .cancellable(id: CancelID.selectTeam, cancelInFlight: true)
-            .cancellable(id: "allAuthRelatedEffects")
 
       case .signUp:
         return .run { [

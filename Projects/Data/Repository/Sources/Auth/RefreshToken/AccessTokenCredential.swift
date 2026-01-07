@@ -22,8 +22,10 @@ struct AccessTokenCredential: AuthenticationCredential, Sendable {
   static func make(
     accessToken: String,
     refreshToken: String
-  ) -> AccessTokenCredential? {
-    guard let expiration = decodeExpiration(from: accessToken) else { return nil }
+  ) -> AccessTokenCredential {
+    // JWT 디코딩을 시도하되, 실패하면 기본 만료시간 사용 (1시간 후)
+    let expiration = decodeExpiration(from: accessToken) ?? Date().addingTimeInterval(3600)
+
     return AccessTokenCredential(
       accessToken: accessToken,
       refreshToken: refreshToken,

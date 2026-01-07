@@ -160,21 +160,31 @@ extension AppReducer {
       state.splash = nil
       state.staff = nil
       state.member = nil
-      return .none
+      return .merge(
+        .cancel(id: CancelID.coreMemberEffects),
+        .cancel(id: CancelID.memberEffects)
+      )
 
     case .setStaffState:
       state.staff = .init()
       state.splash = nil
       state.auth = nil
       state.member = nil
-      return .none
+      return .merge(
+        .cancel(id: CancelID.allAuthRelatedEffects),
+        .cancel(id: CancelID.authEffects)
+      )
 
     case .setMemberState:
       state.member = .init()
       state.splash = nil
       state.auth = nil
       state.staff = nil
-      return .none
+      return .merge(
+        .cancel(id: CancelID.allAuthRelatedEffects),
+        .cancel(id: CancelID.authEffects),
+        .cancel(id: CancelID.coreMemberEffects)
+      )
     }
   }
 
@@ -235,6 +245,32 @@ extension AppReducer {
 
     case .member(.navigation(.presentStaff)):
       return .send(.view(.presentStaff))
+
+    case .auth(.router(.routeAction(id: _, action: .onboarding(.router(.routeAction(id: _, action: .selectTeam(.view(.onAppear)))))))):
+      // auth state가 nil인 경우 selectTeam onAppear 액션 무시
+      guard state.auth != nil else {
+        print("🚫 [AppReducer] Ignoring selectTeam onAppear action - auth state is nil")
+        return .none
+      }
+      return .none
+
+    case .auth:
+      // 기타 auth action들 - auth state가 nil인 경우 무시
+      guard state.auth != nil else {
+        print("🚫 [AppReducer] Ignoring auth action - auth state is nil")
+        return .none
+      }
+      return .none
+
+    case .staff:
+      // staff state가 nil인 경우 무시
+      guard state.staff != nil else { return .none }
+      return .none
+
+    case .member:
+      // member state가 nil인 경우 무시
+      guard state.member != nil else { return .none }
+      return .none
 
     default:
       return .none

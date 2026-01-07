@@ -17,7 +17,7 @@ import UseCase
 final class AuthSessionManager {
   static let shared = AuthSessionManager()
 
-  private let keychainManager = KeychainManager()
+  @Dependency(\.keychainManager) var keychainManager
   let authenticator: AccessTokenAuthenticator
   let interceptor: AuthenticationInterceptor<AccessTokenAuthenticator>
   let session: Session
@@ -37,13 +37,10 @@ final class AuthSessionManager {
   }
 
   func updateCredential(with tokens: AuthTokens) {
-    guard let credential = AccessTokenCredential.make(
+    let credential = AccessTokenCredential.make(
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken
-    ) else {
-      interceptor.credential = nil
-      return
-    }
+    )
 
     interceptor.credential = credential
   }
@@ -61,9 +58,14 @@ private extension AuthSessionManager {
   }
 
   func loadCredentialFromKeychain() -> AccessTokenCredential? {
+    let accessToken = keychainManager.accessToken()
+    let refreshToken = keychainManager.refreshToken()
+
     guard
-      let accessToken = keychainManager.accessToken(),
-      let refreshToken = keychainManager.refreshToken()
+      let accessToken = accessToken,
+      let refreshToken = refreshToken,
+      !accessToken.isEmpty,
+      !refreshToken.isEmpty
     else {
       return nil
     }
