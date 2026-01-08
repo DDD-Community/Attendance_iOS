@@ -6,6 +6,91 @@
 //
 
 import SwiftUI
+import ComposableArchitecture
+
+// MARK: - TCA Compatible Custom Alert
+
+// MARK: - Generic CustomAlertState (TCA 스타일)
+
+@ObservableState
+public struct CustomAlertState<Action>: Equatable {
+  public let title: String
+  public let message: String
+  public let confirmTitle: String
+  public let cancelTitle: String
+  public let isDestructive: Bool
+
+  public init(
+    title: String,
+    message: String = "",
+    confirmTitle: String = "확인",
+    cancelTitle: String = "취소",
+    isDestructive: Bool = false
+  ) {
+    self.title = title
+    self.message = message
+    self.confirmTitle = confirmTitle
+    self.cancelTitle = cancelTitle
+    self.isDestructive = isDestructive
+  }
+}
+
+@CasePathable
+public enum CustomAlertAction: Equatable {
+  case confirmTapped
+  case cancelTapped
+}
+
+// TCA Reducer (필요한 경우)
+@Reducer
+public struct CustomConfirmAlert {
+  public init() {}
+
+  public var body: some Reducer<CustomAlertState<CustomAlertAction>, CustomAlertAction> {
+    EmptyReducer()
+  }
+}
+
+public extension CustomAlertState where Action == CustomAlertAction {
+  /// TCA AlertState 스타일 builder
+  static func alert(
+    title: String,
+    message: String = "",
+    confirmTitle: String = "확인",
+    cancelTitle: String = "취소",
+    isDestructive: Bool = false
+  ) -> CustomAlertState<CustomAlertAction> {
+    CustomAlertState(
+      title: title,
+      message: message,
+      confirmTitle: confirmTitle,
+      cancelTitle: cancelTitle,
+      isDestructive: isDestructive
+    )
+  }
+
+  /// 계정 탈퇴 확인 CustomAlertState
+  static func withdrawAccount() -> CustomAlertState<CustomAlertAction> {
+    .alert(
+      title: "정말 탈퇴하시겠습니까?",
+      message: "탈퇴 시, 등록된 모든 출석 데이터가 삭제됩니다.",
+      confirmTitle: "탈퇴하기",
+      cancelTitle: "취소",
+      isDestructive: true
+    )
+  }
+
+  /// 로그아웃 확인 CustomAlertState
+  static func logout() -> CustomAlertState<CustomAlertAction> {
+    .alert(
+      title: "로그아웃 하시겠습니까?",
+      message: "다시 로그인해야 앱을 사용할 수 있습니다.",
+      confirmTitle: "로그아웃",
+      cancelTitle: "취소",
+      isDestructive: false
+    )
+  }
+}
 
 public extension View {
   /// 확인/취소 팝업을 띄우는 Modifier (Item 기반)
@@ -18,6 +103,34 @@ public extension View {
     self.modifier(
       CustomConfirmationPopupItemModifier(item: item)
     )
+  }
+
+  /// TCA 스타일 CustomAlert 팝업 (reducer에서 액션 처리)
+  ///
+  /// - Parameter store: TCA Store scope for CustomAlert
+  func customAlert(
+    _ store: Binding<Store<CustomAlertState<CustomAlertAction>, CustomAlertAction>?>
+  ) -> some View {
+    self.overlay {
+      if let alertStore = store.wrappedValue {
+        let alertState = alertStore.withState { $0 }
+        CustomConfirmationPopup(
+          title: alertState.title,
+          message: alertState.message,
+          confirmTitle: alertState.confirmTitle,
+          cancelTitle: alertState.cancelTitle,
+          isDestructive: alertState.isDestructive,
+          onConfirm: {
+            alertStore.send(.confirmTapped)
+          },
+          onCancel: {
+            alertStore.send(.cancelTapped)
+          }
+        )
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .animation(.easeInOut(duration: 0.3), value: alertState.title.isEmpty == false)
+      }
+    }
   }
 
   /// 확인/취소 팝업을 띄우는 Modifier (개별 파라미터)
@@ -79,11 +192,12 @@ struct CustomConfirmationPopupItemModifier: ViewModifier {
             onCancel: item.onCancel
           )
           .transition(.move(edge: .bottom).combined(with: .opacity))
-          .animation(.easeInOut(duration: 0.3), value: item != nil)
+          .animation(.easeInOut(duration: 0.3), value: true)
         }
       }
   }
 }
+
 
 // MARK: - Parameter-based Modifier
 
@@ -182,10 +296,12 @@ struct CustomConfirmationPopup: View {
             .foregroundStyle(.staticWhite)
             .multilineTextAlignment(.center)
 
-          Text(message)
-            .pretendardCustomFont(textStyle: .body3NormalRegular)
-            .foregroundStyle(.textSecondary)
-            .multilineTextAlignment(.center)
+          if !message.isEmpty {
+            Text(message)
+              .pretendardCustomFont(textStyle: .body3NormalRegular)
+              .foregroundStyle(.textSecondary)
+              .multilineTextAlignment(.center)
+          }
         }
 
         // Button Stack

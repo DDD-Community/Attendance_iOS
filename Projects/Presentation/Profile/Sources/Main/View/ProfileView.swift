@@ -33,23 +33,7 @@ public struct ProfileView: View {
         mangerProfileLoadingData()
       }
       .alert($store.scope(state: \.alert, action: \.scope.alert))
-      .customConfirmationPopup(
-        item: store.alertItem.map { alertItem in
-          AlertItem(
-            title: alertItem.title,
-            message: alertItem.message,
-            confirmTitle: alertItem.confirmTitle,
-            cancelTitle: alertItem.cancelTitle,
-            isDestructive: alertItem.isDestructive,
-            onConfirm: {
-              store.send(.view(.withdrawAlertConfirmed))
-            },
-            onCancel: {
-              store.send(.view(.withdrawAlertCancelled))
-            }
-          )
-        }
-      )
+      .customAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
       .onAppear {
         store.send(.async(.fetchUser))
       }
@@ -360,7 +344,7 @@ extension ProfileView {
           .foregroundStyle(.staticWhite)
           .underline(true, color: .staticWhite)
           .onTapGesture {
-            store.send(.async(.logout))
+            store.send(.view(.showLogoutAlert))
           }
       }
     }

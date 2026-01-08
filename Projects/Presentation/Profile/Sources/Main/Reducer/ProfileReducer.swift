@@ -41,8 +41,8 @@ public struct ProfileReducer {
     // 기존 TCA AlertState 유지 (다른 곳에서 사용)
     @Presents public var alert: AlertState<AlertAction>?
 
-    // 추가: 커스텀 AlertItem (확인팝업용)
-    var alertItem: AlertItem?
+    // TCA 스타일 CustomAlert (확인팝업용)
+    @Presents public var customAlert: CustomAlertState<CustomAlertAction>?
 
     public init() {}
   }
@@ -66,13 +66,10 @@ public struct ProfileReducer {
   // MARK: - View action
   @CasePathable
   public enum View {
-
     case appearModal
     case closeModal
     case showWithdrawAlert
-    case withdrawAlertConfirmed
-    case withdrawAlertCancelled
-    case dismissAlert
+    case showLogoutAlert
   }
   
   // MARK: - 비동기 처리 액션
@@ -102,12 +99,13 @@ public struct ProfileReducer {
 
   @CasePathable
   public enum ScopeAction {
-      case alert(PresentationAction<AlertAction>)
+    case alert(PresentationAction<AlertAction>)
+    case customAlert(PresentationAction<CustomAlertAction>)
   }
 
   @CasePathable
   public enum AlertAction {
-      case confirmTapped
+    case confirmTapped
   }
 
   nonisolated enum CancelID: Hashable {
@@ -150,12 +148,21 @@ public struct ProfileReducer {
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
 
-      case .scope:
-        return .none
+      case .scope(let scopeAction):
+        switch scopeAction {
+        case .alert:
+          return .none
+
+        case .customAlert(let customAlertAction):
+          return handleCustomAlertAction(state: &state, action: customAlertAction)
+        }
       }
     }
     .ifLet(\.$destination, action: \.destination)
     .ifLet(\.$alert, action: \.scope.alert)
+    .ifLet(\.$customAlert, action: \.scope.customAlert) {
+      EmptyReducer()
+    }
   }
 }
 
@@ -174,22 +181,13 @@ extension ProfileReducer {
       return .none
 
     case .showWithdrawAlert:
-        state.alertItem = .withdrawAccount(onConfirm: {}, onCancel: {})
+      state.customAlert = .withdrawAccount()
       return .none
 
-    case .withdrawAlertConfirmed:
-      // reducer에서 확인 처리
-      state.alertItem = nil
-      return .send(.async(.deleteUser))
-
-    case .withdrawAlertCancelled:
-      // reducer에서 취소 처리
-      state.alertItem = nil
+    case .showLogoutAlert:
+      state.customAlert = .logout()
       return .none
 
-    case .dismissAlert:
-      state.alertItem = nil
-      return .none
     }
   }
 
@@ -314,6 +312,37 @@ extension ProfileReducer {
       case .presentEditGeneration:
         state.$editGeneration.withLock { $0.toggle() }
         return .none
+    }
+  }
+
+  private func handleCustomAlertAction(
+    state: inout State,
+    action: PresentationAction<CustomAlertAction>
+  ) -> Effect<Action> {
+    switch action {
+    case .presented(let customAlertAction):
+      switch customAlertAction {
+      case .confirmTapped:
+        // customAlert의 title로 구분하여 적절한 액션 실행
+        guard let alertState = state.customAlert else { return .none }
+
+        // 팝업 닫기
+        state.customAlert = nil
+
+        if alertState.title.contains("탈퇴") {
+          return .send(.async(.deleteUser))
+        } else if alertState.title.contains("로그아웃") {
+          return .send(.async(.logout))
+        }
+        return .none
+
+      case .cancelTapped:
+        state.customAlert = nil
+        return .none
+      }
+
+    case .dismiss:
+      return .none
     }
   }
 }

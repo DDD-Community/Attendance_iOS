@@ -90,7 +90,7 @@ public extension AlertItem {
   ) -> AlertItem {
     AlertItem(
       title: "로그아웃 하시겠습니까?",
-      message: "다시 로그인해야 앱을 사용할 수 있습니다.",
+      message: "",
       confirmTitle: "로그아웃",
       cancelTitle: "취소",
       isDestructive: false,
