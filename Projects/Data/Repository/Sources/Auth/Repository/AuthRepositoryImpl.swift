@@ -46,7 +46,12 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
   public func refresh() async throws -> AuthTokens {
     let refreshToken  = keychainManager.refreshToken() ?? ""
     let dto: TokenDTO = try await authProvider.request(.refresh(refreshToken: refreshToken))
-    return dto.toDomain()
+    let refreshData = dto.toDomain()
+
+    updateSessionCredential(with: refreshData)
+
+    keychainManager.save(accessToken: refreshData.accessToken, refreshToken: refreshData.refreshToken)
+    return refreshData
   }
 
   // MARK: - 로그아웃

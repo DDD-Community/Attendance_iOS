@@ -39,7 +39,7 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
       teamId: userSession.selectTeamId,
       managerRoles: isManager ? userSession.managing : nil,
       provider: userSession.provider,
-      token: userSession.accessToken,
+      token: userSession.provider == .apple ? userSession.accessToken : userSession.token,
       oauthRefreshToken: userSession.provider == .apple ? userSession.oauthRefreshToken : nil,
       invitationCode: userSession.inviteCode
     )
@@ -58,8 +58,6 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
 
     
     authUseCase.updateSessionCredential(with: loginEntity.token)
-
-    print("keychain \(keychainManager.accessToken())")
 
     return signUpUser
   }

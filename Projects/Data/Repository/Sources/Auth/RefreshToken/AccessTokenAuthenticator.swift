@@ -43,7 +43,7 @@ final class AccessTokenAuthenticator: Authenticator, @unchecked Sendable {
     with response: HTTPURLResponse,
     failDueToAuthenticationError error: Error
   ) -> Bool {
-    response.statusCode == 401
+    return response.statusCode == 401
   }
 
   func isRequest(
@@ -64,7 +64,7 @@ private extension AccessTokenAuthenticator {
       let tokens = try await authRepository.refresh()
       keychainManager.save(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
 
-      // AuthSessionManager의 credential도 업데이트
+      // AuthSessionManager credential 업데이트
       AuthSessionManager.shared.updateCredential(with: tokens)
 
       let refreshedCredential = AccessTokenCredential.make(

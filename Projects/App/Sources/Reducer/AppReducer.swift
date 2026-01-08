@@ -248,20 +248,22 @@ extension AppReducer {
 
     case let .auth(authAction):
       // auth state가 nil인 경우 모든 auth 액션 무시
-      guard state.auth != nil else {
-        print("🚫 [AppReducer] Ignoring auth action - auth state is nil: \(authAction)")
-        return .none
-      }
+      guard state.auth != nil else { return .none }
       return .none
 
-    case .staff:
+    case let .staff(staffAction):
       // staff state가 nil인 경우 무시
       guard state.staff != nil else { return .none }
       return .none
 
-    case .member:
+    case let .member(memberAction):
       // member state가 nil인 경우 무시
       guard state.member != nil else { return .none }
+      return .none
+
+    case let .splash(splashAction):
+      // splash state가 nil인 경우 무시
+      guard state.splash != nil else { return .none }
       return .none
 
     default:

@@ -48,6 +48,7 @@ final class AuthSessionManager {
   func clear() {
     interceptor.credential = nil
   }
+
 }
 
 private extension AuthSessionManager {

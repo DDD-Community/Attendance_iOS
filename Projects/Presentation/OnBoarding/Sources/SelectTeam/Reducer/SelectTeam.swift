@@ -33,6 +33,7 @@ public struct SelectTeam {
 
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
     @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
+    @Presents var alert: AlertState<AlertAction>?
   }
 
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -41,6 +42,12 @@ public struct SelectTeam {
     case async(AsyncAction)
     case inner(InnerAction)
     case navigation(NavigationAction)
+    case alert(PresentationAction<AlertAction>)
+  }
+
+  @CasePathable
+  public enum AlertAction {
+    case confirmTapped
   }
   
   // MARK: - ViewAction
@@ -92,20 +99,24 @@ public struct SelectTeam {
       switch action {
       case .binding:
         return .none
-        
+
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
-        
+
       case .async(let asyncAction):
         return handleAsyncAction(state: &state, action: asyncAction)
-        
+
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
-        
+
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
+
+      case .alert:
+        return .none
       }
     }
+    .ifLet(\.$alert, action: \.alert)
   }
 }
 
@@ -244,6 +255,15 @@ extension SelectTeam {
 
           case .failure(let error):
             state.errorMessage = error.errorDescription
+            state.alert = AlertState {
+              TextState("회원가입 실패")
+            } actions: {
+              ButtonState(action: .confirmTapped) {
+                TextState("확인")
+              }
+            } message: {
+              TextState(error.errorDescription ?? "알 수 없는 오류가 발생했습니다.")
+            }
             return .none
         }
 
@@ -261,6 +281,16 @@ extension SelectTeam {
 
           case .failure(let error):
             state.errorMessage = error.errorDescription
+            state.$editGeneration.withLock { $0 = false }
+            state.alert = AlertState {
+              TextState("프로필 수정 실패")
+            } actions: {
+              ButtonState(action: .confirmTapped) {
+                TextState("확인")
+              }
+            } message: {
+              TextState(error.errorDescription ?? "알 수 없는 오류가 발생했습니다.")
+            }
             return .none
         }
 

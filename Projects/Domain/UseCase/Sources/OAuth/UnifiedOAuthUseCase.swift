@@ -21,6 +21,8 @@ public struct UnifiedOAuthUseCase {
   @Dependency(\.keychainManager) private var keychainManager: KeychainManaging
   @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   @Dependency(\.profileUseCase) var profileUseCase
+  @Shared(.appStorage("staffRole")) var staffRole: Staff?
+
   public init() {}
 }
 
@@ -88,6 +90,9 @@ public extension UnifiedOAuthUseCase {
       let profile = try await profileUseCase.getProfile()
       self.$userSession.withLock {
         $0.userRole = profile.role
+      }
+      self.$staffRole.withLock {
+        $0 = profile.role
       }
     }
     return loginEntity
