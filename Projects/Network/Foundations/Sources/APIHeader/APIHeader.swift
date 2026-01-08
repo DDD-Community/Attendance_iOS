@@ -8,26 +8,25 @@
 import Foundation
 import ComposableArchitecture
 
-private struct StaticDependencies {
-    @Dependency(\.tokenProvider) var tokenProvider
-}
-
 public struct APIHeader {
 
   public static let contentType   = "Content-Type"
   public static let accessToken   = "Authorization"
   public static let accept        = "accept"
 
-  private static var dependencies = StaticDependencies()
+  @Dependency(\.tokenProvider) private static var tokenProvider
 
   public static var accessTokenKeyChain: String {
-    get { dependencies.tokenProvider.accessToken() ?? "" }
+    get {
+      let token = tokenProvider.accessToken() ?? ""
+      return token
+    }
     set { updateAccessToken(newValue) }
   }
 
   public static func updateAccessToken(_ token: String?) {
     guard let newToken = token, !newToken.isEmpty else { return }
-    dependencies.tokenProvider.saveAccessToken(newToken)
+    tokenProvider.saveAccessToken(newToken)
   }
 
   public init() {}

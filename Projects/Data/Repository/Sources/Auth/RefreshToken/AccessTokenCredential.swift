@@ -8,7 +8,7 @@
 import Foundation
 import Alamofire
 
-struct AccessTokenCredential: AuthenticationCredential, Sendable {
+struct AccessTokenCredential: Sendable {
   let accessToken: String
   let refreshToken: String
   let expiration: Date
@@ -23,8 +23,12 @@ struct AccessTokenCredential: AuthenticationCredential, Sendable {
     accessToken: String,
     refreshToken: String
   ) -> AccessTokenCredential {
-    // JWT 디코딩을 시도하되, 실패하면 기본 만료시간 사용 (1시간 후)
-    let expiration = decodeExpiration(from: accessToken) ?? Date().addingTimeInterval(3600)
+    // JWT 디코딩을 시도하되, 실패하면 기본 만료시간 사용 (24시간 후)
+    let fallbackExpiration = Date().addingTimeInterval(24 * 60 * 60) // 24시간
+    let expiration = decodeExpiration(from: accessToken) ?? {
+      print("⚠️ JWT decoding failed, using fallback expiration: 24 hours from now")
+      return fallbackExpiration
+    }()
 
     return AccessTokenCredential(
       accessToken: accessToken,
@@ -37,7 +41,10 @@ struct AccessTokenCredential: AuthenticationCredential, Sendable {
 private extension AccessTokenCredential {
   static func decodeExpiration(from token: String) -> Date? {
     let components = token.components(separatedBy: ".")
-    guard components.count == 3 else { return nil }
+    guard components.count == 3 else {
+      print("🚫 JWT decoding failed: Invalid JWT format (expected 3 parts, got \(components.count))")
+      return nil
+    }
 
     let payload = components[1]
     var base64 = payload
@@ -49,14 +56,26 @@ private extension AccessTokenCredential {
       base64 += String(repeating: "=", count: paddingLength)
     }
 
-    guard let data = Data(base64Encoded: base64) else { return nil }
-    guard
-      let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-      let exp = json["exp"] as? TimeInterval
-    else {
+    guard let data = Data(base64Encoded: base64) else {
+      print("🚫 JWT decoding failed: Base64 decoding failed")
       return nil
     }
 
-    return Date(timeIntervalSince1970: exp)
+    guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+      print("🚫 JWT decoding failed: JSON parsing failed")
+      return nil
+    }
+
+    guard let exp = json["exp"] as? TimeInterval else {
+      print("🚫 JWT decoding failed: 'exp' claim not found or invalid type")
+      print("🔍 Available keys in JWT payload: \(json.keys.joined(separator: ", "))")
+      return nil
+    }
+
+    let expirationDate = Date(timeIntervalSince1970: exp)
+    print("✅ JWT expiration decoded successfully: \(expirationDate)")
+    print("🕐 Time until expiration: \(expirationDate.timeIntervalSinceNow / 3600) hours")
+
+    return expirationDate
   }
 }
