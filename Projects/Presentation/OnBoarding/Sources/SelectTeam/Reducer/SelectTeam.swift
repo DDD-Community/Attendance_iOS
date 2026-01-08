@@ -42,7 +42,12 @@ public struct SelectTeam {
     case async(AsyncAction)
     case inner(InnerAction)
     case navigation(NavigationAction)
-    case alert(PresentationAction<AlertAction>)
+    case scope(ScopeAction)
+  }
+
+  @CasePathable
+  public enum ScopeAction {
+      case alert(PresentationAction<AlertAction>)
   }
 
   @CasePathable
@@ -80,6 +85,7 @@ public struct SelectTeam {
   public enum NavigationAction: Equatable {
     case presentMember
     case presentManager
+    case presentLogin
   }
   
   nonisolated enum CancelID: Hashable {
@@ -112,11 +118,11 @@ public struct SelectTeam {
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
 
-      case .alert:
-        return .none
+        case .scope:
+          return .none
       }
     }
-    .ifLet(\.$alert, action: \.alert)
+    .ifLet(\.$alert, action: \.scope.alert)
   }
 }
 
@@ -179,6 +185,10 @@ extension SelectTeam {
 
     case .presentManager:
       return .none
+
+
+      case .presentLogin:
+        return .none
     }
   }
 
@@ -273,11 +283,7 @@ extension SelectTeam {
             state.editProfile = data
             state.$editGeneration.withLock { $0 = false }
 
-            if state.userSession.userRole == .manager {
-              return .send(.navigation(.presentManager))
-            } else {
-              return .send(.navigation(.presentMember))
-            }
+            return .send(.navigation(.presentLogin))
 
           case .failure(let error):
             state.errorMessage = error.errorDescription

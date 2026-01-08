@@ -110,12 +110,8 @@ extension ProfileCoordinator {
       case .routeAction(id: _, action: .web(.backToRoot)):
         return .send(.view(.backAction))
 
-      case .routeAction(id: _, action: .onBoarding(.navigation(.presentStaff))):
-        return .send(.navigation(.presentStaff))
-
-
-      case .routeAction(id: _, action: .onBoarding(.navigation(.presentMember))):
-        return .send(.navigation(.presentMember))
+      case .routeAction(id: _, action: .onBoarding(.navigation(.presentLogin))):
+        return .send(.navigation(.presentLogin))
 
 
     default:

@@ -52,7 +52,11 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
   }
 
   public func editProfile(input: EditProfileInput) async throws -> ProfileEntity {
-    return try await repository.editProfile(input: input)
+    let editProfile = try await repository.editProfile(input: input)
+    self.$staffRole.withLock {
+      $0 = editProfile.role
+    }
+    return editProfile
   }
 
 }

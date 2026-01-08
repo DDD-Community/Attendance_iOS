@@ -28,7 +28,6 @@ final public class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable 
 
     // MARK: - 프로필 조회
     public func getProfile() async throws -> Entity.ProfileEntity {
-      self.$staffRole.withLock { $0 = nil }
         // 1. 저장된 역할 정보 확인
         // staffRole이 명확하게 있으면 해당 엔드포인트 호출
         if let role = self.staffRole {

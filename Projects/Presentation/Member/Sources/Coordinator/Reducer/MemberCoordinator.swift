@@ -107,12 +107,6 @@ extension MemberCoordinator {
       case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
         return .send(.view(.backAction))
 
-      case .routeAction(id: _, action: .profile(.navigation(.presentMember))):
-        return .send(.view(.backToRootAction))
-
-      case .routeAction(id: _, action: .profile(.navigation(.presentStaff))):
-        return .send(.navigation(.presentStaff))
-
     default:
       return .none
     }

@@ -49,6 +49,7 @@ public struct OnBoardingCoordinator {
   }
 
   public enum NavigationAction: Equatable {
+    case presentLogin
     case presentStaff
     case presentMember
   }
@@ -123,6 +124,9 @@ extension OnBoardingCoordinator {
       case .routeAction(id: _, action: .selectTeam(.navigation(.presentMember))):
         return .send(.navigation(.presentMember))
 
+      case .routeAction(id: _, action: .selectTeam(.navigation(.presentLogin))):
+        return .send(.navigation(.presentLogin))
+
     default:
       return .none
     }
@@ -167,6 +171,9 @@ extension OnBoardingCoordinator {
       return .none
 
       case .presentMember:
+        return .none
+
+      case .presentLogin:
         return .none
     }
   }

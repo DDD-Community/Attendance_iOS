@@ -59,6 +59,7 @@ public struct SelectTeamView: View {
         store.userSession.selectTeam = .unknown
         store.send(.view(.onAppear))
       }
+      .alert($store.scope(state: \.alert, action: \.scope.alert))
     }
   }
 }
