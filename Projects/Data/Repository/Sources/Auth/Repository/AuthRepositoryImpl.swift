@@ -48,9 +48,7 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
     let dto: TokenDTO = try await authProvider.request(.refresh(refreshToken: refreshToken))
     let refreshData = dto.toDomain()
 
-    updateSessionCredential(with: refreshData)
-
-    keychainManager.save(accessToken: refreshData.accessToken, refreshToken: refreshData.refreshToken)
+    // ✅ TokenRefresher에서 keychain 저장과 credential 업데이트를 담당하므로 중복 제거
     return refreshData
   }
 
