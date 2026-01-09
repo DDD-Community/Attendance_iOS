@@ -84,7 +84,7 @@ public struct Staff {
   }
   
   
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {
@@ -125,7 +125,9 @@ public struct Staff {
       ScheduleManager()
     }
   }
-  
+}
+
+extension Staff {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -134,27 +136,27 @@ public struct Staff {
     case .presentQrcode:
       state.destination = .qrcode(.init())
       return .none
-      
+
     case .closeModal:
       state.destination = nil
       return .none
     }
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    
+
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    
+
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
@@ -162,9 +164,9 @@ public struct Staff {
     switch action {
     case .presentSchedule:
       return .run {  send in
-        
+
       }
-      
+
     case .presentManagerProfile:
       return .none
     }

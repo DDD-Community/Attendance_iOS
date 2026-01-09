@@ -2,14 +2,12 @@
 //  StaffCoordinator.swift
 //  Presentation
 //
-//  Created by Wonji Suh  on 11/4/24.
+//  Created by Wonji Suh on 11/4/24.
 //
 
 import Foundation
-
 import Utill
 import Profile
-
 import ComposableArchitecture
 import KeychainAccess
 import TCACoordinators
@@ -60,12 +58,13 @@ public struct StaffCoordinator {
 
   public enum NavigationAction: Equatable {
     case presentLogin
+    case presentMember
   }
 
   
   @Dependency(\.continuousClock) var clock
 
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {
@@ -101,16 +100,25 @@ extension StaffCoordinator {
     switch action {
       // MARK: - 운영진 프로필
     case .routeAction(id: _, action: .coreMember(.navigation(.presentManagerProfile))):
-      state.routes.push(.mangeProfile(.init()))
+      state.routes.push(.profile(.init()))
       return .none
 
 
       // MARK: - 로그아웃
-    case .routeAction(id: _, action: .mangeProfile(.navigation(.presentLogOut))):
+    case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
       return .run { send in
         try await clock.sleep(for: .seconds(0.5))
         await send(.navigation(.presentLogin))
       }
+
+      case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
+        return .send(.view(.backAction))
+
+      case .routeAction(id: _, action: .profile(.navigation(.presentMember))):
+        return .send(.navigation(.presentMember))
+
+      case .routeAction(id: _, action: .profile(.navigation(.presentStaff))):
+        return .send(.view(.backToRootAction))
 
     default:
       return .none
@@ -140,6 +148,9 @@ extension StaffCoordinator {
     switch action {
     case .presentLogin:
       return .none
+
+      case .presentMember:
+        return .none
     }
   }
 
@@ -162,6 +173,6 @@ extension StaffCoordinator {
   @Reducer(state: .equatable)
   public enum CoreMemberScreen{
     case coreMember(Staff)
-    case mangeProfile(ProfileReducer)
+    case profile(ProfileCoordinator)
   }
 }

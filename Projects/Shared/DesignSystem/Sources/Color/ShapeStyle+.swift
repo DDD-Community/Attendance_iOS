@@ -49,7 +49,9 @@ public extension ShapeStyle where Self == Color {
   static var grayError: Color { .init(hex: "FF5050") }
   static var grayWhite: Color { .init(hex: "FFFFFF") }
   static var grayPrimary: Color { .init(hex: "0099FF") }
-  
+  static var mediumGray: Color { .init(hex: "8E8E93") }
+  static var mediumGray100: Color { .init(hex: "C6C6CF") }
+
   // MARK: - Surface
   
   static var surfaceBackground: Color { .init(hex: "1A1A1A") }
@@ -79,7 +81,8 @@ public extension ShapeStyle where Self == Color {
   static var blue80: Color { .init(hex: "084E95") }
   static var blue90: Color { .init(hex: "063A70") }
   static var blue100: Color { .init(hex: "052E57") }
-  
+  static var dangerBlue: Color { .init(hex: "0D82F9") }
+
   // MARK: - NatureRed
   
   static var red10: Color { .init(hex: "ffe7e6") }

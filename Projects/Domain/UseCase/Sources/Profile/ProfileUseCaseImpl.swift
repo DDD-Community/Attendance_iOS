@@ -8,71 +8,67 @@ import DomainInterface
 import Model
 
 import WeaveDI
+import Entity
+import ComposableArchitecture
 
-public struct ProfileUseCaseImpl: ProfileInterface {
+public protocol ProfileUseCaseInterface: Sendable {
+  func getProfile() async throws -> ProfileEntity
+  func editUser(
+    userSession: UserSession
+  ) async throws -> ProfileEntity
+}
+
+
+public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
   @Dependency(\.profileRepository) var repository
+  @Shared(.appStorage("staffRole")) var staffRole: Staff?
 
   public init() { }
   // MARK: - 프로필  수정
-  public func editProfileManger(
-    name: String,
-    inviteCode: String,
-    role: String,
-    team: String,
-    responsibility: String
-  ) async throws -> ProfileResponseModel? {
-    return try await repository.editProfileManger(
-      name: name,
-      inviteCode: inviteCode,
-      role: role,
-      team: team,
-      responsibility: responsibility
-    )
-  }
+
   // MARK: - 프로필 조회
-  public func getProfile() async throws -> ProfileResponseModel? {
-    return try await repository.getProfile()
+  public func getProfile() async throws -> ProfileEntity {
+    let profileResult = try await repository.getProfile()
+    self.$staffRole.withLock {
+      $0 = profileResult.role
+    }
+    return profileResult
+
   }
 
-  // MARK: - 프로필수정 운영진 팀 없을때
-  public func editProfileMangerNoTeam(
-    name: String,
-    inviteCode: String,
-    role: String,
-    responsibility: String
-  ) async throws -> ProfileResponseModel? {
-    return try await repository.editProfileMangerNoTeam(
-      name: name,
-      inviteCode: inviteCode,
-      role: role,
-      responsibility: responsibility
+  public func editUser(
+    userSession: UserSession
+  ) async throws -> ProfileEntity {
+    let isManager = userSession.userRole == .manager
+    let input = EditProfileInput(
+      name: userSession.name,
+      generationId: userSession.generationId,
+      jobRole: userSession.selectPart,
+      teamId: userSession.selectTeamId,
+      managerRoles: isManager ? userSession.managing : nil,
+      inviteCode: userSession.inviteCode
     )
+    return try await editProfile(input: input)
   }
 
-  // MARK: - 프로필 수정 멤버
-  public func editProfileMember(
-    name: String,
-    inviteCode: String,
-    role: String,
-    team: String
-  ) async throws -> ProfileResponseModel? {
-    return try await repository.editProfileMember(
-      name: name,
-      inviteCode: inviteCode,
-      role: role,
-      team: team
-    )
+  public func editProfile(input: EditProfileInput) async throws -> ProfileEntity {
+    let editProfile = try await repository.editProfile(input: input)
+    self.$staffRole.withLock {
+      $0 = editProfile.role
+    }
+    return editProfile
   }
+
 }
 
 extension ProfileUseCaseImpl: DependencyKey {
-  static public var liveValue: ProfileInterface = ProfileUseCaseImpl()
-  static public var testValue: ProfileInterface = ProfileUseCaseImpl()
-  static public var previewValue: ProfileInterface = liveValue
+  static public var liveValue: ProfileUseCaseInterface = ProfileUseCaseImpl()
+  static public var testValue: ProfileUseCaseInterface = ProfileUseCaseImpl()
+  static public var previewValue: ProfileUseCaseInterface = liveValue
 }
 
 public extension DependencyValues {
-  var profileUseCase: ProfileInterface {
+  var profileUseCase: ProfileUseCaseInterface {
     get { self[ProfileUseCaseImpl.self] }
     set { self[ProfileUseCaseImpl.self] = newValue }
   }

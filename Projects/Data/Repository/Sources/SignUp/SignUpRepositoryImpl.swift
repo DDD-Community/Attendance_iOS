@@ -30,16 +30,8 @@ final public class SignUpRepositoryImpl: SignUpInterface {
   public func registerUser(
     input: SignUpUserInput
   ) async throws -> SignUpUser {
-    let body = SignUpUserRequestDTO(
-      name: input.name,
-      generationId: input.generationId,
-      jobRole: input.jobRole.apiKey,
-      teamId: input.teamId,
-      managerRoles: input.managerRoles?.map { $0.apiKey },
-      provider: input.provider.description,
-      token: input.token,
-      invitationCode: input.invitationCode
-    )
+    // SignUpUserInput을 SignUpUserRequestDTO로 변환
+    let body = input.toRequestDTO()
     let dto: SignUpUserDTO = try await provider.request(.signUpUser(body: body))
     return dto.toDomain()
   }

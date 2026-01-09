@@ -2,133 +2,193 @@
 //  AppReducer.swift
 //  DDDAttendance
 //
-//  Created by Wonji Suh  on 10/29/24.
+//  Created by Wonji Suh on 10/29/24.
 //
 
 import Presentation
-
 import ComposableArchitecture
+import Entity
 
 @Reducer
-struct AppReducer {
+public struct AppReducer: Sendable {
+  public init() {}
 
   @ObservableState
-  enum State: Equatable {
+  public enum State {
     case splash(Splash.State)
     case auth(AuthCoordinator.State)
-    case coreMember(StaffCoordinator.State)
+    case staff(StaffCoordinator.State)
     case member(MemberCoordinator.State)
 
-    init() {
-      self = .splash(.init())
+    public init() {
+      self = .splash(Splash.State())
     }
 
-    var screenType: ScreenType {
+    // Animation identifier for SwiftUI transitions
+    var animationID: String {
       switch self {
-      case .splash: return .splash
-      case .auth: return .auth
-      case .coreMember: return .coreMember
-      case .member: return .member
+      case .splash: return "splash"
+      case .auth: return "auth"
+      case .staff: return "staff"
+      case .member: return "member"
       }
     }
   }
 
-  enum ScreenType: Equatable {
-    case splash, auth, coreMember, member
-  }
-
-  enum Action: ViewAction {
+  //MARK: - Action
+  public enum Action: ViewAction, FeatureAction {
     case view(View)
+    case async(AsyncAction)
+    case inner(InnerAction)
+    case navigation(NavigationAction)
   }
 
   @CasePathable
-  enum View {
+  public enum View {
+    case presentView
+    case presentRoot
     case presentAuth
-    case presentCoreMember
+    case presentStaff
     case presentMember
-
     case splash(Splash.Action)
     case auth(AuthCoordinator.Action)
-    case coreMember(StaffCoordinator.Action)
+    case staff(StaffCoordinator.Action)
     case member(MemberCoordinator.Action)
+  }
+
+  //MARK: - 앱내에서 사용하는 액션
+  public enum InnerAction: Equatable {
+
+  }
+
+  //MARK: - 비동기 처리 액션
+  public enum AsyncAction: Equatable {
+
+  }
+
+  //MARK: - 네비게이션 연결 액션
+  public enum NavigationAction: Equatable {
+
   }
 
   @Dependency(\.continuousClock) var clock
 
-  var body: some ReducerOf<Self> {
-    EmptyReducer()
-      .ifCaseLet(\.splash, action: \.view.splash) {
-        Splash()
-      }
-      .ifCaseLet(\.auth, action: \.view.auth) {
-        AuthCoordinator()
-      }
-      .ifCaseLet(\.coreMember, action: \.view.coreMember) {
-        StaffCoordinator()
-      }
-      .ifCaseLet(\.member, action: \.view.member) {
-        MemberCoordinator()
-      }
+  public var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
-      case .view(let ViewAction):
-        handleViewAction(&state, action: ViewAction)
+      case .view(let viewAction):
+        return handleViewAction(state: &state, action: viewAction)
+
+      case .inner(let innerAction):
+        return handleInnerAction(state: &state, action: innerAction)
+
+      case .async(let asyncAction):
+        return handleAsyncAction(state: &state, action: asyncAction)
+
+      case .navigation(let navigationAction):
+        return handleNavigationAction(state: &state, action: navigationAction)
       }
     }
+    .ifCaseLet(\.splash, action: \.view.splash) {
+      Splash()
+    }
+    .ifCaseLet(\.auth, action: \.view.auth) {
+      AuthCoordinator()
+    }
+    .ifCaseLet(\.staff, action: \.view.staff) {
+      StaffCoordinator()
+    }
+    .ifCaseLet(\.member, action: \.view.member) {
+      MemberCoordinator()
+    }
   }
-}
 
-extension AppReducer {
-  func handleViewAction(
-    _ state: inout State,
+  private func handleViewAction(
+    state: inout State,
     action: View
   ) -> Effect<Action> {
     switch action {
-      // MARK: - 로그인 화면으로
+    case .presentView:
+      return .run { send in
+        await send(.view(.splash(.async(.fetchUser))))
+      }
+
+    case .splash(.navigation(.presentLogin)):
+      return .run { send in
+        try await self.clock.sleep(for: .seconds(1))
+        await send(.view(.presentAuth))
+      }
+
+    case .splash(.navigation(.presentStaff)):
+      return .run { send in
+        try await self.clock.sleep(for: .seconds(1))
+        await send(.view(.presentStaff))
+      }
+
+    case .splash(.navigation(.presentMember)):
+      return .run { send in
+        try await self.clock.sleep(for: .seconds(1))
+        await send(.view(.presentMember))
+      }
+
+    case .auth(.navigation(.presentStaff)):
+      return .send(.view(.presentStaff))
+
+    case .auth(.navigation(.presentMember)):
+      return .send(.view(.presentMember))
+
+    case .staff(.navigation(.presentLogin)):
+      return .send(.view(.presentAuth))
+
+    case .staff(.navigation(.presentMember)):
+      return .send(.view(.presentMember))
+
+    case .member(.navigation(.presentLogin)):
+      return .send(.view(.presentAuth))
+
+    case .member(.navigation(.presentStaff)):
+      return .send(.view(.presentStaff))
+
+    case .presentRoot:
+      // 기본적으로 멤버 화면으로 이동
+      state = .member(.init())
+      return .none
+
     case .presentAuth:
       state = .auth(.init())
       return .none
 
-    case .presentCoreMember:
-      state = .coreMember(.init())
+    case .presentStaff:
+      state = .staff(.init())
       return .none
 
     case .presentMember:
       state = .member(.init())
       return .none
 
-    case .splash(.navigation(.presentLogin)):
-      return .run { send in
-        try await clock.sleep(for: .seconds(1))
-        await send(.view(.presentAuth))
-      }
-
-    case .splash(.navigation(.presentCoreMember)):
-      return .run { send in
-        try await clock.sleep(for: .seconds(1))
-        await send(.view(.presentCoreMember))
-      }
-
-    case .splash(.navigation(.presentMember)):
-      return .run { send in
-        try await clock.sleep(for: .seconds(1))
-        await send(.view(.presentMember))
-      }
-
-    case .auth(.navigation(.presentCoreMember)):
-      return .send(.view(.presentCoreMember))
-
-    case .auth(.navigation(.presentMember)):
-      return .send(.view(.presentMember))
-
-    case .coreMember(.navigation(.presentLogin)):
-      return .send(.view(.presentAuth))
-
-    case .member(.navigation(.presentLogin)):
-      return .send(.view(.presentAuth))
-
     default:
       return .none
     }
+  }
+
+  private func handleAsyncAction(
+    state: inout State,
+    action: AsyncAction
+  ) -> Effect<Action> {
+    return .none
+  }
+
+  private func handleInnerAction(
+    state: inout State,
+    action: InnerAction
+  ) -> Effect<Action> {
+    return .none
+  }
+
+  private func handleNavigationAction(
+    state: inout State,
+    action: NavigationAction
+  ) -> Effect<Action> {
+    return .none
   }
 }

@@ -12,8 +12,8 @@ let project = Project.makeModule(
   settings:  .settings(),
   dependencies: [
     .Shared(implements: .Shareds),
-    .Shared(implements: .DesignSystem),
-    .Domain(implements: .UseCase)
+    .Domain(implements: .UseCase),
+    .Presentation(implements: .OnBoarding)
   ],
   sources: ["Sources/**"]
 )

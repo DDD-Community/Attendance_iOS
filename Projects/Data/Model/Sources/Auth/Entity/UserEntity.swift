@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+import Entity
 
 public enum UserRole: String {
   case member    = "member"
@@ -29,6 +29,9 @@ public struct UserEntity: Equatable{
   public var managing: Managing?
   public var role: SelectPart?
   public var memberTeam: SelectTeam?
+
+  // 프로필에서 가져온 역할 정보 (Staff enum)
+  public var staffRole: Staff?
   
   
   public init(
@@ -42,7 +45,8 @@ public struct UserEntity: Equatable{
     userRole: UserRole = .moderator,
     managing: Managing? = nil,
     role: SelectPart? = nil,
-    memberTeam: SelectTeam? = nil
+    memberTeam: SelectTeam? = nil,
+    staffRole: Staff? = nil
   ) {
     self.userEmail = userEmail
     self.userUid = userUid
@@ -55,6 +59,7 @@ public struct UserEntity: Equatable{
     self.role = role
     self.managing = managing
     self.memberTeam = memberTeam
+    self.staffRole = staffRole
   }
   
 }

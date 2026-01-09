@@ -105,12 +105,9 @@ extension ScheduleModal {
       return .none
 
     case .confirmSelection:
-      print("🟢 ScheduleModal: confirmSelection 액션 처리")
       guard let selectedSchedule = state.selectedSchedule else {
-        print("🔴 ScheduleModal: 선택된 스케줄이 없음!")
         return .none
       }
-      print("🟢 ScheduleModal: selectScheduleCompleted navigation action 전송 - \(selectedSchedule.title)")
       return .send(.navigation(.selectScheduleCompleted(selectedSchedule: selectedSchedule)))
     }
   }

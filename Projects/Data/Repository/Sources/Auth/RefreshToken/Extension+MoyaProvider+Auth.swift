@@ -9,8 +9,10 @@ import AsyncMoya
 
 public extension MoyaProvider {
   static var authorized: MoyaProvider<Target> {
-    MoyaProvider(
-      session: AuthSessionManager.shared.session,
+    let manager = AuthSessionManager.shared
+
+    return MoyaProvider(
+      session: manager.session,
       plugins: [
         MoyaLoggingPlugin()
       ]

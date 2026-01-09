@@ -20,6 +20,9 @@ public struct UnifiedOAuthUseCase {
   @Dependency(\.googleOAuthProvider) private var googleProvider: GoogleOAuthProviderInterface
   @Dependency(\.keychainManager) private var keychainManager: KeychainManaging
   @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+  @Dependency(\.profileUseCase) var profileUseCase
+  @Shared(.appStorage("staffRole")) var staffRole: Staff?
+
   public init() {}
 }
 
@@ -59,17 +62,39 @@ public extension UnifiedOAuthUseCase {
     )
     Log.debug("apple authcode", payload.authorizationCode)
     self.$userSession.withLock {
-      $0.token = payload.idToken
-      $0.accessToken = payload.authorizationCode ?? ""
+      $0.token = payload.authorizationCode ?? ""
+      $0.accessToken = payload.idToken
+      $0.oauthRefreshToken = payload.idToken
     }
     let loginEntity = try await authRepository.login(
       provider: .apple,
       token: payload.authorizationCode ?? ""
     )
+
     keychainManager.save(
       accessToken: loginEntity.token.accessToken,
       refreshToken: loginEntity.token.refreshToken
     )
+
+    // AuthSessionManager의 credential도 업데이트
+    authRepository.updateSessionCredential(with: loginEntity.token)
+
+    // UserSession에 oauthRefreshToken 설정 (Apple 로그인의 경우)
+    self.$userSession.withLock {
+      $0.oauthRefreshToken = loginEntity.token.oauthRefreshToken
+    }
+
+    if loginEntity.isNewUser == true {
+
+    } else {
+      let profile = try await profileUseCase.getProfile()
+      self.$userSession.withLock {
+        $0.userRole = profile.role
+      }
+      self.$staffRole.withLock {
+        $0 = profile.role
+      }
+    }
     return loginEntity
   }
 
@@ -87,6 +112,19 @@ public extension UnifiedOAuthUseCase {
       accessToken: loginEntity.token.accessToken,
       refreshToken: loginEntity.token.refreshToken
     )
+
+    // AuthSessionManager의 credential도 업데이트
+    authRepository.updateSessionCredential(with: loginEntity.token)
+
+    if loginEntity.isNewUser == true {
+
+    } else {
+      let profile = try await profileUseCase.getProfile()
+      self.$userSession.withLock {
+        $0.userRole = profile.role
+      }
+    }
+
     return loginEntity
   }
 

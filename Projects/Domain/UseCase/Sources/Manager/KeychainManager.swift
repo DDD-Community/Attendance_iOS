@@ -9,6 +9,8 @@ import Foundation
 
 import DomainInterface
 import Security
+import ComposableArchitecture
+import WeaveDI
 
 public final class KeychainManager: KeychainManaging, @unchecked Sendable {
   private let service: String
@@ -92,5 +94,26 @@ public final class KeychainManager: KeychainManaging, @unchecked Sendable {
       kSecAttrAccount: key
     ]
     SecItemDelete(query as CFDictionary)
+  }
+}
+
+// MARK: - TCA Dependency
+
+public struct KeychainManagerDependency: DependencyKey {
+  public static var liveValue: KeychainManaging {
+    UnifiedDI.resolve(KeychainManaging.self) ?? KeychainManager()
+  }
+
+  public static var testValue: KeychainManaging {
+    InMemoryKeychainManager()
+  }
+
+  public static var previewValue: KeychainManaging = testValue
+}
+
+public extension DependencyValues {
+  var keychainManager: KeychainManaging {
+    get { self[KeychainManagerDependency.self] }
+    set { self[KeychainManagerDependency.self] = newValue }
   }
 }

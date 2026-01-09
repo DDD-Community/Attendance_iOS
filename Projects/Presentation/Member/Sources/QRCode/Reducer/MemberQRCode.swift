@@ -76,7 +76,9 @@ public struct MemberQRCode {
       }
     }
   }
+}
 
+extension MemberQRCode {
   private func handleViewAction(
     state: inout State,
     action: View

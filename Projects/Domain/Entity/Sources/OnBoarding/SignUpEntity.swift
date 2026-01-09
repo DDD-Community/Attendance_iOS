@@ -17,6 +17,7 @@ public struct UserSession: Equatable {
   public var selectTeamId: Int?
   public var token: String
   public var accessToken: String
+  public var oauthRefreshToken: String?
   public var generationId : Int
   public var inviteCode: String
 
@@ -31,6 +32,7 @@ public struct UserSession: Equatable {
     token: String = "",
     generationId: Int = .zero,
     accessToken: String = "",
+    oauthRefreshToken: String? = nil,
     inviteCode: String = ""
   ) {
     self.name = name
@@ -43,6 +45,7 @@ public struct UserSession: Equatable {
     self.generationId = generationId
     self.selectTeamId = selectTeamId
     self.accessToken = accessToken
+    self.oauthRefreshToken = oauthRefreshToken
     self.inviteCode = inviteCode
   }
 

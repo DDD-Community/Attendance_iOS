@@ -71,7 +71,7 @@ public struct QRCode {
 
   @Dependency(\.qrCodeUseCase) var qrCodeUseCase
 
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {
@@ -92,7 +92,9 @@ public struct QRCode {
       }
     }
   }
+}
 
+extension QRCode {
   private func handleViewAction(
     state: inout State,
     action: View

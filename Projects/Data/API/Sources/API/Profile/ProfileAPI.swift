@@ -8,18 +8,22 @@
 import Foundation
 
 public enum ProfileAPI: String , CaseIterable {
-  case editProfile
-  case getProfile
-  
+  case getUser
+  case getAdmin
+  case editUser
+
   
   
   public var profileDescription: String {
     switch self {
-    case .editProfile:
-      return "me/"
-      
-    case .getProfile:
-      return "me/"
+      case .getUser:
+        return ""
+
+      case .getAdmin:
+        return "/me"
+
+      case .editUser:
+        return "/me"
     }
   }
   

@@ -15,6 +15,7 @@ public struct SignUpUserInput  {
   public let managerRoles: [StaffManaging]?
   public let provider: SocialType
   public let token: String
+  public let oauthRefreshToken: String?
   public let invitationCode: String
 
   public init(
@@ -25,6 +26,7 @@ public struct SignUpUserInput  {
     managerRoles: [StaffManaging]?,
     provider: SocialType,
     token: String,
+    oauthRefreshToken: String?,
     invitationCode: String
   ) {
     self.name = name
@@ -34,6 +36,7 @@ public struct SignUpUserInput  {
     self.managerRoles = managerRoles
     self.provider = provider
     self.token = token
+    self.oauthRefreshToken = oauthRefreshToken
     self.invitationCode = invitationCode
   }
 }
