@@ -2,272 +2,193 @@
 //  AppReducer.swift
 //  DDDAttendance
 //
-//  Created by Wonji Suh  on 10/29/24.
+//  Created by Wonji Suh on 10/29/24.
 //
 
 import Presentation
-
 import ComposableArchitecture
 import Entity
 
 @Reducer
-struct AppReducer {
+public struct AppReducer: Sendable {
+  public init() {}
 
-  // MARK: - State
   @ObservableState
-  struct State: Equatable {
-    var splash: Splash.State?
-    var auth: AuthCoordinator.State?
-    var staff: StaffCoordinator.State?
-    var member: MemberCoordinator.State?
-//    @Shared(.appStorage("staffRole")) var staffRole: Staff?
+  public enum State {
+    case splash(Splash.State)
+    case auth(AuthCoordinator.State)
+    case staff(StaffCoordinator.State)
+    case member(MemberCoordinator.State)
 
-    init() {
-      self.splash = .init()
-      self.auth = nil
-      self.staff = nil
-      self.member = nil
+    public init() {
+      self = .splash(Splash.State())
+    }
+
+    // Animation identifier for SwiftUI transitions
+    var animationID: String {
+      switch self {
+      case .splash: return "splash"
+      case .auth: return "auth"
+      case .staff: return "staff"
+      case .member: return "member"
+      }
     }
   }
 
-  // MARK: - Action
-  enum Action: ViewAction {
+  //MARK: - Action
+  public enum Action: ViewAction, FeatureAction {
     case view(View)
+    case async(AsyncAction)
     case inner(InnerAction)
-    case scope(ScopeAction)
-  }
-
-  enum Flow {
-    case splash
-    case auth
-    case staff
-    case member
+    case navigation(NavigationAction)
   }
 
   @CasePathable
-  enum View {
+  public enum View {
+    case presentView
+    case presentRoot
     case presentAuth
     case presentStaff
     case presentMember
-  }
-
-  enum InnerAction {
-    case setAuthState
-    case setStaffState
-    case setMemberState
-  }
-
-  @CasePathable
-  enum ScopeAction {
     case splash(Splash.Action)
     case auth(AuthCoordinator.Action)
     case staff(StaffCoordinator.Action)
     case member(MemberCoordinator.Action)
   }
 
-  @Dependency(\.continuousClock) var clock
+  //MARK: - 앱내에서 사용하는 액션
+  public enum InnerAction: Equatable {
 
-  nonisolated enum CancelID: Hashable {
-    case splashNavigation
-    case authEffects
-    case coreMemberEffects
-    case memberEffects
-    case allAuthRelatedEffects
   }
 
-  // MARK: - body
-  var body: some ReducerOf<Self> {
+  //MARK: - 비동기 처리 액션
+  public enum AsyncAction: Equatable {
+
+  }
+
+  //MARK: - 네비게이션 연결 액션
+  public enum NavigationAction: Equatable {
+
+  }
+
+  @Dependency(\.continuousClock) var clock
+
+  public var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .view(let viewAction):
-        return handleViewAction(&state, action: viewAction)
+        return handleViewAction(state: &state, action: viewAction)
+
       case .inner(let innerAction):
-        return handleInnerAction(&state, action: innerAction)
-      case .scope(let scopeAction):
-        return handleScopeAction(&state, action: scopeAction)
+        return handleInnerAction(state: &state, action: innerAction)
+
+      case .async(let asyncAction):
+        return handleAsyncAction(state: &state, action: asyncAction)
+
+      case .navigation(let navigationAction):
+        return handleNavigationAction(state: &state, action: navigationAction)
       }
     }
-    .ifLet(\.splash, action: \.scope.splash) {
+    .ifCaseLet(\.splash, action: \.view.splash) {
       Splash()
     }
-    .ifLet(\.auth, action: \.scope.auth) {
+    .ifCaseLet(\.auth, action: \.view.auth) {
       AuthCoordinator()
     }
-    .ifLet(\.staff, action: \.scope.staff) {
+    .ifCaseLet(\.staff, action: \.view.staff) {
       StaffCoordinator()
     }
-    .ifLet(\.member, action: \.scope.member) {
+    .ifCaseLet(\.member, action: \.view.member) {
       MemberCoordinator()
     }
   }
-}
 
-extension AppReducer.State {
-  var flow: AppReducer.Flow {
-    if member != nil { return .member }
-    if staff != nil { return .staff }
-    if auth != nil { return .auth }
-    return .splash
-  }
-
-  var caseKey: String {
-    if member != nil { return "member" }
-    if staff != nil { return "staff" }
-    if auth != nil { return "auth" }
-    return "splash"
-  }
-}
-
-extension AppReducer {
-  func handleViewAction(
-    _ state: inout State,
+  private func handleViewAction(
+    state: inout State,
     action: View
   ) -> Effect<Action> {
     switch action {
-    case .presentAuth:
-      return .merge(
-        .cancel(id: CancelID.splashNavigation),
-        .cancel(id: CancelID.coreMemberEffects),
-        .cancel(id: CancelID.memberEffects),
-        .send(.inner(.setAuthState))
-      )
+    case .presentView:
+      return .run { send in
+        await send(.view(.splash(.async(.fetchUser))))
+      }
 
-    case .presentStaff:
-      return .merge(
-        .cancel(id: CancelID.splashNavigation),
-        .cancel(id: CancelID.authEffects),
-        .cancel(id: CancelID.memberEffects),
-        .send(.inner(.setStaffState))
-      )
-
-    case .presentMember:
-      return .merge(
-        .cancel(id: CancelID.splashNavigation),
-        .cancel(id: CancelID.authEffects),
-        .cancel(id: CancelID.coreMemberEffects),
-        .send(.inner(.setMemberState))
-      )
-    }
-  }
-
-  func handleInnerAction(
-    _ state: inout State,
-    action: InnerAction
-  ) -> Effect<Action> {
-    switch action {
-    case .setAuthState:
-      state.auth = .init()
-      state.splash = nil
-      state.staff = nil
-      state.member = nil
-      return .merge(
-        .cancel(id: CancelID.coreMemberEffects),
-        .cancel(id: CancelID.memberEffects)
-      )
-
-    case .setStaffState:
-      state.staff = .init()
-      state.splash = nil
-      state.auth = nil
-      state.member = nil
-      return .merge(
-        .cancel(id: CancelID.allAuthRelatedEffects),
-        .cancel(id: CancelID.authEffects)
-      )
-
-    case .setMemberState:
-      state.member = .init()
-      state.splash = nil
-      state.auth = nil
-      state.staff = nil
-      return .merge(
-        .cancel(id: CancelID.allAuthRelatedEffects),
-        .cancel(id: CancelID.authEffects),
-        .cancel(id: CancelID.coreMemberEffects)
-      )
-    }
-  }
-
-  func handleScopeAction(
-    _ state: inout State,
-    action: ScopeAction
-  ) -> Effect<Action> {
-    switch action {
     case .splash(.navigation(.presentLogin)):
       return .run { send in
-        try await clock.sleep(for: .seconds(1))
+        try await self.clock.sleep(for: .seconds(1))
         await send(.view(.presentAuth))
       }
-      .cancellable(id: CancelID.splashNavigation, cancelInFlight: true)
 
     case .splash(.navigation(.presentStaff)):
       return .run { send in
-        try await clock.sleep(for: .seconds(1))
+        try await self.clock.sleep(for: .seconds(1))
         await send(.view(.presentStaff))
       }
-      .cancellable(id: CancelID.splashNavigation, cancelInFlight: true)
 
     case .splash(.navigation(.presentMember)):
       return .run { send in
-        try await clock.sleep(for: .seconds(1))
+        try await self.clock.sleep(for: .seconds(1))
         await send(.view(.presentMember))
       }
-      .cancellable(id: CancelID.splashNavigation, cancelInFlight: true)
 
     case .auth(.navigation(.presentStaff)):
-      return .merge(
-        .cancel(id: CancelID.allAuthRelatedEffects),
-        .send(.view(.presentStaff))
-      )
-      .cancellable(id: CancelID.authEffects, cancelInFlight: true)
+      return .send(.view(.presentStaff))
 
     case .auth(.navigation(.presentMember)):
-      return .merge(
-        .cancel(id: CancelID.allAuthRelatedEffects),
-        .send(.view(.presentMember))
-      )
-      .cancellable(id: CancelID.authEffects, cancelInFlight: true)
+      return .send(.view(.presentMember))
 
     case .staff(.navigation(.presentLogin)):
-      return .merge(
-        .cancel(id: CancelID.coreMemberEffects),
-        .send(.view(.presentAuth))
-      )
+      return .send(.view(.presentAuth))
 
     case .staff(.navigation(.presentMember)):
       return .send(.view(.presentMember))
 
     case .member(.navigation(.presentLogin)):
-      return .merge(
-        .cancel(id: CancelID.memberEffects),
-        .send(.view(.presentAuth))
-      )
+      return .send(.view(.presentAuth))
 
     case .member(.navigation(.presentStaff)):
       return .send(.view(.presentStaff))
 
-    case let .auth(authAction):
-      // auth state가 nil인 경우 모든 auth 액션 무시
-      guard state.auth != nil else { return .none }
+    case .presentRoot:
+      // 기본적으로 멤버 화면으로 이동
+      state = .member(.init())
       return .none
 
-    case let .staff(staffAction):
-      // staff state가 nil인 경우 무시
-      guard state.staff != nil else { return .none }
+    case .presentAuth:
+      state = .auth(.init())
       return .none
 
-    case let .member(memberAction):
-      // member state가 nil인 경우 무시
-      guard state.member != nil else { return .none }
+    case .presentStaff:
+      state = .staff(.init())
       return .none
 
-    case let .splash(splashAction):
-      // splash state가 nil인 경우 무시
-      guard state.splash != nil else { return .none }
+    case .presentMember:
+      state = .member(.init())
       return .none
 
     default:
       return .none
     }
+  }
+
+  private func handleAsyncAction(
+    state: inout State,
+    action: AsyncAction
+  ) -> Effect<Action> {
+    return .none
+  }
+
+  private func handleInnerAction(
+    state: inout State,
+    action: InnerAction
+  ) -> Effect<Action> {
+    return .none
+  }
+
+  private func handleNavigationAction(
+    state: inout State,
+    action: NavigationAction
+  ) -> Effect<Action> {
+    return .none
   }
 }

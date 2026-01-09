@@ -207,6 +207,7 @@ extension ProfileReducer {
         try await clock.sleep(for: .seconds(1))
         return await send(.inner(.fetchUserResponse(fetchUserResult)))
       }
+      .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
 
       case .deleteUser:
         return .run {

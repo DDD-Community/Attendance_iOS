@@ -45,6 +45,7 @@ public struct ProfileView: View {
           .animation(.easeInOut(duration: 0.25), value: store.destination?.createApp != nil)
       }
     }
+
     .sheet(item: $store.scope(state: \.destination?.createApp, action: \.destination.createApp)) { crateAppStore in
       CreateAppView(store: crateAppStore) {
         store.send(.view(.closeModal))
