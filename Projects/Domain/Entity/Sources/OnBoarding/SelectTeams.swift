@@ -6,10 +6,10 @@
 //
 
 public enum SelectTeams: String, CaseIterable, Equatable, CustomStringConvertible {
-  case and1 = "Android 1팀"
-  case and2 = "Android 2팀"
-  case ios1 = "iOS 1팀"
-  case ios2 = "iOS 2팀"
+  case and1 = "AND 1팀"
+  case and2 = "AND 2팀"
+  case ios1 = "IOS 1팀"
+  case ios2 = "IOS 2팀"
   case web1 = "WEB 1팀"
   case web2 = "WEB 2팀"
   case unknown

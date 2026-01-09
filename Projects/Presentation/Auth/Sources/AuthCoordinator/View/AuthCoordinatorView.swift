@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+import OnBoarding
+
 import ComposableArchitecture
 import TCACoordinators
 
@@ -26,35 +28,9 @@ public struct AuthCoordinatorView: View {
         LoginView(store: loginStore)
           .navigationBarBackButtonHidden()
         
-      case .signUpInviteCode(let signUpInviteCodeStore):
-        SignUpInviteCodeView(store: signUpInviteCodeStore) {
-          store.send(.view(.backAction))
-        }
-        .navigationBarBackButtonHidden()
-        
-      case .signUpName(let signUpStore):
-        SignUpNameView(store: signUpStore) {
-          store.send(.view(.backAction))
-        }
-        .navigationBarBackButtonHidden()
-        
-      case .signUpPart(let signUpPartStore):
-        SignUpPartView(store: signUpPartStore) {
-          store.send(.view(.backAction))
-        }
-        .navigationBarBackButtonHidden()
-        
-      case .signUpManaging(let signUpManagingStore):
-        SignUpSelectManagingView(store: signUpManagingStore) {
-          store.send(.view(.backAction))
-        }
-        .navigationBarBackButtonHidden()
-        
-      case .signUpSelectTeam(let signUpSelectTeamStore):
-        SignUpSelectTeamView(store: signUpSelectTeamStore) {
-          store.send(.view(.backAction))
-        }
-        .navigationBarBackButtonHidden()
+        case .onboarding(let onBoardingStore):
+          OnBoardingCoordinatorView(store: onBoardingStore)
+            .navigationBarBackButtonHidden()
       }
     }
   }

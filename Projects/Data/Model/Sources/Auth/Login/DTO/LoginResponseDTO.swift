@@ -16,4 +16,5 @@ public struct LoginResponseDTO: Decodable {
   let isNewUser: Bool
   let accessToken: String?
   let refreshToken: String?
+  let oauthRefreshToken: String?
 }

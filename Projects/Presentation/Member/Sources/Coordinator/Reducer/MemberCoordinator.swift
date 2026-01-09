@@ -51,11 +51,12 @@ public struct MemberCoordinator {
 
   public enum NavigationAction: Equatable {
     case presentLogin
+    case presentStaff
   }
 
   @Dependency(\.continuousClock) var clock
 
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
 
     Reduce { state, action in
@@ -81,7 +82,9 @@ public struct MemberCoordinator {
     }
     .forEachRoute(\.routes, action: \.router)
   }
+}
 
+extension MemberCoordinator {
   private func handleRouterAction(
     state: inout State,
     action: IndexedRouterActionOf<MemberScreen>
@@ -95,11 +98,14 @@ public struct MemberCoordinator {
       state.routes.push(.profile(.init()))
       return .none
 
-    case .routeAction(id: _, action: .profile(.navigation(.presentLogOut))):
+    case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
       return .run { send in
         try await clock.sleep(for: .seconds(0.5))
         await send(.navigation(.presentLogin))
       }
+
+      case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
+        return .send(.view(.backAction))
 
     default:
       return .none
@@ -114,7 +120,7 @@ public struct MemberCoordinator {
     case .backAction:
       state.routes.goBack()
       return .none
-      
+
     case .backToRootAction:
       return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
         $0.goBackToRoot()
@@ -148,6 +154,8 @@ public struct MemberCoordinator {
     switch action {
     case .presentLogin:
       return .none
+      case .presentStaff:
+        return .none
     }
   }
 }
@@ -156,7 +164,7 @@ extension MemberCoordinator {
   @Reducer(state: .equatable)
   public enum MemberScreen {
     case member(MemberMain)
-    case profile(ProfileReducer)
+    case profile(ProfileCoordinator)
     case qrCode(MemberQRCode)
   }
 }

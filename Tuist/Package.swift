@@ -31,6 +31,6 @@ let package = Package(
     .package(url: "https://github.com/SwiftUIX/SwiftUIX.git", from: "0.2.3"),
     .package(url: "https://github.com/WenchaoD/FSCalendar.git", from: "2.8.3"),
     .package(url: "https://github.com/openid/AppAuth-iOS.git", from: "2.0.0"),
-    .package(url: "https://github.com/Roy-wonji/WeaveDI.git", branch: "main")
+    .package(url: "https://github.com/Roy-wonji/WeaveDI.git", from: "3.4.0")
   ]
 )

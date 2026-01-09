@@ -73,7 +73,7 @@ public struct Login {
   // MARK: - NavigationAction
   public enum NavigationAction: Equatable {
     case presentSignUpInviteView
-    case presentCoreMemberMain
+    case presentStaffMain
     case presentMemberMain
   }
 
@@ -82,7 +82,7 @@ public struct Login {
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
   
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action>  {
     BindingReducer()
     Reduce { state, action in
       switch action {
@@ -103,7 +103,9 @@ public struct Login {
       }
     }
   }
-  
+}
+
+extension Login {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -113,7 +115,7 @@ public struct Login {
         return .send(.async(.login(socialType: social)))
     }
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
@@ -123,7 +125,7 @@ public struct Login {
         let nonce = appleLoginManger.prepare(request)
         state.nonce = nonce
         return .none
-        
+
       case .appleLogin(let result, let nonce):
         state.currentSocialType = .apple
         return .run { send in
@@ -146,7 +148,7 @@ public struct Login {
           await send(.inner(.loginResponse(outcome)))
         }
         .cancellable(id: CancelID.appleOAuth)
-        
+
       case .login(let socialType):
         state.currentSocialType = socialType
         state.$userSession.withLock { $0.provider = socialType }
@@ -164,11 +166,11 @@ public struct Login {
           return await send(.inner(.loginResponse(outcome)))
         }
         .cancellable(id: socialType == .apple ? CancelID.appleOAuth : CancelID.googleOAuth)
-        
+
     }
-    
+
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
@@ -181,8 +183,10 @@ public struct Login {
 
             if loginEntity.isNewUser  {
               return .send(.navigation(.presentSignUpInviteView))
-            } else {
-              return .send(.navigation(.presentCoreMemberMain))
+            } else if state.userSession.userRole == .manager {
+              return .send(.navigation(.presentStaffMain))
+            } else  {
+              return .send(.navigation(.presentMemberMain))
             }
 
           case .failure(let error):
@@ -204,9 +208,9 @@ public struct Login {
             }
         }
     }
-    
+
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
@@ -214,10 +218,10 @@ public struct Login {
     switch action {
       case .presentSignUpInviteView:
         return .none
-        
-      case .presentCoreMemberMain:
+
+      case .presentStaffMain:
         return .none
-        
+
       case .presentMemberMain:
         return .none
     }

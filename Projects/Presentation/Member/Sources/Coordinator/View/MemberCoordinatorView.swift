@@ -28,9 +28,7 @@ public struct MemberCoordinatorView: View {
           .navigationBarBackButtonHidden()
         
       case .profile(let profileStore):
-        ProfileView(store: profileStore) {
-          store.send(.view(.backAction))
-        }
+       ProfileCoordinatorView(store: profileStore)
         .navigationBarBackButtonHidden()
 
       case .qrCode(let qrCodeStore):

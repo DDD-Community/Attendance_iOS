@@ -8,7 +8,9 @@
 import Foundation
 
 import Shareds
+import Utill
 import UseCase
+import Entity
 
 import ComposableArchitecture
 import FirebaseAuth
@@ -20,12 +22,10 @@ public struct Splash {
   
   @ObservableState
   public struct State: Equatable {
-   
+
     @Shared(.inMemory("UserEntity")) var userEntity: UserEntity = .shared
-//    var loginModel: LoginModel?
-    var profileDTOModel: ProfileResponseModel?
-    @Shared(.appStorage("AccessToken")) var accessToken: String = ""
-    @Shared(.appStorage("UserEmail")) var userEmail: String = ""
+    @Shared(.appStorage("staffRole")) var staffRole: Staff?
+    var profileModel: ProfileEntity?
 
     public init() {
 
@@ -44,39 +44,41 @@ public struct Splash {
   
   @CasePathable
   public enum View {
-    
+    case onAppear
+
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
   
   public enum AsyncAction: Equatable {
-//    case autoLogin
     case fetchUser
   }
   
   // MARK: - 앱내에서 사용하는 액션
   
   public enum InnerAction: Equatable {
-    case fetchUserResponse(Result<ProfileResponseModel, CustomError>)
-//    case autoLoginResponse(Result<LoginModel?, CustomError>)
+    case fetchUserResponse(Result<ProfileEntity, ProfileError>)
   }
   
   // MARK: - NavigationAction
   
   public enum NavigationAction: Equatable {
     case presentLogin
-    case presentCoreMember
+    case presentStaff
     case presentMember
   }
   
-  fileprivate struct SplashCancel: Hashable {}
-  
-  @Dependency(\.authUseCase) var authUseCase
-  @Dependency(\.profileUseCase) var profileUseCase
+  nonisolated enum CancelID: Hashable {
+    case fetchProfile
+  }
+
+
+
   @Dependency(\.continuousClock) var clock
+  @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
   
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {
@@ -85,10 +87,10 @@ public struct Splash {
         
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
-        
+
       case .async(let asyncAction):
         return handleAsyncAction(state: &state, action: asyncAction)
-        
+
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
         
@@ -97,67 +99,45 @@ public struct Splash {
       }
     }
   }
-  
+}
+
+extension Splash {
   private func handleViewAction(
     state: inout State,
     action: View
   ) -> Effect<Action> {
-    
+    switch action {
+      case .onAppear:
+        return .run { [
+          staffRole = state.staffRole
+        ] send in
+          if staffRole == .manager {
+            return await send(.navigation(.presentStaff))
+          } else if staffRole == .member {
+            return await send(.navigation(.presentMember))
+          } else {
+            return await send(.navigation(.presentLogin))
+          }
+        }
+    }
+
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-    case .fetchUser:
-      return .run { send in
-        let profileResult = await Result {
-          try await profileUseCase.getProfile()
-        }
-
-        switch profileResult {
-        case .success(let profileDTOData):
-          if let profileDTOData = profileDTOData {
-            await send(.inner(.fetchUserResponse(.success(profileDTOData))))
-
-            if profileDTOData.isStaff == true {
-              await send(.navigation(.presentCoreMember))
-            } else if profileDTOData.role == .all {
-              await send(.navigation(.presentLogin))
-            } else {
-              await send(.navigation(.presentMember))
-            }
+      case .fetchUser:
+        return .run { send in
+          let fetchUserResult = await Result {
+            try await profileUseCase.getProfile()
           }
-        case .failure(let error):
-          await send(.inner(.fetchUserResponse(.failure(CustomError.firestoreError(error.localizedDescription)))))
-          await send(.navigation(.presentLogin))
-
+            .mapError(ProfileError.from)
+          try await clock.sleep(for: .seconds(1))
+          return await send(.inner(.fetchUserResponse(fetchUserResult)))
         }
-      }
-
-//    case .autoLogin:
-//      return .run { [userEmail = state.userEmail] send in
-//        let email = UserDefaults.standard.string(forKey: "UserEmail") ?? ""
-//        let loginResult = await Result {
-//          try await authUseCase.loginUser(email: userEmail)
-//        }
-//
-//        switch loginResult {
-//        case .success(let loginModel):
-//          if let loginModel = loginModel {
-//            await send(.inner(.autoLoginResponse(.success(loginModel))))
-//
-//            if loginModel.code == 200 {
-//              await send(.async(.fetchUser))
-//            }
-//          }
-//
-//        case .failure(let error):
-//          await send(.inner(.autoLoginResponse(.failure(.encodingError(error.localizedDescription)))))
-//          await send(.navigation(.presentLogin))
-//        }
-//      }
+        .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
     }
   }
 
@@ -166,38 +146,18 @@ public struct Splash {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-    case .fetchUserResponse(let result):
-      switch result {
-      case .success(let profileDTOData):
-        state.profileDTOModel = profileDTOData
-        state.$userEntity.withLock{
-          $0.userName = profileDTOData.name
-        }
-      case .failure(let error):
-        #logError("유저 정보 가져오기", error.localizedDescription)
-      }
-      return .none
+      case .fetchUserResponse(let result):
+        switch result {
+        case .success(let profileDTOData):
+          state.profileModel = profileDTOData
 
-//    case .autoLoginResponse(let result):
-//      switch result {
-//      case .success(let loginDTOData):
-//        state.loginModel = loginDTOData
-//        UserDefaults.standard.set(loginDTOData?.data.accessToken, forKey: "ACCESS_TOKEN")
-//        state.$accessToken.withLock {$0 = loginDTOData?.data.accessToken ?? ""}
-//        state.$userEntity.withLock {
-//          $0.userEmail = loginDTOData?.data.email ?? ""
-//          $0.accessToken = loginDTOData?.data.accessToken ?? ""
-//          $0.refreshToken = loginDTOData?.data.refreshToken ?? ""
-//        }
-//
-//
-//      case .failure(let error):
-//        #logNetwork("로그인 실패", error.localizedDescription)
-//      }
-//      return .none
+        case .failure(let error):
+          #logError("유저 정보 가져오기", error.localizedDescription)
+        }
+        return .none
     }
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
@@ -205,10 +165,10 @@ public struct Splash {
     switch action {
     case .presentLogin:
       return .none
-      
-    case .presentCoreMember:
+
+    case .presentStaff:
       return .none
-      
+
     case .presentMember:
       return .none
     }

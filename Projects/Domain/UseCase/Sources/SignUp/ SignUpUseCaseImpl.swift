@@ -18,6 +18,9 @@ public protocol SignUpUseCaseInterface: Sendable {
 
 public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
   @Dependency(\.signUpRepository) var repository
+  @Dependency(\.authUseCase) var authUseCase
+  @Dependency(\.keychainManager) private var keychainManager
+  @Dependency(\.profileUseCase) private var profileUseCase
 
   public init() { }
 
@@ -33,13 +36,30 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
       name: userSession.name,
       generationId: userSession.generationId,
       jobRole: userSession.selectPart,
-      teamId: isManager ? nil : userSession.selectTeamId,
+      teamId: userSession.selectTeamId,
       managerRoles: isManager ? userSession.managing : nil,
       provider: userSession.provider,
-      token: userSession.token,
+      token: userSession.provider == .apple ? userSession.accessToken : userSession.token,
+      oauthRefreshToken: userSession.provider == .apple ? userSession.oauthRefreshToken : nil,
       invitationCode: userSession.inviteCode
     )
-    return try await repository.registerUser(input: input)
+
+    let signUpUser = try await repository.registerUser(input: input)
+
+    let loginEntity = try await authUseCase.login(
+      provider: userSession.provider,
+      token: userSession.provider == .apple ? userSession.accessToken : userSession.token
+    )
+
+    keychainManager.save(
+      accessToken: loginEntity.token.accessToken,
+      refreshToken: loginEntity.token.refreshToken
+    )
+
+    
+    authUseCase.updateSessionCredential(with: loginEntity.token)
+
+    return signUpUser
   }
 }
 

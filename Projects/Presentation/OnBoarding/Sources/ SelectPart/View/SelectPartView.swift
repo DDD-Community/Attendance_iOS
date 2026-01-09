@@ -1,0 +1,128 @@
+//
+//  SelectPartView.swift
+//  Presentation
+//
+//  Created by Wonji Suh  on 11/3/24.
+//
+
+import SwiftUI
+
+import DesignSystem
+
+import SDWebImageSwiftUI
+import ComposableArchitecture
+
+public struct SelectPartView: View {
+  @Bindable var store: StoreOf<SelectPartReducer>
+  var backAction: () -> Void = {}
+  
+  public init(
+    store: StoreOf<SelectPartReducer>,
+    backAction: @escaping () -> Void
+  ) {
+    self.store = store
+    self.backAction = backAction
+  }
+  
+  public var body: some View {
+    ZStack {
+      Color.backGroundPrimary
+        .edgesIgnoringSafeArea(.all)
+      
+      VStack {
+        Spacer()
+          .frame(height: 12)
+        
+        StepNavigationBar(activeStep: 2, buttonAction: backAction)
+        
+        signUpPartText()
+        
+        if store.loading {
+          VStack {
+            Spacer()
+
+            AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(true))
+              .resizable()
+              .scaledToFit()
+              .frame(width: 200, height: 200)
+
+            Spacer()
+          }
+        } else {
+          selectPartList()
+
+          signUpPartButton()
+        }
+
+      }
+      .task {
+        store.send(.view(.onAppear))
+      }
+    }
+  }
+}
+
+extension SelectPartView {
+
+  @ViewBuilder
+  private func signUpPartText() -> some View {
+    SignUpPartText(
+      content: "직무를 선택해 주세요",
+      title: "프로젝트 참여하시는 직무을 선택해 주세요.",
+      subtitle: ""
+    )
+  }
+  
+  
+  @ViewBuilder
+  private func selectPartList() -> some View {
+    VStack {
+      Spacer()
+        .frame(height: 40)
+      
+      ScrollView {
+        LazyVStack {
+          ForEach(
+            (store.selectJobs ?? []).sorted {
+              $0.job.desc.localizedCaseInsensitiveCompare($1.job.desc) == .orderedAscending
+            },
+            id: \.jobKeys
+          ) { item in
+            SelectPartItem(
+              content: item.job.desc,
+              isActive: item.job == store.selectPart
+            ) {
+              store.send(.view(.selectPartButton(selectPart: item)))
+            }
+          }
+        }
+      }
+      .scrollIndicators(.hidden)
+      .frame(height: UIScreen.screenHeight * 0.6)
+    }
+  }
+  
+  
+  
+  @ViewBuilder
+  private func signUpPartButton() -> some View {
+    VStack {
+      Spacer()
+      
+      CustomButton(
+        action: {
+          store.send(.navigation(.presentNextStep))
+        },
+        title: "다음",
+        config: CustomButtonConfig.create(),
+        isEnable: store.activeSelectPart
+      )
+      
+      Spacer()
+        .frame(height: 20)
+    }
+    .padding(.horizontal, 24)
+  }
+}
+
+

@@ -8,6 +8,7 @@
 import SwiftUI
 
 import Presentation
+import Profile
 
 import ComposableArchitecture
 
@@ -22,23 +23,23 @@ struct AppView: View {
       SwitchStore(store) { state in
         switch state {
         case .splash:
-          if let splashStore = store.scope(state: \.splash, action: \.view.splash) {
-            SplashView(store: splashStore)
+          if let store = store.scope(state: \.splash, action: \.view.splash) {
+            SplashView(store: store)
               .transition(.opacity.combined(with: .scale(scale: 0.98)))
           }
 
         case .auth:
-          if let authStore = store.scope(state: \.auth, action: \.view.auth) {
-            AuthCoordinatorView(store: authStore)
+          if let store = store.scope(state: \.auth, action: \.view.auth) {
+            AuthCoordinatorView(store: store)
               .transition(.asymmetric(
                 insertion: .move(edge: .trailing),
                 removal: .move(edge: .leading)
               ))
           }
 
-        case .coreMember:
-          if let coreMemberStore = store.scope(state: \.coreMember, action: \.view.coreMember) {
-            StaffCoordinatorView(store: coreMemberStore)
+        case .staff:
+          if let store = store.scope(state: \.staff, action: \.view.staff) {
+            StaffCoordinatorView(store: store)
               .transition(.asymmetric(
                 insertion: .move(edge: .trailing),
                 removal: .move(edge: .leading)
@@ -46,8 +47,8 @@ struct AppView: View {
           }
 
         case .member:
-          if let memberStore = store.scope(state: \.member, action: \.view.member) {
-            MemberCoordinatorView(store: memberStore)
+          if let store = store.scope(state: \.member, action: \.view.member) {
+            MemberCoordinatorView(store: store)
               .transition(.asymmetric(
                 insertion: .move(edge: .trailing),
                 removal: .move(edge: .leading)
@@ -58,18 +59,52 @@ struct AppView: View {
     }
     .animation(
       .spring(response: 0.52, dampingFraction: 0.94, blendDuration: 0.14),
-      value: store.state.screenType
+      value: store.state.animationID
     )
+    .onAppear {
+      store.send(.view(.presentView))
+    }
   }
 }
 
 
 #Preview {
+  AppView(
+    store: Store(
+      initialState: AppReducer.State(),
+      reducer: {
+        AppReducer()
+      })
+  )
+}
+
+#Preview {
   AuthCoordinatorView(
-    store: .init(
+    store: Store(
       initialState: AuthCoordinator.State(),
       reducer: {
         AuthCoordinator()
+      })
+  )
+}
+
+
+#Preview {
+  StaffCoordinatorView(
+    store: Store(
+      initialState: StaffCoordinator.State(),
+      reducer: {
+        StaffCoordinator()
+      })
+  )
+}
+
+#Preview {
+  ProfileCoordinatorView(
+    store: Store(
+      initialState: ProfileCoordinator.State(),
+      reducer: {
+        ProfileCoordinator()
       })
   )
 }

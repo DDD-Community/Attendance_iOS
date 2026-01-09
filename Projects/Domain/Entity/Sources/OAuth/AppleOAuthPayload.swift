@@ -17,7 +17,7 @@ public struct AppleOAuthPayload {
     idToken: String,
     authorizationCode: String?,
     displayName: String?,
-    nonce: String
+    nonce: String,
   ) {
     self.idToken = idToken
     self.authorizationCode = authorizationCode

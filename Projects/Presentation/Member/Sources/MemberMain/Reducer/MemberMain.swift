@@ -13,6 +13,7 @@ import UseCase
 import ComposableArchitecture
 import FirebaseAuth
 import LogMacro
+import Entity
 
 @Reducer
 public struct MemberMain {
@@ -20,7 +21,7 @@ public struct MemberMain {
 
   @ObservableState
   public struct State: Equatable {
-    var member: ProfileResponseModel? = nil
+    var member: ProfileEntity? = nil
 
     @ObservationStateIgnored
     var didAppear: Bool = false
@@ -63,7 +64,7 @@ public struct MemberMain {
   }
 
   public enum InnerAction: Equatable {
-    case onFetchUserResponse(Result<ProfileResponseModel, CustomError>)
+    case onFetchUserResponse(Result<ProfileEntity, CustomError>)
     case onFetchAttendanceCountResponse(Result<AttendanceCountResponseModel, CustomError>)
     case onFetchSchedulesResponse(Result<[Schedule], CustomError>)
     case onResume
@@ -82,7 +83,7 @@ public struct MemberMain {
   @Dependency(ProfileUseCaseImpl.self) var profileUseCase
   @Dependency(AttendanceUseCaseImpl.self) var attendanceUseCase
 
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
 
     Reduce { state, action in
@@ -104,7 +105,9 @@ public struct MemberMain {
       }
     }
   }
+}
 
+extension MemberMain {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -200,17 +203,17 @@ public struct MemberMain {
           try await profileUseCase.getProfile()
         }
 
-        switch result {
-        case .success(let member):
-          if let member {
-            await send(.inner(.onFetchUserResponse(.success(member))))
-            await send(.async(.fetchAttendanceCount(userID: member.userID)))
-          }
-
-        case .failure(let error):
-          let error = CustomError.map(error)
-          await send(.inner(.onFetchUserResponse(.failure(error))))
-        }
+//        switch result {
+//        case .success(let member):
+//          if let member {
+////            await send(.inner(.onFetchUserResponse(.success(member))))
+////            await send(.async(.fetchAttendanceCount(userID: member.userID)))
+//          }
+//
+//        case .failure(let error):
+//          let error = CustomError.map(error)
+//          await send(.inner(.onFetchUserResponse(.failure(error))))
+//        }
       }
 
     case .fetchAttendanceCount(let userID):

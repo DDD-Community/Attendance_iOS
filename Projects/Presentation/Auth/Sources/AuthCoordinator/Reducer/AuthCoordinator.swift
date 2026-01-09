@@ -12,6 +12,7 @@ import Entity
 
 import ComposableArchitecture
 import TCACoordinators
+import OnBoarding
 
 @Reducer
 public struct AuthCoordinator {
@@ -59,11 +60,12 @@ public struct AuthCoordinator {
   // MARK: - NavigationAction
   
   public enum NavigationAction: Equatable {
-    case presentCoreMember
+    case presentStaff
     case presentMember
+    case cleanup
   }
   
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {
@@ -88,63 +90,47 @@ public struct AuthCoordinator {
     }
     .forEachRoute(\.routes, action: \.router)
   }
-  
+}
+
+// MARK: - Effect Cancellation IDs
+nonisolated enum AuthCancelID: Hashable {
+  case selectTeamEffects
+  case onBoardingEffects
+  case loginEffects
+}
+
+extension AuthCoordinator {
   private func routerAction(
     state: inout State,
     action: IndexedRouterActionOf<AuthScreen>
   ) -> Effect<Action> {
     switch action {
-      
+
       // MARK: - 초대코드 입력
     case .routeAction(id: _, action: .login(.navigation(.presentSignUpInviteView))):
-      state.routes.push(.signUpInviteCode(.init()))
+      state.routes.push(.onboarding(.init()))
       return .none
-      
-    case .routeAction(id: _, action: .login(.navigation(.presentCoreMemberMain))):
-      return .send(.navigation(.presentCoreMember))
-      
+
+    case .routeAction(id: _, action: .login(.navigation(.presentStaffMain))):
+      return .send(.navigation(.presentStaff))
+
     case .routeAction(id: _, action: .login(.navigation(.presentMemberMain))):
       return .send(.navigation(.presentMember))
-      
-      // MARK: - 이름 입력
-    case .routeAction(id: _, action: .signUpInviteCode(.navigation(.presentSignUpName))):
-      state.routes.push(.signUpName(.init()))
-      return .none
-      
-    case .routeAction(id: _, action: .signUpName(.navigation(.presentSignUpPart))):
-      state.routes.push(.signUpPart(.init()))
-      return .none
-      
-      // MARK: - 운영진 담당업무 선택
-      
-    case .routeAction(id: _, action: .signUpPart(.navigation(.presentManaging))):
-      state.routes.push(.signUpManaging(.init()))
-      return .none
-      
-      // MARK: -  운영진 매니징 업무선택시  팀매니징 선택시 팀선택
-    case .routeAction(id: _, action: .signUpManaging(.navigation(.presentSelectTeam))):
-      state.routes.push(.signUpSelectTeam(.init()))
-      return .none
-      
-    case .routeAction(id: _, action: .signUpManaging(.navigation(.presentCoreMember))):
-      return .send(.navigation(.presentCoreMember))
-      
-    case .routeAction(id: _, action: .signUpSelectTeam(.navigation(.presentManager))):
-      return .send(.navigation(.presentCoreMember))
-      
-      // MARK: - 멤버 선택 할팀 선택
-    case .routeAction(id: _, action: .signUpPart(.navigation(.presentSelectTeam))):
-      state.routes.push(.signUpSelectTeam(.init()))
-      return .none
-      
-    case .routeAction(id: _, action: .signUpSelectTeam(.navigation(.presentMember))):
-      return .send(.navigation(.presentMember))
-      
+
+
+      case .routeAction(id: _, action: .onboarding(.navigation(.presentStaff))):
+        return .send(.navigation(.presentStaff))
+
+      case .routeAction(id: _, action: .onboarding(.navigation(.presentMember))):
+        return .send(.navigation(.presentMember))
+
+
+
     default:
       return .none
     }
   }
-  
+
   private func handleViewAction(
     state: inout State,
     action: View
@@ -153,39 +139,46 @@ public struct AuthCoordinator {
     case .backAction:
       state.routes.goBack()
       return .none
-      
+
     case .backToRootAction:
       return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
         $0.goBackToRoot()
       }
     }
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-    case .presentCoreMember:
+    case .presentStaff:
       return .none
-      
+
     case .presentMember:
       return .none
+
+    case .cleanup:
+      return .merge(
+        .cancel(id: AuthCancelID.selectTeamEffects),
+        .cancel(id: AuthCancelID.onBoardingEffects),
+        .cancel(id: AuthCancelID.loginEffects)
+      )
     }
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    
+
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    
+
   }
 }
 
@@ -193,10 +186,6 @@ extension AuthCoordinator {
   @Reducer(state: .equatable)
   public enum AuthScreen {
     case login(Login)
-    case signUpInviteCode(SignUpInviteCode)
-    case signUpName(SignUpName)
-    case signUpPart(SignUpPart)
-    case signUpManaging(SignUpSelectManaging)
-    case signUpSelectTeam(SignUpSelectTeam)
+  case onboarding(OnBoardingCoordinator)
   }
 }

@@ -125,7 +125,7 @@ struct MemberMainView: View {
 
   private var generationScheduleListView: some View {
     VStack(alignment: .leading, spacing: 16) {
-      Text("\(store.member?.cohort ?? "")기 일정표")
+      Text("\(store.member?.generation ?? "")기 일정표")
         .pretendardFont(family: .Medium, size: 24)
         .foregroundStyle(.textPrimary)
 

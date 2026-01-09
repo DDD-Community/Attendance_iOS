@@ -66,7 +66,7 @@ public struct ScheduleManager {
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.continuousClock) var  clock
   
-  public var body: some ReducerOf<Self> {
+  public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {
@@ -87,7 +87,9 @@ public struct ScheduleManager {
       }
     }
   }
-  
+}
+
+extension ScheduleManager {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -96,13 +98,13 @@ public struct ScheduleManager {
     case .stratLoading:
       state.loading = true
       return .none
-      
+
     case .stopLoading:
       state.loading = false
       return .none
     }
   }
-  
+
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
@@ -113,7 +115,7 @@ public struct ScheduleManager {
         let scheduleResult = await Result {
           try await scheduleUseCase.getSchedules()
         }
-        
+
         await send(.view(.stratLoading))
         switch scheduleResult {
         case .success(let scheduleDTOData):
@@ -121,9 +123,9 @@ public struct ScheduleManager {
             await send(.inner(.fetchScheduleResponse(.success(scheduleDTOData))))
             try await clock.sleep(for: .seconds(1))
             await send(.view(.stopLoading))
-            
+
           }
-          
+
         case .failure(let error):
           await send(.inner(.fetchScheduleResponse(.failure(.encodingError("스케줄 조회 에러 \(error.localizedDescription)")))))
         }
@@ -131,14 +133,14 @@ public struct ScheduleManager {
       .debounce(id: ScheduleCancel(), for: 0.3, scheduler: mainQueue)
     }
   }
-  
+
   private func handleNavigationAction(
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
-    
+
   }
-  
+
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
@@ -155,7 +157,7 @@ public struct ScheduleManager {
           message: scheduleDTOData.message,
           data: sortedData
         ) // 정렬된 데이터로 대체
-        
+
       case .failure(let error):
         #logNetwork("스케줄 조회 실패", error.localizedDescription)
       }

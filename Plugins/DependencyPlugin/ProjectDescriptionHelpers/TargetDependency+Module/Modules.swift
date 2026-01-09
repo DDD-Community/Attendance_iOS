@@ -37,6 +37,7 @@ public extension ModulePath {
     case Management
     case Profile
     case Member
+    case OnBoarding
 
     public static let name: String = "Presentation"
 

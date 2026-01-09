@@ -6,8 +6,7 @@
 //
 
 import Foundation
-
-import WeaveDI
+import ComposableArchitecture
 
 public struct APIHeader {
 
@@ -15,16 +14,19 @@ public struct APIHeader {
   public static let accessToken   = "Authorization"
   public static let accept        = "accept"
 
-  @Dependency(\.tokenProvider) private var tokenProvider
+  @Dependency(\.tokenProvider) private static var tokenProvider
 
   public static var accessTokenKeyChain: String {
-    get { APIHeader().tokenProvider.accessToken() ?? "" }
+    get {
+      let token = tokenProvider.accessToken() ?? ""
+      return token
+    }
     set { updateAccessToken(newValue) }
   }
 
   public static func updateAccessToken(_ token: String?) {
     guard let newToken = token, !newToken.isEmpty else { return }
-    APIHeader().tokenProvider.saveAccessToken(newToken)
+    tokenProvider.saveAccessToken(newToken)
   }
 
   public init() {}
@@ -57,7 +59,7 @@ extension APIHeader {
   public static var mutiPartbaseHeader: Dictionary<String, String> {
     [
       contentType: APIHeaderManger.multipartContentType,
-      accessToken: accessTokenKeyChain,
+      accessToken: "Bearer \(accessTokenKeyChain)",
     ]
   }
 

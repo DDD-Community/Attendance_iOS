@@ -5,6 +5,7 @@ import ProjectTemplatePlugin
 import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
+
 let project = Project.makeModule(
   name: "Auth",
   bundleId: .appBundleID(name: ".Auth"),
@@ -12,8 +13,8 @@ let project = Project.makeModule(
   settings:  .settings(),
   dependencies: [
     .Shared(implements: .Shareds),
-    .Shared(implements: .DesignSystem),
-    .Domain(implements: .UseCase)
+    .Domain(implements: .UseCase),
+    .Presentation(implements: .OnBoarding)
   ],
   sources: ["Sources/**"],
   hasTests: true
