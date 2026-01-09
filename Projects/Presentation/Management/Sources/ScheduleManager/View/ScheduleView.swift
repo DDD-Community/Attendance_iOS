@@ -13,123 +13,63 @@ import DesignSystem
 import ComposableArchitecture
 
 struct ScheduleView: View {
-  @Bindable var store: StoreOf<ScheduleManager>
-  
+  @Bindable var store: StoreOf<ScheduleReducer>
+
   init(
-    store: StoreOf<ScheduleManager>
+    store: StoreOf<ScheduleReducer>
   ) {
     self.store = store
   }
-  
+
   var body: some View {
-    LazyView {
-      VStack {
-        loadingScheduleView()
+    if store.loading {
+      ScheduleSkeletonView()
+    } else {
+      VStack(spacing: 0) {
+        // 메인 콘텐츠
+        VStack(alignment: .leading, spacing: 0) {
+          // 타이틀
+          HStack {
+            Text("12기 일정표")
+              .pretendardCustomFont(textStyle: .title2NormalBold)
+              .foregroundStyle(.staticWhite)
+
+            Spacer()
+          }
+          .padding(.horizontal, 20)
+          .padding(.top, 24)
+          .padding(.bottom, 20)
+
+          // 스케줄 리스트
+          scheduleListView()
+        }
+        .onAppear {
+          store.send(.view(.onAppear))
+        }
       }
-    }
-    .onAppear {
-      store.send(.async(.fetchSchedule))
     }
   }
 }
-
 
 extension ScheduleView {
-  
-  @ViewBuilder
-  fileprivate func loadingScheduleView() -> some View {
-    if !store.loading {
-      scheduleListView()
-    } else {
-      LoadingView()
-    }
-  }
-  
+
   @ViewBuilder
   fileprivate func scheduleListView() -> some View {
-    if let schedules = store.scheduleModel?.data {
-      let grouped = schedules.grouped(by: { String.extractMonthString(from: $0.startTime) })
-      
-      ScrollView(.vertical) {
-        VStack(alignment: .leading, spacing: 16) {
-          ForEach(Array(grouped.keys), id: \.self) { month in
-            VStack(alignment: .leading, spacing: 16) {
-              Text(month)
-                .pretendardCustomFont(textStyle: .body1NormalBold)
-                .foregroundStyle(.staticWhite)
-                .padding(.horizontal, 28)
-              
-              
-              let schedulesInMonth = grouped[month] ?? []
-
-              ForEach(schedulesInMonth, id: \.scheduleId) { schedule in
-                let day = String.extractDay(from: schedule.startTime)
-                scheduleCard(
-                  month: month,
-                  day: "\(day)일",
-                  title: schedule.title,
-                  description: schedule.description
-                )
-                
-              }
-            }
-          }
+    ScrollView(.vertical) {
+      LazyVStack(spacing: 16) {
+        ForEach(store.scheduleModel ?? [], id: \.id) { item in
+          ScheduleCardView(
+            month:"\(item.month)",
+            day: "\(item.day)",
+            title: item.name,
+            description: item.description
+          )
         }
-        .padding(.top)
       }
-      .scrollIndicators(.hidden)
-      .scrollBounceBehavior(.basedOnSize)
+      .padding(.horizontal, 20)
+      .padding(.bottom, 100) // 하단 여백
     }
+    .scrollIndicators(.hidden)
   }
-  
- 
-  
-  @ViewBuilder
-  private func scheduleCard(
-    month: String,
-    day: String,
-    title: String,
-    description: String
-  ) -> some View {
-    HStack(spacing: 12) {
-      VStack(spacing: 2) {
-        Text(month)
-          .pretendardCustomFont(textStyle: .body2NormalMedium)
-          .foregroundColor(.staticBlack)
-        
-        Text(day)
-          .pretendardCustomFont(textStyle: .title3NormalMedium)
-          .foregroundColor(.staticBlack)
-      }
-      .frame(width: 54, height: 54)
-      .background(.blue20)
-      .cornerRadius(10)
-      
-      VStack(alignment: .leading, spacing: 4) {
-        Text(title)
-          .pretendardCustomFont(textStyle: .body1NormalBold)
-          .foregroundStyle(.staticWhite)
-        
-        Text(description)
-          .pretendardCustomFont(textStyle: .body3NormalRegular)
-          .foregroundStyle(.textSecondary)
-      }
-      
-      Spacer()
-      
-    }
-    .padding()
-    .background(.gray90)
-    .cornerRadius(12)
-    .padding(.horizontal, 24)
-  }
-  
-}
 
-extension Collection {
-    func grouped<Key: Hashable>(
-        by keySelector: (Element) -> Key
-    ) -> OrderedDictionary<Key, [Element]> {
-        OrderedDictionary(grouping: self, by: keySelector)
-    }
 }

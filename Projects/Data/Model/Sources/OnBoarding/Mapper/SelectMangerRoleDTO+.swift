@@ -8,7 +8,7 @@
 import Foundation
 import Entity
 
-public extension SelectMangerRoleDTOReponse {
+public extension SelectMangerRoleDTOResponse {
   func toDomain() -> SelectManaging {
     return SelectManaging(
       managingKeys: self.description,
@@ -17,7 +17,7 @@ public extension SelectMangerRoleDTOReponse {
   }
 }
 
-public extension Array where Element == SelectMangerRoleDTOReponse {
+public extension Array where Element == SelectMangerRoleDTOResponse {
   func toDomain() -> [SelectManaging] {
     return self.map { $0.toDomain() }
   }

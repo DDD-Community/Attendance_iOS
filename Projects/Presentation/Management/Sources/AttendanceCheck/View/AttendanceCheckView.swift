@@ -25,13 +25,13 @@ struct AttendanceCheckView: View {
       selectPartAttendanceStatus()
     }
     .onAppear {
-      store.send(.async(.onAppear))
+//      store.send(.async(.onAppear))
       
     }
-    .onChange(of: store.selectPart ?? .web1) { oldValue, newValue in
-      store.selectPart = newValue
-      store.send(.inner(.fillterAttendance(team: newValue)))
-    }
+//    .onChange(of: store.selectPart ?? .web1) { oldValue, newValue in
+//      store.selectPart = newValue
+//      store.send(.inner(.fillterAttendance(team: newValue)))
+//    }
     .sheet(item: $store.scope(state: \.destination?.scheduleModal, action: \.destination.scheduleModal)) { scheduleModalStore in
       ScheduleModalView(store: scheduleModalStore)
         .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
@@ -73,15 +73,15 @@ extension AttendanceCheckView {
 
   @ViewBuilder
   fileprivate func attendanceStatusView() -> some View {
-    let attendanceCountDTOData = store.attendanceCountDTOModel
+//    let attendanceCountDTOData = store.attendanceCountDTOModel
     LazyVStack {
       Spacer()
         .frame(height: 14)
 
       AttendanceCard(
-        attendanceCount: attendanceCountDTOData?.presentCount ?? .zero,
-        lateCount: attendanceCountDTOData?.lateCount ?? .zero,
-        absentCount: attendanceCountDTOData?.absentCount ?? .zero,
+        attendanceCount:  .zero,
+        lateCount:  .zero,
+        absentCount: .zero,
         showWarning: false
       )
     }
@@ -161,48 +161,48 @@ extension AttendanceCheckView {
   fileprivate func selectPartAttendanceStatus() -> some View {
     if let selectPart = store.selectPart,
        [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart) {
-      selectPartAttandanceStatusCard()
+//      selectPartAttandanceStatusCard()
       
       Spacer()
         .frame(height: 20)
     } else {
-      selectPartAttandanceStatusCard()
+//      selectPartAttandanceStatusCard()
     }
   }
 
-  @ViewBuilder
-  fileprivate func selectPartAttandanceStatusCard() -> some View {
-    let filtered = store.scheduleModelAttendanceModel?.data.flatMap {
-      $0.attendancesSummary.filter { item in
-        guard let team = SelectTeam(rawValue: item.profile.team.rawValue),
-              let selected = store.selectPart else { return false }
-        return team == selected
-      }
-    } ?? []
-
-    if filtered.isEmpty {
-      noMemberAttandanceView()
-    } else {
-      ScrollView(.vertical) {
-        LazyVStack(spacing: .zero) {
-          ForEach(filtered, id: \.profile.id) { item in
-            AttendanceCheckStatusCard(
-              attandanceType: AttendanceType(rawValue: item.status) ?? .present,
-              selectPart: SelectPart(rawValue:  item.profile.role) ?? .all,
-              selectTeam: item.profile.team,
-              name: item.profile.name
-            )
-          }
-        }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 10)
-      }
-      .scrollIndicators(.hidden)
-      .onAppear {
-        UIScrollView.appearance().bounces = false
-      }
-    }
-  }
+//  @ViewBuilder
+//  fileprivate func selectPartAttandanceStatusCard() -> some View {
+//    let filtered = store.scheduleModelAttendanceModel?.data.flatMap {
+//      $0.attendancesSummary.filter { item in
+//        guard let team = SelectTeam(rawValue: item.profile.team.rawValue),
+//              let selected = store.selectPart else { return false }
+//        return team == selected
+//      }
+//    } ?? []
+//
+//    if filtered.isEmpty {
+//      noMemberAttandanceView()
+//    } else {
+//      ScrollView(.vertical) {
+//        LazyVStack(spacing: .zero) {
+//          ForEach(filtered, id: \.profile.id) { item in
+//            AttendanceCheckStatusCard(
+//              attandanceType: AttendanceType(rawValue: item.status) ?? .present,
+//              selectPart: SelectPart(rawValue:  item.profile.role) ?? .all,
+//              selectTeam: item.profile.team,
+//              name: item.profile.name
+//            )
+//          }
+//        }
+//        .padding(.horizontal, 24)
+//        .padding(.bottom, 10)
+//      }
+//      .scrollIndicators(.hidden)
+//      .onAppear {
+//        UIScrollView.appearance().bounces = false
+//      }
+//    }
+//  }
 
   @ViewBuilder
   fileprivate func noMemberAttandanceView() -> some View {

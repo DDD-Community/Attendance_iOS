@@ -8,11 +8,11 @@
 import Foundation
 
 public enum ScheduleAPI: String , CaseIterable {
-  case scedules
-  
-  public var scheduleDescription: String {
+  case schedule
+
+  public var description: String {
     switch self {
-    case .scedules:
+    case .schedule:
       return ""
     }
   }

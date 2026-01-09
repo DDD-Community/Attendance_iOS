@@ -7,7 +7,7 @@
 
 import DomainInterface
 import Model
-
+import Entity
 import Service
 
 @preconcurrency import AsyncMoya
@@ -23,16 +23,9 @@ final public class ScheduleRepositoryImpl: ScheduleInterface {
     self.provider = provider
   }
 
-  public func getSchedules() async throws -> ScheduleModel? {
-    let scheduleModel: ScheduleDTOModel = try await provider.request(.getSchedule)
-    return scheduleModel.toDomain()
+  public func getSchedule() async throws -> [ScheduleEntity] {
+    let dto: ScheduleDTO = try await provider.request(.getSchedule)
+    return dto.toDomain()
   }
 
-  public func filtergetSchedules(
-    startDate: String
-  ) async throws -> ScheduleModel? {
-    let scheduleModel: ScheduleDTOModel = try await provider.request(
-      .filterSchedule(stratDate: startDate))
-    return scheduleModel.toDomain()
-  }
 }

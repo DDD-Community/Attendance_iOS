@@ -46,7 +46,7 @@ extension AttendanceDomain: DomainType {
       case .qr:
         return "api/v1/qrcodes/"
       case .schedule:
-        return "api/v1/schedules/"
+        return "api/schedules"
       case .attendance:
         return "api/v1/attendances/"
     }

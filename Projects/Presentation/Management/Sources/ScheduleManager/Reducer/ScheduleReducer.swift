@@ -10,10 +10,12 @@ import Foundation
 import Shareds
 
 import ComposableArchitecture
+import UseCase
+import Entity
 import LogMacro
 
 @Reducer
-public struct ScheduleManager {
+public struct ScheduleReducer {
   public init() {}
   
   @ObservableState
@@ -21,8 +23,9 @@ public struct ScheduleManager {
     
     public init() {}
     
-    var scheduleModel: ScheduleModel?
+    var scheduleModel: [ScheduleEntity]? = []
     var loading: Bool = false
+    var hasFetchedSchedule: Bool = false
     
   }
   
@@ -38,6 +41,7 @@ public struct ScheduleManager {
   //MARK: - ViewAction
   @CasePathable
   public enum View {
+    case onAppear
     case stratLoading
     case stopLoading
     
@@ -50,8 +54,8 @@ public struct ScheduleManager {
   }
   
   //MARK: - 앱내에서 사용하는 액션
-  public enum InnerAction: Equatable {
-    case fetchScheduleResponse(Result<ScheduleModel, CustomError>)
+  public enum InnerAction {
+    case fetchScheduleResponse(Result<[ScheduleEntity], ScheduleError>)
   }
   
   //MARK: - NavigationAction
@@ -60,8 +64,10 @@ public struct ScheduleManager {
     
   }
   
-  private struct ScheduleCancel: Hashable {}
-  
+  nonisolated enum CancelID: Hashable {
+    case fetchSchedule
+  }
+
   @Dependency(\.scheduleUseCase) var scheduleUseCase
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.continuousClock) var  clock
@@ -89,12 +95,17 @@ public struct ScheduleManager {
   }
 }
 
-extension ScheduleManager {
+extension ScheduleReducer {
   private func handleViewAction(
     state: inout State,
     action: View
   ) -> Effect<Action> {
     switch action {
+    case .onAppear:
+      guard !state.hasFetchedSchedule else { return .none }
+      state.hasFetchedSchedule = true
+      return .send(.async(.fetchSchedule))
+
     case .stratLoading:
       state.loading = true
       return .none
@@ -111,26 +122,17 @@ extension ScheduleManager {
   ) -> Effect<Action> {
     switch action {
     case .fetchSchedule:
+        state.loading = true
       return .run { send in
         let scheduleResult = await Result {
-          try await scheduleUseCase.getSchedules()
+          try await scheduleUseCase.getSchedule()
         }
+          .mapError(ScheduleError.from)
+        try await clock.sleep(for: .seconds(2))
+        return await send(.inner(.fetchScheduleResponse(scheduleResult)))
 
-        await send(.view(.stratLoading))
-        switch scheduleResult {
-        case .success(let scheduleDTOData):
-          if let scheduleDTOData = scheduleDTOData {
-            await send(.inner(.fetchScheduleResponse(.success(scheduleDTOData))))
-            try await clock.sleep(for: .seconds(1))
-            await send(.view(.stopLoading))
-
-          }
-
-        case .failure(let error):
-          await send(.inner(.fetchScheduleResponse(.failure(.encodingError("스케줄 조회 에러 \(error.localizedDescription)")))))
-        }
       }
-      .debounce(id: ScheduleCancel(), for: 0.3, scheduler: mainQueue)
+      .cancellable(id: CancelID.fetchSchedule, cancelInFlight: true)
     }
   }
 
@@ -148,21 +150,15 @@ extension ScheduleManager {
     switch action {
     case .fetchScheduleResponse(let result):
       switch result {
-      case .success(let scheduleDTOData):
-        let sortedData = scheduleDTOData.data.sorted {
-          $0.startTime < $1.startTime
-        }
-        state.scheduleModel = ScheduleModel(
-          code: scheduleDTOData.code,
-          message: scheduleDTOData.message,
-          data: sortedData
-        ) // 정렬된 데이터로 대체
+      case .success(let schedules):
+        state.scheduleModel = schedules
+          state.loading = false
 
       case .failure(let error):
-        #logNetwork("스케줄 조회 실패", error.localizedDescription)
+        #logNetwork("스케줄 조회 실패", error.localizedDescription ?? "알 수 없는 오류")
+        state.loading = false
       }
       return .none
     }
   }
 }
-
