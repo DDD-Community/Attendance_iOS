@@ -9,16 +9,16 @@ import SwiftUI
 import DesignSystem
 
 public struct ScheduleCardView: View {
-  let month: String
-  let day: String
-  let title: String
-  let description: String
+  private let month: String
+  private let day: String
+  private let title: String
+  private let description: String
 
   public init(
     month: String,
     day: String,
     title: String,
-    description: String
+    description: String,
   ) {
     self.month = month
     self.day = day

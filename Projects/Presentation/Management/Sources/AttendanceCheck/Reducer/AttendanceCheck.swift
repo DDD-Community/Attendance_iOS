@@ -118,7 +118,7 @@ public struct AttendanceCheck {
         return handleNavigationAction(state: &state, action: navigationAction)
 
         case .destination(.presented(.scheduleModal(.navigation(.selectScheduleCompleted(let selectedSchedule))))):
-          #logDebug("스케줄 선택됨", "선택된 스케줄: \(selectedSchedule), 시작 시간: \(selectedSchedule)")
+          #logDebug("스케줄 선택됨", "선택된 스케줄: \(selectedSchedule.id)")
 
 //          if let selectedDate = selectedSchedule.startTime.toDate() {
 //            state.selectAttendanceDate = selectedDate

@@ -65,6 +65,7 @@ public struct ScheduleModal {
   }
 
   @Dependency(\.scheduleUseCase) var scheduleUseCase
+  @Dependency(\.continuousClock) var clock
 
 
   public var body: some Reducer<State, Action> {
@@ -125,6 +126,8 @@ extension ScheduleModal {
             try await scheduleUseCase.getSchedule()
           }
             .mapError(ScheduleError.from)
+          try await clock.sleep(for: .seconds(1))
+
           return await send(.inner(.scheduleResponse(result)))
         }
     }
