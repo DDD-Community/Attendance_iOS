@@ -25,11 +25,10 @@ public struct ScheduleModalSkeletonView: View {
       // Large card blocks
       largeCardsSkeleton
 
-      Spacer()
-
       // Bottom Button
       buttonSkeleton
-        .padding(.bottom, 34)
+
+      Spacer()
     }
     .padding(.horizontal, 20)
     .background(.staticWhite)
@@ -76,14 +75,13 @@ public struct ScheduleModalSkeletonView: View {
     if index == 3 {
       RoundedRectangle(cornerRadius: 16)
         .fill(.gray.opacity(0.15))
-        .frame(height: 86)
         .frame(maxWidth: .infinity)
         .overlay(
           shimmerEffect(delay: 0.4 + Double(index) * 0.2)
             .clipShape(RoundedRectangle(cornerRadius: 16))
         )
-        .clipped()
         .frame(height: 40) // 일부만 보이도록
+        .clipped()
     } else {
       RoundedRectangle(cornerRadius: 16)
         .fill(.gray.opacity(0.15))

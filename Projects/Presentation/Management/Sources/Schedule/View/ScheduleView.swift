@@ -57,7 +57,7 @@ extension ScheduleView {
   fileprivate func scheduleListView() -> some View {
     ScrollView(.vertical) {
       LazyVStack(spacing: 16) {
-        ForEach(store.scheduleModel ?? [], id: \.id) { item in
+        ForEach(store.scheduleModel, id: \.id) { item in
           ScheduleCardView(
             month:"\(item.month)",
             day: "\(item.day)",
@@ -67,7 +67,6 @@ extension ScheduleView {
         }
       }
       .padding(.horizontal, 20)
-      .padding(.bottom, 100) // 하단 여백
     }
     .scrollIndicators(.hidden)
   }

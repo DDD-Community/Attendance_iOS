@@ -12,9 +12,9 @@ final public class DefaultScheduleRepositoryImpl: ScheduleInterface  {
 
   public init() {}
 
-  public func getSchedule() async throws -> [ScheduleEntity] {
+  public func getSchedule() async throws -> [Schedule] {
     return [
-      ScheduleEntity(
+      Schedule(
         id: 1,
         name: "팀 회의",
         description: "주간 팀 회의 및 프로젝트 진행상황 공유",

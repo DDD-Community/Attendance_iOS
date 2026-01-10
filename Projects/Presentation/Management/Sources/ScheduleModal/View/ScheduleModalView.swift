@@ -70,7 +70,7 @@ extension ScheduleModalView {
 
   @ViewBuilder
   private func scheduleList() -> some View {
-    let schedules = store.scheduleModel ?? []
+    let schedules = store.scheduleModel
 
     LazyVStack(spacing: 8) {
       ForEach(schedules, id: \.id) { item in
@@ -83,7 +83,7 @@ extension ScheduleModalView {
 
   @ViewBuilder
   private func scheduleCardRow(
-    item: ScheduleEntity
+    item: Schedule
   ) -> some View {
     let isSelected = store.selectedSchedule?.id == item.id
 
@@ -95,7 +95,7 @@ extension ScheduleModalView {
 
   @ViewBuilder
    private func scheduleCard(
-     item: ScheduleEntity,
+     item: Schedule,
      isSelected: Bool
    ) -> some View {
      HStack(spacing: 12) {

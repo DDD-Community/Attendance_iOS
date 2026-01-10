@@ -20,10 +20,10 @@ public struct ScheduleModal {
 
   @ObservableState
   public struct State: Equatable {
-    var scheduleModel: [ScheduleEntity]?
+    var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
     var loading: Bool = false
     var enableButton: Bool = false
-    var selectedSchedule: ScheduleEntity? = nil
+    var selectedSchedule: Schedule? = nil
 
     public init() {}
   }
@@ -40,7 +40,7 @@ public struct ScheduleModal {
   //MARK: - ViewAction
   @CasePathable
   public enum View {
-    case selectSchedule(item: ScheduleEntity)
+    case selectSchedule(item: Schedule)
     case confirmSelection
   }
 
@@ -52,12 +52,12 @@ public struct ScheduleModal {
 
   //MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
-    case scheduleResponse(Result<[ScheduleEntity], ScheduleError>)
+    case scheduleResponse(Result<[Schedule], ScheduleError>)
   }
 
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    case selectScheduleCompleted(selectedSchedule: ScheduleEntity)
+    case selectScheduleCompleted(selectedSchedule: Schedule)
   }
 
   nonisolated enum ScheduleMoadalCancel: Hashable {
@@ -126,7 +126,7 @@ extension ScheduleModal {
             try await scheduleUseCase.getSchedule()
           }
             .mapError(ScheduleError.from)
-          try await clock.sleep(for: .seconds(1))
+          try await clock.sleep(for: .seconds(0.6))
 
           return await send(.inner(.scheduleResponse(result)))
         }
@@ -153,7 +153,7 @@ extension ScheduleModal {
         state.loading = false  
         switch result {
           case .success(let data):
-            state.scheduleModel = data
+            state.scheduleModel = .init(uniqueElements: data)
           case .failure(let error):
             #logNetwork("네트워크 에러", error.localizedDescription)
         }
@@ -161,4 +161,3 @@ extension ScheduleModal {
     }
   }
 }
-

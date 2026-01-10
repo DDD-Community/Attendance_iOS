@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ScheduleEntity: Equatable {
+public struct Schedule: Equatable, Identifiable {
   public let id: Int
   public let name: String
   public let description: String
@@ -30,7 +30,7 @@ public struct ScheduleEntity: Equatable {
   }
 }
 
-public extension ScheduleEntity {
+public extension Schedule {
    func toDate(timeZone: TimeZone = .init(identifier: "Asia/Seoul")!) -> Date? {
       var cal = Calendar(identifier: .gregorian)
       cal.timeZone = timeZone

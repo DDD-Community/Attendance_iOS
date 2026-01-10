@@ -6,20 +6,12 @@
 //
 
 import Foundation
+import Entity
 import WeaveDI
 
 /// Attendance 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol AttendanceInterface: Sendable {
-  func attendanceCount(startDate: String) async throws -> AttendanceCountResponseModel?
-  func getAttendances(startDate: String, endDate: String) async throws -> AttendanceListModel?
-  func fillAttendance(team: SelectTeam, startDate: String) async throws -> AttendanceListModel?
-  func filterScheduleAttendance(
-    userId: Int,
-    scheduleId: String,
-    startDate: String
-  ) async throws -> AttendanceListModel?
-  func modifyAttendance(attendanceId: String) async throws -> ModifyAttendanceModel?
-  func fetchCount(userID: Int) async throws -> AttendanceCountResponseModel
+  func adminAttendanceCount(scheduleId: Int) async throws -> AttendanceCount
 }
 
 /// Attendance Repository의 DependencyKey 구조체

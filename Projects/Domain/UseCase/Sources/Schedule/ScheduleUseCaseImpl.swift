@@ -16,7 +16,7 @@ public struct ScheduleUseCaseImpl: ScheduleInterface {
   public init() { }
 
   // MARK: - 스케줄 조회
-  public func getSchedule() async throws -> [ScheduleEntity] {
+  public func getSchedule() async throws -> [Schedule] {
     return try await repository.getSchedule()
   }
 }

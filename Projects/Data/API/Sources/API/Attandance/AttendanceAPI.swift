@@ -8,19 +8,16 @@
 import Foundation
 
 public enum AttendanceAPI {
-  case getAttandances
-  case attendanceCount
+  case adminAttendanceCount(scheduleId: Int)
   case editAttendance(attendanceId: String)
   case fetchCount
 
-  public var attendanceDescription: String {
+  public var description: String {
     switch self {
-    case .getAttandances:
-      return ""
-      
-    case .attendanceCount:
-      return "count/"
-      
+
+    case .adminAttendanceCount(let id):
+      return "/me/schedules/\(id)/attendances"
+
     case .editAttendance(let attendanceId):
       return "\(attendanceId)/"
 

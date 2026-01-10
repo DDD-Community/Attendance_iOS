@@ -23,7 +23,7 @@ final public class ScheduleRepositoryImpl: ScheduleInterface {
     self.provider = provider
   }
 
-  public func getSchedule() async throws -> [ScheduleEntity] {
+  public func getSchedule() async throws -> [Schedule] {
     let dto: ScheduleDTO = try await provider.request(.getSchedule)
     return dto.toDomain()
   }

@@ -10,8 +10,8 @@ import Entity
 
 
 public extension ScheduleDTOResponse {
-  func toDomain() -> ScheduleEntity {
-    return ScheduleEntity(
+  func toDomain() -> Schedule {
+    return Schedule(
       id: self.id,
       name: self.name,
       description: self.desc,
@@ -24,13 +24,13 @@ public extension ScheduleDTOResponse {
 
 
 public extension Array where Element == ScheduleDTOResponse {
-  func toDomain() -> [ScheduleEntity] {
+  func toDomain() -> [Schedule] {
     return self.map { $0.toDomain() }
   }
 }
 
 public extension ScheduleDTO {
-  func toDomain() -> [ScheduleEntity] {
+  func toDomain() -> [Schedule] {
     return self.data.toDomain()
   }
 }

@@ -12,7 +12,7 @@ import WeaveDI
 
 /// Schedule 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol ScheduleInterface: Sendable {
-  func getSchedule()  async throws -> [ScheduleEntity]
+  func getSchedule()  async throws -> [Schedule]
 }
 
 /// Schedule Repository의 DependencyKey 구조체

@@ -25,7 +25,7 @@ struct AttendanceCheckView: View {
       selectPartAttendanceStatus()
     }
     .onAppear {
-//      store.send(.async(.onAppear))
+      store.send(.view(.onAppear))
       
     }
 //    .onChange(of: store.selectPart ?? .web1) { oldValue, newValue in
@@ -36,7 +36,6 @@ struct AttendanceCheckView: View {
       ScheduleModalView(store: scheduleModalStore)
         .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
         .presentationCornerRadius(20)
-        .presentationDragIndicator(.hidden)
 
     }
   }
@@ -73,15 +72,14 @@ extension AttendanceCheckView {
 
   @ViewBuilder
   fileprivate func attendanceStatusView() -> some View {
-//    let attendanceCountDTOData = store.attendanceCountDTOModel
     LazyVStack {
       Spacer()
         .frame(height: 14)
 
       AttendanceCard(
-        attendanceCount:  .zero,
-        lateCount:  .zero,
-        absentCount: .zero,
+        attendanceCount: store.attendanceCount,
+        lateCount:  store.lateCount,
+        absentCount: store.absentCount,
         showWarning: false
       )
     }

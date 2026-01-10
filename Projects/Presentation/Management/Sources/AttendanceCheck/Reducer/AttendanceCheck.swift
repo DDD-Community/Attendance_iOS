@@ -28,11 +28,16 @@ public struct AttendanceCheck {
     var dividerWidths: [SelectTeam: CGFloat] = [:]
     
     var isLoading: Bool = false
+    var loading: Bool = false
     var attendanceCount: Int = .zero
     var lateCount: Int = .zero
     var absentCount: Int = .zero
     
     @Presents var destination: Destination.State?
+    var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
+    var selectScheduleID: Int = 0
+    var attendanceCountModel : AttendanceCount?
+
 //    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
     
 //    var attendanceCountDTOModel: AttendanceCountResponseModel?
@@ -63,6 +68,7 @@ public struct AttendanceCheck {
   // MARK: - ViewAction
   @CasePathable
   public enum View {
+    case onAppear
     case selectPartButton(selectPart: SelectTeam)
     case swipeNext
     case swipePrevious
@@ -72,16 +78,18 @@ public struct AttendanceCheck {
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
+
   public enum AsyncAction: Equatable {
-//    case onAppear
-//    case fetchAttendanceCount
+    case fetchSchedule
+    case fetchAttendanceCount
 //    case filterAttendanceCount(startDate: String)
 //    case fetchScheduleAttendanceCheck
   }
   
   // MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
-//
+    case fetchScheduleResponse(Result<[Schedule], ScheduleError>)
+    case AttendanceCountResponse(Result<AttendanceCount, ScheduleError>)
 
   }
   
@@ -90,8 +98,11 @@ public struct AttendanceCheck {
 
   }
   
-  private struct AttendanceCheckCancel: Hashable {}
-  
+  nonisolated enum CancelID: Hashable {
+    case fetchSchedule
+  }
+
+
   @Dependency(\.attendanceUseCase) var attendanceUseCase
   @Dependency(\.scheduleUseCase) var scheduleUseCase
   @Dependency(\.continuousClock) var clock
@@ -102,8 +113,8 @@ public struct AttendanceCheck {
 
     Reduce { state, action in
       switch action {
-//      case .binding:
-//        return .none
+        case .binding:
+          return .none
 
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
@@ -117,33 +128,8 @@ public struct AttendanceCheck {
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
 
-        case .destination(.presented(.scheduleModal(.navigation(.selectScheduleCompleted(let selectedSchedule))))):
-          #logDebug("스케줄 선택됨", "선택된 스케줄: \(selectedSchedule.id)")
-
-          if let selectedDate = selectedSchedule.toDate() {
-            state.selectAttendanceDate = selectedDate
-            #logDebug("날짜 업데이트됨", "새로운 날짜: \(selectedDate)")
-          } else {
-            #logError(
-              "날짜 변환 실패",
-              "입력: year=\(selectedSchedule.year), month=\(selectedSchedule.month), day=\(selectedSchedule.day)"
-            )
-          }
-
-          state.destination = nil
-
-          // 모달이 완전히 닫힌 후 API 호출
-          return .run { send in
-            try await clock.sleep(for: .milliseconds(100))
-//            await send(.async(.fetchAttendanceCount))
-          }
-
-
-
-      case .destination:
-        return .none
-        case .binding:
-          return .none
+        case .destination(let destinationAction):
+         return handleDestinationAction(state: &state, action: destinationAction)
       }
     }
     .ifLet(\.$destination, action: \.destination)
@@ -156,6 +142,12 @@ extension AttendanceCheck {
     action: View
   ) -> Effect<Action> {
     switch action {
+      case .onAppear:
+        return .concatenate(
+          .run { await $0(.async(.fetchSchedule)) },
+          .run { await $0(.async(.fetchAttendanceCount)) },
+        )
+
     case .selectPartButton(let selectPart):
       state.selectPart = selectPart
       return .none
@@ -200,6 +192,29 @@ extension AttendanceCheck {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
+      case .fetchSchedule:
+          state.loading = true
+        return .run { send in
+          let scheduleResult = await Result {
+            try await scheduleUseCase.getSchedule()
+          }
+            .mapError(ScheduleError.from)
+          try await clock.sleep(for: .seconds(2))
+          return await send(.inner(.fetchScheduleResponse(scheduleResult)))
+
+        }
+        .cancellable(id: CancelID.fetchSchedule, cancelInFlight: true)
+
+      case .fetchAttendanceCount:
+        return .run { [
+          scheduleID = state.selectScheduleID
+        ]send in
+          let attendanceResult = await Result {
+            try await attendanceUseCase.adminAttendanceCount(scheduleId: scheduleID)
+          }
+            .mapError(ScheduleError.from)
+          return await send(.inner(.AttendanceCountResponse(attendanceResult)))
+        }
     }
   }
 
@@ -214,23 +229,77 @@ extension AttendanceCheck {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-//    switch action {
-//    case .attendanceCountResponse(let result):
-//      switch result {
-//      case .success(let attendanceCountDTO):
-//        // DTO 모델 업데이트
-//        state.attendanceCountDTOModel = attendanceCountDTO
-//
-//        // 개별 카운트도 명시적으로 업데이트 (UI 새로고침 보장)
-//        state.attendanceCount = attendanceCountDTO.attendanceCount
-//        state.lateCount = attendanceCountDTO.lateCount
-//        state.absentCount = attendanceCountDTO.absentCount
-//
-//      case .failure(let error):
-//        #logNetwork("출석 카운트 조회 에러", error.localizedDescription)
-//      }
-//      return .none
-//
-//    }
+    switch action {
+      case .fetchScheduleResponse(let result):
+        switch result {
+          case .success(let schedules):
+            state.scheduleModel = .init(uniqueElements: schedules)
+            state.loading = false
+            state.selectScheduleID = todayScheduleId(from: schedules) ?? .zero
+
+          case .failure(let error):
+            #logNetwork("스케줄 조회 실패", error.localizedDescription ?? "알 수 없는 오류")
+            state.loading = false
+        }
+        return .none
+
+
+      case .AttendanceCountResponse(let result):
+        switch result {
+          case .success(let data):
+            state.attendanceCountModel = data
+            state.attendanceCount = data.attendanceCount
+            state.lateCount = data.lateCount
+            state.absentCount = data.absentCount
+
+          case .failure(let error):
+            #logNetwork("기수 출석 현황 조회 실패", error.localizedDescription)
+
+        }
+        return .none
+    }
+  }
+
+  private func todayScheduleId(
+    from schedules: [Schedule],
+    now: Date = Date(),
+    timeZone: TimeZone = .init(identifier: "Asia/Seoul")!
+  ) -> Int? {
+    var cal = Calendar(identifier: .gregorian)
+    cal.timeZone = timeZone
+
+    let comps = cal.dateComponents([.year, .month, .day], from: now)
+    guard let y = comps.year, let m = comps.month, let d = comps.day else { return nil }
+
+    return schedules.first(where: { $0.year == y && $0.month == m && $0.day == d })?.id
+  }
+
+  private func handleDestinationAction(
+    state: inout State,
+    action: PresentationAction<Destination.Action>
+  ) -> Effect<Action> {
+    switch action {
+      case .presented(.scheduleModal(.navigation(.selectScheduleCompleted(let selectedSchedule)))):
+        if let selectedDate = selectedSchedule.toDate() {
+          state.selectAttendanceDate = selectedDate
+          state.selectScheduleID = selectedSchedule.id
+          #logDebug("날짜 업데이트됨", "새로운 날짜: \( state.selectScheduleID)")
+        } else {
+          #logError(
+            "날짜 변환 실패",
+            "입력: year=\(selectedSchedule.year), month=\(selectedSchedule.month), day=\(selectedSchedule.day)"
+          )
+        }
+
+        state.destination = nil
+
+        return .run { send in
+          try await clock.sleep(for: .milliseconds(100))
+            await send(.async(.fetchAttendanceCount))
+        }
+
+      default:
+        return .none
+    }
   }
 }

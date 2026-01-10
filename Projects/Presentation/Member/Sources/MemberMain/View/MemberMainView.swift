@@ -153,14 +153,14 @@ struct MemberMainView: View {
 
   private var scheduleList: some View {
     LazyVStack(alignment: .leading, spacing: 12) {
-      ForEach(store.schedules) {
-        ScheduleCell(
-          month: $0.month,
-          day: $0.day,
-          title: $0.title,
-          description: $0.description,
-          style: $0.status.toScheduleCellStyle
-        )
+      ForEach(store.schedules, id: \.id) { _ in
+//        ScheduleCell(
+//          month: $0.month,
+//          day: $0.day,
+//          title: $0.name,
+//          description: $0.description,
+//          style: $0.status.toScheduleCellStyle
+//        )
       }
     }
   }

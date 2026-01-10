@@ -23,7 +23,7 @@ public struct ScheduleReducer {
     
     public init() {}
     
-    var scheduleModel: [ScheduleEntity]? = []
+    var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
     var loading: Bool = false
     var hasFetchedSchedule: Bool = false
     
@@ -55,7 +55,7 @@ public struct ScheduleReducer {
   
   //MARK: - 앱내에서 사용하는 액션
   public enum InnerAction {
-    case fetchScheduleResponse(Result<[ScheduleEntity], ScheduleError>)
+    case fetchScheduleResponse(Result<[Schedule], ScheduleError>)
   }
   
   //MARK: - NavigationAction
@@ -140,7 +140,7 @@ extension ScheduleReducer {
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
-
+    return .none
   }
 
   private func handleInnerAction(
@@ -151,7 +151,7 @@ extension ScheduleReducer {
     case .fetchScheduleResponse(let result):
       switch result {
       case .success(let schedules):
-        state.scheduleModel = schedules
+        state.scheduleModel = .init(uniqueElements: schedules)
           state.loading = false
 
       case .failure(let error):

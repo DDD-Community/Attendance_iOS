@@ -16,7 +16,7 @@ public struct ScheduleSkeletonView: View {
   public var body: some View {
     VStack(spacing: 0) {
       ZStack {
-        Color.staticBlack
+        Color.basicBlack
 
         VStack(alignment: .leading, spacing: 0) {
           titleSkeleton
@@ -37,7 +37,7 @@ public struct ScheduleSkeletonView: View {
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    .background(Color.staticBlack)
+    .background(Color.basicBlack)
     .onAppear {
       isShimmering = true
     }
