@@ -19,7 +19,8 @@ final public class DefaultScheduleRepositoryImpl: ScheduleInterface  {
         name: "팀 회의",
         description: "주간 팀 회의 및 프로젝트 진행상황 공유",
         month: 1,
-        day: 15
+        day: 15,
+        year: 2026
       ),
     ]
   }

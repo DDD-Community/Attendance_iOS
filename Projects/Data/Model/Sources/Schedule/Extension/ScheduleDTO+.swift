@@ -16,7 +16,8 @@ public extension ScheduleDTOResponse {
       name: self.name,
       description: self.desc,
       month: self.month,
-      day: self.day
+      day: self.day,
+      year: self.year
     )
   }
 }

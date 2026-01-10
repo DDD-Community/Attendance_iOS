@@ -120,12 +120,15 @@ public struct AttendanceCheck {
         case .destination(.presented(.scheduleModal(.navigation(.selectScheduleCompleted(let selectedSchedule))))):
           #logDebug("스케줄 선택됨", "선택된 스케줄: \(selectedSchedule.id)")
 
-//          if let selectedDate = selectedSchedule.startTime.toDate() {
-//            state.selectAttendanceDate = selectedDate
-//            #logDebug("날짜 업데이트됨", "새로운 날짜: \(selectedDate)")
-//          } else {
-//            #logError("날짜 변환 실패", "ISO 문자열: \(selectedSchedule.startTime)")
-//          }
+          if let selectedDate = selectedSchedule.toDate() {
+            state.selectAttendanceDate = selectedDate
+            #logDebug("날짜 업데이트됨", "새로운 날짜: \(selectedDate)")
+          } else {
+            #logError(
+              "날짜 변환 실패",
+              "입력: year=\(selectedSchedule.year), month=\(selectedSchedule.month), day=\(selectedSchedule.day)"
+            )
+          }
 
           state.destination = nil
 
