@@ -44,10 +44,8 @@ struct StaffView: View {
     .overlay {
       if shouldShowSkeleton {
         skeletonView
-          .transition(.opacity)
       }
     }
-    .animation(.easeInOut(duration: 0.2), value: shouldShowSkeleton)
     .allowsHitTesting(!shouldShowSkeleton)
     .onTapGesture {
       if store.isExpandedDropDown {

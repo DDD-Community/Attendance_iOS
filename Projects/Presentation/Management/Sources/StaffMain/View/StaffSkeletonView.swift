@@ -9,7 +9,7 @@ import SwiftUI
 import DesignSystem
 
 public struct StaffSkeletonView: View {
-  @State private var isShimmering = false
+  @State private var isAnimating = false
 
   public init() {}
 
@@ -19,7 +19,7 @@ public struct StaffSkeletonView: View {
         .ignoresSafeArea()
 
       ScrollView(.vertical) {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
           headerSkeleton
           subtitleSkeleton
           largeCardSkeleton
@@ -27,96 +27,83 @@ public struct StaffSkeletonView: View {
           listSkeleton
         }
         .padding(.horizontal, 24)
-        .padding(.top, 8)
-        .padding(.bottom, 32)
+        .padding(.top, 10)
+        .padding(.bottom, 28)
       }
       .scrollIndicators(.hidden)
     }
     .onAppear {
-      isShimmering = true
+      withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+        isAnimating = true
+      }
     }
   }
 
   private var headerSkeleton: some View {
     HStack {
       RoundedRectangle(cornerRadius: 12)
-        .fill(Color.gray.opacity(0.3))
+        .fill(primarySkeletonFill)
         .frame(width: 56, height: 20)
-        .overlay(shimmerEffect(delay: 0.0))
 
       Spacer()
 
       Circle()
-        .fill(Color.gray.opacity(0.3))
+        .fill(primarySkeletonFill)
         .frame(width: 28, height: 28)
-        .overlay(shimmerEffect(delay: 0.1))
     }
   }
 
   private var subtitleSkeleton: some View {
     RoundedRectangle(cornerRadius: 10)
-      .fill(Color.gray.opacity(0.3))
+      .fill(primarySkeletonFill)
       .frame(width: 180, height: 18)
-      .overlay(shimmerEffect(delay: 0.15))
   }
 
   private var largeCardSkeleton: some View {
     RoundedRectangle(cornerRadius: 16)
-      .fill(Color.gray.opacity(0.18))
+      .fill(secondarySkeletonFill)
       .frame(height: 96)
-      .overlay(
-        shimmerEffect(delay: 0.2)
-          .clipShape(RoundedRectangle(cornerRadius: 16))
-      )
   }
 
   private var teamRowSkeleton: some View {
     HStack(spacing: 12) {
       ForEach(0..<5, id: \.self) { index in
         RoundedRectangle(cornerRadius: 12)
-          .fill(Color.gray.opacity(0.3))
+          .fill(primarySkeletonFill)
           .frame(width: 60, height: 20)
-          .overlay(shimmerEffect(delay: 0.3 + Double(index) * 0.1))
       }
     }
+    .padding(.top, 2)
   }
 
   private var listSkeleton: some View {
-    VStack(spacing: 14) {
+    VStack(spacing: 12) {
       ForEach(0..<5, id: \.self) { index in
         RoundedRectangle(cornerRadius: 16)
-          .fill(Color.gray.opacity(0.2))
+          .fill(secondarySkeletonFill)
           .frame(height: 76)
-          .overlay(
-            shimmerEffect(delay: 0.4 + Double(index) * 0.12)
-              .clipShape(RoundedRectangle(cornerRadius: 16))
-          )
       }
     }
   }
 
-  private func shimmerEffect(delay: Double) -> some View {
-    GeometryReader { proxy in
-      LinearGradient(
-        colors: [
-          Color.clear,
-          Color.white.opacity(0.25),
-          Color.clear
-        ],
-        startPoint: .leading,
-        endPoint: .trailing
-      )
-      .frame(width: proxy.size.width * 0.5, height: proxy.size.height)
-      .offset(x: isShimmering ? proxy.size.width * 0.5 - 20 : 0)
-      .blendMode(.screen)
-      .allowsHitTesting(false)
-      .animation(
-        Animation.linear(duration: 2.0)
-          .delay(delay)
-          .repeatForever(autoreverses: false),
-        value: isShimmering
-      )
-    }
+  private var primarySkeletonFill: LinearGradient {
+    let base = Color.gray90.opacity(isAnimating ? 0.35 : 0.7)
+    let tint = Color.blue20.opacity(isAnimating ? 0.12 : 0.22)
+    return LinearGradient(
+      colors: [base, tint, base],
+      startPoint: .topLeading,
+      endPoint: .bottomTrailing
+    )
+  }
+
+  private var secondarySkeletonFill: LinearGradient {
+    let base = Color.gray90.opacity(isAnimating ? 0.25 : 0.55)
+    let tint = Color.blue20.opacity(isAnimating ? 0.08 : 0.16)
+    return LinearGradient(
+      colors: [base, tint, base],
+      startPoint: .topLeading,
+      endPoint: .bottomTrailing
+    )
   }
 }
 

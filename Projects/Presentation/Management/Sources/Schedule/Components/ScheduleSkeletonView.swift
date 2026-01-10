@@ -9,7 +9,7 @@ import SwiftUI
 import DesignSystem
 
 public struct ScheduleSkeletonView: View {
-  @State private var isShimmering = false
+  @State private var isAnimating = false
 
   public init() {}
 
@@ -18,37 +18,37 @@ public struct ScheduleSkeletonView: View {
       Color.basicBlack
 
       ScrollView(.vertical) {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
           headerSkeleton
           titleSkeleton
           listSkeleton
         }
         .padding(.horizontal, 24)
-        .padding(.top, 8)
-        .padding(.bottom, 32)
+        .padding(.top, 10)
+        .padding(.bottom, 28)
       }
       .scrollIndicators(.hidden)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.basicBlack)
     .onAppear {
-      isShimmering = true
+      withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+        isAnimating = true
+      }
     }
   }
 
   private var headerSkeleton: some View {
     HStack {
       RoundedRectangle(cornerRadius: 12)
-        .fill(Color.gray.opacity(0.3))
+        .fill(primarySkeletonFill)
         .frame(width: 56, height: 20)
-        .overlay(shimmerEffect(delay: 0.0))
 
       Spacer()
 
       Circle()
-        .fill(Color.gray.opacity(0.3))
+        .fill(primarySkeletonFill)
         .frame(width: 28, height: 28)
-        .overlay(shimmerEffect(delay: 0.1))
     }
   }
 
@@ -57,31 +57,28 @@ public struct ScheduleSkeletonView: View {
     HStack(spacing: 16) {
       // 왼쪽 날짜 박스 skeleton
       RoundedRectangle(cornerRadius: 12)
-        .fill(Color.gray.opacity(0.3))
+        .fill(primarySkeletonFill)
         .frame(width: 60, height: 60)
 
       // 오른쪽 콘텐츠 skeleton
       VStack(alignment: .leading, spacing: 8) {
         // 제목 skeleton
         RoundedRectangle(cornerRadius: 6)
-          .fill(Color.gray.opacity(0.3))
+          .fill(primarySkeletonFill)
           .frame(height: 20)
           .frame(maxWidth: .infinity, alignment: .leading)
-          .overlay(shimmerEffect(delay: 0.0))
 
         // 설명 skeleton
         VStack(spacing: 4) {
           RoundedRectangle(cornerRadius: 4)
-            .fill(Color.gray.opacity(0.2))
+            .fill(secondarySkeletonFill)
             .frame(height: 14)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .overlay(shimmerEffect(delay: 0.3))
 
           RoundedRectangle(cornerRadius: 4)
-            .fill(Color.gray.opacity(0.2))
+            .fill(secondarySkeletonFill)
             .frame(height: 14)
             .frame(width: 200, alignment: .leading)
-            .overlay(shimmerEffect(delay: 0.6))
         }
       }
 
@@ -90,7 +87,7 @@ public struct ScheduleSkeletonView: View {
     .padding(16)
     .background(
       RoundedRectangle(cornerRadius: 12)
-        .fill(Color.gray.opacity(0.15))
+        .fill(secondarySkeletonFill)
     )
     .clipShape(RoundedRectangle(cornerRadius: 12))
   }
@@ -99,9 +96,8 @@ public struct ScheduleSkeletonView: View {
   private var titleSkeleton: some View {
     HStack {
       RoundedRectangle(cornerRadius: 6)
-        .fill(Color.gray.opacity(0.3))
+        .fill(primarySkeletonFill)
         .frame(width: 120, height: 20)
-        .overlay(shimmerEffect(delay: 0.0))
       Spacer()
     }
   }
@@ -114,29 +110,24 @@ public struct ScheduleSkeletonView: View {
     }
   }
 
-  // MARK: - Shimmer Effect
-  private func shimmerEffect(delay: Double) -> some View {
-    GeometryReader { proxy in
-      LinearGradient(
-        colors: [
-          Color.clear,
-          Color.white.opacity(0.25),
-          Color.clear
-        ],
-        startPoint: .leading,
-        endPoint: .trailing
-      )
-      .frame(width: proxy.size.width * 0.5, height: proxy.size.height)
-      .offset(x: isShimmering ? proxy.size.width * 0.5 - 20 : 0)
-      .blendMode(.screen)
-      .allowsHitTesting(false)
-      .animation(
-        Animation.linear(duration: 2.0)
-          .delay(delay)
-          .repeatForever(autoreverses: false),
-        value: isShimmering
-      )
-    }
+  private var primarySkeletonFill: LinearGradient {
+    let base = Color.gray90.opacity(isAnimating ? 0.35 : 0.7)
+    let tint = Color.blue20.opacity(isAnimating ? 0.12 : 0.22)
+    return LinearGradient(
+      colors: [base, tint, base],
+      startPoint: .topLeading,
+      endPoint: .bottomTrailing
+    )
+  }
+
+  private var secondarySkeletonFill: LinearGradient {
+    let base = Color.gray90.opacity(isAnimating ? 0.25 : 0.55)
+    let tint = Color.blue20.opacity(isAnimating ? 0.08 : 0.16)
+    return LinearGradient(
+      colors: [base, tint, base],
+      startPoint: .topLeading,
+      endPoint: .bottomTrailing
+    )
   }
 }
 
