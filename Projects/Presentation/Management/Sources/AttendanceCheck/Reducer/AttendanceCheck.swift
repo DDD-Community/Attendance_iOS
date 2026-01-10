@@ -32,6 +32,7 @@ public struct AttendanceCheck {
     var attendanceCount: Int = .zero
     var lateCount: Int = .zero
     var absentCount: Int = .zero
+    var hasFetchedAttendance: Bool = false
 
     @Presents var destination: Destination.State?
     var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
@@ -89,8 +90,8 @@ public struct AttendanceCheck {
   // MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
     case fetchScheduleResponse(Result<[Schedule], ScheduleError>)
-    case attendanceCountResponse(Result<AttendanceCount, ScheduleError>)
-    case fetchTeamsResponse(Result<[SelectTeamEntity], ScheduleError>)
+    case attendanceCountResponse(Result<AttendanceCount, AttendanceError>)
+    case fetchTeamsResponse(Result<[SelectTeamEntity], AttendanceError>)
   }
 
   // MARK: - NavigationAction
@@ -145,6 +146,8 @@ extension AttendanceCheck {
   ) -> Effect<Action> {
     switch action {
       case .onAppear:
+        guard !state.hasFetchedAttendance else { return .none }
+        state.hasFetchedAttendance = true
         return .concatenate(
           .run { await $0(.async(.fetchSchedule)) },
           .run { await $0(.async(.fetchAttendanceCount)) },
@@ -214,7 +217,7 @@ extension AttendanceCheck {
           let attendanceResult = await Result {
             try await attendanceUseCase.adminAttendanceCount(scheduleId: scheduleID)
           }
-            .mapError(ScheduleError.from)
+            .mapError(AttendanceError.from)
           return await send(.inner(.attendanceCountResponse(attendanceResult)))
         }
         .cancellable(id: CancelID.fetchAttendanceCount, cancelInFlight: true)
@@ -225,7 +228,7 @@ extension AttendanceCheck {
           let teamResult = await Result {
             try await attendanceUseCase.fetchAttendanceTeams()
           }
-            .mapError(ScheduleError.from)
+            .mapError(AttendanceError.from)
           return await send(.inner(.fetchTeamsResponse(teamResult)))
         }
         .cancellable(id: CancelID.fetchTeams, cancelInFlight: true)
