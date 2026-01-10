@@ -29,4 +29,9 @@ final public class AttendanceRepositoryImpl: AttendanceInterface , Sendable {
     return dto.toDomain()
   }
 
+  public func fetchAttendanceTeams() async throws -> [SelectTeamEntity] {
+    let dto: SelectTeamsDTO = try await provider.request(.fetchTeams)
+    return dto.toDomain()
+  }
+
 }

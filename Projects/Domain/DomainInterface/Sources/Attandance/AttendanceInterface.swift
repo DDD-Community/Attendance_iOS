@@ -12,6 +12,7 @@ import WeaveDI
 /// Attendance 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol AttendanceInterface: Sendable {
   func adminAttendanceCount(scheduleId: Int) async throws -> AttendanceCount
+  func fetchAttendanceTeams() async throws -> [SelectTeamEntity]
 }
 
 /// Attendance Repository의 DependencyKey 구조체

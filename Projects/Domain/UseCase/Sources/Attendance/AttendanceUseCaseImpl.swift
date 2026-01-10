@@ -21,6 +21,9 @@ public struct AttendanceUseCaseImpl: AttendanceInterface {
     return try await repository.adminAttendanceCount(scheduleId: scheduleId)
   }
 
+  public func fetchAttendanceTeams() async throws -> [SelectTeamEntity] {
+    return try await repository.fetchAttendanceTeams()
+  }
 }
 
 extension AttendanceUseCaseImpl: DependencyKey {

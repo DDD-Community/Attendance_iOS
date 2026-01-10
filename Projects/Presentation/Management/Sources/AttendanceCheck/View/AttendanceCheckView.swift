@@ -8,6 +8,8 @@
 import SwiftUI
 
 import Shareds
+import Entity
+import Model
 
 import ComposableArchitecture
 
@@ -96,19 +98,20 @@ extension AttendanceCheckView {
         VStack {
           ScrollView(.horizontal, showsIndicators: false) {
             HStack {
-              ForEach(SelectTeam.attandanceList, id: \.self) { item in
+              ForEach(store.attendanceTeam) { item in
+                let mappedTeam = item.toSelectTeam
                 VStack(spacing: .zero) {
                   HStack {
                     Spacer()
                       .frame(width: 16)
 
-                    Text("\(item.attendanceListDescription)")
+                    Text("\(item.teams.attendanceListDescription)")
                       .pretendardFont(family: .Bold, size: 16)
-                      .foregroundColor(store.selectPart == item ? .staticWhite : .gray600)
+                      .foregroundColor(store.selectPart == mappedTeam ? .staticWhite : .gray600)
                       .background(
                         GeometryReader { geometry in
                           Color.clear
-                            .preference(key: TextWidthPreferenceKey.self, value: [item: geometry.size.width])
+                            .preference(key: TeamTextWidthPreferenceKey.self, value: [item.id: geometry.size.width])
                         }
                       )
 
@@ -119,21 +122,23 @@ extension AttendanceCheckView {
                   Spacer()
                     .frame(height: 12)
 
-                  if store.selectPart == item {
+                  if store.selectPart == mappedTeam {
                     Divider()
-                      .frame(width: store.dividerWidths[item] ?? 0, height: 2)
+                      .frame(width: store.dividerWidths[item.id] ?? 0, height: 2)
                       .background(.blue40)
                   }
                 }
-                .onPreferenceChange(TextWidthPreferenceKey.self) { newWidths in
+                .onPreferenceChange(TeamTextWidthPreferenceKey.self) { newWidths in
                   for (key, width) in newWidths {
                     store.dividerWidths[key] = width
                   }
                 }
                 .onTapGesture {
-                  store.send(.view(.selectPartButton(selectPart: item)))
+                  if let mappedTeam {
+                    store.send(.view(.selectPartButton(selectPart: mappedTeam)))
+                  }
                 }
-                .id(item)
+                .id(item.id)
               }
             }
             .padding(.horizontal, 24)
@@ -147,8 +152,12 @@ extension AttendanceCheckView {
             .background(.borderInactive.opacity(0.12))
             .offset(y: -12)
         }
-        .onChange(of: store.selectPart) { oldValue, newValue in
-          proxy.scrollTo(newValue, anchor: .center)
+        .onChange(of: store.selectPart) { _, newValue in
+          guard let newValue,
+                let target = store.attendanceTeam.first(where: {
+                  $0.toSelectTeam == newValue
+                }) else { return }
+          proxy.scrollTo(target.id, anchor: .center)
         }
 
       }
@@ -231,3 +240,10 @@ extension AttendanceCheckView {
   }
 }
 
+private struct TeamTextWidthPreferenceKey: PreferenceKey {
+  static var defaultValue: [Int: CGFloat] = [:]
+
+  static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
+    value.merge(nextValue(), uniquingKeysWith: { $1 })
+  }
+}

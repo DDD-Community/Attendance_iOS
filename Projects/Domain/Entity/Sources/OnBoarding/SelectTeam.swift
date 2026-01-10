@@ -9,7 +9,8 @@ import Foundation
 
 // MARK: - 나중에
 //SelectTeam 으로 이름 변경 예정
-public struct SelectTeamEntity: Equatable {
+public struct SelectTeamEntity: Equatable, Identifiable {
+  public var id: Int { teamId }
   public let teamId: Int
   public let teams: SelectTeams
 

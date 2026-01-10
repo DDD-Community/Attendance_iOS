@@ -17,38 +17,39 @@ import Entity
 @Reducer
 public struct AttendanceCheck {
   public init() {}
-  
+
   @ObservableState
   public struct State: Equatable {
-    
+
     var selectAttendanceDate: Date = .now
     var selectAttendanceDateMonth: Date = .now
     var selectPart: SelectTeam? = .web1
-    
-    var dividerWidths: [SelectTeam: CGFloat] = [:]
-    
+
+    var dividerWidths: [Int: CGFloat] = [:]
+
     var isLoading: Bool = false
     var loading: Bool = false
     var attendanceCount: Int = .zero
     var lateCount: Int = .zero
     var absentCount: Int = .zero
-    
+
     @Presents var destination: Destination.State?
     var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
     var selectScheduleID: Int = 0
     var attendanceCountModel : AttendanceCount?
+    var attendanceTeam: IdentifiedArrayOf<SelectTeamEntity> = .init(uniqueElements: [])
 
-//    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
-    
-//    var attendanceCountDTOModel: AttendanceCountResponseModel?
-//    var attendCheckModel: AttendanceListModel?
+    //    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
 
-    
+    //    var attendanceCountDTOModel: AttendanceCountResponseModel?
+    //    var attendCheckModel: AttendanceListModel?
+
+
     public init() {
-      
+
     }
   }
-  
+
   public enum Action: ViewAction, BindableAction, FeatureAction {
     case destination(PresentationAction<Destination.Action>)
     case binding(BindingAction<State>)
@@ -56,15 +57,15 @@ public struct AttendanceCheck {
     case async(AsyncAction)
     case inner(InnerAction)
     case navigation(NavigationAction)
-    
+
   }
-  
+
   @Reducer(state: .equatable)
   public enum Destination {
     case selectDate(CustomDate)
     case scheduleModal(ScheduleModal)
   }
-  
+
   // MARK: - ViewAction
   @CasePathable
   public enum View {
@@ -76,30 +77,31 @@ public struct AttendanceCheck {
     case closeModal
     case tapSelectDate
   }
-  
+
   // MARK: - AsyncAction 비동기 처리 액션
 
   public enum AsyncAction: Equatable {
     case fetchSchedule
     case fetchAttendanceCount
-//    case filterAttendanceCount(startDate: String)
-//    case fetchScheduleAttendanceCheck
+    case fetchTeams
   }
-  
+
   // MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
     case fetchScheduleResponse(Result<[Schedule], ScheduleError>)
-    case AttendanceCountResponse(Result<AttendanceCount, ScheduleError>)
-
+    case attendanceCountResponse(Result<AttendanceCount, ScheduleError>)
+    case fetchTeamsResponse(Result<[SelectTeamEntity], ScheduleError>)
   }
-  
+
   // MARK: - NavigationAction
   public enum NavigationAction: Equatable {
 
   }
-  
+
   nonisolated enum CancelID: Hashable {
     case fetchSchedule
+    case fetchAttendanceCount
+    case fetchTeams
   }
 
 
@@ -107,7 +109,7 @@ public struct AttendanceCheck {
   @Dependency(\.scheduleUseCase) var scheduleUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
-  
+
   public var body: some Reducer<State, Action> {
     BindingReducer()
 
@@ -116,20 +118,20 @@ public struct AttendanceCheck {
         case .binding:
           return .none
 
-      case .view(let viewAction):
-        return handleViewAction(state: &state, action: viewAction)
+        case .view(let viewAction):
+          return handleViewAction(state: &state, action: viewAction)
 
-      case .async(let asyncAction):
-        return handleAsyncAction(state: &state, action: asyncAction)
+        case .async(let asyncAction):
+          return handleAsyncAction(state: &state, action: asyncAction)
 
-      case .inner(let innerAction):
-        return handleInnerAction(state: &state, action: innerAction)
+        case .inner(let innerAction):
+          return handleInnerAction(state: &state, action: innerAction)
 
-      case .navigation(let navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+        case .navigation(let navigationAction):
+          return handleNavigationAction(state: &state, action: navigationAction)
 
         case .destination(let destinationAction):
-         return handleDestinationAction(state: &state, action: destinationAction)
+          return handleDestinationAction(state: &state, action: destinationAction)
       }
     }
     .ifLet(\.$destination, action: \.destination)
@@ -146,44 +148,44 @@ extension AttendanceCheck {
         return .concatenate(
           .run { await $0(.async(.fetchSchedule)) },
           .run { await $0(.async(.fetchAttendanceCount)) },
+          .run { await $0(.async(.fetchTeams)) },
         )
 
-    case .selectPartButton(let selectPart):
-      state.selectPart = selectPart
-      return .none
+      case .selectPartButton(let selectPart):
+        state.selectPart = selectPart
+        return .none
 
-    case .swipeNext:
-      guard let selectPart = state.selectPart else { return .none }
+      case .swipeNext:
+        guard let selectPart = state.selectPart else { return .none }
+        let order = state.attendanceTeam.orderedSelectTeams()
+        guard let currentIndex = order.firstIndex(of: selectPart),
+              !order.isEmpty else { return .none }
+        let nextIndex = (currentIndex + 1) % order.count
+        state.selectPart = order[nextIndex]
 
-      if selectPart == .ios2 {
-        state.selectPart = .web1
-      } else if let currentIndex = SelectTeam.allCases.firstIndex(of: selectPart),
-                currentIndex < SelectTeam.allCases.count - 1 {
-        state.selectPart = SelectTeam.allCases[currentIndex + 1]
-      }
+        return .none
 
-      return .none
+      case .swipePrevious:
+        guard let selectPart = state.selectPart else { return .none }
+        let order = state.attendanceTeam.orderedSelectTeams()
+        guard let currentIndex = order.firstIndex(of: selectPart),
+              !order.isEmpty else { return .none }
+        let prevIndex = (currentIndex - 1 + order.count) % order.count
+        state.selectPart = order[prevIndex]
+        return .none
 
-    case .swipePrevious:
-      guard let selectPart = state.selectPart else { return .none }
-      if let currentIndex = SelectTeam.allCases.firstIndex(of: selectPart),
-         currentIndex > 0 {
-        state.selectPart = SelectTeam.allCases[currentIndex - 1]
-      }
-      return .none
-
-    case .appearSelectDate:
-      state.destination = .selectDate(.init())
-      return .none
+      case .appearSelectDate:
+        state.destination = .selectDate(.init())
+        return .none
 
       case .tapSelectDate:
         #logDebug("스케줄 모달 열기", "ScheduleModal destination 설정")
         state.destination = .scheduleModal(.init())
         return .none
 
-    case .closeModal:
-      state.destination = nil
-      return .none
+      case .closeModal:
+        state.destination = nil
+        return .none
     }
   }
 
@@ -193,7 +195,7 @@ extension AttendanceCheck {
   ) -> Effect<Action> {
     switch action {
       case .fetchSchedule:
-          state.loading = true
+        state.loading = true
         return .run { send in
           let scheduleResult = await Result {
             try await scheduleUseCase.getSchedule()
@@ -213,8 +215,20 @@ extension AttendanceCheck {
             try await attendanceUseCase.adminAttendanceCount(scheduleId: scheduleID)
           }
             .mapError(ScheduleError.from)
-          return await send(.inner(.AttendanceCountResponse(attendanceResult)))
+          return await send(.inner(.attendanceCountResponse(attendanceResult)))
         }
+        .cancellable(id: CancelID.fetchAttendanceCount, cancelInFlight: true)
+
+
+      case .fetchTeams:
+        return .run { send in
+          let teamResult = await Result {
+            try await attendanceUseCase.fetchAttendanceTeams()
+          }
+            .mapError(ScheduleError.from)
+          return await send(.inner(.fetchTeamsResponse(teamResult)))
+        }
+        .cancellable(id: CancelID.fetchTeams, cancelInFlight: true)
     }
   }
 
@@ -238,13 +252,12 @@ extension AttendanceCheck {
             state.selectScheduleID = todayScheduleId(from: schedules) ?? .zero
 
           case .failure(let error):
-            #logNetwork("스케줄 조회 실패", error.localizedDescription ?? "알 수 없는 오류")
+            #logNetwork("스케줄 조회 실패", error.localizedDescription)
             state.loading = false
         }
         return .none
 
-
-      case .AttendanceCountResponse(let result):
+      case .attendanceCountResponse(let result):
         switch result {
           case .success(let data):
             state.attendanceCountModel = data
@@ -257,8 +270,21 @@ extension AttendanceCheck {
 
         }
         return .none
+
+      case .fetchTeamsResponse(let result):
+        switch result {
+          case .success(let data):
+            var seen: Set<SelectTeams> = []
+            let uniqueTeams = data.filter { seen.insert($0.teams).inserted }
+            let orderedTeams = uniqueTeams.sorted { $0.teamId < $1.teamId }
+            state.attendanceTeam = .init(uniqueElements: orderedTeams)
+          case .failure(let error):
+            #logNetwork("기수 팀 조회 실패", error.localizedDescription)
+        }
+        return .none
     }
   }
+
 
   private func todayScheduleId(
     from schedules: [Schedule],
@@ -295,9 +321,9 @@ extension AttendanceCheck {
 
         return .run { send in
           try await clock.sleep(for: .milliseconds(100))
-            await send(.async(.fetchAttendanceCount))
+          await send(.async(.fetchAttendanceCount))
         }
-
+        
       default:
         return .none
     }

@@ -9,8 +9,7 @@ import Foundation
 
 public enum AttendanceAPI {
   case adminAttendanceCount(scheduleId: Int)
-  case editAttendance(attendanceId: String)
-  case fetchCount
+  case fetchTeams
 
   public var description: String {
     switch self {
@@ -18,11 +17,9 @@ public enum AttendanceAPI {
     case .adminAttendanceCount(let id):
       return "/me/schedules/\(id)/attendances"
 
-    case .editAttendance(let attendanceId):
-      return "\(attendanceId)/"
+      case .fetchTeams:
+        return "/me/generations/teams"
 
-    case .fetchCount:
-      return "count/"
     }
   }
 }
