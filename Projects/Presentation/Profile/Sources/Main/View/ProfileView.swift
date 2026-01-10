@@ -7,9 +7,7 @@
 
 import SwiftUI
 
-
 import ComposableArchitecture
-import SDWebImageSwiftUI
 import DesignSystem
 
 public struct ProfileView: View {
