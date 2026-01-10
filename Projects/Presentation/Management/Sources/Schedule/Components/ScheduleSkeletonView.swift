@@ -14,32 +14,41 @@ public struct ScheduleSkeletonView: View {
   public init() {}
 
   public var body: some View {
-    VStack(spacing: 0) {
-      ZStack {
-        Color.basicBlack
+    ZStack {
+      Color.basicBlack
 
-        VStack(alignment: .leading, spacing: 0) {
+      ScrollView(.vertical) {
+        VStack(alignment: .leading, spacing: 16) {
+          headerSkeleton
           titleSkeleton
-
-          // 스케줄 리스트 skeleton
-          ScrollView(.vertical) {
-            LazyVStack(spacing: 16) {
-              // 스크린샷과 동일한 5개 카드
-              ForEach(0..<5, id: \.self) { _ in
-                cardSkeleton
-              }
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 100)
-          }
-          .scrollIndicators(.hidden)
+          listSkeleton
         }
+        .padding(.horizontal, 24)
+        .padding(.top, 8)
+        .padding(.bottom, 32)
       }
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .scrollIndicators(.hidden)
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.basicBlack)
     .onAppear {
       isShimmering = true
+    }
+  }
+
+  private var headerSkeleton: some View {
+    HStack {
+      RoundedRectangle(cornerRadius: 12)
+        .fill(Color.gray.opacity(0.3))
+        .frame(width: 56, height: 20)
+        .overlay(shimmerEffect(delay: 0.0))
+
+      Spacer()
+
+      Circle()
+        .fill(Color.gray.opacity(0.3))
+        .frame(width: 28, height: 28)
+        .overlay(shimmerEffect(delay: 0.1))
     }
   }
 
@@ -91,13 +100,18 @@ public struct ScheduleSkeletonView: View {
     HStack {
       RoundedRectangle(cornerRadius: 6)
         .fill(Color.gray.opacity(0.3))
-        .frame(width: 90, height: 22)
+        .frame(width: 120, height: 20)
         .overlay(shimmerEffect(delay: 0.0))
       Spacer()
     }
-    .padding(.horizontal, 20)
-    .padding(.top, 24)
-    .padding(.bottom, 20)
+  }
+
+  private var listSkeleton: some View {
+    LazyVStack(spacing: 16) {
+      ForEach(0..<5, id: \.self) { _ in
+        cardSkeleton
+      }
+    }
   }
 
   // MARK: - Shimmer Effect
