@@ -43,7 +43,6 @@ public struct AttendanceCheck {
     var attendanceModel: IdentifiedArrayOf<Attendance> = .init(uniqueElements: [])
 
 
-
     public init() {
 
     }
