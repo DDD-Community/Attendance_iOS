@@ -43,6 +43,28 @@ final public class DefaultAttendanceRepositoryImpl: AttendanceInterface  {
         userName: "홍길동",
         userInfo: "Web1팀/BE",
         status: .late
+      ),
+      Entity.Attendance(
+        id: "2A",
+        userID: "2A",
+        userName: "김민지",
+        userInfo: "Web1팀/FE",
+        status: .attended
+      ),
+      Entity.Attendance(
+        id: "3B",
+        userID: "3B",
+        userName: "이서준",
+        userInfo: "Web1팀/BE",
+        status: .absent
+      ),
+      Entity.Attendance(
+        id: "4C",
+        userID: "4C",
+        userName: "박지훈",
+        userInfo: "Web1팀/FE",
+        status: .attended
+      )
       )
     ]
   }
