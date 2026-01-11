@@ -13,7 +13,7 @@ import Foundations
 import AsyncMoya
 
 public enum QRService {
-  case qrAttendanceCheck(code: String)
+  case qrAttendanceCheck(qrCode: String)
   case createQRCode
 }
 
@@ -32,7 +32,7 @@ extension QRService: BaseTargetType {
   public var urlPath: String {
     switch self {
     case .qrAttendanceCheck:
-      return QRAPI.qrcodeValidate.qrcodeDescription
+      return QRAPI.validate.description
     case .createQRCode:
       return ""
     }
@@ -49,8 +49,8 @@ extension QRService: BaseTargetType {
   
   public var parameters: [String: Any]? {
     switch self {
-    case .qrAttendanceCheck(let code):
-      let parameters: [String: Any] = ["qr_code_value": code]
+    case .qrAttendanceCheck(let qrCode):
+        return qrCode.toDictionary(key: "qrCode")
       return parameters
     case .createQRCode:
       return nil
@@ -63,14 +63,5 @@ extension QRService: BaseTargetType {
   
   public var error: [Int : AsyncMoya.NetworkError]? {
     return  nil
-  }
-
-  public var validationType: ValidationType {
-    switch self {
-    case .qrAttendanceCheck(let code):
-      return .customCodes(Array(200...410))
-    case .createQRCode:
-      return .successCodes
-    }
   }
 }

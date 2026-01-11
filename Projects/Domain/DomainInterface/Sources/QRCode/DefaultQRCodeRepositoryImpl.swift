@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-import DomainInterface
 import Model
+import Entity
 
 final public class DefaultQRCodeRepositoryImpl: QRCodeInterface {
   public init() {}
@@ -21,10 +21,14 @@ final public class DefaultQRCodeRepositoryImpl: QRCodeInterface {
     return nil
   }
 
-  public func qrAttendanceCheck(
+  public func qrValidateCheck(
     from code: String
-  ) async throws -> QRValidateModel? {
-    return nil
+  ) async throws -> QRValidateEntity {
+    return QRValidateEntity(
+      isSuccess: true,
+      code: code,
+      message: "QR 인증 완료",
+      detail: "출석 체크가 완료되었습니다."
+    )
   }
 }
-

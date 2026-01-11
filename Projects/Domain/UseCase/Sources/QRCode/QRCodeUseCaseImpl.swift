@@ -8,7 +8,7 @@
 import SwiftUI
 
 import DomainInterface
-import Model
+import Entity
 
 import WeaveDI
 
@@ -26,10 +26,10 @@ public struct QRCodeUseCaseImpl: QRCodeInterface {
   }
 
   // MARK: - qrcode 출석체크
-  public func qrAttendanceCheck(
+  public func qrValidateCheck(
     from code: String
-  ) async throws -> QRValidateModel? {
-    return try await repository.qrAttendanceCheck(from: code)
+  ) async throws -> QRValidateEntity {
+    return try await repository.qrValidateCheck(from: code)
   }
 }
 
