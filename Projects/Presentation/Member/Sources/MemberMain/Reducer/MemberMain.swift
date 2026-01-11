@@ -11,7 +11,6 @@ import Shareds
 import UseCase
 
 import ComposableArchitecture
-import FirebaseAuth
 import LogMacro
 import Entity
 

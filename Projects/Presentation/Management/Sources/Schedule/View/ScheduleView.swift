@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-import Collections
 import SwiftUIX
 import DesignSystem
 import ComposableArchitecture

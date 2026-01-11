@@ -61,7 +61,6 @@ public struct AttendanceCheck {
 
   @Reducer(state: .equatable)
   public enum Destination {
-    case selectDate(CustomDate)
     case scheduleModal(ScheduleModal)
   }
 
@@ -72,7 +71,6 @@ public struct AttendanceCheck {
     case selectPartButton(selectPart: SelectTeamEntity)
     case swipeNext
     case swipePrevious
-    case appearSelectDate
     case closeModal
     case tapSelectDate
   }
@@ -178,9 +176,6 @@ extension AttendanceCheck {
         updateSelectedTeam(state: &state, team: orderedTeams[prevIndex])
         return .send(.async(.fetchAttendance))
 
-      case .appearSelectDate:
-        state.destination = .selectDate(.init())
-        return .none
 
       case .tapSelectDate:
         state.destination = .scheduleModal(.init())

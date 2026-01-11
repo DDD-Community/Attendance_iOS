@@ -16,22 +16,12 @@ public extension TargetDependency.SPM {
   static let concurrencyExtras = TargetDependency.external(name: "ConcurrencyExtras", condition: .none)
   static let sdwebImage = TargetDependency.external(name: "SDWebImageSwiftUI", condition: .none)
   static let swiftUIX = TargetDependency.external(name: "SwiftUIX", condition: .none)
-  static let fsCalendar = TargetDependency.external(name: "FSCalendar", condition: .none)
   static let weaveDI = TargetDependency.external(name: "WeaveDI", condition: .none)
-
-  static let keychainAccess = TargetDependency.external(name: "KeychainAccess", condition: .none)
-  static let popupView = TargetDependency.external(name: "PopupView", condition: .none)
-  static let collections = TargetDependency.external(name: "Collections", condition: .none)
 
   static let googleSignIn = TargetDependency.external(name: "GoogleSignIn", condition: .none)
   static let appAuth: TargetDependency = .external(name: "AppAuth")
-  static let firebaseAuth = TargetDependency.external(name: "FirebaseAuth", condition: .none)
-  static let firebaseFirestore = TargetDependency.external(name: "FirebaseFirestore", condition: .none)
-  static let firebaseAnalytics = TargetDependency.external(name: "FirebaseAnalytics", condition: .none)
   static let firebaseCrashlytics = TargetDependency.external(name: "FirebaseCrashlytics", condition: .none)
-  static let firebaseRemoteConfig = TargetDependency.external(name: "FirebaseRemoteConfig", condition: .none)
   static let firebaseMessaging = TargetDependency.external(name: "FirebaseMessaging", condition: .none)
-  static let firebaseCore = TargetDependency.external(name: "FirebaseCore", condition: .none)
   static let googleUtilities = TargetDependency.external(name: "GoogleUtilities", condition: .none)
 
 }
