@@ -60,6 +60,15 @@ public struct AttendanceCheckStatusCard: View {
               .resizable()
               .scaledToFit()
               .frame(width: 24, height: 24)
+
+            Spacer()
+              .frame(width: 9)
+
+            Image(asset: .editAttendance)
+              .resizable()
+              .scaledToFit()
+              .frame(width: 15, height: 15)
+
           }
           
         }

@@ -61,5 +61,6 @@ public enum ImageAsset: String {
   // MARK: - QR
   case qrCheck
   case edit
+  case editAttendance
 
 }
