@@ -121,7 +121,7 @@ extension QRScannerView {
         .ignoresSafeArea()
       
       // (B) 안내 문구 (네모 영역 위쪽에 배치)
-//      scanText(attendanceType: attendanceStatus)
+      scanText(attendanceType: .absent)
         .position(x: width / 2, y: rectY - 30)
       // (C) 중앙 테두리 (네모 영역 강조)
       RoundedRectangle(cornerRadius: 12)

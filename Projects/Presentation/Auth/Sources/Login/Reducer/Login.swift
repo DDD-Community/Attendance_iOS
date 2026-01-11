@@ -28,7 +28,8 @@ public struct Login {
     @Shared var userSession: UserSession
     var loginEntity: LoginEntity?
     var currentSocialType: SocialType?
-    
+    @Presents public var customAlert: CustomAlertState<CustomAlertAction>?
+
     public init(
       userSession: UserSession = .empty
     ) {
@@ -42,6 +43,7 @@ public struct Login {
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
+    case scope(ScopeAction)
     case navigation(NavigationAction)
   }
   
@@ -77,6 +79,12 @@ public struct Login {
     case presentMemberMain
   }
 
+  @CasePathable
+  public enum ScopeAction {
+    case customAlert(PresentationAction<CustomAlertAction>)
+  }
+
+
   @Dependency(\.appleManger) var appleLoginManger
   @Dependency(\.unifiedOAuthUseCase) var unifiedOAuthUseCase
   @Dependency(\.continuousClock) var clock
@@ -100,6 +108,10 @@ public struct Login {
           
         case .navigation(let navigationAction):
           return handleNavigationAction(state: &state, action: navigationAction)
+
+
+        case .scope:
+          return .none
       }
     }
   }
