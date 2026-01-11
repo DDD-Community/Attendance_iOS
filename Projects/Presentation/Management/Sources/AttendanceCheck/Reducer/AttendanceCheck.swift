@@ -40,7 +40,8 @@ public struct AttendanceCheck {
     var selectScheduleID: Int = 0
     var attendanceCountModel : AttendanceCount?
     var attendanceTeam: IdentifiedArrayOf<SelectTeamEntity> = .init(uniqueElements: [])
-    var attendanceModel: IdentifiedArrayOf<Attendance> = .init(uniqueElements: [])
+    var attendanceModel: [Attendance] = []
+    var attendanceByTeam: [Int: [Attendance]] = [:]
 
 
     public init() {
@@ -90,7 +91,7 @@ public struct AttendanceCheck {
     case fetchScheduleResponse(Result<[Schedule], ScheduleError>)
     case attendanceCountResponse(Result<AttendanceCount, AttendanceError>)
     case fetchTeamsResponse(Result<[SelectTeamEntity], AttendanceError>)
-    case attendanceResponse(Result<[Entity.Attendance], AttendanceError>)
+    case attendanceResponse(teamId: Int, Result<[Entity.Attendance], AttendanceError>)
   }
 
   // MARK: - NavigationAction
@@ -203,7 +204,7 @@ extension AttendanceCheck {
             try await scheduleUseCase.getSchedule()
           }
             .mapError(ScheduleError.from)
-          try await clock.sleep(for: .seconds(2))
+          try await clock.sleep(for: .seconds(0.8))
           return await send(.inner(.fetchScheduleResponse(scheduleResult)))
 
         }
@@ -241,7 +242,7 @@ extension AttendanceCheck {
             try await attendanceUseCase.sessionAttendance(scheduleId: scheduleId, teamId: teamId)
           }
             .mapError(AttendanceError.from)
-          return await send(.inner(.attendanceResponse(attendanceResult)))
+          return await send(.inner(.attendanceResponse(teamId: teamId, attendanceResult)))
         }
         .cancellable(id: CancelID.fetchAttendance, cancelInFlight: true)
     }
@@ -293,6 +294,11 @@ extension AttendanceCheck {
             let uniqueTeams = data.filter { seen.insert($0.teams).inserted }
             let orderedTeams = uniqueTeams.sorted { $0.teamId < $1.teamId }
             state.attendanceTeam = .init(uniqueElements: orderedTeams)
+            for team in orderedTeams {
+              if state.attendanceByTeam[team.teamId] == nil {
+                state.attendanceByTeam[team.teamId] = []
+              }
+            }
             if let firstTeam = orderedTeams.first {
               state.selectPart = firstTeam.teams
               state.selectTeamID = firstTeam.teamId
@@ -302,10 +308,11 @@ extension AttendanceCheck {
         }
         return .none
 
-      case .attendanceResponse(let result):
+      case .attendanceResponse(let teamId, let result):
         switch result {
           case .success(let data):
-            state.attendanceModel = .init(uniqueElements: data)
+            state.attendanceModel = data
+            state.attendanceByTeam[teamId] = data
           case .failure(let error):
             #logNetwork("기수 출석 현황 조회 실패", error.localizedDescription)
         }
@@ -358,6 +365,7 @@ private extension AttendanceCheck {
     state.selectPart = team.teams
     state.selectTeamID = team.teamId
   }
+
 
    func todayScheduleId(
     from schedules: [Schedule],

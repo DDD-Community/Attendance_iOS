@@ -42,7 +42,7 @@ extension AttendanceDomain: DomainType {
       case .schedule:
         return "api/schedules"
       case .attendance:
-        return "api/v1/attendances/"
+        return "api/attendances/"
     }
   }
 }

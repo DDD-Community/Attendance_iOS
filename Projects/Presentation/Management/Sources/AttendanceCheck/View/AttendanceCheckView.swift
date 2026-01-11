@@ -176,18 +176,14 @@ extension AttendanceCheckView {
 
   @ViewBuilder
   fileprivate func selectPartAttandanceStatusCard() -> some View {
-    let attendanceModel = store.attendanceModel.filter { attendance in
-      guard let selectedTeam = store.selectPart?.rawValue,
-            let team = attendance.selectTeamEntity?.rawValue else { return false }
-      return team == selectedTeam
-    }
+    let attendanceModel = store.attendanceByTeam[store.selectTeamID] ?? store.attendanceModel
 
     if attendanceModel.isEmpty {
       noMemberAttandanceView()
     } else {
       ScrollView(.vertical) {
         LazyVStack(spacing: .zero) {
-          ForEach(attendanceModel, id: \.id) { item in
+          ForEach(attendanceModel, id: \.userID) { item in
             AttendanceCheckStatusCard(
               attendanceStatus: item.status,
               selectPart: item.selectPartEntity ?? .all,
