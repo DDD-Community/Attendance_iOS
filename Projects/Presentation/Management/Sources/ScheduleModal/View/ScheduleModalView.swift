@@ -9,6 +9,7 @@ import SwiftUI
 import ComposableArchitecture
 import Shareds
 import SDWebImageSwiftUI
+import Entity
 
 public struct ScheduleModalView: View {
   @Bindable var store: StoreOf<ScheduleModal>
@@ -23,22 +24,15 @@ public struct ScheduleModalView: View {
         .edgesIgnoringSafeArea(.all)
 
       VStack {
-        scheduleHeader()
-
-        Spacer()
-          .frame(height: 20)
-
         if store.loading {
-          Spacer()
-
-          AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(true))
-            .resizable()
-            .scaledToFit()
-            .frame(width: 200, height: 200)
-
-          Spacer()
+          ScheduleModalSkeletonView()
         } else {
           VStack(spacing: 0) {
+            scheduleHeader()
+
+            Spacer()
+              .frame(height: 20)
+
             ScrollView(.vertical) {
               scheduleList()
             }
@@ -76,7 +70,7 @@ extension ScheduleModalView {
 
   @ViewBuilder
   private func scheduleList() -> some View {
-    let schedules = store.scheduleModel?.data ?? []
+    let schedules = store.scheduleModel
 
     LazyVStack(spacing: 8) {
       ForEach(schedules, id: \.id) { item in
@@ -89,63 +83,60 @@ extension ScheduleModalView {
 
   @ViewBuilder
   private func scheduleCardRow(
-    item: ScheduleResponseModel
+    item: Schedule
   ) -> some View {
     let isSelected = store.selectedSchedule?.id == item.id
 
     scheduleCard(item: item, isSelected: isSelected)
       .onTapGesture {
-        handleScheduleSelection(item: item)
+        store.send(.view(.selectSchedule(item: item)))
       }
-  }
-
-  private func handleScheduleSelection(item: ScheduleResponseModel) {
-
-    store.send(.view(.selectSchedule(item: item)))
   }
 
   @ViewBuilder
-  private func scheduleCard(
-    item: ScheduleResponseModel,
-    isSelected: Bool
-  ) -> some View {
-    HStack(spacing: 12) {
-      VStack(spacing: 2) {
-        Text(String.monthOnlyString(from: item.startTime) ?? "")
-          .pretendardCustomFont(textStyle: .body2NormalMedium)
-          .foregroundColor(.staticBlack)
+   private func scheduleCard(
+     item: Schedule,
+     isSelected: Bool
+   ) -> some View {
+     HStack(spacing: 12) {
+       VStack(spacing: 2) {
+         Text("\(item.month)월")
+           .pretendardCustomFont(textStyle: .body2NormalMedium)
+           .foregroundColor(.staticBlack)
 
-        Text(String.dayOnlyString(from: item.startTime) ?? "")
-          .pretendardCustomFont(textStyle: .title3NormalMedium)
-          .foregroundColor(.staticBlack)
-      }
-      .frame(width: 54, height: 54)
-      .background(.blue20)
-      .cornerRadius(10)
+         Text("\(item.day)")
+           .pretendardCustomFont(textStyle: .title3NormalMedium)
+           .foregroundColor(.staticBlack)
+       }
+       .frame(width: 54, height: 54)
+       .background(.blue20)
+       .cornerRadius(10)
 
-      VStack(alignment: .leading, spacing: 4) {
-        Text(item.title)
-          .pretendardCustomFont(textStyle: .body1NormalBold)
-          .foregroundStyle(.borderInverse)
+       VStack(alignment: .leading, spacing: 4) {
+         Text(item.name)
+           .pretendardCustomFont(textStyle: .body1NormalBold)
+           .foregroundStyle(.borderInverse)
 
-        Text(item.description)
-          .pretendardCustomFont(textStyle: .body3NormalRegular)
-          .foregroundStyle(.textSecondary100)
-      }
+         Text(item.description)
+           .pretendardCustomFont(textStyle: .body3NormalRegular)
+           .foregroundStyle(.textSecondary100)
+       }
 
-      Spacer()
+       Spacer()
 
-    }
-    .padding()
-    .background(.backGroundSecondary)
-    .cornerRadius(12)
-    .background(
-      RoundedRectangle(cornerRadius: 12)
-        .stroke(isSelected ? .statusFocus : Color.clear, lineWidth: 3)
-    )
-    .padding(.horizontal, 24)
-    .padding(.vertical, 2)
-  }
+     }
+     .padding()
+     .background(.backGroundSecondary)
+     .cornerRadius(12)
+     .background(
+       RoundedRectangle(cornerRadius: 12)
+         .stroke(isSelected ? .statusFocus : Color.clear, lineWidth: 3)
+     )
+     .padding(.horizontal, 24)
+     .padding(.vertical, 2)
+   }
+
+
 
 @ViewBuilder
   private func confirmButton() -> some View {

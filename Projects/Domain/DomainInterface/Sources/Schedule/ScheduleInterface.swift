@@ -7,12 +7,12 @@
 //
 
 import Foundation
+import Entity
 import WeaveDI
 
 /// Schedule 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol ScheduleInterface: Sendable {
-  func getSchedules()  async throws -> ScheduleModel?
-  func filtergetSchedules(startDate: String) async throws -> ScheduleModel?
+  func getSchedule()  async throws -> [Schedule]
 }
 
 /// Schedule Repository의 DependencyKey 구조체

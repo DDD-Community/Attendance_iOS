@@ -8,12 +8,12 @@
 import Foundation
 
 public enum QRAPI: String {
-  case qrcodeValidate
+  case validate
   
-  public var qrcodeDescription: String {
+  public var description: String {
     switch self {
-    case .qrcodeValidate:
-      return "attend-with-qr/"
+    case .validate:
+      return ""
     }
   }
 }

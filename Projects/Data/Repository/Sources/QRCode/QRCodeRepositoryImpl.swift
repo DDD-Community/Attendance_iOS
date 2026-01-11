@@ -11,6 +11,7 @@ import CoreImage.CIFilterBuiltins
 import DomainInterface
 import Model
 import Service
+import Entity
 
 @preconcurrency import AsyncMoya
 
@@ -55,14 +56,25 @@ final public class QRCodeRepositoryImpl: QRCodeInterface {
     }
   }
 
-  public func qrAttendanceCheck(
-    from code: String
-  ) async throws -> QRValidateModel? {
-    let qrModel: QRValidateDTOModel = try await provider.request(
-      .qrAttendanceCheck(
-        code: code
-      ))
+  public func qrValidateCheck(from code: String) async throws -> Entity.QRValidateEntity {
+    let response = try await provider.requestResponse(.qrAttendanceCheck(qrCode: code))
+    let decoder = JSONDecoder()
 
-    return qrModel.toDomain()
+    if (200...299).contains(response.statusCode) {
+      if response.data.isEmpty {
+        return QRValidateEntity(isSuccess: true)
+      }
+      if let successDTO = try? decoder.decode(QRValidateDTO.self, from: response.data) {
+        return successDTO.toDomain(isSuccess: true)
+      }
+      return QRValidateEntity(isSuccess: true)
+    }
+    if let errorDTO = try? decoder.decode(QRValidateDTO.self, from: response.data) {
+      return errorDTO.toDomain(isSuccess: false)
+    }
+    return QRValidateEntity(
+      isSuccess: false,
+      message: String(data: response.data, encoding: .utf8)
+    )
   }
 }

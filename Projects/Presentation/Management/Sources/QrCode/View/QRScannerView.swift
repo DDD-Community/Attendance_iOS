@@ -48,9 +48,9 @@ struct QRScannerView: View {
         }
       }
     }
-    .onChange(of: store.qrCheckModel?.data.status) { oldValue, newValue in
+    .onChange(of: store.qrCheckModel?.isSuccess) { oldValue, newValue in
       switch newValue {
-      case .present, .late, .absent:
+        case true:
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
           backAction()
         }
@@ -97,7 +97,7 @@ extension QRScannerView {
   
   @ViewBuilder
   fileprivate func scanedTextViewWithBackGround() -> some View {
-    let attendanceStatus =  store.qrCheckModel?.data.status
+    let attendanceStatus =  store.qrCheckModel?.isSuccess
     GeometryReader { proxy in
       let width = proxy.size.width
       let height = proxy.size.height
@@ -121,7 +121,7 @@ extension QRScannerView {
         .ignoresSafeArea()
       
       // (B) 안내 문구 (네모 영역 위쪽에 배치)
-      scanText(attendanceType: attendanceStatus)
+      scanText(attendanceType: .absent)
         .position(x: width / 2, y: rectY - 30)
       // (C) 중앙 테두리 (네모 영역 강조)
       RoundedRectangle(cornerRadius: 12)

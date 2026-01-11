@@ -18,6 +18,7 @@ public struct AlertItem: Identifiable, Equatable {
   public let isDestructive: Bool
   public let onConfirm: () -> Void
   public let onCancel: () -> Void
+  public let onPolicyTap: () -> Void
 
   public static func == (lhs: AlertItem, rhs: AlertItem) -> Bool {
     lhs.id == rhs.id &&
@@ -35,7 +36,8 @@ public struct AlertItem: Identifiable, Equatable {
     cancelTitle: String = "취소",
     isDestructive: Bool = false,
     onConfirm: @escaping () -> Void,
-    onCancel: @escaping () -> Void
+    onCancel: @escaping () -> Void,
+    onPolicyTap: @escaping () -> Void = {}
   ) {
     self.title = title
     self.message = message
@@ -44,6 +46,7 @@ public struct AlertItem: Identifiable, Equatable {
     self.isDestructive = isDestructive
     self.onConfirm = onConfirm
     self.onCancel = onCancel
+    self.onPolicyTap = onPolicyTap
   }
 }
 

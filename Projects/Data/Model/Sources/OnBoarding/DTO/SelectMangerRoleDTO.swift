@@ -8,17 +8,17 @@
 import Foundation
 
 public struct SelectMangerRoleDTO: Decodable {
-  public let data: [SelectMangerRoleDTOReponse]
+  public let data: [SelectMangerRoleDTOResponse]
 
   public init(from decoder: Decoder) throws {
     let container = try decoder.singleValueContainer()
-    if let array = try? container.decode([SelectMangerRoleDTOReponse].self) {
+    if let array = try? container.decode([SelectMangerRoleDTOResponse].self) {
       self.data = array
       return
     }
 
     let keyed = try decoder.container(keyedBy: CodingKeys.self)
-    self.data = try keyed.decode([SelectMangerRoleDTOReponse].self, forKey: .data)
+    self.data = try keyed.decode([SelectMangerRoleDTOResponse].self, forKey: .data)
   }
 
   private enum CodingKeys: String, CodingKey {
@@ -26,6 +26,6 @@ public struct SelectMangerRoleDTO: Decodable {
   }
 }
 
-public struct SelectMangerRoleDTOReponse: Decodable {
+public struct SelectMangerRoleDTOResponse: Decodable {
     let key, description: String
 }
