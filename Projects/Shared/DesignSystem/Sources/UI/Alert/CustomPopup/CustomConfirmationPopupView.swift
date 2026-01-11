@@ -50,7 +50,9 @@ struct CustomConfirmationPopup: View {
         .opacity(0.6)
         .edgesIgnoringSafeArea(.all)
         .onTapGesture {
-          onCancel()
+          if style != .consent {
+            onCancel()
+          }
         }
 
       if style == .consent {
@@ -128,19 +130,26 @@ struct CustomConfirmationPopup: View {
       }
 
       HStack(spacing: 8) {
-        RoundedRectangle(cornerRadius: 4)
-          .stroke(.gray60, lineWidth: 1)
-          .frame(width: 15, height: 15)
-          .overlay {
-            if isChecked {
-              Image(systemName: "checkmark")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(.staticWhite)
+        Button {
+          isChecked.toggle()
+          if isChecked {
+            onConfirm()
+          }
+        } label: {
+          RoundedRectangle(cornerRadius: 4)
+            .stroke(.gray60, lineWidth: 1)
+            .frame(width: 15, height: 15)
+            .overlay {
+              if isChecked {
+                Image(systemName: "checkmark")
+                  .font(.system(size: 12, weight: .bold))
+                  .foregroundStyle(.staticWhite)
+              }
             }
-          }
-          .onTapGesture {
-            handleConsentTap()
-          }
+            .padding(6)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
 
         Text(checkboxTitle)
           .pretendardCustomFont(textStyle: .body3NormalRegular)
@@ -160,12 +169,6 @@ struct CustomConfirmationPopup: View {
     .onTapGesture {}
   }
 
-  private func handleConsentTap() {
-    isChecked.toggle()
-    if isChecked {
-      onConfirm()
-    }
-  }
 }
 
 #Preview("Item Based") {

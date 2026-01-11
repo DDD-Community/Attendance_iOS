@@ -115,19 +115,19 @@ public struct AppReducer: Sendable {
 
     case .splash(.navigation(.presentLogin)):
       return .run { send in
-        try await self.clock.sleep(for: .seconds(1))
+        try await self.clock.sleep(for: .seconds(0.5))
         await send(.view(.presentAuth))
       }
 
     case .splash(.navigation(.presentStaff)):
       return .run { send in
-        try await self.clock.sleep(for: .seconds(1))
+        try await self.clock.sleep(for: .seconds(0.5))
         await send(.view(.presentStaff))
       }
 
     case .splash(.navigation(.presentMember)):
       return .run { send in
-        try await self.clock.sleep(for: .seconds(1))
+        try await self.clock.sleep(for: .seconds(0.5))
         await send(.view(.presentMember))
       }
 

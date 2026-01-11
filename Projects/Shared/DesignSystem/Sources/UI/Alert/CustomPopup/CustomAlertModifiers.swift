@@ -55,7 +55,8 @@ public extension View {
     cancelTitle: String = "취소",
     isDestructive: Bool = false,
     onConfirm: @escaping () -> Void,
-    onCancel: @escaping () -> Void
+    onCancel: @escaping () -> Void,
+    onPolicyTap: @escaping () -> Void = {}
   ) -> some View {
     self.modifier(
       CustomConfirmationPopupModifier(
@@ -66,7 +67,8 @@ public extension View {
         cancelTitle: cancelTitle,
         isDestructive: isDestructive,
         onConfirm: onConfirm,
-        onCancel: onCancel
+        onCancel: onCancel,
+        onPolicyTap: onPolicyTap
       )
     )
   }
@@ -93,7 +95,7 @@ struct CustomConfirmationPopupItemModifier: ViewModifier {
             checkboxTitle: "",
             onConfirm: item.onConfirm,
             onCancel: item.onCancel,
-            onPolicyTap: {}
+            onPolicyTap: item.onPolicyTap
           )
           .transition(.move(edge: .bottom).combined(with: .opacity))
           .animation(.easeInOut(duration: 0.3), value: true)
@@ -111,6 +113,7 @@ struct CustomConfirmationPopupModifier: ViewModifier {
   private let isDestructive: Bool
   private let onConfirm: () -> Void
   private let onCancel: () -> Void
+  private let onPolicyTap: () -> Void
 
   init(
     isPresented: Bool,
@@ -120,7 +123,8 @@ struct CustomConfirmationPopupModifier: ViewModifier {
     cancelTitle: String,
     isDestructive: Bool,
     onConfirm: @escaping () -> Void,
-    onCancel: @escaping () -> Void
+    onCancel: @escaping () -> Void,
+    onPolicyTap: @escaping () -> Void
   ) {
     self.isPresented = isPresented
     self.title = title
@@ -130,6 +134,7 @@ struct CustomConfirmationPopupModifier: ViewModifier {
     self.isDestructive = isDestructive
     self.onConfirm = onConfirm
     self.onCancel = onCancel
+    self.onPolicyTap = onPolicyTap
   }
 
   func body(content: Content) -> some View {
@@ -146,7 +151,7 @@ struct CustomConfirmationPopupModifier: ViewModifier {
             checkboxTitle: "",
             onConfirm: onConfirm,
             onCancel: onCancel,
-            onPolicyTap: {}
+            onPolicyTap: onPolicyTap
           )
           .transition(.move(edge: .bottom).combined(with: .opacity))
           .animation(.easeInOut(duration: 0.3), value: isPresented)
