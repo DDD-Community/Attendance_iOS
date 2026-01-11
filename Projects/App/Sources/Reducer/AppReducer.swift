@@ -110,7 +110,7 @@ public struct AppReducer: Sendable {
     switch action {
     case .presentView:
       return .run { send in
-        await send(.view(.splash(.async(.fetchUser))))
+        await send(.view(.splash(.view(.onAppear))))
       }
 
     case .splash(.navigation(.presentLogin)):

@@ -29,14 +29,16 @@ public struct AttendanceDTOModel: Decodable {
 
 
 public struct AttendanceDTOResponse: Decodable {
-    let attendanceID, userID, userName, userInfo: String
-    let attendanceStatus: String
+  let attendanceID: Int?
+  let userID: Int
+  let userName, userInfo: String
+  let attendanceStatus: String
 
-    enum CodingKeys: String, CodingKey {
-        case attendanceID = "attendanceId"
-        case userID = "userId"
-        case userName, userInfo, attendanceStatus
-    }
+  enum CodingKeys: String, CodingKey {
+    case attendanceID = "attendanceId"
+    case userID = "userId"
+    case userName, userInfo, attendanceStatus
+  }
 }
 
 

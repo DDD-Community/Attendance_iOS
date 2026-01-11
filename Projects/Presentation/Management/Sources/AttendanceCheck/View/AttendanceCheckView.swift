@@ -9,7 +9,6 @@ import SwiftUI
 
 import Shareds
 import Entity
-import Model
 
 import ComposableArchitecture
 
@@ -99,7 +98,7 @@ extension AttendanceCheckView {
           ScrollView(.horizontal, showsIndicators: false) {
             HStack {
               ForEach(store.attendanceTeam) { item in
-                let mappedTeam = item.toSelectTeam
+                let mappedTeam = item.teams
                 VStack(spacing: .zero) {
                   HStack {
                     Spacer()
@@ -153,7 +152,7 @@ extension AttendanceCheckView {
         .onChange(of: store.selectPart) { _, newValue in
           guard let newValue,
                 let target = store.attendanceTeam.first(where: {
-                  $0.toSelectTeam == newValue
+                  $0.teams == newValue
                 }) else { return }
           proxy.scrollTo(target.id, anchor: .center)
         }
@@ -166,48 +165,46 @@ extension AttendanceCheckView {
   fileprivate func selectPartAttendanceStatus() -> some View {
     if let selectPart = store.selectPart,
        [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart) {
-//      selectPartAttandanceStatusCard()
-      
+      selectPartAttandanceStatusCard()
+
       Spacer()
         .frame(height: 20)
     } else {
-//      selectPartAttandanceStatusCard()
+      selectPartAttandanceStatusCard()
     }
   }
 
-//  @ViewBuilder
-//  fileprivate func selectPartAttandanceStatusCard() -> some View {
-//    let filtered = store.scheduleModelAttendanceModel?.data.flatMap {
-//      $0.attendancesSummary.filter { item in
-//        guard let team = SelectTeam(rawValue: item.profile.team.rawValue),
-//              let selected = store.selectPart else { return false }
-//        return team == selected
-//      }
-//    } ?? []
-//
-//    if filtered.isEmpty {
-//      noMemberAttandanceView()
-//    } else {
-//      ScrollView(.vertical) {
-//        LazyVStack(spacing: .zero) {
-//          ForEach(filtered, id: \.profile.id) { item in
-//            AttendanceCheckStatusCard(
-//              attandanceType: AttendanceType(rawValue: item.status) ?? .present,
-//              selectPart: SelectPart(rawValue:  item.profile.role) ?? .all,
-//              selectTeam: item.profile.team,
-//              name: item.profile.name
-//            )
-//          }
-//        }
-//        .padding(.horizontal, 24)
-//        .padding(.bottom, 10)
-//      }
-//      .scrollIndicators(.hidden)
-//      .onAppear {
-//        UIScrollView.appearance().bounces = false
-//      }
-//    }
-//  }
+  @ViewBuilder
+  fileprivate func selectPartAttandanceStatusCard() -> some View {
+    let attendanceModel = store.attendanceModel.filter { attendance in
+      guard let selectedTeam = store.selectPart?.rawValue,
+            let team = attendance.selectTeamEntity?.rawValue else { return false }
+      return team == selectedTeam
+    }
+
+    if attendanceModel.isEmpty {
+      noMemberAttandanceView()
+    } else {
+      ScrollView(.vertical) {
+        LazyVStack(spacing: .zero) {
+          ForEach(attendanceModel, id: \.id) { item in
+            AttendanceCheckStatusCard(
+              attendanceStatus: item.status,
+              selectPart: item.selectPartEntity ?? .all,
+              selectTeam: item.selectTeamEntity ?? .unknown,
+              name: item.userName
+            )
+          }
+        }
+        .padding(.horizontal, 24)
+        .padding(.bottom, 10)
+      }
+      .scrollIndicators(.hidden)
+      .onAppear {
+        UIScrollView.appearance().bounces = false
+      }
+    }
+  }
 
   @ViewBuilder
   fileprivate func noMemberAttandanceView() -> some View {

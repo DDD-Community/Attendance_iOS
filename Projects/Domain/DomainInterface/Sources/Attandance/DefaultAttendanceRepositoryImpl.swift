@@ -38,35 +38,33 @@ final public class DefaultAttendanceRepositoryImpl: AttendanceInterface  {
   ) async throws -> [Entity.Attendance] {
     return [
       Entity.Attendance(
-        id: "1L",
-        userID: "1L",
+        id: 1,
+        userID: 1,
         userName: "홍길동",
         userInfo: "Web1팀/BE",
         status: .late
       ),
       Entity.Attendance(
-        id: "2A",
-        userID: "2A",
+        id: 2,
+        userID: 2,
         userName: "김민지",
         userInfo: "Web1팀/FE",
         status: .attended
       ),
       Entity.Attendance(
-        id: "3B",
-        userID: "3B",
+        id: 3,
+        userID: 3,
         userName: "이서준",
         userInfo: "Web1팀/BE",
         status: .absent
       ),
       Entity.Attendance(
-        id: "4C",
-        userID: "4C",
+        id: 4,
+        userID: 4,
         userName: "박지훈",
         userInfo: "Web1팀/FE",
         status: .attended
       )
-      )
     ]
   }
-
 }

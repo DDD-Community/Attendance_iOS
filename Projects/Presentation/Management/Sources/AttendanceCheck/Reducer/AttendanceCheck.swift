@@ -23,7 +23,7 @@ public struct AttendanceCheck {
 
     var selectAttendanceDate: Date = .now
     var selectAttendanceDateMonth: Date = .now
-    var selectPart: SelectTeam? = .web1
+    var selectPart: SelectTeams? = .web1
     var selectTeamID: Int = 0
 
     var dividerWidths: [Int: CGFloat] = [:]
@@ -40,6 +40,7 @@ public struct AttendanceCheck {
     var selectScheduleID: Int = 0
     var attendanceCountModel : AttendanceCount?
     var attendanceTeam: IdentifiedArrayOf<SelectTeamEntity> = .init(uniqueElements: [])
+    var attendanceModel: IdentifiedArrayOf<Attendance> = .init(uniqueElements: [])
 
 
 
@@ -82,6 +83,7 @@ public struct AttendanceCheck {
     case fetchSchedule
     case fetchAttendanceCount
     case fetchTeams
+    case fetchAttendance
   }
 
   // MARK: - 앱내에서 사용하는 액션
@@ -89,6 +91,7 @@ public struct AttendanceCheck {
     case fetchScheduleResponse(Result<[Schedule], ScheduleError>)
     case attendanceCountResponse(Result<AttendanceCount, AttendanceError>)
     case fetchTeamsResponse(Result<[SelectTeamEntity], AttendanceError>)
+    case attendanceResponse(Result<[Entity.Attendance], AttendanceError>)
   }
 
   // MARK: - NavigationAction
@@ -100,6 +103,7 @@ public struct AttendanceCheck {
     case fetchSchedule
     case fetchAttendanceCount
     case fetchTeams
+    case fetchAttendance
   }
 
 
@@ -145,14 +149,15 @@ extension AttendanceCheck {
       case .onAppear:
         guard !state.hasFetchedAttendance else { return .none }
         state.hasFetchedAttendance = true
-        return .concatenate(
+        return .merge(
           .run { await $0(.async(.fetchSchedule)) },
           .run { await $0(.async(.fetchAttendanceCount)) },
           .run { await $0(.async(.fetchTeams)) },
+          .run { await $0(.async(.fetchAttendance)) },
         )
 
       case .selectPartButton(let selectPart):
-        state.selectPart = selectPart.toSelectTeam
+        state.selectPart = selectPart.teams
         state.selectTeamID = selectPart.teamId
         return .none
 
@@ -163,7 +168,7 @@ extension AttendanceCheck {
         let nextIndex = (currentIndex + 1) % orderedTeams.count
         updateSelectedTeam(state: &state, team: orderedTeams[nextIndex])
 
-        return .none
+        return .send(.async(.fetchAttendance))
 
       case .swipePrevious:
         let orderedTeams = orderedAttendanceTeams(from: state.attendanceTeam)
@@ -171,14 +176,13 @@ extension AttendanceCheck {
         let currentIndex = orderedTeams.firstIndex { $0.teamId == state.selectTeamID } ?? 0
         let prevIndex = (currentIndex - 1 + orderedTeams.count) % orderedTeams.count
         updateSelectedTeam(state: &state, team: orderedTeams[prevIndex])
-        return .none
+        return .send(.async(.fetchAttendance))
 
       case .appearSelectDate:
         state.destination = .selectDate(.init())
         return .none
 
       case .tapSelectDate:
-        #logDebug("스케줄 모달 열기", "ScheduleModal destination 설정")
         state.destination = .scheduleModal(.init())
         return .none
 
@@ -228,6 +232,19 @@ extension AttendanceCheck {
           return await send(.inner(.fetchTeamsResponse(teamResult)))
         }
         .cancellable(id: CancelID.fetchTeams, cancelInFlight: true)
+
+      case .fetchAttendance:
+        return .run {  [
+          teamId = state.selectTeamID,
+          scheduleId = state.selectScheduleID
+        ]send in
+          let attendanceResult = await Result {
+            try await attendanceUseCase.sessionAttendance(scheduleId: scheduleId, teamId: teamId)
+          }
+            .mapError(AttendanceError.from)
+          return await send(.inner(.attendanceResponse(attendanceResult)))
+        }
+        .cancellable(id: CancelID.fetchAttendance, cancelInFlight: true)
     }
   }
 
@@ -278,11 +295,20 @@ extension AttendanceCheck {
             let orderedTeams = uniqueTeams.sorted { $0.teamId < $1.teamId }
             state.attendanceTeam = .init(uniqueElements: orderedTeams)
             if let firstTeam = orderedTeams.first {
-              state.selectPart = firstTeam.toSelectTeam
+              state.selectPart = firstTeam.teams
               state.selectTeamID = firstTeam.teamId
             }
           case .failure(let error):
             #logNetwork("기수 팀 조회 실패", error.localizedDescription)
+        }
+        return .none
+
+      case .attendanceResponse(let result):
+        switch result {
+          case .success(let data):
+            state.attendanceModel = .init(uniqueElements: data)
+          case .failure(let error):
+            #logNetwork("기수 출석 현황 조회 실패", error.localizedDescription)
         }
         return .none
     }
@@ -330,7 +356,7 @@ private extension AttendanceCheck {
     state: inout State,
     team: SelectTeamEntity
   ) {
-    state.selectPart = team.toSelectTeam
+    state.selectPart = team.teams
     state.selectTeamID = team.teamId
   }
 
