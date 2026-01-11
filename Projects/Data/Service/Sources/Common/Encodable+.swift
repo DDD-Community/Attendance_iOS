@@ -1,5 +1,5 @@
 //
-//  Extension+Encodable.swift
+//  Encodable+.swift
 //  Service
 //
 //  Created by Wonji Suh  on 12/29/25.

@@ -29,8 +29,18 @@ final public class AttendanceRepositoryImpl: AttendanceInterface , Sendable {
     return dto.toDomain()
   }
 
+  // MARK: - 출석할 팀 조회
   public func fetchAttendanceTeams() async throws -> [SelectTeamEntity] {
     let dto: SelectTeamsDTO = try await provider.request(.fetchTeams)
+    return dto.toDomain()
+  }
+
+  public func sessionAttendance(
+    scheduleId: Int,
+    teamId: Int
+  ) async throws -> [Attendance] {
+    let body = AttendanceRequestDTO(scheduleId: scheduleId, teamId: teamId)
+    let dto: AttendanceDTOModel = try await provider.request(.sessionAttendance(body: body))
     return dto.toDomain()
   }
 

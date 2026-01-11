@@ -32,4 +32,19 @@ final public class DefaultAttendanceRepositoryImpl: AttendanceInterface  {
     ]
   }
 
+  public func sessionAttendance(
+    scheduleId: Int,
+    teamId: Int
+  ) async throws -> [Entity.Attendance] {
+    return [
+      Entity.Attendance(
+        id: "1L",
+        userID: "1L",
+        userName: "홍길동",
+        userInfo: "Web1팀/BE",
+        status: .late
+      )
+    ]
+  }
+
 }

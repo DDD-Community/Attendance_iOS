@@ -134,9 +134,7 @@ extension AttendanceCheckView {
                   }
                 }
                 .onTapGesture {
-                  if let mappedTeam {
-                    store.send(.view(.selectPartButton(selectPart: mappedTeam)))
-                  }
+                  store.send(.view(.selectPartButton(selectPart: item)))
                 }
                 .id(item.id)
               }

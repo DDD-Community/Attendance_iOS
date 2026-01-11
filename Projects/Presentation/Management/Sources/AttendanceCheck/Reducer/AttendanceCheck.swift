@@ -24,6 +24,7 @@ public struct AttendanceCheck {
     var selectAttendanceDate: Date = .now
     var selectAttendanceDateMonth: Date = .now
     var selectPart: SelectTeam? = .web1
+    var selectTeamID: Int = 0
 
     var dividerWidths: [Int: CGFloat] = [:]
 
@@ -40,10 +41,6 @@ public struct AttendanceCheck {
     var attendanceCountModel : AttendanceCount?
     var attendanceTeam: IdentifiedArrayOf<SelectTeamEntity> = .init(uniqueElements: [])
 
-    //    @Shared(.inMemory("Member")) var userSignUpMember: Member = .init()
-
-    //    var attendanceCountDTOModel: AttendanceCountResponseModel?
-    //    var attendCheckModel: AttendanceListModel?
 
 
     public init() {
@@ -71,7 +68,7 @@ public struct AttendanceCheck {
   @CasePathable
   public enum View {
     case onAppear
-    case selectPartButton(selectPart: SelectTeam)
+    case selectPartButton(selectPart: SelectTeamEntity)
     case swipeNext
     case swipePrevious
     case appearSelectDate
@@ -155,26 +152,25 @@ extension AttendanceCheck {
         )
 
       case .selectPartButton(let selectPart):
-        state.selectPart = selectPart
+        state.selectPart = selectPart.toSelectTeam
+        state.selectTeamID = selectPart.teamId
         return .none
 
       case .swipeNext:
-        guard let selectPart = state.selectPart else { return .none }
-        let order = state.attendanceTeam.orderedSelectTeams()
-        guard let currentIndex = order.firstIndex(of: selectPart),
-              !order.isEmpty else { return .none }
-        let nextIndex = (currentIndex + 1) % order.count
-        state.selectPart = order[nextIndex]
+        let orderedTeams = orderedAttendanceTeams(from: state.attendanceTeam)
+        guard !orderedTeams.isEmpty else { return .none }
+        let currentIndex = orderedTeams.firstIndex { $0.teamId == state.selectTeamID } ?? 0
+        let nextIndex = (currentIndex + 1) % orderedTeams.count
+        updateSelectedTeam(state: &state, team: orderedTeams[nextIndex])
 
         return .none
 
       case .swipePrevious:
-        guard let selectPart = state.selectPart else { return .none }
-        let order = state.attendanceTeam.orderedSelectTeams()
-        guard let currentIndex = order.firstIndex(of: selectPart),
-              !order.isEmpty else { return .none }
-        let prevIndex = (currentIndex - 1 + order.count) % order.count
-        state.selectPart = order[prevIndex]
+        let orderedTeams = orderedAttendanceTeams(from: state.attendanceTeam)
+        guard !orderedTeams.isEmpty else { return .none }
+        let currentIndex = orderedTeams.firstIndex { $0.teamId == state.selectTeamID } ?? 0
+        let prevIndex = (currentIndex - 1 + orderedTeams.count) % orderedTeams.count
+        updateSelectedTeam(state: &state, team: orderedTeams[prevIndex])
         return .none
 
       case .appearSelectDate:
@@ -281,6 +277,10 @@ extension AttendanceCheck {
             let uniqueTeams = data.filter { seen.insert($0.teams).inserted }
             let orderedTeams = uniqueTeams.sorted { $0.teamId < $1.teamId }
             state.attendanceTeam = .init(uniqueElements: orderedTeams)
+            if let firstTeam = orderedTeams.first {
+              state.selectPart = firstTeam.toSelectTeam
+              state.selectTeamID = firstTeam.teamId
+            }
           case .failure(let error):
             #logNetwork("기수 팀 조회 실패", error.localizedDescription)
         }
@@ -288,20 +288,6 @@ extension AttendanceCheck {
     }
   }
 
-
-  private func todayScheduleId(
-    from schedules: [Schedule],
-    now: Date = Date(),
-    timeZone: TimeZone = .init(identifier: "Asia/Seoul")!
-  ) -> Int? {
-    var cal = Calendar(identifier: .gregorian)
-    cal.timeZone = timeZone
-
-    let comps = cal.dateComponents([.year, .month, .day], from: now)
-    guard let y = comps.year, let m = comps.month, let d = comps.day else { return nil }
-
-    return schedules.first(where: { $0.year == y && $0.month == m && $0.day == d })?.id
-  }
 
   private func handleDestinationAction(
     state: inout State,
@@ -330,5 +316,35 @@ extension AttendanceCheck {
       default:
         return .none
     }
+  }
+}
+
+private extension AttendanceCheck {
+  func orderedAttendanceTeams(
+    from teams: IdentifiedArrayOf<SelectTeamEntity>
+  ) -> [SelectTeamEntity] {
+    teams.sorted { $0.teamId < $1.teamId }
+  }
+
+  func updateSelectedTeam(
+    state: inout State,
+    team: SelectTeamEntity
+  ) {
+    state.selectPart = team.toSelectTeam
+    state.selectTeamID = team.teamId
+  }
+
+   func todayScheduleId(
+    from schedules: [Schedule],
+    now: Date = Date(),
+    timeZone: TimeZone = .init(identifier: "Asia/Seoul")!
+  ) -> Int? {
+    var cal = Calendar(identifier: .gregorian)
+    cal.timeZone = timeZone
+
+    let comps = cal.dateComponents([.year, .month, .day], from: now)
+    guard let y = comps.year, let m = comps.month, let d = comps.day else { return nil }
+
+    return schedules.first(where: { $0.year == y && $0.month == m && $0.day == d })?.id
   }
 }

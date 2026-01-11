@@ -15,6 +15,7 @@ import AsyncMoya
 public enum AttendanceService {
   case adminAttendanceCount(scheduleId: Int)
   case fetchTeams
+  case sessionAttendance(body: AttendanceRequestDTO)
 }
 
 extension AttendanceService: BaseTargetType {
@@ -22,7 +23,7 @@ extension AttendanceService: BaseTargetType {
 
   public var domain: AttendanceDomain {
     switch self {
-      case .adminAttendanceCount, .fetchTeams:
+      case .adminAttendanceCount, .fetchTeams, .sessionAttendance:
         return .admin
     }
   }
@@ -35,6 +36,9 @@ extension AttendanceService: BaseTargetType {
       case .fetchTeams:
         return AttendanceAPI.fetchTeams.description
 
+      case .sessionAttendance(let body):
+        return AttendanceAPI.sessionAttendances(scheduleId: body.scheduleId, teamId: body.teamId).description
+
     }
   }
 
@@ -44,7 +48,7 @@ extension AttendanceService: BaseTargetType {
 
   public var method: Moya.Method {
     switch self {
-      case .adminAttendanceCount, .fetchTeams:
+      case .adminAttendanceCount, .fetchTeams, .sessionAttendance:
         return .get
 
     }
@@ -57,6 +61,9 @@ extension AttendanceService: BaseTargetType {
 
       case .fetchTeams:
         return nil
+
+      case .sessionAttendance(let body):
+        return body.toDictionary
     }
   }
 

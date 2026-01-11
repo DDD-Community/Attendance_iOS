@@ -24,6 +24,13 @@ public struct AttendanceUseCaseImpl: AttendanceInterface {
   public func fetchAttendanceTeams() async throws -> [SelectTeamEntity] {
     return try await repository.fetchAttendanceTeams()
   }
+
+  public func sessionAttendance(
+    scheduleId: Int,
+    teamId: Int
+  ) async throws -> [Attendance] {
+    return try await repository.sessionAttendance(scheduleId: scheduleId, teamId: teamId)
+  }
 }
 
 extension AttendanceUseCaseImpl: DependencyKey {

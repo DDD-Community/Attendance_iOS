@@ -340,6 +340,9 @@ extension ProfileReducer {
       case .cancelTapped:
         state.customAlert = nil
         return .none
+
+        case .policyTapped:
+          return .none
       }
 
     case .dismiss:

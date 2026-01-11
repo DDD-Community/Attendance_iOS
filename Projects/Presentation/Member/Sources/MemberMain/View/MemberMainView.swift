@@ -11,6 +11,7 @@ import DesignSystem
 import Model
 
 import ComposableArchitecture
+import Entity
 
 struct MemberMainView: View {
   @Bindable private var store: StoreOf<MemberMain>
@@ -169,7 +170,7 @@ struct MemberMainView: View {
 private extension AttendanceStatus {
   var toScheduleCellStyle: ScheduleCellStyle {
     switch self {
-    case .present:
+      case  .attended:
       return .init(
         backgroundColor: .blue40,
         stampImage: Image(asset: .present_stamp),
@@ -187,7 +188,7 @@ private extension AttendanceStatus {
         titleDescriptionOpacity: 0.4
       )
 
-    case .absent:
+      case .absent:
       return .init(
         backgroundColor: .clear,
         stampImage: nil,
@@ -196,14 +197,14 @@ private extension AttendanceStatus {
         titleDescriptionOpacity: 0.3
       )
 
-    case .tbd, .exception:
-      return .init(
-        backgroundColor: .gray90,
-        stampImage: nil,
-        dashBorder: false,
-        monthDayOpacity: 1.0,
-        titleDescriptionOpacity: 1.0
-      )
+//    case .tbd, .exception:
+//      return .init(
+//        backgroundColor: .gray90,
+//        stampImage: nil,
+//        dashBorder: false,
+//        monthDayOpacity: 1.0,
+//        titleDescriptionOpacity: 1.0
+//      )
     }
   }
 }
