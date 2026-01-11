@@ -8,13 +8,14 @@
 
 import Foundation
 import SwiftUI
+import Entity
 import WeaveDI
 
 /// QRCode 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol QRCodeInterface: Sendable {
   func createQRCode() async throws -> String
   func generateQRCode(from string: String) async -> Image?
-  func qrAttendanceCheck(from code: String) async throws -> QRValidateModel?
+  func qrValidateCheck(from code: String) async throws -> QRValidateEntity
 }
 
 /// QRCode Repository의 DependencyKey 구조체

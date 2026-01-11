@@ -35,6 +35,7 @@ public struct LoginView: View {
       }
     }
     .toastOverlay()
+    .customAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
   }
 }
 

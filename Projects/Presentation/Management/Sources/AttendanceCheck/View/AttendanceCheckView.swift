@@ -8,6 +8,7 @@
 import SwiftUI
 
 import Shareds
+import Entity
 
 import ComposableArchitecture
 
@@ -25,18 +26,17 @@ struct AttendanceCheckView: View {
       selectPartAttendanceStatus()
     }
     .onAppear {
-      store.send(.async(.onAppear))
+      store.send(.view(.onAppear))
       
     }
-    .onChange(of: store.selectPart ?? .web1) { oldValue, newValue in
-      store.selectPart = newValue
-      store.send(.inner(.fillterAttendance(team: newValue)))
-    }
+//    .onChange(of: store.selectPart ?? .web1) { oldValue, newValue in
+//      store.selectPart = newValue
+//      store.send(.inner(.fillterAttendance(team: newValue)))
+//    }
     .sheet(item: $store.scope(state: \.destination?.scheduleModal, action: \.destination.scheduleModal)) { scheduleModalStore in
       ScheduleModalView(store: scheduleModalStore)
         .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
         .presentationCornerRadius(20)
-        .presentationDragIndicator(.hidden)
 
     }
   }
@@ -73,15 +73,14 @@ extension AttendanceCheckView {
 
   @ViewBuilder
   fileprivate func attendanceStatusView() -> some View {
-    let attendanceCountDTOData = store.attendanceCountDTOModel
     LazyVStack {
       Spacer()
         .frame(height: 14)
 
       AttendanceCard(
-        attendanceCount: attendanceCountDTOData?.presentCount ?? .zero,
-        lateCount: attendanceCountDTOData?.lateCount ?? .zero,
-        absentCount: attendanceCountDTOData?.absentCount ?? .zero,
+        attendanceCount: store.attendanceCount,
+        lateCount:  store.lateCount,
+        absentCount: store.absentCount,
         showWarning: false
       )
     }
@@ -98,19 +97,20 @@ extension AttendanceCheckView {
         VStack {
           ScrollView(.horizontal, showsIndicators: false) {
             HStack {
-              ForEach(SelectTeam.attandanceList, id: \.self) { item in
+              ForEach(store.attendanceTeam) { item in
+                let mappedTeam = item.teams
                 VStack(spacing: .zero) {
                   HStack {
                     Spacer()
                       .frame(width: 16)
 
-                    Text("\(item.attendanceListDescription)")
+                    Text("\(item.teams.attendanceListDescription)")
                       .pretendardFont(family: .Bold, size: 16)
-                      .foregroundColor(store.selectPart == item ? .staticWhite : .gray600)
+                      .foregroundColor(store.selectPart == mappedTeam ? .staticWhite : .gray600)
                       .background(
                         GeometryReader { geometry in
                           Color.clear
-                            .preference(key: TextWidthPreferenceKey.self, value: [item: geometry.size.width])
+                            .preference(key: TeamTextWidthPreferenceKey.self, value: [item.id: geometry.size.width])
                         }
                       )
 
@@ -121,13 +121,13 @@ extension AttendanceCheckView {
                   Spacer()
                     .frame(height: 12)
 
-                  if store.selectPart == item {
+                  if store.selectPart == mappedTeam {
                     Divider()
-                      .frame(width: store.dividerWidths[item] ?? 0, height: 2)
+                      .frame(width: store.dividerWidths[item.id] ?? 0, height: 2)
                       .background(.blue40)
                   }
                 }
-                .onPreferenceChange(TextWidthPreferenceKey.self) { newWidths in
+                .onPreferenceChange(TeamTextWidthPreferenceKey.self) { newWidths in
                   for (key, width) in newWidths {
                     store.dividerWidths[key] = width
                   }
@@ -135,7 +135,7 @@ extension AttendanceCheckView {
                 .onTapGesture {
                   store.send(.view(.selectPartButton(selectPart: item)))
                 }
-                .id(item)
+                .id(item.id)
               }
             }
             .padding(.horizontal, 24)
@@ -149,8 +149,12 @@ extension AttendanceCheckView {
             .background(.borderInactive.opacity(0.12))
             .offset(y: -12)
         }
-        .onChange(of: store.selectPart) { oldValue, newValue in
-          proxy.scrollTo(newValue, anchor: .center)
+        .onChange(of: store.selectPart) { _, newValue in
+          guard let newValue,
+                let target = store.attendanceTeam.first(where: {
+                  $0.teams == newValue
+                }) else { return }
+          proxy.scrollTo(target.id, anchor: .center)
         }
 
       }
@@ -162,7 +166,7 @@ extension AttendanceCheckView {
     if let selectPart = store.selectPart,
        [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart) {
       selectPartAttandanceStatusCard()
-      
+
       Spacer()
         .frame(height: 20)
     } else {
@@ -172,25 +176,19 @@ extension AttendanceCheckView {
 
   @ViewBuilder
   fileprivate func selectPartAttandanceStatusCard() -> some View {
-    let filtered = store.scheduleModelAttendanceModel?.data.flatMap {
-      $0.attendancesSummary.filter { item in
-        guard let team = SelectTeam(rawValue: item.profile.team.rawValue),
-              let selected = store.selectPart else { return false }
-        return team == selected
-      }
-    } ?? []
+    let attendanceModel = store.attendanceByTeam[store.selectTeamID] ?? store.attendanceModel
 
-    if filtered.isEmpty {
+    if attendanceModel.isEmpty {
       noMemberAttandanceView()
     } else {
       ScrollView(.vertical) {
         LazyVStack(spacing: .zero) {
-          ForEach(filtered, id: \.profile.id) { item in
+          ForEach(attendanceModel, id: \.userID) { item in
             AttendanceCheckStatusCard(
-              attandanceType: AttendanceType(rawValue: item.status) ?? .present,
-              selectPart: SelectPart(rawValue:  item.profile.role) ?? .all,
-              selectTeam: item.profile.team,
-              name: item.profile.name
+              attendanceStatus: item.status,
+              selectPart: item.selectPartEntity ?? .all,
+              selectTeam: item.selectTeamEntity ?? .unknown,
+              name: item.userName
             )
           }
         }
@@ -233,3 +231,10 @@ extension AttendanceCheckView {
   }
 }
 
+private struct TeamTextWidthPreferenceKey: PreferenceKey {
+  static var defaultValue: [Int: CGFloat] = [:]
+
+  static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
+    value.merge(nextValue(), uniquingKeysWith: { $1 })
+  }
+}

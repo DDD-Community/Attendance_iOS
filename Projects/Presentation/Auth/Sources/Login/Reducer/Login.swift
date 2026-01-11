@@ -18,7 +18,7 @@ import DesignSystem
 @Reducer
 public struct Login {
   public init() {}
-  
+
   @ObservableState
   public struct State: Equatable {
     var nonce: String = ""
@@ -28,35 +28,38 @@ public struct Login {
     @Shared var userSession: UserSession
     var loginEntity: LoginEntity?
     var currentSocialType: SocialType?
-    
+    @Presents public var customAlert: CustomAlertState<CustomAlertAction>?
+
     public init(
       userSession: UserSession = .empty
     ) {
       self._userSession = Shared(wrappedValue: userSession, .inMemory("UserSession"))
     }
-    
+
   }
-  
+
   public enum Action: ViewAction, BindableAction, FeatureAction {
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
+    case scope(ScopeAction)
     case navigation(NavigationAction)
   }
-  
+
   // MARK: - ViewAction
-  
+
   @CasePathable
   public enum View {
     case signInWithSocial(social: SocialType)
+    case showPolicyPopUp
   }
-  
+
   nonisolated enum CancelID: Hashable {
     case googleOAuth
     case appleOAuth
   }
-  
+
   // MARK: - AsyncAction 비동기 처리 액션
 
   public enum AsyncAction {
@@ -69,7 +72,7 @@ public struct Login {
   public enum InnerAction {
     case loginResponse(Result<LoginEntity, AuthError>)
   }
-  
+
   // MARK: - NavigationAction
   public enum NavigationAction: Equatable {
     case presentSignUpInviteView
@@ -77,30 +80,44 @@ public struct Login {
     case presentMemberMain
   }
 
+  @CasePathable
+  public enum ScopeAction {
+    case customAlert(PresentationAction<CustomAlertAction>)
+  }
+
+
   @Dependency(\.appleManger) var appleLoginManger
   @Dependency(\.unifiedOAuthUseCase) var unifiedOAuthUseCase
   @Dependency(\.continuousClock) var clock
-  @Dependency(\.mainQueue) var mainQueue
-  
+
   public var body: some Reducer<State, Action>  {
     BindingReducer()
     Reduce { state, action in
       switch action {
         case .binding(_):
           return .none
-          
+
         case .view(let viewAction):
           return handleViewAction(state: &state, action: viewAction)
-          
+
         case .async(let AsyncAction):
           return handleAsyncAction(state: &state, action: AsyncAction)
-          
+
         case .inner(let innerAction):
           return handleInnerAction(state: &state, action: innerAction)
-          
+
         case .navigation(let navigationAction):
           return handleNavigationAction(state: &state, action: navigationAction)
+
+        case .scope(let scopeAction):
+          switch scopeAction {
+            case .customAlert(let customAlertAction):
+              return handleCustomAlertAction(state: &state, action: customAlertAction)
+          }
       }
+    }
+    .ifLet(\.$customAlert, action: \.scope.customAlert) {
+      EmptyReducer()
     }
   }
 }
@@ -113,6 +130,10 @@ extension Login {
     switch action {
       case .signInWithSocial(let social):
         return .send(.async(.login(socialType: social)))
+
+      case .showPolicyPopUp:
+        state.customAlert = .privacyPolicyConsent()
+        return .none
     }
   }
 
@@ -182,7 +203,7 @@ extension Login {
             state.loginEntity = loginEntity
 
             if loginEntity.isNewUser  {
-              return .send(.navigation(.presentSignUpInviteView))
+              return .send(.view(.showPolicyPopUp))
             } else if state.userSession.userRole == .manager {
               return .send(.navigation(.presentStaffMain))
             } else  {
@@ -193,18 +214,18 @@ extension Login {
             #logNetwork("로그인 실패", error.localizedDescription)
             let socialType = state.currentSocialType
             return .run { _ in
-                await MainActor.run {
-                    let errorMessage: String
-                    switch socialType {
-                    case .apple:
-                        errorMessage = "Apple 인증에 실패하였습니다."
-                    case .google:
-                        errorMessage = "구글 인증에 실패하였습니다."
-                    default:
-                        errorMessage = "인증에 실패했어요. 다시 시도해주세요."
-                    }
-                    ToastManager.shared.showError(errorMessage)
+              await MainActor.run {
+                let errorMessage: String
+                switch socialType {
+                  case .apple:
+                    errorMessage = "Apple 인증에 실패하였습니다."
+                  case .google:
+                    errorMessage = "구글 인증에 실패하였습니다."
+                  default:
+                    errorMessage = "인증에 실패했어요. 다시 시도해주세요."
                 }
+                ToastManager.shared.showError(errorMessage)
+              }
             }
         }
     }
@@ -223,6 +244,37 @@ extension Login {
         return .none
 
       case .presentMemberMain:
+        return .none
+    }
+  }
+
+  private func handleCustomAlertAction(
+    state: inout State,
+    action: PresentationAction<CustomAlertAction>
+  ) -> Effect<Action> {
+    switch action {
+      case .presented(let customAlertAction):
+        switch customAlertAction {
+          case .confirmTapped:
+            // customAlert의 title로 구분하여 적절한 액션 실행
+            guard state.customAlert != nil else { return .none }
+
+            // 팝업 닫기
+            state.customAlert = nil
+            return .run { send in
+              try await clock.sleep(for: .seconds(0.3))
+              return await send(.navigation(.presentSignUpInviteView))
+            }
+
+          case .cancelTapped:
+            state.customAlert = nil
+            return .none
+
+          case .policyTapped:
+            return .none
+        }
+
+      case .dismiss:
         return .none
     }
   }

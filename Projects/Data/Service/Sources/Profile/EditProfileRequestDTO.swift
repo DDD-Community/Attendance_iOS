@@ -2,7 +2,7 @@
 //  EditProfileRequestDTO.swift
 //  Service
 //
-//  Created by Claude on 1/6/26.
+//  Created by Wonji Suh on 1/6/26.
 //
 
 import Foundation
@@ -61,14 +61,5 @@ public struct EditProfileRequestDTO: Encodable {
 
   private enum CodingKeys: String, CodingKey {
     case name, generationId, jobRole, teamId, managerRoles, invitationCode
-  }
-}
-
-// MARK: - Dictionary 변환 (SignUpUserRequestDTO와 동일)
-extension EditProfileRequestDTO {
-  /// DTO를 Dictionary로 변환 (Moya parameters용)
-  public var toDictionary: [String: Any]? {
-    guard let data = try? JSONEncoder().encode(self) else { return nil }
-    return try? JSONSerialization.jsonObject(with: data) as? [String: Any]
   }
 }

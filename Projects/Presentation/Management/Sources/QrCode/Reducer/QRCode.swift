@@ -8,6 +8,7 @@
 import Foundation
 
 import Shareds
+import Entity
 
 import ComposableArchitecture
 import LogMacro
@@ -23,7 +24,7 @@ public struct QRCode {
     let scannerSize: CGFloat = 240
     var isPresent: Bool = false
 
-    var qrCheckModel: QRValidateModel?
+    var qrCheckModel: QRValidateEntity?
     var scheduleId: String = ""
     var nowDate = Date()
     var isUseQRCode: Bool = false
@@ -55,7 +56,7 @@ public struct QRCode {
 
   //MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
-    case qrCodeValidateReponse(Result<QRValidateModel, CustomError>)
+    case qrCodeValidateResponse(Result<QRValidateEntity, AttendanceError>)
   }
 
   //MARK: - NavigationAction
@@ -116,23 +117,10 @@ extension QRCode {
         scannedText = state.scannedText
       ] send in
         let qrCodeValidateResult = await Result {
-          try await qrCodeUseCase.qrAttendanceCheck(from: scannedText)
+          try await qrCodeUseCase.qrValidateCheck(from: scannedText)
         }
-
-        switch qrCodeValidateResult {
-        case .success(let qrCodeValidateData):
-          if let qrCodeValidateData = qrCodeValidateData {
-            try await clock.sleep(for: .seconds(2))
-            await send(.inner(.qrCodeValidateReponse(.success(qrCodeValidateData))))
-
-            if qrCodeValidateData.code == 200  {
-              await send(.view(.stopScanning))
-            }
-          }
-
-        case .failure(let error):
-          await send(.inner(.qrCodeValidateReponse(.failure(.encodingError(error.localizedDescription)))))
-        }
+          .mapError(AttendanceError.from)
+        return await send(.inner(.qrCodeValidateResponse(qrCodeValidateResult)))
       }
       .debounce(id: QRCodeCancel(), for: 0.3, scheduler: mainQueue)
     }
@@ -150,16 +138,24 @@ extension QRCode {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-    case .qrCodeValidateReponse(let result):
+    case .qrCodeValidateResponse(let result):
       switch result {
       case .success(let qrCodeValidateData):
         state.qrCheckModel = qrCodeValidateData
         state.isUseQRCode = false
+
+          if qrCodeValidateData.isSuccess {
+            return .send(.view(.stopScanning))
+          } else {
+            return .none
+          }
+
+
       case .failure(let error):
         #logNetwork("qr 검증 실패", error.localizedDescription)
         state.isUseQRCode = true
+          return .none
       }
-      return .none
 
     }
   }

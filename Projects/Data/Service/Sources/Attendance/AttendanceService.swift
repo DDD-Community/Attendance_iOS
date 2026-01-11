@@ -13,37 +13,32 @@ import Foundations
 import AsyncMoya
 
 public enum AttendanceService {
-  case getAttendances(startDate: String, endDate: String)
-  case attendanceCount(startDate: String)
-  case filterAttendance(startDate: String, team: String)
-  case filterScheduleAttendance(userId: Int, scheduleId: String, startDate: String)
-  case modifyAttendance(attendanceId: String)
-  case fetchCount(userID: Int)
+  case adminAttendanceCount(scheduleId: Int)
+  case fetchTeams
+  case sessionAttendance(body: AttendanceRequestDTO)
 }
 
 extension AttendanceService: BaseTargetType {
   public typealias Domain = AttendanceDomain
 
   public var domain: AttendanceDomain {
-    return .attendance
+    switch self {
+      case .adminAttendanceCount, .fetchTeams, .sessionAttendance:
+        return .admin
+    }
   }
 
   public var urlPath: String {
     switch self {
-    case .getAttendances, .filterScheduleAttendance:
-      return AttendanceAPI.getAttandances.attendanceDescription
+    case .adminAttendanceCount(let scheduleId):
+      return AttendanceAPI.adminAttendanceCount(scheduleId: scheduleId).description
 
-    case .attendanceCount:
-      return AttendanceAPI.attendanceCount.attendanceDescription
+      case .fetchTeams:
+        return AttendanceAPI.fetchTeams.description
 
-    case .filterAttendance:
-      return AttendanceAPI.getAttandances.attendanceDescription
+      case .sessionAttendance(let body):
+        return AttendanceAPI.sessionAttendances(scheduleId: body.scheduleId, teamId: body.teamId).description
 
-    case .modifyAttendance(let attendanceId):
-      return AttendanceAPI.editAttendance(attendanceId: attendanceId).attendanceDescription
-
-    case .fetchCount:
-      return AttendanceAPI.fetchCount.attendanceDescription
     }
   }
 
@@ -53,64 +48,22 @@ extension AttendanceService: BaseTargetType {
 
   public var method: Moya.Method {
     switch self {
-    case .getAttendances, .attendanceCount, .filterAttendance, .filterScheduleAttendance:
-      return .get
+      case .adminAttendanceCount, .fetchTeams, .sessionAttendance:
+        return .get
 
-    case .modifyAttendance:
-      return .patch
-
-    case .fetchCount:
-      return .get
     }
   }
 
   public var parameters: [String: Any]? {
     switch self {
-    case .getAttendances(let stratDate, let endDate):
-      let parameters: [String: Any] = [
-        "start_date": stratDate,
-        "end_date": endDate
-      ]
-      return parameters
+      case .adminAttendanceCount(let scheduleId):
+        return scheduleId.toDictionary(key: "scheduleId")
 
-    case .attendanceCount(let startDate):
-      let parameters: [String: Any] = [
-        "start_date": startDate,
-        "end_date": startDate,
-      ]
-      return parameters
+      case .fetchTeams:
+        return nil
 
-    case .filterAttendance(let startDate, let team):
-      let parameters: [String: Any] = [
-        "start_date": startDate,
-        "end_date": startDate,
-        "team": team
-      ]
-      return parameters
-
-    case .filterScheduleAttendance(
-      let userId,
-      let scheduleId,
-      let startDate
-    ):
-      let parameters: [String: Any] = [
-        "user_id": userId,
-        "start_date": startDate,
-        "end_date": startDate,
-        "schedule_id": scheduleId,
-      ]
-      return parameters
-
-    case .modifyAttendance( _):
-      let parameters: [String: Any] = [
-        "status": "auto",
-        "method": "qr",
-        "note": "qr 출석"
-      ]
-      return parameters
-
-    case .fetchCount(let userID):
-      return ["user_id": userID]
+      case .sessionAttendance(let body):
+        return body.toDictionary
     }
   }
 

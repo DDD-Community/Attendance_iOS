@@ -15,8 +15,6 @@ public enum AttendanceDomain {
   case user
   case admin
   case me
-  case invite
-  case profile
   case qr
   case schedule
   case attendance
@@ -39,16 +37,12 @@ extension AttendanceDomain: DomainType {
         return "api/me"
       case .user:
         return "api/users"
-      case .invite:
-        return "api/v1/invites/"
-      case .profile:
-        return "api/v1/profiles/"
       case .qr:
         return "api/v1/qrcodes/"
       case .schedule:
-        return "api/v1/schedules/"
+        return "api/schedules"
       case .attendance:
-        return "api/v1/attendances/"
+        return "api/attendances/"
     }
   }
 }

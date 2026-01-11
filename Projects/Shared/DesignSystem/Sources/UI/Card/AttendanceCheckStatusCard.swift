@@ -6,21 +6,21 @@
 //
 
 import SwiftUI
-import Model
+import Entity
 
 public struct AttendanceCheckStatusCard: View {
-  private let attandanceType: AttendanceType
-  private let selectPart: SelectPart
-  private let selectTeam: SelectTeam
+  private let attendanceStatus: AttendanceStatus
+  private let selectPart: SelectParts
+  private let selectTeam: SelectTeams
   private let name: String
   
   public init(
-    attandanceType: AttendanceType,
-    selectPart: SelectPart,
-    selectTeam: SelectTeam,
+    attendanceStatus: AttendanceStatus,
+    selectPart: SelectParts,
+    selectTeam: SelectTeams,
     name: String
   ) {
-    self.attandanceType = attandanceType
+    self.attendanceStatus = attendanceStatus
     self.selectPart = selectPart
     self.selectTeam = selectTeam
     self.name = name
@@ -37,29 +37,38 @@ public struct AttendanceCheckStatusCard: View {
             HStack {
               Text(name)
                 .pretendardCustomFont(textStyle: .title3NormalBold)
-                .foregroundStyle(attandanceType == .absent  || attandanceType == .tbd ? .borderDisabled : .staticWhite)
+                .foregroundStyle(isDisabled ? .borderDisabled : .staticWhite)
               Spacer()
             }
             
-            Text("\(selectTeam.attandanceCardDescription) / \(selectPart.attendanceListDesc) ")
+            Text("\(selectTeam.attandanceCardDescription) / \(selectPart.desc) ")
               .pretendardCustomFont(textStyle: .body2NormalBold)
-              .foregroundStyle(attandanceType == .absent  || attandanceType == .tbd ? .borderDisabled : .staticWhite)
+              .foregroundStyle(isDisabled ? .borderDisabled : .staticWhite)
           }
           
           Spacer()
           
           HStack(spacing: .zero) {
-            Text(attandanceType.koreanDesc)
+            Text(attendanceStatus.desc)
               .pretendardCustomFont(textStyle: .body2NormalMedium)
-              .foregroundStyle(attandanceType == .absent  || attandanceType == .tbd ? .borderDisabled : .staticWhite)
+              .foregroundStyle(isDisabled ? .borderDisabled : .staticWhite)
             
             Spacer()
               .frame(width: 12)
             
-            Image(assetName: attandanceType.imageDesc)
+            Image(assetName: imageName)
               .resizable()
               .scaledToFit()
               .frame(width: 24, height: 24)
+
+            Spacer()
+              .frame(width: 9)
+
+            Image(asset: .editAttendance)
+              .resizable()
+              .scaledToFit()
+              .frame(width: 15, height: 15)
+
           }
           
         }
@@ -69,17 +78,32 @@ public struct AttendanceCheckStatusCard: View {
       }
       .padding(.horizontal, 20)
     }
-    .background(attandanceType == .absent  || attandanceType == .tbd ? .staticBlack : .borderInverse)
+    .background(isDisabled ? .staticBlack : .borderInverse)
     .frame(height: 84)
     .cornerRadius(15)
     .overlay(
       // ABSENT일 때 점선 테두리 적용
-      attandanceType == .absent  || attandanceType == .tbd  ?
+      isDisabled ?
       RoundedRectangle(cornerRadius: 15)
         .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5]))
         .foregroundColor(.borderDisabled) // 점선 색상 설정
       : nil
     )
-    .padding(.vertical, attandanceType == .absent  || attandanceType == .tbd ? 2: 0)
+    .padding(.vertical, isDisabled ? 2: 0)
+  }
+
+  private var isDisabled: Bool {
+    attendanceStatus == .absent
+  }
+
+  private var imageName: String {
+    switch attendanceStatus {
+    case .attended:
+      return "Present_icons"
+    case .late:
+      return "Late_icons"
+    case .absent:
+      return "Abesent_icons"
+    }
   }
 }

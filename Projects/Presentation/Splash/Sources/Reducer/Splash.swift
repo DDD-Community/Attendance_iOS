@@ -13,7 +13,6 @@ import UseCase
 import Entity
 
 import ComposableArchitecture
-import FirebaseAuth
 import LogMacro
 
 @Reducer

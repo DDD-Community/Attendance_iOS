@@ -5,21 +5,25 @@
 //  Created by Wonji Suh  on 7/23/25.
 //
 
-import DomainInterface
 import Model
+import Entity
 
 final public class DefaultScheduleRepositoryImpl: ScheduleInterface  {
 
   public init() {}
 
-  public func getSchedules() async throws -> ScheduleModel? {
-    return nil
+  public func getSchedule() async throws -> [Schedule] {
+    return [
+      Schedule(
+        id: 1,
+        name: "팀 회의",
+        description: "주간 팀 회의 및 프로젝트 진행상황 공유",
+        month: 1,
+        day: 15,
+        year: 2026
+      ),
+    ]
   }
 
-  public func filtergetSchedules(
-    startDate: String
-  ) async throws -> ScheduleModel? {
-    return nil
-  }
 }
 

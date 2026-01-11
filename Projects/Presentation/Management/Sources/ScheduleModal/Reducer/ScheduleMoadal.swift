@@ -11,6 +11,7 @@ import Shareds
 import UseCase
 
 import ComposableArchitecture
+import Entity
 import LogMacro
 
 @Reducer
@@ -19,10 +20,10 @@ public struct ScheduleModal {
 
   @ObservableState
   public struct State: Equatable {
-    var scheduleModel: ScheduleModel?
+    var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
     var loading: Bool = false
     var enableButton: Bool = false
-    var selectedSchedule: ScheduleResponseModel? = nil
+    var selectedSchedule: Schedule? = nil
 
     public init() {}
   }
@@ -39,7 +40,7 @@ public struct ScheduleModal {
   //MARK: - ViewAction
   @CasePathable
   public enum View {
-    case selectSchedule(item: ScheduleResponseModel)
+    case selectSchedule(item: Schedule)
     case confirmSelection
   }
 
@@ -51,12 +52,12 @@ public struct ScheduleModal {
 
   //MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
-    case scheduleResponse(Result<ScheduleModel?, CustomError>)
+    case scheduleResponse(Result<[Schedule], ScheduleError>)
   }
 
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    case selectScheduleCompleted(selectedSchedule: ScheduleResponseModel)
+    case selectScheduleCompleted(selectedSchedule: Schedule)
   }
 
   nonisolated enum ScheduleMoadalCancel: Hashable {
@@ -64,6 +65,7 @@ public struct ScheduleModal {
   }
 
   @Dependency(\.scheduleUseCase) var scheduleUseCase
+  @Dependency(\.continuousClock) var clock
 
 
   public var body: some Reducer<State, Action> {
@@ -121,15 +123,11 @@ extension ScheduleModal {
         state.loading = true
         return .run { send in
           let result = await Result {
-            try await scheduleUseCase.getSchedules()
+            try await scheduleUseCase.getSchedule()
           }
-            .mapError { error -> CustomError in
-                if let scehduleError = error as? CustomError {
-                    return scehduleError
-                } else {
-                    return .unknownError(error.localizedDescription)
-                }
-            }
+            .mapError(ScheduleError.from)
+          try await clock.sleep(for: .seconds(0.6))
+
           return await send(.inner(.scheduleResponse(result)))
         }
     }
@@ -155,8 +153,7 @@ extension ScheduleModal {
         state.loading = false  
         switch result {
           case .success(let data):
-            #logDebug("스케줄 데이터 성공", "데이터 개수: \(data?.data.count ?? 0)")
-            state.scheduleModel = data
+            state.scheduleModel = .init(uniqueElements: data)
           case .failure(let error):
             #logNetwork("네트워크 에러", error.localizedDescription)
         }
@@ -164,4 +161,3 @@ extension ScheduleModal {
     }
   }
 }
-

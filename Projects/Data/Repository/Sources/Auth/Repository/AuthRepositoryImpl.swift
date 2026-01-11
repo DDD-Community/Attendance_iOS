@@ -42,10 +42,11 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
   }
 
 
-// MARK: - 토큰 재발급
+  // MARK: - 토큰 재발급
   public func refresh() async throws -> AuthTokens {
     let refreshToken  = keychainManager.refreshToken() ?? ""
-    let dto: TokenDTO = try await authProvider.request(.refresh(refreshToken: refreshToken))
+    // Use non-authorized provider to avoid interceptor recursion on refresh.
+    let dto: TokenDTO = try await provider.request(.refresh(refreshToken: refreshToken))
     let refreshData = dto.toDomain()
 
     // ✅ TokenRefresher에서 keychain 저장과 credential 업데이트를 담당하므로 중복 제거

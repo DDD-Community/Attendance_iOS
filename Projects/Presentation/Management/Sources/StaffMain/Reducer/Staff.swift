@@ -12,8 +12,6 @@ import Shareds
 import Entity
 
 import ComposableArchitecture
-import KeychainAccess
-import FirebaseAuth
 
 @Reducer
 public struct Staff {
@@ -28,7 +26,7 @@ public struct Staff {
     var selectDropDownItem: SelectDropDownItem = .attandance
     
     var attendanceCheck = AttendanceCheck.State()
-    var schedule = ScheduleManager.State()
+    var schedule = ScheduleReducer.State()
     
     var qrcodeImage: ImageAsset = .qrCode
     var eventImage: ImageAsset = .eventGenerate
@@ -49,7 +47,7 @@ public struct Staff {
     case inner(InnerAction)
     case navigation(NavigationAction)
     case attendanceCheck(AttendanceCheck.Action)
-    case schedule(ScheduleManager.Action)
+    case schedule(ScheduleReducer.Action)
   }
   
   // MARK: - View action
@@ -122,7 +120,7 @@ public struct Staff {
       AttendanceCheck()
     }
     Scope(state: \.schedule, action: \.schedule) {
-      ScheduleManager()
+      ScheduleReducer()
     }
   }
 }

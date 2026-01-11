@@ -36,7 +36,7 @@ actor TokenRefreshManager {
 
             print("🔄 Starting token refresh...")
             let tokens = try await authRepository.refresh()
-
+            print(tokens)
             // 키체인에 새 토큰 저장
             keychainManager.save(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
 

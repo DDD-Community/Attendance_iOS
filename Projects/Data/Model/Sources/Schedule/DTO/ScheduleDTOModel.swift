@@ -7,46 +7,28 @@
 
 import Foundation
 
+public struct ScheduleDTO: Decodable {
+  let data: [ScheduleDTOResponse]
 
-public typealias ScheduleDTOModel = BaseResponse<[ScheduleDTOResponseModel]>
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    if let array = try? container.decode([ScheduleDTOResponse].self) {
+      self.data = array
+      return
+    }
 
-public struct ScheduleDTOResponseModel: Decodable {
-  let id, title, description: String?
-  let startTime, endTime: String?
-  let createdAt: String?
-  let attendancesSummary: [AttendancesSummaryDTO]?
+    let keyed = try decoder.container(keyedBy: CodingKeys.self)
+    self.data = try keyed.decode([ScheduleDTOResponse].self, forKey: .data)
+  }
 
-  enum CodingKeys: String, CodingKey {
-    case id, title, description
-    case startTime = "start_time"
-    case endTime = "end_time"
-    case createdAt = "created_at"
-    case attendancesSummary = "attendances_summary"
-
+  private enum CodingKeys: String, CodingKey {
+    case data
   }
 }
 
-struct AttendancesSummaryDTO: Decodable {
-  let profile: ScheduleProfileDTO?
-  let status, updatedAt: String?
-  let method, note: String?
 
-  enum CodingKeys: String, CodingKey {
-    case profile, status
-    case updatedAt = "updated_at"
-    case method, note
-  }
-}
-
-struct ScheduleProfileDTO: Decodable {
-  let id: String
-  let userID: Int
-  let name, role, team, cohort: String
-  let responsibility: String
-
-  enum CodingKeys: String, CodingKey {
-    case id
-    case userID = "user_id"
-    case name, role, team, cohort, responsibility
-  }
+public struct ScheduleDTOResponse: Decodable {
+    let id: Int
+    let name, desc: String
+    let year, month, day: Int
 }
