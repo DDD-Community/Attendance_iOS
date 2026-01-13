@@ -51,7 +51,6 @@ extension QRService: BaseTargetType {
     switch self {
     case .qrAttendanceCheck(let qrCode):
         return qrCode.toDictionary(key: "qrCode")
-      return parameters
     case .createQRCode:
       return nil
     }

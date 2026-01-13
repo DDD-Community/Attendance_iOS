@@ -11,7 +11,7 @@ public extension AttendanceDTOResponse {
   func toDomain() -> Attendance {
     return Attendance(
       id: self.attendanceID,
-      userID: self.userID,
+      userID: "\(self.userID)",
       userName: self.userName,
       userInfo: self.userInfo,
       status: AttendanceStatus.from(apiKey: self.attendanceStatus) ?? .absent

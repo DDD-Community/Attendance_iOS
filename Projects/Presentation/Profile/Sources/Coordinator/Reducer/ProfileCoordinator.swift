@@ -13,6 +13,7 @@ import Shareds
 import ComposableArchitecture
 import TCACoordinators
 import OnBoarding
+import Web
 
 @Reducer
 public struct ProfileCoordinator {

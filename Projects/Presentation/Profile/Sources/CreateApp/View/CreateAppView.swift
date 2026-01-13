@@ -62,15 +62,15 @@ extension CreateAppView {
   fileprivate func createAppFooterView() -> some View {
     VStack(spacing: .zero) {
       createAppPartItem(
+        selectPart: .pm,
+        creators: "이경서, 최현희"
+      )
+
+      createAppPartItem(
         selectPart: .design,
         creators: "강동길, 이지윤, 조재인"
       )
-      
-      createAppPartItem(
-        selectPart: .pm,
-        creators: "홍영주"
-      )
-      
+
       createAppPartItem(
         selectPart: .iOS,
         creators: "서원지, 홍은표"
@@ -78,12 +78,12 @@ extension CreateAppView {
       
       createAppPartItem(
         selectPart: .android,
-        creators: "심은석, 이상훈"
+        creators: "심은석, 오세민, 이상훈"
       )
       
       createAppPartItem(
         selectPart: .server,
-        creators: "조승준"
+        creators: "조승준, 조지원, 이준석"
       )
       
     }

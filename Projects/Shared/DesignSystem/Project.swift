@@ -10,7 +10,7 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings:  .settings(),
   dependencies: [
-    .Data(implements: .Model),
+    .Domain(implements: .Entity),
     .Shared(implements: .Utill),
     .Shared(implements: .ThirdParty),
   ],

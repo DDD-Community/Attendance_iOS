@@ -13,19 +13,22 @@ public struct AttendanceCheckStatusCard: View {
   private let selectPart: SelectParts
   private let selectTeam: SelectTeams
   private let name: String
-  
+  private let editAction: () -> Void
+
   public init(
     attendanceStatus: AttendanceStatus,
     selectPart: SelectParts,
     selectTeam: SelectTeams,
-    name: String
+    name: String,
+    editAction: @escaping () -> Void
   ) {
     self.attendanceStatus = attendanceStatus
     self.selectPart = selectPart
     self.selectTeam = selectTeam
     self.name = name
+    self.editAction = editAction
   }
-  
+
   public var body: some View {
     VStack {
       VStack(spacing: .zero) {
@@ -68,6 +71,9 @@ public struct AttendanceCheckStatusCard: View {
               .resizable()
               .scaledToFit()
               .frame(width: 15, height: 15)
+              .onTapGesture {
+                editAction()
+              }
 
           }
           

@@ -42,6 +42,13 @@ public struct AttendanceCheck {
     var attendanceTeam: IdentifiedArrayOf<SelectTeamEntity> = .init(uniqueElements: [])
     var attendanceModel: [Attendance] = []
     var attendanceByTeam: [Int: [Attendance]] = [:]
+    var attendanceStatus: IdentifiedArrayOf<AttendanceStatus> = .init(uniqueElements: [])
+    var editAttendance: EditAttendance?
+    var attendanceId: Int = 0
+    var editAttendanceUserId: String = ""
+
+    @Presents var attendanceModal: AttendanceModalState<AttendanceModalAction>?
+    @Presents public var alert: AlertState<AlertAction>?
 
 
     public init() {
@@ -56,6 +63,7 @@ public struct AttendanceCheck {
     case async(AsyncAction)
     case inner(InnerAction)
     case navigation(NavigationAction)
+    case scope(ScopeAction)
 
   }
 
@@ -73,6 +81,8 @@ public struct AttendanceCheck {
     case swipePrevious
     case closeModal
     case tapSelectDate
+    case showEditAttendanceModal(id: Int, userId: String)
+    case refreshData // 수동 새로고침
   }
 
   // MARK: - AsyncAction 비동기 처리 액션
@@ -82,6 +92,8 @@ public struct AttendanceCheck {
     case fetchAttendanceCount
     case fetchTeams
     case fetchAttendance
+    case fetchStatus
+    case editAttendance(userid: String, status: AttendanceStatus)
   }
 
   // MARK: - 앱내에서 사용하는 액션
@@ -90,6 +102,8 @@ public struct AttendanceCheck {
     case attendanceCountResponse(Result<AttendanceCount, AttendanceError>)
     case fetchTeamsResponse(Result<[SelectTeamEntity], AttendanceError>)
     case attendanceResponse(teamId: Int, Result<[Entity.Attendance], AttendanceError>)
+    case attendanceStatusResponse(Result<[AttendanceStatus], AttendanceError>)
+    case editAttendanceResponse(Result<EditAttendance, AttendanceError>)
   }
 
   // MARK: - NavigationAction
@@ -97,11 +111,24 @@ public struct AttendanceCheck {
 
   }
 
+  @CasePathable
+  public enum AlertAction {
+    case confirmTapped
+  }
+
+  @CasePathable
+  public enum ScopeAction: Equatable {
+    case alert(PresentationAction<AlertAction>)
+    case attendanceModal(PresentationAction<AttendanceModalAction>)
+  }
+
   nonisolated enum CancelID: Hashable {
     case fetchSchedule
     case fetchAttendanceCount
     case fetchTeams
     case fetchAttendance
+    case fetchStatus
+    case editAttendance
   }
 
 
@@ -132,9 +159,23 @@ public struct AttendanceCheck {
 
         case .destination(let destinationAction):
           return handleDestinationAction(state: &state, action: destinationAction)
+
+        case .scope(let scopeAction):
+          switch scopeAction {
+            case .alert:
+              return .none
+
+            case .attendanceModal(let action):
+              return handleAttendanceModalAction(state: &state, action: action)
+          }
+
       }
     }
     .ifLet(\.$destination, action: \.destination)
+    .ifLet(\.$alert, action: \.scope.alert)
+    .ifLet(\.$attendanceModal, action: \.scope.attendanceModal) {
+      AttendanceModal()
+    }
   }
 }
 
@@ -145,19 +186,38 @@ extension AttendanceCheck {
   ) -> Effect<Action> {
     switch action {
       case .onAppear:
-        guard !state.hasFetchedAttendance else { return .none }
-        state.hasFetchedAttendance = true
+        // 첫 진입 시에만 전체 데이터 로드, 이후에는 중요한 데이터만 새로고침
+        if !state.hasFetchedAttendance {
+          state.hasFetchedAttendance = true
+          return .merge(
+            .run { await $0(.async(.fetchSchedule)) },
+            .run { await $0(.async(.fetchAttendanceCount)) },
+            .run { await $0(.async(.fetchTeams)) },
+            .run { await $0(.async(.fetchAttendance)) },
+            .run { await $0(.async(.fetchStatus)) },
+          )
+        } else {
+          // 이미 데이터가 있는 경우 출석 현황과 출석 리스트만 조용히 새로고침
+          return .merge(
+            .run { await $0(.async(.fetchAttendanceCount)) },
+            .run { await $0(.async(.fetchAttendance)) }
+          )
+        }
+
+      case .refreshData:
+        // 수동 새로고침: 모든 데이터를 다시 가져옴
         return .merge(
           .run { await $0(.async(.fetchSchedule)) },
           .run { await $0(.async(.fetchAttendanceCount)) },
           .run { await $0(.async(.fetchTeams)) },
           .run { await $0(.async(.fetchAttendance)) },
+          .run { await $0(.async(.fetchStatus)) }
         )
 
       case .selectPartButton(let selectPart):
         state.selectPart = selectPart.teams
         state.selectTeamID = selectPart.teamId
-        return .none
+        return .send(.async(.fetchAttendance))
 
       case .swipeNext:
         let orderedTeams = orderedAttendanceTeams(from: state.attendanceTeam)
@@ -183,6 +243,15 @@ extension AttendanceCheck {
 
       case .closeModal:
         state.destination = nil
+        return .none
+
+      case .showEditAttendanceModal(let id, let userid):
+        state.attendanceModal = .adminStatusChangeWithAvailable(
+          availableStatuses: Array(state.attendanceStatus),
+          currentStatus: .attended
+        )
+        state.attendanceId = id
+        state.editAttendanceUserId = userid
         return .none
     }
   }
@@ -240,6 +309,35 @@ extension AttendanceCheck {
           return await send(.inner(.attendanceResponse(teamId: teamId, attendanceResult)))
         }
         .cancellable(id: CancelID.fetchAttendance, cancelInFlight: true)
+
+      case .fetchStatus:
+        return .run { send in
+          let statusResult = await Result {
+            try await attendanceUseCase.fetchStatus()
+          }
+            .mapError(AttendanceError.from)
+          return await send(.inner(.attendanceStatusResponse(statusResult)))
+
+        }
+        .cancellable(id: CancelID.fetchStatus, cancelInFlight: true)
+
+      case .editAttendance(let userid, let status):
+        return .run {  [
+          attendanceId = state.attendanceId
+        ] send in
+          let editAttendanceResult = await Result {
+            let input = EditAttendanceInput(
+              attendanceId: attendanceId,
+              status: status,
+              userId: userid
+            )
+            return try await attendanceUseCase.editAttendance(input: input)
+          }
+            .mapError(AttendanceError.from)
+
+          return await send(.inner(.editAttendanceResponse(editAttendanceResult)))
+        }
+        .cancellable(id: CancelID.editAttendance, cancelInFlight: true)
     }
   }
 
@@ -312,6 +410,61 @@ extension AttendanceCheck {
             #logNetwork("기수 출석 현황 조회 실패", error.localizedDescription)
         }
         return .none
+
+      case .attendanceStatusResponse(let result):
+        switch result {
+          case .success(let data):
+            state.attendanceStatus = .init(uniqueElements: data)
+          case .failure(let error):
+            #logError("출석 현황 조회 실패", error.localizedDescription)
+        }
+        return .none
+
+      case .editAttendanceResponse(let result):
+        switch result {
+          case .success(let data):
+            state.editAttendance = data
+            return .merge(
+              .run { await $0(.async(.fetchAttendanceCount)) },
+              .run { await $0(.async(.fetchAttendance)) }
+            )
+          case .failure(let error):
+            #logError("출석 현황 수정 실패", error.localizedDescription)
+
+            // 서버에서 온 사용자 친화적 메시지 사용
+            let alertTitle: String
+            let alertMessage: String
+
+            switch error {
+            case .unknown(let message):
+              // 서버에서 온 상세 메시지 (예: "출석일이 아닙니다")
+              alertTitle = "알림"
+              alertMessage = message
+            case .serverError(let code):
+              alertTitle = "서버 오류"
+              alertMessage = "서버에 문제가 발생했습니다. (코드: \(code))\n잠시 후 다시 시도해주세요."
+            case .networkError(let message):
+              alertTitle = "네트워크 오류"
+              alertMessage = "인터넷 연결을 확인하고 다시 시도해주세요.\n\(message)"
+            case .unauthorized:
+              alertTitle = "인증 실패"
+              alertMessage = "로그인이 필요합니다. 다시 로그인해주세요."
+            default:
+              alertTitle = "출석 수정 실패"
+              alertMessage = error.errorDescription ?? "출석 상태 수정에 실패했습니다. 다시 시도해주세요."
+            }
+
+            state.alert = AlertState {
+              TextState(alertTitle)
+            } actions: {
+              ButtonState(action: .confirmTapped) {
+                TextState("확인")
+              }
+            } message: {
+              TextState(alertMessage)
+            }
+        }
+        return .none
     }
   }
 
@@ -341,6 +494,32 @@ extension AttendanceCheck {
         }
         
       default:
+        return .none
+    }
+  }
+
+  private func handleAttendanceModalAction(
+    state: inout State,
+    action: PresentationAction<AttendanceModalAction>
+  ) -> Effect<Action> {
+    switch action {
+      case .presented(let attendanceModalAction):
+        switch attendanceModalAction {
+          case .confirmTapped(let status):
+            state.attendanceModal = nil
+            // API 호출 예시
+            return .run { [
+              userid = state.editAttendanceUserId
+            ] send in
+              await send(.async(.editAttendance(userid: userid, status: status)))
+            }
+
+          case .cancelTapped:
+            state.attendanceModal = nil
+            return .none
+        }
+
+      case .dismiss:
         return .none
     }
   }

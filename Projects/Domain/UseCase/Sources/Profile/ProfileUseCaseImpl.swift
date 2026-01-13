@@ -22,6 +22,7 @@ public protocol ProfileUseCaseInterface: Sendable {
 public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
   @Dependency(\.profileRepository) var repository
   @Shared(.appStorage("staffRole")) var staffRole: Staff?
+  @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
 
   public init() { }
   // MARK: - 프로필  수정
@@ -31,6 +32,9 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
     let profileResult = try await repository.getProfile()
     self.$staffRole.withLock {
       $0 = profileResult.role
+    }
+    self.$userSession.withLock {
+      $0.generation = profileResult.generation
     }
     return profileResult
 

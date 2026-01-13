@@ -78,6 +78,7 @@ public struct Login {
     case presentSignUpInviteView
     case presentStaffMain
     case presentMemberMain
+    case presentWeb
   }
 
   @CasePathable
@@ -245,6 +246,9 @@ extension Login {
 
       case .presentMemberMain:
         return .none
+
+      case .presentWeb:
+        return .none
     }
   }
 
@@ -271,7 +275,7 @@ extension Login {
             return .none
 
           case .policyTapped:
-            return .none
+            return .send(.navigation(.presentWeb))
         }
 
       case .dismiss:

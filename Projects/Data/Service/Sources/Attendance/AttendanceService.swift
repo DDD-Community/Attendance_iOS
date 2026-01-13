@@ -16,6 +16,8 @@ public enum AttendanceService {
   case adminAttendanceCount(scheduleId: Int)
   case fetchTeams
   case sessionAttendance(body: AttendanceRequestDTO)
+  case status
+  case editAttendance(body: EditAttendanceRequestDTO)
 }
 
 extension AttendanceService: BaseTargetType {
@@ -25,6 +27,9 @@ extension AttendanceService: BaseTargetType {
     switch self {
       case .adminAttendanceCount, .fetchTeams, .sessionAttendance:
         return .admin
+
+      case .status, .editAttendance:
+        return .attendance
     }
   }
 
@@ -39,6 +44,12 @@ extension AttendanceService: BaseTargetType {
       case .sessionAttendance(let body):
         return AttendanceAPI.sessionAttendances(scheduleId: body.scheduleId, teamId: body.teamId).description
 
+      case .status:
+        return AttendanceAPI.status.description
+
+      case .editAttendance(let body):
+        return AttendanceAPI.editAttendance(attendanceId: body.attendanceId).description
+
     }
   }
 
@@ -51,6 +62,12 @@ extension AttendanceService: BaseTargetType {
       case .adminAttendanceCount, .fetchTeams, .sessionAttendance:
         return .get
 
+      case .status:
+        return .get
+
+      case .editAttendance:
+        return .put
+
     }
   }
 
@@ -59,10 +76,13 @@ extension AttendanceService: BaseTargetType {
       case .adminAttendanceCount(let scheduleId):
         return scheduleId.toDictionary(key: "scheduleId")
 
-      case .fetchTeams:
+      case .fetchTeams, .status:
         return nil
 
       case .sessionAttendance(let body):
+        return body.toDictionary
+
+      case .editAttendance(let body):
         return body.toDictionary
     }
   }

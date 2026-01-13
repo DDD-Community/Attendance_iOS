@@ -42,6 +42,7 @@ public extension ShapeStyle where Self == Color {
   // MARK: - Primitives
   
   static var grayBlack: Color { .init(hex: "1A1A1A") }
+  static var gray70: Color { .init(hex: "525252") }
   static var gray80: Color { .init(hex: "323537") }
   static var gray60: Color { .init(hex: "6F6F6F") }
   static var gray40: Color { .init(hex: "A8A8A8") }
