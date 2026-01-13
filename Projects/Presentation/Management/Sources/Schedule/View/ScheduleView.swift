@@ -29,7 +29,7 @@ struct ScheduleView: View {
         VStack(alignment: .leading, spacing: 0) {
           // 타이틀
           HStack {
-            Text("12기 일정표")
+            Text("\(store.userSession.generation) 일정표")
               .pretendardCustomFont(textStyle: .title2NormalBold)
               .foregroundStyle(.staticWhite)
 

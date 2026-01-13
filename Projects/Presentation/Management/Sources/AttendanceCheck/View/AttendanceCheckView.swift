@@ -8,6 +8,7 @@
 import SwiftUI
 
 import Shareds
+import DesignSystem
 import Entity
 
 import ComposableArchitecture
@@ -29,16 +30,15 @@ struct AttendanceCheckView: View {
       store.send(.view(.onAppear))
       
     }
-//    .onChange(of: store.selectPart ?? .web1) { oldValue, newValue in
-//      store.selectPart = newValue
-//      store.send(.inner(.fillterAttendance(team: newValue)))
-//    }
     .sheet(item: $store.scope(state: \.destination?.scheduleModal, action: \.destination.scheduleModal)) { scheduleModalStore in
       ScheduleModalView(store: scheduleModalStore)
         .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
         .presentationCornerRadius(20)
+        .presentationDragIndicator(.visible)
 
     }
+    .alert($store.scope(state: \.alert, action: \.scope.alert))
+    .attendanceModal($store.scope(state: \.attendanceModal, action: \.scope.attendanceModal))
   }
 }
 
@@ -77,7 +77,7 @@ extension AttendanceCheckView {
       Spacer()
         .frame(height: 14)
 
-      AttendanceCard(
+      DesignSystem.AttendanceCard(
         attendanceCount: store.attendanceCount,
         lateCount:  store.lateCount,
         absentCount: store.absentCount,
@@ -165,45 +165,69 @@ extension AttendanceCheckView {
   fileprivate func selectPartAttendanceStatus() -> some View {
     if let selectPart = store.selectPart,
        [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart) {
-      selectPartAttandanceStatusCard()
+      selectPartAttendanceStatusCard()
 
       Spacer()
         .frame(height: 20)
     } else {
-      selectPartAttandanceStatusCard()
+      selectPartAttendanceStatusCard()
     }
   }
 
   @ViewBuilder
-  fileprivate func selectPartAttandanceStatusCard() -> some View {
-    let attendanceModel = store.attendanceByTeam[store.selectTeamID] ?? store.attendanceModel
+  fileprivate func selectPartAttendanceStatusCard() -> some View {
+    let attendanceModel = getAttendanceModel()
 
     if attendanceModel.isEmpty {
-      noMemberAttandanceView()
+      noMemberAttendanceView()
     } else {
-      ScrollView(.vertical) {
-        LazyVStack(spacing: .zero) {
-          ForEach(attendanceModel, id: \.userID) { item in
-            AttendanceCheckStatusCard(
-              attendanceStatus: item.status,
-              selectPart: item.selectPartEntity ?? .all,
-              selectTeam: item.selectTeamEntity ?? .unknown,
-              name: item.userName
-            )
-          }
+      AttendanceScrollView(attendanceModel: attendanceModel)
+    }
+  }
+
+  private func getAttendanceModel() -> [Attendance] {
+    return store.attendanceByTeam[store.selectTeamID] ?? store.attendanceModel
+  }
+
+  @ViewBuilder
+  private func AttendanceScrollView(attendanceModel: [Attendance]) -> some View {
+    ScrollView(.vertical) {
+      LazyVStack(spacing: .zero) {
+        ForEach(attendanceModel, id: \.id) { item in
+          AttendanceCard(item: item)
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 10)
       }
-      .scrollIndicators(.hidden)
+      .padding(.horizontal, 24)
+      .padding(.bottom, 10)
+    }
+    .scrollIndicators(.hidden)
       .onAppear {
         UIScrollView.appearance().bounces = false
       }
-    }
   }
 
   @ViewBuilder
-  fileprivate func noMemberAttandanceView() -> some View {
+  private func AttendanceCard(item: Attendance) -> some View {
+    AttendanceCheckStatusCard(
+      attendanceStatus: item.status,
+      selectPart: item.selectPartEntity ?? .all,
+      selectTeam: item.selectTeamEntity ?? .unknown,
+      name: item.userName,
+      editAction: {
+        store.send(
+          .view(
+            .showEditAttendanceModal(
+              id: item.id ?? .zero,
+              userId: item.userID
+            )
+          )
+        )
+      }
+    )
+  }
+
+  @ViewBuilder
+  fileprivate func noMemberAttendanceView() -> some View {
     LazyVStack {
 
       Spacer()

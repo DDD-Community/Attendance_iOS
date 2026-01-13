@@ -9,13 +9,13 @@ import Foundation
 
 public struct Attendance: Equatable, Identifiable {
   public let id: Int?
-  public let userID: Int
+  public let userID: String
   public let userName, userInfo: String
   public let status:AttendanceStatus
   
   public init(
     id: Int?,
-    userID: Int,
+    userID: String,
     userName: String,
     userInfo: String,
     status: AttendanceStatus

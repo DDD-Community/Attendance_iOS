@@ -10,6 +10,7 @@ import SwiftUI
 import ComposableArchitecture
 import TCACoordinators
 import OnBoarding
+import Web
 
 public struct ProfileCoordinatorView: View {
   @Bindable var store: StoreOf<ProfileCoordinator>

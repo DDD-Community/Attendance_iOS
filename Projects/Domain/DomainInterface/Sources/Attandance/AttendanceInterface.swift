@@ -14,6 +14,8 @@ public protocol AttendanceInterface: Sendable {
   func adminAttendanceCount(scheduleId: Int) async throws -> AttendanceCount
   func fetchAttendanceTeams() async throws -> [SelectTeamEntity]
   func sessionAttendance(scheduleId: Int, teamId: Int) async throws -> [Attendance]
+  func fetchStatus() async throws -> [AttendanceStatus]
+  func editAttendance(input: EditAttendanceInput) async throws -> EditAttendance
 }
 
 /// Attendance Repository의 DependencyKey 구조체

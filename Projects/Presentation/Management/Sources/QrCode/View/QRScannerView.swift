@@ -11,7 +11,7 @@ import DesignSystem
 
 import AsyncMoya
 import ComposableArchitecture
-import Model
+import Entity
 
 struct QRScannerView: View {
   var onClose: (() -> Void)?
@@ -48,6 +48,7 @@ struct QRScannerView: View {
         }
       }
     }
+    .alert($store.scope(state: \.alert, action: \.scope.alert))
     .onChange(of: store.qrCheckModel?.isSuccess) { oldValue, newValue in
       switch newValue {
         case true:
@@ -97,7 +98,7 @@ extension QRScannerView {
   
   @ViewBuilder
   fileprivate func scanedTextViewWithBackGround() -> some View {
-    let attendanceStatus =  store.qrCheckModel?.isSuccess
+    let attendanceStatus =  store.qrCheckModel?.status
     GeometryReader { proxy in
       let width = proxy.size.width
       let height = proxy.size.height
@@ -121,7 +122,7 @@ extension QRScannerView {
         .ignoresSafeArea()
       
       // (B) 안내 문구 (네모 영역 위쪽에 배치)
-      scanText(attendanceType: .absent)
+      scanText(attendanceType: attendanceStatus)
         .position(x: width / 2, y: rectY - 30)
       // (C) 중앙 테두리 (네모 영역 강조)
       RoundedRectangle(cornerRadius: 12)
@@ -134,10 +135,10 @@ extension QRScannerView {
   
   @ViewBuilder
   fileprivate func scanText(
-    attendanceType: AttendanceType?,
+    attendanceType: AttendanceStatus?,
   ) -> some View {
     switch attendanceType {
-    case .present:
+      case .attended:
       HStack(spacing: .zero){
         Spacer()
         Image(asset: .qrCheck)
