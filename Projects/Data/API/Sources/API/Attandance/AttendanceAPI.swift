@@ -27,10 +27,10 @@ public enum AttendanceAPI {
         return "/me/schedules/\(scheduleId)/teams/\(teamId)/attendances"
 
       case .status:
-        return "status"
+        return "/status"
 
       case .editAttendance(let attendanceId):
-        return "\(attendanceId)"
+        return "/\(attendanceId)"
     }
   }
 }

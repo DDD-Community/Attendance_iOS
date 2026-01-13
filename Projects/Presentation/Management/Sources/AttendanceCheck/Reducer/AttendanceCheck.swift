@@ -430,14 +430,38 @@ extension AttendanceCheck {
             )
           case .failure(let error):
             #logError("출석 현황 수정 실패", error.localizedDescription)
+
+            // 서버에서 온 사용자 친화적 메시지 사용
+            let alertTitle: String
+            let alertMessage: String
+
+            switch error {
+            case .unknown(let message):
+              // 서버에서 온 상세 메시지 (예: "출석일이 아닙니다")
+              alertTitle = "알림"
+              alertMessage = message
+            case .serverError(let code):
+              alertTitle = "서버 오류"
+              alertMessage = "서버에 문제가 발생했습니다. (코드: \(code))\n잠시 후 다시 시도해주세요."
+            case .networkError(let message):
+              alertTitle = "네트워크 오류"
+              alertMessage = "인터넷 연결을 확인하고 다시 시도해주세요.\n\(message)"
+            case .unauthorized:
+              alertTitle = "인증 실패"
+              alertMessage = "로그인이 필요합니다. 다시 로그인해주세요."
+            default:
+              alertTitle = "출석 수정 실패"
+              alertMessage = error.errorDescription ?? "출석 상태 수정에 실패했습니다. 다시 시도해주세요."
+            }
+
             state.alert = AlertState {
-              TextState("출석 수정 실패")
+              TextState(alertTitle)
             } actions: {
               ButtonState(action: .confirmTapped) {
                 TextState("확인")
               }
             } message: {
-              TextState("출석 수정 실패: \(String(describing: AuthError.unknownError(error.errorDescription ?? "")))")
+              TextState(alertMessage)
             }
         }
         return .none

@@ -48,6 +48,7 @@ struct QRScannerView: View {
         }
       }
     }
+    .alert($store.scope(state: \.alert, action: \.scope.alert))
     .onChange(of: store.qrCheckModel?.isSuccess) { oldValue, newValue in
       switch newValue {
         case true:
@@ -58,7 +59,6 @@ struct QRScannerView: View {
         break
       }
     }
-    .alert($store.scope(state: \.alert, action: \.scope.alert))
   }
 }
 
