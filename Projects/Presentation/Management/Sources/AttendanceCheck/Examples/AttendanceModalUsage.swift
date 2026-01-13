@@ -98,14 +98,14 @@ private func handleAttendanceModalAction(
   switch action {
     case .presented(let attendanceModalAction):
       switch attendanceModalAction {
-        case .confirmTapped(let statusName):
-          // ProfileReducer처럼 title 기반 구분도 가능하지만, statusName으로 직접 처리
+        case .confirmTapped(let status):
+          // ProfileReducer처럼 title 기반 구분도 가능하지만, status으로 직접 처리
           state.attendanceModal = nil
 
           // API 호출 예시
           return .run { send in
-            // await updateAttendanceStatus(statusName)
-            await send(.async(.updateAttendanceStatus(statusName)))
+            // await updateAttendanceStatus(status)
+            await send(.async(.updateAttendanceStatus(status)))
           }
 
         case .cancelTapped:
@@ -168,7 +168,7 @@ state.attendanceModal = .adminStatusChange(
 - 단순 확인/취소 팝업
 
 **AttendanceModal:**
-- `.confirmTapped(String)` → statusName 파라미터로 직접 전달
+- `.confirmTapped(String)` → status 파라미터로 직접 전달
 - 드롭다운 선택 후 상태명 반환
 
 ### 7. 실제 사용 시나리오
@@ -245,9 +245,9 @@ struct ExampleFeature {
     action: PresentationAction<AttendanceModalAction>
   ) -> Effect<Action> {
     switch action {
-      case .presented(.confirmTapped(let statusName)):
+      case .presented(.confirmTapped(let status)):
         // 실제 API 호출이나 상태 업데이트
-        print("선택된 상태: \(statusName)")
+        print("선택된 상태: \(status)")
         state.attendanceModal = nil
         return .none
 

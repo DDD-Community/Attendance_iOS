@@ -15,7 +15,7 @@ public struct AttendanceStatusModal: View {
   private let title: String
   private let availableStatuses: [AttendanceStatus]
   private let confirmTitle: String
-  private let onConfirm: (String) -> Void // name 값 반환
+  private let onConfirm: (AttendanceStatus) -> Void // AttendanceStatus 반환
   private let onCancel: () -> Void
 
   public init(
@@ -23,7 +23,7 @@ public struct AttendanceStatusModal: View {
     initialStatus: AttendanceStatus = .attended,
     availableStatuses: [AttendanceStatus], // API에서 받은 배열 (필수)
     confirmTitle: String = "확인",
-    onConfirm: @escaping (String) -> Void, // name 값 반환
+    onConfirm: @escaping (AttendanceStatus) -> Void, // AttendanceStatus 반환
     onCancel: @escaping () -> Void
   ) {
     self.title = title
@@ -52,15 +52,13 @@ public struct AttendanceStatusModal: View {
         AttendanceDropdown(
           selectedStatus: selectedStatus,
           availableStatuses: availableStatuses
-        ) { newStatusName in
-          // name 값을 다시 AttendanceStatus로 변환
-          if let newStatus = AttendanceStatus(rawValue: newStatusName) {
-            selectedStatus = newStatus
-          }
+        ) { newStatus in
+          // AttendanceStatus 직접 받아서 설정
+          selectedStatus = newStatus
         }
 
         Button {
-          onConfirm(selectedStatus.rawValue) // name 값 반환 (예: "ATTENDED")
+          onConfirm(selectedStatus) // AttendanceStatus 직접 반환
         } label: {
           Text(confirmTitle)
             .pretendardFont(family: .Medium, size: 16)
@@ -92,7 +90,7 @@ public struct AttendanceModalItem: Identifiable, Equatable {
   public let initialStatus: AttendanceStatus
   public let availableStatuses: [AttendanceStatus]
   public let confirmTitle: String
-  public let onConfirm: (String) -> Void // name 값 반환
+  public let onConfirm: (AttendanceStatus) -> Void // AttendanceStatus 반환
   public let onCancel: () -> Void
 
   public static func == (lhs: AttendanceModalItem, rhs: AttendanceModalItem) -> Bool {
@@ -108,7 +106,7 @@ public struct AttendanceModalItem: Identifiable, Equatable {
     initialStatus: AttendanceStatus = .attended,
     availableStatuses: [AttendanceStatus], // API에서 받은 배열 (필수)
     confirmTitle: String = "확인",
-    onConfirm: @escaping (String) -> Void, // name 값 반환
+    onConfirm: @escaping (AttendanceStatus) -> Void, // AttendanceStatus 반환
     onCancel: @escaping () -> Void
   ) {
     self.title = title
@@ -127,7 +125,7 @@ public extension AttendanceModalItem {
   static func changeAttendanceStatus(
     currentStatus: AttendanceStatus = .attended,
     availableStatuses: [AttendanceStatus], // API에서 받은 배열 (필수)
-    onConfirm: @escaping (String) -> Void, // name 값 반환
+    onConfirm: @escaping (AttendanceStatus) -> Void, // AttendanceStatus 반환
     onCancel: @escaping () -> Void
   ) -> AttendanceModalItem {
     AttendanceModalItem(
@@ -151,8 +149,8 @@ public extension AttendanceModalItem {
     AttendanceStatusModal(
       initialStatus: .attended,
       availableStatuses: [.attended, .late, .absent], // API 시뮬레이션
-      onConfirm: { statusName in
-        print("Confirmed: \(statusName)") // 예: "ATTENDED"
+      onConfirm: { status in
+        print("Confirmed: \(status)") // 예: AttendanceStatus.attended
       },
       onCancel: {
         print("Cancelled")

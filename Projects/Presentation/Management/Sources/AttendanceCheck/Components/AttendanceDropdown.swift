@@ -14,12 +14,12 @@ struct AttendanceDropdown: View {
   @State private var selectedStatus: AttendanceStatus
 
   private let availableStatuses: [AttendanceStatus]
-  private let onSelectionChanged: (String) -> Void // name 값 반환
+  private let onSelectionChanged: (AttendanceStatus) -> Void // AttendanceStatus 반환
 
   init(
     selectedStatus: AttendanceStatus,
     availableStatuses: [AttendanceStatus],
-    onSelectionChanged: @escaping (String) -> Void // name 값 반환
+    onSelectionChanged: @escaping (AttendanceStatus) -> Void // AttendanceStatus 반환
   ) {
     self._selectedStatus = State(initialValue: selectedStatus)
     self.availableStatuses = availableStatuses
@@ -66,7 +66,7 @@ struct AttendanceDropdown: View {
                 withAnimation(.easeInOut(duration: 0.2)) {
                   selectedStatus = status
                   isExpanded = false
-                  onSelectionChanged(status.rawValue) // name 값 반환 (예: "ATTENDED")
+                  onSelectionChanged(status) // AttendanceStatus 직접 반환
                 }
               } label: {
                 HStack {

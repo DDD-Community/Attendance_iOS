@@ -43,6 +43,9 @@ public struct AttendanceCheck {
     var attendanceModel: [Attendance] = []
     var attendanceByTeam: [Int: [Attendance]] = [:]
     var attendanceStatus: IdentifiedArrayOf<AttendanceStatus> = .init(uniqueElements: [])
+    var editAttendance: EditAttendance?
+    var attendanceId: Int = 0
+    var editAttendanceUserId: String = ""
 
     @Presents var attendanceModal: AttendanceModalState<AttendanceModalAction>?
 
@@ -77,7 +80,7 @@ public struct AttendanceCheck {
     case swipePrevious
     case closeModal
     case tapSelectDate
-    case showEditAttendanceModal
+    case showEditAttendanceModal(id: Int, userId: String)
   }
 
   // MARK: - AsyncAction 비동기 처리 액션
@@ -88,6 +91,7 @@ public struct AttendanceCheck {
     case fetchTeams
     case fetchAttendance
     case fetchStatus
+    case editAttendance(userid: String, status: AttendanceStatus)
   }
 
   // MARK: - 앱내에서 사용하는 액션
@@ -97,6 +101,7 @@ public struct AttendanceCheck {
     case fetchTeamsResponse(Result<[SelectTeamEntity], AttendanceError>)
     case attendanceResponse(teamId: Int, Result<[Entity.Attendance], AttendanceError>)
     case attendanceStatusResponse(Result<[AttendanceStatus], AttendanceError>)
+    case editAttendanceResponse(Result<EditAttendance, AttendanceError>)
   }
 
   // MARK: - NavigationAction
@@ -115,6 +120,7 @@ public struct AttendanceCheck {
     case fetchTeams
     case fetchAttendance
     case fetchStatus
+    case editAttendance
   }
 
 
@@ -181,7 +187,7 @@ extension AttendanceCheck {
       case .selectPartButton(let selectPart):
         state.selectPart = selectPart.teams
         state.selectTeamID = selectPart.teamId
-        return .none
+        return .send(.async(.fetchAttendance))
 
       case .swipeNext:
         let orderedTeams = orderedAttendanceTeams(from: state.attendanceTeam)
@@ -209,11 +215,13 @@ extension AttendanceCheck {
         state.destination = nil
         return .none
 
-      case .showEditAttendanceModal:
+      case .showEditAttendanceModal(let id, let userid):
         state.attendanceModal = .adminStatusChangeWithAvailable(
           availableStatuses: Array(state.attendanceStatus),
           currentStatus: .attended
         )
+        state.attendanceId = id
+        state.editAttendanceUserId = userid
         return .none
     }
   }
@@ -282,6 +290,24 @@ extension AttendanceCheck {
 
         }
         .cancellable(id: CancelID.fetchStatus, cancelInFlight: true)
+
+      case .editAttendance(let userid, let status):
+        return .run {  [
+          attendanceId = state.attendanceId
+        ] send in
+          let editAttendanceResult = await Result {
+            let input = EditAttendanceInput(
+              attendanceId: attendanceId,
+              status: status,
+              userId: userid
+            )
+            return try await attendanceUseCase.editAttendance(input: input)
+          }
+            .mapError(AttendanceError.from)
+
+          return await send(.inner(.editAttendanceResponse(editAttendanceResult)))
+        }
+        .cancellable(id: CancelID.editAttendance, cancelInFlight: true)
     }
   }
 
@@ -363,6 +389,15 @@ extension AttendanceCheck {
             #logError("출석 현황 조회 실패", error.localizedDescription)
         }
         return .none
+
+      case .editAttendanceResponse(let result):
+        switch result {
+          case .success(let data):
+            state.editAttendance = data
+          case .failure(let error):
+            #logError("출석 현황 수정 실패", error.localizedDescription)
+        }
+        return .none
     }
   }
 
@@ -403,15 +438,27 @@ extension AttendanceCheck {
     switch action {
       case .presented(let attendanceModalAction):
         switch attendanceModalAction {
-          case .confirmTapped(let statusName):
+          case .confirmTapped(let status):
             // ProfileReducer처럼 title 기반 구분도 가능하지만, statusName으로 직접 처리
             state.attendanceModal = nil
-
             // API 호출 예시
-            return .run { send in
-              // await updateAttendanceStatus(statusName)
-              
-            }
+//            return .run {[
+//              userId = state.editAttendanceUserId
+//            ] send in
+//              await send(.async(.editAttendance(userid: userId, status: statusName)))
+//              await send(.async(.fetchAttendanceCount))
+//              await send(.async(.fetchAttendance))
+//
+//            }
+            return .merge(
+              .run { [
+                userid = state.editAttendanceUserId
+              ] send in
+                await send(.async(.editAttendance(userid: userid, status: status)))
+              },
+              .run { await $0(.async(.fetchAttendanceCount)) },
+              .run { await $0(.async(.fetchAttendance)) },
+            )
 
           case .cancelTapped:
             state.attendanceModal = nil

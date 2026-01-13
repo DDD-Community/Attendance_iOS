@@ -36,7 +36,7 @@ public extension View {
     initialStatus: AttendanceStatus = .attended,
     availableStatuses: [AttendanceStatus], // API에서 받은 배열 (필수)
     confirmTitle: String = "확인",
-    onConfirm: @escaping (String) -> Void, // name 값 반환
+    onConfirm: @escaping (AttendanceStatus) -> Void, // AttendanceStatus 반환
     onCancel: @escaping () -> Void
   ) -> some View {
     self.modifier(
@@ -131,7 +131,7 @@ struct AttendanceStatusModalModifier: ViewModifier {
   private let initialStatus: AttendanceStatus
   private let availableStatuses: [AttendanceStatus]
   private let confirmTitle: String
-  private let onConfirm: (String) -> Void // name 값 반환
+  private let onConfirm: (AttendanceStatus) -> Void // AttendanceStatus 반환
   private let onCancel: () -> Void
 
   init(
@@ -140,7 +140,7 @@ struct AttendanceStatusModalModifier: ViewModifier {
     initialStatus: AttendanceStatus,
     availableStatuses: [AttendanceStatus],
     confirmTitle: String,
-    onConfirm: @escaping (String) -> Void, // name 값 반환
+    onConfirm: @escaping (AttendanceStatus) -> Void, // AttendanceStatus 반환
     onCancel: @escaping () -> Void
   ) {
     self.isPresented = isPresented

@@ -35,6 +35,12 @@ public struct AttendanceUseCaseImpl: AttendanceInterface {
   public func fetchStatus() async throws -> [AttendanceStatus] {
     return try await repository.fetchStatus()
   }
+
+  public func editAttendance(
+    input: EditAttendanceInput
+  ) async throws -> EditAttendance {
+    return try await repository.editAttendance(input: input)
+  }
 }
 
 extension AttendanceUseCaseImpl: DependencyKey {

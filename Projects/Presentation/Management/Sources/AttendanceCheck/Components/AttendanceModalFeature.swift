@@ -35,7 +35,7 @@ public struct AttendanceModalState<Action>: Equatable {
 
 @CasePathable
 public enum AttendanceModalAction: Equatable {
-  case confirmTapped(String) // statusName (예: "ATTENDED")
+  case confirmTapped(AttendanceStatus) // 선택된 AttendanceStatus
   case cancelTapped
 }
 

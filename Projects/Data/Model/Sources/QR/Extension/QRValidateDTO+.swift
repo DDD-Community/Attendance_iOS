@@ -10,11 +10,18 @@ import Entity
 
 public extension QRValidateDTO {
   func toDomain(isSuccess: Bool) -> QRValidateEntity {
-    QRValidateEntity(
+    // status 문자열을 AttendanceStatus로 변환
+    let attendanceStatus: AttendanceStatus? = {
+      guard let statusString = status else { return nil }
+      return AttendanceStatus.from(apiKey: statusString)
+    }()
+
+    return QRValidateEntity(
       isSuccess: isSuccess,
       code: code,
       message: message,
-      detail: detail
+      detail: detail,
+      status: attendanceStatus
     )
   }
 }
