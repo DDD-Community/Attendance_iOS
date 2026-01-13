@@ -81,6 +81,7 @@ public struct AttendanceCheck {
     case closeModal
     case tapSelectDate
     case showEditAttendanceModal(id: Int, userId: String)
+    case refreshData // 수동 새로고침
   }
 
   // MARK: - AsyncAction 비동기 처리 액션
@@ -174,14 +175,32 @@ extension AttendanceCheck {
   ) -> Effect<Action> {
     switch action {
       case .onAppear:
-        guard !state.hasFetchedAttendance else { return .none }
-        state.hasFetchedAttendance = true
+        // 첫 진입 시에만 전체 데이터 로드, 이후에는 중요한 데이터만 새로고침
+        if !state.hasFetchedAttendance {
+          state.hasFetchedAttendance = true
+          return .merge(
+            .run { await $0(.async(.fetchSchedule)) },
+            .run { await $0(.async(.fetchAttendanceCount)) },
+            .run { await $0(.async(.fetchTeams)) },
+            .run { await $0(.async(.fetchAttendance)) },
+            .run { await $0(.async(.fetchStatus)) },
+          )
+        } else {
+          // 이미 데이터가 있는 경우 출석 현황과 출석 리스트만 조용히 새로고침
+          return .merge(
+            .run { await $0(.async(.fetchAttendanceCount)) },
+            .run { await $0(.async(.fetchAttendance)) }
+          )
+        }
+
+      case .refreshData:
+        // 수동 새로고침: 모든 데이터를 다시 가져옴
         return .merge(
           .run { await $0(.async(.fetchSchedule)) },
           .run { await $0(.async(.fetchAttendanceCount)) },
           .run { await $0(.async(.fetchTeams)) },
           .run { await $0(.async(.fetchAttendance)) },
-          .run { await $0(.async(.fetchStatus)) },
+          .run { await $0(.async(.fetchStatus)) }
         )
 
       case .selectPartButton(let selectPart):
@@ -394,6 +413,10 @@ extension AttendanceCheck {
         switch result {
           case .success(let data):
             state.editAttendance = data
+            return .merge(
+              .run { await $0(.async(.fetchAttendanceCount)) },
+              .run { await $0(.async(.fetchAttendance)) }
+            )
           case .failure(let error):
             #logError("출석 현황 수정 실패", error.localizedDescription)
         }
@@ -439,26 +462,13 @@ extension AttendanceCheck {
       case .presented(let attendanceModalAction):
         switch attendanceModalAction {
           case .confirmTapped(let status):
-            // ProfileReducer처럼 title 기반 구분도 가능하지만, statusName으로 직접 처리
             state.attendanceModal = nil
             // API 호출 예시
-//            return .run {[
-//              userId = state.editAttendanceUserId
-//            ] send in
-//              await send(.async(.editAttendance(userid: userId, status: statusName)))
-//              await send(.async(.fetchAttendanceCount))
-//              await send(.async(.fetchAttendance))
-//
-//            }
-            return .merge(
-              .run { [
-                userid = state.editAttendanceUserId
-              ] send in
-                await send(.async(.editAttendance(userid: userid, status: status)))
-              },
-              .run { await $0(.async(.fetchAttendanceCount)) },
-              .run { await $0(.async(.fetchAttendance)) },
-            )
+            return .run { [
+              userid = state.editAttendanceUserId
+            ] send in
+              await send(.async(.editAttendance(userid: userid, status: status)))
+            }
 
           case .cancelTapped:
             state.attendanceModal = nil
