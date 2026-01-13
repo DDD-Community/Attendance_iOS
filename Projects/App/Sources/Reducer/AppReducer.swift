@@ -41,6 +41,7 @@ public struct AppReducer: Sendable {
     case async(AsyncAction)
     case inner(InnerAction)
     case navigation(NavigationAction)
+    case scope(ScopeAction)
   }
 
   @CasePathable
@@ -50,10 +51,6 @@ public struct AppReducer: Sendable {
     case presentAuth
     case presentStaff
     case presentMember
-    case splash(Splash.Action)
-    case auth(AuthCoordinator.Action)
-    case staff(StaffCoordinator.Action)
-    case member(MemberCoordinator.Action)
   }
 
   //MARK: - 앱내에서 사용하는 액션
@@ -69,6 +66,15 @@ public struct AppReducer: Sendable {
   //MARK: - 네비게이션 연결 액션
   public enum NavigationAction: Equatable {
 
+  }
+
+  //MARK: - 스코프 액션
+  @CasePathable
+  public enum ScopeAction {
+    case splash(Splash.Action)
+    case auth(AuthCoordinator.Action)
+    case staff(StaffCoordinator.Action)
+    case member(MemberCoordinator.Action)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -87,18 +93,21 @@ public struct AppReducer: Sendable {
 
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
+
+      case .scope(let scopeAction):
+        return handleScopeAction(state: &state, action: scopeAction)
       }
     }
-    .ifCaseLet(\.splash, action: \.view.splash) {
+    .ifCaseLet(\.splash, action: \.scope.splash) {
       Splash()
     }
-    .ifCaseLet(\.auth, action: \.view.auth) {
+    .ifCaseLet(\.auth, action: \.scope.auth) {
       AuthCoordinator()
     }
-    .ifCaseLet(\.staff, action: \.view.staff) {
+    .ifCaseLet(\.staff, action: \.scope.staff) {
       StaffCoordinator()
     }
-    .ifCaseLet(\.member, action: \.view.member) {
+    .ifCaseLet(\.member, action: \.scope.member) {
       MemberCoordinator()
     }
   }
@@ -110,44 +119,8 @@ public struct AppReducer: Sendable {
     switch action {
     case .presentView:
       return .run { send in
-        await send(.view(.splash(.view(.onAppear))))
+        await send(.scope(.splash(.view(.onAppear))))
       }
-
-    case .splash(.navigation(.presentLogin)):
-      return .run { send in
-        try await self.clock.sleep(for: .seconds(0.5))
-        await send(.view(.presentAuth))
-      }
-
-    case .splash(.navigation(.presentStaff)):
-      return .run { send in
-        try await self.clock.sleep(for: .seconds(0.5))
-        await send(.view(.presentStaff))
-      }
-
-    case .splash(.navigation(.presentMember)):
-      return .run { send in
-        try await self.clock.sleep(for: .seconds(0.5))
-        await send(.view(.presentMember))
-      }
-
-    case .auth(.navigation(.presentStaff)):
-      return .send(.view(.presentStaff))
-
-    case .auth(.navigation(.presentMember)):
-      return .send(.view(.presentMember))
-
-    case .staff(.navigation(.presentLogin)):
-      return .send(.view(.presentAuth))
-
-    case .staff(.navigation(.presentMember)):
-      return .send(.view(.presentMember))
-
-    case .member(.navigation(.presentLogin)):
-      return .send(.view(.presentAuth))
-
-    case .member(.navigation(.presentStaff)):
-      return .send(.view(.presentStaff))
 
     case .presentRoot:
       // 기본적으로 멤버 화면으로 이동
@@ -164,9 +137,6 @@ public struct AppReducer: Sendable {
 
     case .presentMember:
       state = .member(.init())
-      return .none
-
-    default:
       return .none
     }
   }
@@ -190,5 +160,53 @@ public struct AppReducer: Sendable {
     action: NavigationAction
   ) -> Effect<Action> {
     return .none
+  }
+
+  private func handleScopeAction(
+    state: inout State,
+    action: ScopeAction
+  ) -> Effect<Action> {
+    switch action {
+    case .splash(.navigation(.presentLogin)):
+      return .run { send in
+        try await self.clock.sleep(for: .seconds(0.5))
+        await send(.view(.presentAuth))
+      }
+
+    case .splash(.navigation(.presentStaff)):
+      return .run { send in
+        try await self.clock.sleep(for: .seconds(0.5))
+        await send(.scope(.splash(.async(.fetchUser))))
+        await send(.view(.presentStaff))
+      }
+
+    case .splash(.navigation(.presentMember)):
+      return .run { send in
+        try await self.clock.sleep(for: .seconds(0.5))
+        await send(.scope(.splash(.async(.fetchUser))))
+        await send(.view(.presentMember))
+      }
+
+    case .auth(.navigation(.presentStaff)):
+      return .send(.view(.presentStaff))
+
+    case .auth(.navigation(.presentMember)):
+      return .send(.view(.presentMember))
+
+    case .staff(.navigation(.presentLogin)):
+      return .send(.view(.presentAuth))
+
+    case .staff(.navigation(.presentMember)):
+      return .send(.view(.presentMember))
+
+    case .member(.navigation(.presentLogin)):
+      return .send(.view(.presentAuth))
+
+    case .member(.navigation(.presentStaff)):
+      return .send(.view(.presentStaff))
+
+    default:
+      return .none
+    }
   }
 }
