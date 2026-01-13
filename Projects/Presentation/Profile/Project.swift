@@ -13,7 +13,8 @@ let project = Project.makeModule(
   dependencies: [
     .Shared(implements: .Shareds),
     .Domain(implements: .UseCase),
-    .Presentation(implements: .OnBoarding)
+    .Presentation(implements: .OnBoarding),
+    .Presentation(implements: .Web)
   ],
   sources: ["Sources/**"]
 )

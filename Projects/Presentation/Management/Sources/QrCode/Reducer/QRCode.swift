@@ -28,6 +28,7 @@ public struct QRCode {
     var scheduleId: String = ""
     var nowDate = Date()
     var isUseQRCode: Bool = false
+    @Presents public var alert: AlertState<AlertAction>?
 
     public init() {}
   }
@@ -37,6 +38,7 @@ public struct QRCode {
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
+    case scope(ScopeAction)
     case navigation(NavigationAction)
 
   }
@@ -47,6 +49,15 @@ public struct QRCode {
     case stopScanning
   }
 
+  @CasePathable
+  public enum ScopeAction {
+    case alert(PresentationAction<AlertAction>)
+  }
+
+  @CasePathable
+  public enum AlertAction {
+    case confirmTapped
+  }
 
 
   //MARK: - AsyncAction 비동기 처리 액션
@@ -90,8 +101,15 @@ public struct QRCode {
 
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
+
+        case .scope(let scopeAction):
+          switch scopeAction {
+          case .alert:
+            return .none
+          }
       }
     }
+    .ifLet(\.$alert, action: \.scope.alert)
   }
 }
 
@@ -154,6 +172,15 @@ extension QRCode {
       case .failure(let error):
         #logNetwork("qr 검증 실패", error.localizedDescription)
         state.isUseQRCode = true
+          state.alert = AlertState {
+            TextState("QR 검증 실패")
+          } actions: {
+            ButtonState(action: .confirmTapped) {
+              TextState("확인")
+            }
+          } message: {
+            TextState("QR 검증 실패: \(String(describing: AuthError.unknownError(error.errorDescription ?? "")))")
+          }
           return .none
       }
 

@@ -37,6 +37,7 @@ struct AttendanceCheckView: View {
         .presentationDragIndicator(.visible)
 
     }
+    .alert($store.scope(state: \.alert, action: \.scope.alert))
     .attendanceModal($store.scope(state: \.attendanceModal, action: \.scope.attendanceModal))
   }
 }

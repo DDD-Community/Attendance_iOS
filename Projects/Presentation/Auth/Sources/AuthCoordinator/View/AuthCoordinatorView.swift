@@ -8,9 +8,11 @@
 import SwiftUI
 
 import OnBoarding
+import Web
 
 import ComposableArchitecture
 import TCACoordinators
+
 
 public struct AuthCoordinatorView: View {
   @Bindable private var store: StoreOf<AuthCoordinator>
@@ -30,6 +32,11 @@ public struct AuthCoordinatorView: View {
         
         case .onboarding(let onBoardingStore):
           OnBoardingCoordinatorView(store: onBoardingStore)
+            .navigationBarBackButtonHidden()
+
+
+        case .web(let webStore):
+          WebView(store: webStore)
             .navigationBarBackButtonHidden()
       }
     }

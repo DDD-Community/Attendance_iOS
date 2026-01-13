@@ -58,6 +58,7 @@ struct QRScannerView: View {
         break
       }
     }
+    .alert($store.scope(state: \.alert, action: \.scope.alert))
   }
 }
 

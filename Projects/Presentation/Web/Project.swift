@@ -5,18 +5,19 @@ import ProjectTemplatePlugin
 import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
-
 let project = Project.makeModule(
-  name: "Auth",
-  bundleId: .appBundleID(name: ".Auth"),
-  product: Project.Environment.presentationProduct,
+  name: "Web",
+  bundleId: .appBundleID(name: ".Web"),
+  product: .staticFramework,
   settings:  .settings(),
   dependencies: [
+
+    .SPM.composableArchitecture,
+    .SPM.tcaCoordinator,
     .Shared(implements: .Shareds),
-    .Domain(implements: .UseCase),
-    .Presentation(implements: .OnBoarding),
-    .Presentation(implements: .Web)
+    .Shared(implements: .DesignSystem),
+    .Domain(implements: .UseCase)
+  
   ],
-  sources: ["Sources/**"],
-  hasTests: true
+  sources: ["Sources/**"]
 )

@@ -48,6 +48,7 @@ public struct AttendanceCheck {
     var editAttendanceUserId: String = ""
 
     @Presents var attendanceModal: AttendanceModalState<AttendanceModalAction>?
+    @Presents public var alert: AlertState<AlertAction>?
 
 
     public init() {
@@ -111,7 +112,13 @@ public struct AttendanceCheck {
   }
 
   @CasePathable
+  public enum AlertAction {
+    case confirmTapped
+  }
+
+  @CasePathable
   public enum ScopeAction: Equatable {
+    case alert(PresentationAction<AlertAction>)
     case attendanceModal(PresentationAction<AttendanceModalAction>)
   }
 
@@ -155,6 +162,9 @@ public struct AttendanceCheck {
 
         case .scope(let scopeAction):
           switch scopeAction {
+            case .alert:
+              return .none
+
             case .attendanceModal(let action):
               return handleAttendanceModalAction(state: &state, action: action)
           }
@@ -162,6 +172,7 @@ public struct AttendanceCheck {
       }
     }
     .ifLet(\.$destination, action: \.destination)
+    .ifLet(\.$alert, action: \.scope.alert)
     .ifLet(\.$attendanceModal, action: \.scope.attendanceModal) {
       AttendanceModal()
     }
@@ -419,6 +430,15 @@ extension AttendanceCheck {
             )
           case .failure(let error):
             #logError("출석 현황 수정 실패", error.localizedDescription)
+            state.alert = AlertState {
+              TextState("출석 수정 실패")
+            } actions: {
+              ButtonState(action: .confirmTapped) {
+                TextState("확인")
+              }
+            } message: {
+              TextState("출석 수정 실패: \(String(describing: AuthError.unknownError(error.errorDescription ?? "")))")
+            }
         }
         return .none
     }
