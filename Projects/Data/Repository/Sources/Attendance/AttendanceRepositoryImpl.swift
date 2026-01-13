@@ -35,6 +35,7 @@ final public class AttendanceRepositoryImpl: AttendanceInterface , Sendable {
     return dto.toDomain()
   }
 
+  // MARK: - 출석 조회
   public func sessionAttendance(
     scheduleId: Int,
     teamId: Int
@@ -44,4 +45,9 @@ final public class AttendanceRepositoryImpl: AttendanceInterface , Sendable {
     return dto.toDomain()
   }
 
+  // MARK: - 출석 status 조회
+  public func fetchStatus() async throws -> [AttendanceStatus] {
+    let dto: AttendanceStatusDTO = try await provider.request(.status)
+    return dto.toDomain()
+  }
 }

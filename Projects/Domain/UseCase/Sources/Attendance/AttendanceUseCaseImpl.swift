@@ -31,6 +31,10 @@ public struct AttendanceUseCaseImpl: AttendanceInterface {
   ) async throws -> [Attendance] {
     return try await repository.sessionAttendance(scheduleId: scheduleId, teamId: teamId)
   }
+
+  public func fetchStatus() async throws -> [AttendanceStatus] {
+    return try await repository.fetchStatus()
+  }
 }
 
 extension AttendanceUseCaseImpl: DependencyKey {

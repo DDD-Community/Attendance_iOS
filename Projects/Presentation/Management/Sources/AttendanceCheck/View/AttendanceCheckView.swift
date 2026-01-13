@@ -29,16 +29,14 @@ struct AttendanceCheckView: View {
       store.send(.view(.onAppear))
       
     }
-//    .onChange(of: store.selectPart ?? .web1) { oldValue, newValue in
-//      store.selectPart = newValue
-//      store.send(.inner(.fillterAttendance(team: newValue)))
-//    }
     .sheet(item: $store.scope(state: \.destination?.scheduleModal, action: \.destination.scheduleModal)) { scheduleModalStore in
       ScheduleModalView(store: scheduleModalStore)
         .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
         .presentationCornerRadius(20)
+        .presentationDragIndicator(.visible)
 
     }
+    .attendanceModal($store.scope(state: \.attendanceModal, action: \.scope.attendanceModal))
   }
 }
 
@@ -188,7 +186,10 @@ extension AttendanceCheckView {
               attendanceStatus: item.status,
               selectPart: item.selectPartEntity ?? .all,
               selectTeam: item.selectTeamEntity ?? .unknown,
-              name: item.userName
+              name: item.userName,
+              editAction: {
+                store.send(.view(.showEditAttendanceModal))
+              }
             )
           }
         }

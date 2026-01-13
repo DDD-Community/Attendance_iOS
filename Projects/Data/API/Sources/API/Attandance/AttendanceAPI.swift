@@ -11,6 +11,7 @@ public enum AttendanceAPI {
   case adminAttendanceCount(scheduleId: Int)
   case fetchTeams
   case sessionAttendances(scheduleId: Int, teamId: Int)
+  case status
 
   public var description: String {
     switch self {
@@ -23,6 +24,9 @@ public enum AttendanceAPI {
 
       case .sessionAttendances(let scheduleId, let teamId):
         return "/me/schedules/\(scheduleId)/teams/\(teamId)/attendances"
+
+      case .status:
+        return "status"
     }
   }
 }

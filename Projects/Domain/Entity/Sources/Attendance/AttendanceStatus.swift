@@ -7,10 +7,14 @@
 
 import Foundation
 
-public enum AttendanceStatus: String, CaseIterable, Equatable {
+public enum AttendanceStatus: String, CaseIterable, Equatable, Identifiable {
   case attended = "ATTENDED"
   case late = "LATE"
   case absent = "ABSENT"
+
+  public var id: String {
+    rawValue
+  }
 
   public var desc: String {
     switch self {

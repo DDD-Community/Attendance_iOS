@@ -42,6 +42,9 @@ public struct AttendanceCheck {
     var attendanceTeam: IdentifiedArrayOf<SelectTeamEntity> = .init(uniqueElements: [])
     var attendanceModel: [Attendance] = []
     var attendanceByTeam: [Int: [Attendance]] = [:]
+    var attendanceStatus: IdentifiedArrayOf<AttendanceStatus> = .init(uniqueElements: [])
+
+    @Presents var attendanceModal: AttendanceModalState<AttendanceModalAction>?
 
 
     public init() {
@@ -56,6 +59,7 @@ public struct AttendanceCheck {
     case async(AsyncAction)
     case inner(InnerAction)
     case navigation(NavigationAction)
+    case scope(ScopeAction)
 
   }
 
@@ -73,6 +77,7 @@ public struct AttendanceCheck {
     case swipePrevious
     case closeModal
     case tapSelectDate
+    case showEditAttendanceModal
   }
 
   // MARK: - AsyncAction 비동기 처리 액션
@@ -82,6 +87,7 @@ public struct AttendanceCheck {
     case fetchAttendanceCount
     case fetchTeams
     case fetchAttendance
+    case fetchStatus
   }
 
   // MARK: - 앱내에서 사용하는 액션
@@ -90,6 +96,7 @@ public struct AttendanceCheck {
     case attendanceCountResponse(Result<AttendanceCount, AttendanceError>)
     case fetchTeamsResponse(Result<[SelectTeamEntity], AttendanceError>)
     case attendanceResponse(teamId: Int, Result<[Entity.Attendance], AttendanceError>)
+    case attendanceStatusResponse(Result<[AttendanceStatus], AttendanceError>)
   }
 
   // MARK: - NavigationAction
@@ -97,11 +104,17 @@ public struct AttendanceCheck {
 
   }
 
+  @CasePathable
+  public enum ScopeAction: Equatable {
+    case attendanceModal(PresentationAction<AttendanceModalAction>)
+  }
+
   nonisolated enum CancelID: Hashable {
     case fetchSchedule
     case fetchAttendanceCount
     case fetchTeams
     case fetchAttendance
+    case fetchStatus
   }
 
 
@@ -132,9 +145,19 @@ public struct AttendanceCheck {
 
         case .destination(let destinationAction):
           return handleDestinationAction(state: &state, action: destinationAction)
+
+        case .scope(let scopeAction):
+          switch scopeAction {
+            case .attendanceModal(let action):
+              return handleAttendanceModalAction(state: &state, action: action)
+          }
+
       }
     }
     .ifLet(\.$destination, action: \.destination)
+    .ifLet(\.$attendanceModal, action: \.scope.attendanceModal) {
+      AttendanceModal()
+    }
   }
 }
 
@@ -152,6 +175,7 @@ extension AttendanceCheck {
           .run { await $0(.async(.fetchAttendanceCount)) },
           .run { await $0(.async(.fetchTeams)) },
           .run { await $0(.async(.fetchAttendance)) },
+          .run { await $0(.async(.fetchStatus)) },
         )
 
       case .selectPartButton(let selectPart):
@@ -183,6 +207,13 @@ extension AttendanceCheck {
 
       case .closeModal:
         state.destination = nil
+        return .none
+
+      case .showEditAttendanceModal:
+        state.attendanceModal = .adminStatusChangeWithAvailable(
+          availableStatuses: Array(state.attendanceStatus),
+          currentStatus: .attended
+        )
         return .none
     }
   }
@@ -240,6 +271,17 @@ extension AttendanceCheck {
           return await send(.inner(.attendanceResponse(teamId: teamId, attendanceResult)))
         }
         .cancellable(id: CancelID.fetchAttendance, cancelInFlight: true)
+
+      case .fetchStatus:
+        return .run { send in
+          let statusResult = await Result {
+            try await attendanceUseCase.fetchStatus()
+          }
+            .mapError(AttendanceError.from)
+          return await send(.inner(.attendanceStatusResponse(statusResult)))
+
+        }
+        .cancellable(id: CancelID.fetchStatus, cancelInFlight: true)
     }
   }
 
@@ -312,6 +354,15 @@ extension AttendanceCheck {
             #logNetwork("기수 출석 현황 조회 실패", error.localizedDescription)
         }
         return .none
+
+      case .attendanceStatusResponse(let result):
+        switch result {
+          case .success(let data):
+            state.attendanceStatus = .init(uniqueElements: data)
+          case .failure(let error):
+            #logError("출석 현황 조회 실패", error.localizedDescription)
+        }
+        return .none
     }
   }
 
@@ -341,6 +392,33 @@ extension AttendanceCheck {
         }
         
       default:
+        return .none
+    }
+  }
+
+  private func handleAttendanceModalAction(
+    state: inout State,
+    action: PresentationAction<AttendanceModalAction>
+  ) -> Effect<Action> {
+    switch action {
+      case .presented(let attendanceModalAction):
+        switch attendanceModalAction {
+          case .confirmTapped(let statusName):
+            // ProfileReducer처럼 title 기반 구분도 가능하지만, statusName으로 직접 처리
+            state.attendanceModal = nil
+
+            // API 호출 예시
+            return .run { send in
+              // await updateAttendanceStatus(statusName)
+              
+            }
+
+          case .cancelTapped:
+            state.attendanceModal = nil
+            return .none
+        }
+
+      case .dismiss:
         return .none
     }
   }

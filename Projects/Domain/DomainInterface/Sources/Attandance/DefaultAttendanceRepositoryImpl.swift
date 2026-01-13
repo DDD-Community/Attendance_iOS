@@ -5,11 +5,10 @@
 //  Created by Wonji Suh  on 7/23/25.
 //
 
-import Model
+// Entity 모듈 없이 구현
 import Entity
 
 final public class DefaultAttendanceRepositoryImpl: AttendanceInterface  {
-
   public init() {}
 
 
@@ -67,4 +66,13 @@ final public class DefaultAttendanceRepositoryImpl: AttendanceInterface  {
       )
     ]
   }
+
+  public func fetchStatus() async throws -> [Entity.AttendanceStatus] {
+    return [
+      .attended,  // 출석
+      .late,      // 지각
+      .absent     // 결석
+    ]
+  }
+
 }
