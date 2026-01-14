@@ -95,6 +95,7 @@ public struct ProfileReducer {
     case presentCreateByApp
     case presentPrivacyPolicy
     case presentEditGeneration
+    case presentAppPeedBackWeb
   }
 
   @CasePathable
@@ -126,9 +127,9 @@ public struct ProfileReducer {
       case .binding(_):
         return .none
         
-      case .destination(_):
-        return .none
-        
+      case .destination(let destinationAction):
+        return handleDestinationAction(state: &state, action: destinationAction)
+
       // MARK: - ViewAction
         
       case .view(let viewAction):
@@ -313,6 +314,9 @@ extension ProfileReducer {
       case .presentEditGeneration:
         state.$editGeneration.withLock { $0.toggle() }
         return .none
+
+      case .presentAppPeedBackWeb:
+        return .none
     }
   }
 
@@ -347,6 +351,23 @@ extension ProfileReducer {
 
     case .dismiss:
       return .none
+    }
+  }
+
+  private func handleDestinationAction(
+    state: inout State,
+    action: PresentationAction<Destination.Action>
+  ) -> Effect<Action> {
+    switch action {
+      case .presented(.createApp(.navigation(.presentWeb))):
+        state.destination = nil
+        return .run { send in
+          try await clock.sleep(for: .seconds(0.05))
+          await send(.navigation(.presentAppPeedBackWeb))
+        }
+
+      default:
+        return .none
     }
   }
 }
