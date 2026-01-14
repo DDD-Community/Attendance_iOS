@@ -28,4 +28,10 @@ final public class MyPageRepositoryImpl: MyPageRepositoryInterface {
     let response: AttendanceSummaryResponseDTO = try await provider.request(.fetchAttendances)
     return response.toDomain()
   }
+  
+  /// 내 스케줄/출석 현황 조회
+  public func fetchSchedules() async throws -> [AttendanceMyScheduleResponse] {
+    let response: [AttendanceMyScheduleResponseDTO] = try await provider.request(.fetchSchedules)
+    return response.map { $0.toDomain() }
+  }
 }

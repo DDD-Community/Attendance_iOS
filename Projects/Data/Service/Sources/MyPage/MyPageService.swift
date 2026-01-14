@@ -14,6 +14,7 @@ import AsyncMoya
 
 public enum MyPageService: Sendable {
   case fetchAttendances
+  case fetchSchedules
 }
 
 extension MyPageService: BaseTargetType {
@@ -27,6 +28,8 @@ extension MyPageService: BaseTargetType {
     switch self {
     case .fetchAttendances:
       return MyPageAPI.fetchAttendances.urlPath
+    case .fetchSchedules:
+      return MyPageAPI.fetchSchedules.urlPath
     }
   }
   
@@ -38,12 +41,14 @@ extension MyPageService: BaseTargetType {
     switch self {
     case .fetchAttendances:
       return nil
+    case .fetchSchedules:
+      return nil
     }
   }
   
   public var method: Moya.Method {
     switch self {
-    case .fetchAttendances:
+    case .fetchAttendances, .fetchSchedules:
       return .get
     }
   }

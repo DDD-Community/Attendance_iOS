@@ -26,9 +26,8 @@ public struct MemberMain {
     var didAppear: Bool = false
 
     // 출석 현황
-    // FIXME: - 기수 활동 기간 수정 필요
-    var startDate: String = "2025.05.10"
-    var endDate: String = "2025.08.30"
+    var startDate: String = ""
+    var endDate: String = ""
     var presentCount: Int = .zero
     var lateCount: Int = .zero
     var absentCount: Int = .zero
@@ -36,7 +35,7 @@ public struct MemberMain {
     var isPresentAttendanceWarningAlert: Bool = false
 
     // 일정표
-    var schedules: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
+    var schedules: IdentifiedArrayOf<ScheduleModel> = .init(uniqueElements: [])
 
     public init() {}
   }
@@ -64,8 +63,8 @@ public struct MemberMain {
 
   public enum InnerAction: Equatable {
     case onFetchUserResponse(Result<ProfileEntity, CustomError>)
-    case onFetchAttendanceCountResponse(Result<AttendanceSummaryResponse, CustomError>)
-    case onFetchSchedulesResponse(Result<[Schedule], CustomError>)
+    case onFetchAttendanceSummaryResponse(Result<AttendanceSummaryResponse, CustomError>)
+    case onFetchSchedulesResponse(Result<[ScheduleModel], CustomError>)
     case onResume
   }
 
@@ -82,6 +81,7 @@ public struct MemberMain {
   @Dependency(ProfileUseCaseImpl.self) var profileUseCase
   @Dependency(AttendanceUseCaseImpl.self) var attendanceUseCase
   @Dependency(\.fetchMyAttendancesUseCase) var fetchMyAttendancesUseCase
+  @Dependency(\.fetchMySchedulesUseCase) var fetchMySchedulesUseCase
 
   public var body: some Reducer<State, Action> {
     BindingReducer()
@@ -157,7 +157,7 @@ extension MemberMain {
         return .none
       }
 
-    case .onFetchAttendanceCountResponse(let result):
+    case .onFetchAttendanceSummaryResponse(let result):
       switch result {
       case .success(let counts):
         state.presentCount = counts.totalAttended
@@ -176,6 +176,13 @@ extension MemberMain {
       switch result {
       case .success(let schedules):
         state.schedules = .init(uniqueElements: schedules)
+        
+        // TODO: - 추후 기수 활동 기간 API 필요
+        if let start = schedules.first, let end = schedules.last {
+          state.startDate = "2026.\(start.month).\(start.day)"
+          state.endDate = "2026.\(end.month).\(end.day)"
+        }
+        
         #logDebug("Succeed Fetch Schedules: ", schedules)
         return .none
 
@@ -222,29 +229,29 @@ extension MemberMain {
 
         switch result {
         case .success(let counts):
-          await send(.inner(.onFetchAttendanceCountResponse(.success(counts))))
+          await send(.inner(.onFetchAttendanceSummaryResponse(.success(counts))))
 
         case .failure(let error):
           let error = CustomError.map(error)
-          await send(.inner(.onFetchAttendanceCountResponse(.failure(error))))
+          await send(.inner(.onFetchAttendanceSummaryResponse(.failure(error))))
         }
       }
 
     case .fetchSchedule:
       return .run { send in
-//        let result = await Result {
-//          try await attendanceUseCase.getAttendances(startDate: "2025-05-10", endDate: "2025-08-30")
-//        }
-//
-//        switch result {
-//        case .success(let attendances):
-//          let schedules = attendances?.data.compactMap { $0.toSchedule() } ?? []
-//          await send(.inner(.onFetchSchedulesResponse(.success(schedules))))
-//
-//        case .failure(let error):
-//          let error = CustomError.map(error)
-//          await send(.inner(.onFetchSchedulesResponse(.failure(error))))
-//        }
+        let result = await Result {
+          try await fetchMySchedulesUseCase.execute()
+        }
+
+        switch result {
+        case .success(let schedules):
+          let schedules = schedules.map { $0.toPresentation() }
+          await send(.inner(.onFetchSchedulesResponse(.success(schedules))))
+
+        case .failure(let error):
+          let error = CustomError.map(error)
+          await send(.inner(.onFetchSchedulesResponse(.failure(error))))
+        }
       }
     }
   }
@@ -260,5 +267,18 @@ extension MemberMain {
     case .routeToProfile:
       return .none
     }
+  }
+}
+
+fileprivate extension AttendanceMyScheduleResponse {
+  func toPresentation() -> ScheduleModel {
+    return .init(
+      id: id,
+      title: name,
+      description: desc,
+      month: month,
+      day: day,
+      status: .init(rawValue: status) ?? .none
+    )
   }
 }

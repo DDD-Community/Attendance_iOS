@@ -17,4 +17,17 @@ final public class DefaultMyPageRepository: MyPageRepositoryInterface {
       totalAbsent: 0
     )
   }
+  
+  public func fetchSchedules() async throws -> [AttendanceMyScheduleResponse] {
+    return [
+      .init(
+        id: 1,
+        name: "제목입니다.",
+        desc: "내용입니다.",
+        month: 12,
+        day: 25,
+        status: "LATE",
+      )
+    ]
+  }
 }
