@@ -7,7 +7,8 @@
 
 import Foundation
 
-public struct SelectManaging: Equatable {
+public struct SelectManaging: Equatable , Identifiable {
+  public let id : String
   public let managingKeys: String
   public let managing: StaffManaging
 
@@ -15,6 +16,7 @@ public struct SelectManaging: Equatable {
     managingKeys: String,
     managing: StaffManaging
   ) {
+    self.id = managingKeys
     self.managingKeys = managingKeys
     self.managing = managing
   }

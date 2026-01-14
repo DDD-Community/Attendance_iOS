@@ -26,7 +26,7 @@ public struct SelectTeam {
     var selectTeam: SelectTeams? = .unknown
     var loading: Bool = false
     var errorMessage: String?
-    var teams: [SelectTeamEntity]? = []
+    var teams: IdentifiedArrayOf<SelectTeamEntity> = .init(uniqueElements: [])
     var signUpUser: SignUpUser?
     var editProfile: ProfileEntity?
 
@@ -245,7 +245,7 @@ extension SelectTeam {
       case .teamListResponse(let result):
         switch result {
           case .success(let data):
-            state.teams = data
+            state.teams = .init(uniqueElements: data)
             state.loading = false
           case .failure(let error):
             #logError("네트워크 에러 ", error.errorDescription ?? "알 수 없음")

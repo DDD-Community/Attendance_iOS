@@ -25,7 +25,7 @@ public struct SelectManagingReducer {
     var loading: Bool = false
     var activeButton: Bool = false
     var errorMessage: String?
-    var selectMangers: [SelectManaging]? = [ ]
+    var selectMangers: IdentifiedArrayOf<SelectManaging> = .init(uniqueElements: [])
     var signUpUser: SignUpUser?
 
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
@@ -169,7 +169,7 @@ extension SelectManagingReducer {
         switch result {
           case .success(let data):
             state.loading = false
-            state.selectMangers = data
+            state.selectMangers = .init(uniqueElements: data)
 
           case .failure(let error):
             state.errorMessage =  error.errorDescription
