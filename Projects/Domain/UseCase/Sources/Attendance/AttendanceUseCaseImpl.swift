@@ -13,7 +13,7 @@ import WeaveDI
 
 public struct AttendanceUseCaseImpl: AttendanceInterface {
   @Dependency(\.attendanceRepository) var repository
-
+  
   public init() { }
 
 
@@ -55,5 +55,3 @@ public extension DependencyValues {
     set { self[AttendanceUseCaseImpl.self] = newValue }
   }
 }
-
-

@@ -8,7 +8,7 @@
 // Entity 모듈 없이 구현
 import Entity
 
-final public class DefaultAttendanceRepositoryImpl: AttendanceInterface  {
+final public class DefaultAttendanceRepositoryImpl: AttendanceInterface {
   public init() {}
 
 
