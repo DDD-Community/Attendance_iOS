@@ -193,7 +193,7 @@ extension AttendanceCheckView {
   private func AttendanceScrollView(attendanceModel: [Attendance]) -> some View {
     ScrollView(.vertical) {
       LazyVStack(spacing: .zero) {
-        ForEach(attendanceModel, id: \.id) { item in
+        ForEach(attendanceModel, id: \.userID) { item in
           AttendanceCard(item: item)
         }
       }
