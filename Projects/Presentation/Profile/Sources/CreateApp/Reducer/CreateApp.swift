@@ -48,8 +48,8 @@ public struct CreateApp {
   
   //MARK: - NavigationAction
   public enum NavigationAction: Equatable {
-    
-    
+    case presentWeb
+
   }
   
   
@@ -93,7 +93,10 @@ public struct CreateApp {
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
-
+    switch action {
+      case .presentWeb:
+        return .none
+    }
   }
   
   private func handleInnerAction(

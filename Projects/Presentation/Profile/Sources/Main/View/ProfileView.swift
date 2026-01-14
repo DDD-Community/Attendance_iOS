@@ -48,7 +48,7 @@ public struct ProfileView: View {
       CreateAppView(store: crateAppStore) {
         store.send(.view(.closeModal))
       }
-      .presentationDetents([.height(UIScreen.screenHeight * 0.6)])
+      .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
       .presentationCornerRadius(20)
       .presentationDragIndicator(.visible)
     }

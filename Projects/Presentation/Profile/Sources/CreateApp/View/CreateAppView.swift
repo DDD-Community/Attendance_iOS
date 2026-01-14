@@ -35,9 +35,7 @@ struct CreateAppView: View {
         createAppFooterView()
         
         closeButton()
-        
-        Spacer()
-          .frame(height: 40)
+
       }
     }
   }
@@ -118,16 +116,29 @@ extension CreateAppView {
     VStack {
       Spacer()
         .frame(height: 36)
-      
-      
+
+      Capsule()
+        .strokeBorder(.borderInactive, lineWidth: 1)
+        .frame(height: 58)
+        .overlay {
+          Text("앱 피드백 남기기")
+            .pretendardCustomFont(textStyle: .body1NormalMedium)
+            .foregroundStyle(.staticWhite)
+        }
+        .contentShape(Capsule())
+        .onTapGesture { store.send(.navigation(.presentWeb)) }
+
+      Spacer()
+        .frame(height: 8)
+
       CustomButton(
         action: closeAction,
         title: "닫기",
         config: CustomButtonConfig.createDateButton(),
         isEnable: true
       )
-      .padding(.horizontal, 24)
     }
-    
+    .padding(.horizontal, 24)
+
   }
 }
