@@ -7,12 +7,12 @@
 
 import Foundation
 
+import Entity
+import LogMacro
 import Shareds
 import UseCase
 
 import ComposableArchitecture
-import LogMacro
-import Entity
 
 @Reducer
 public struct MemberMain {
@@ -26,9 +26,8 @@ public struct MemberMain {
     var didAppear: Bool = false
 
     // 출석 현황
-    // FIXME: - 기수 활동 기간 수정 필요
-    var startDate: String = "2025.05.10"
-    var endDate: String = "2025.08.30"
+    var startDate: String = ""
+    var endDate: String = ""
     var presentCount: Int = .zero
     var lateCount: Int = .zero
     var absentCount: Int = .zero
@@ -36,7 +35,7 @@ public struct MemberMain {
     var isPresentAttendanceWarningAlert: Bool = false
 
     // 일정표
-    var schedules: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
+    var schedules: IdentifiedArrayOf<ScheduleModel> = .init(uniqueElements: [])
 
     public init() {}
   }
@@ -58,11 +57,14 @@ public struct MemberMain {
 
   public enum AsyncAction: Equatable {
     case fetchCurrentUser
-
+    case fetchAttendances
+    case fetchSchedule
   }
 
   public enum InnerAction: Equatable {
     case onFetchUserResponse(Result<ProfileEntity, CustomError>)
+    case onFetchAttendanceSummaryResponse(Result<AttendanceSummaryResponse, CustomError>)
+    case onFetchSchedulesResponse(Result<[ScheduleModel], CustomError>)
     case onResume
   }
 
@@ -78,6 +80,8 @@ public struct MemberMain {
 
   @Dependency(ProfileUseCaseImpl.self) var profileUseCase
   @Dependency(AttendanceUseCaseImpl.self) var attendanceUseCase
+  @Dependency(\.fetchMyAttendancesUseCase) var fetchMyAttendancesUseCase
+  @Dependency(\.fetchMySchedulesUseCase) var fetchMySchedulesUseCase
 
   public var body: some Reducer<State, Action> {
     BindingReducer()
@@ -118,7 +122,7 @@ extension MemberMain {
 
       return .merge(
         .run { await $0(.async(.fetchCurrentUser)) },
-//        .run { await $0(.async(.fetchSchedule)) }
+        .run { await $0(.async(.fetchSchedule)) }
       )
 
     case .didTapAbesentButton:
@@ -153,10 +157,44 @@ extension MemberMain {
         return .none
       }
 
+    case .onFetchAttendanceSummaryResponse(let result):
+      switch result {
+      case .success(let counts):
+        state.presentCount = counts.totalAttended
+        state.lateCount = counts.totalLate
+        state.absentCount = counts.totalAbsent
+        state.showAttendanceWarningIcon = state.absentCount > 0
+        #logDebug("Succeed Fetch Attendance Counts", counts)
+        return .none
+
+      case .failure(let error):
+        #logError("Failed Fetch Count: ", error)
+        return .none
+      }
+
+    case .onFetchSchedulesResponse(let result):
+      switch result {
+      case .success(let schedules):
+        state.schedules = .init(uniqueElements: schedules)
+        
+        // TODO: - 추후 기수 활동 기간 API 필요
+        if let start = schedules.first, let end = schedules.last {
+          state.startDate = "2026.\(start.month).\(start.day)"
+          state.endDate = "2026.\(end.month).\(end.day)"
+        }
+        
+        #logDebug("Succeed Fetch Schedules: ", schedules)
+        return .none
+
+      case .failure(let error):
+        #logError("Failed Fetch Schedules", error)
+        return .none
+      }
+
     case .onResume:
       return .concatenate(
         .run { await $0(.async(.fetchCurrentUser)) },
-//        .run { await $0(.async(.fetchSchedule)) }
+        .run { await $0(.async(.fetchSchedule)) }
       )
     }
   }
@@ -172,21 +210,49 @@ extension MemberMain {
           try await profileUseCase.getProfile()
         }
 
-//        switch result {
-//        case .success(let member):
-//          if let member {
-////            await send(.inner(.onFetchUserResponse(.success(member))))
-////            await send(.async(.fetchAttendanceCount(userID: member.userID)))
-//          }
-//
-//        case .failure(let error):
-//          let error = CustomError.map(error)
-//          await send(.inner(.onFetchUserResponse(.failure(error))))
-//        }
+        switch result {
+        case .success(let member):
+          await send(.inner(.onFetchUserResponse(.success(member))))
+          await send(.async(.fetchAttendances))
+
+        case .failure(let error):
+          let error = CustomError.map(error)
+          await send(.inner(.onFetchUserResponse(.failure(error))))
+        }
       }
 
+    case .fetchAttendances:
+      return .run { send in
+        let result = await Result {
+          try await fetchMyAttendancesUseCase.execute()
+        }
 
+        switch result {
+        case .success(let counts):
+          await send(.inner(.onFetchAttendanceSummaryResponse(.success(counts))))
 
+        case .failure(let error):
+          let error = CustomError.map(error)
+          await send(.inner(.onFetchAttendanceSummaryResponse(.failure(error))))
+        }
+      }
+
+    case .fetchSchedule:
+      return .run { send in
+        let result = await Result {
+          try await fetchMySchedulesUseCase.execute()
+        }
+
+        switch result {
+        case .success(let schedules):
+          let schedules = schedules.map { $0.toPresentation() }
+          await send(.inner(.onFetchSchedulesResponse(.success(schedules))))
+
+        case .failure(let error):
+          let error = CustomError.map(error)
+          await send(.inner(.onFetchSchedulesResponse(.failure(error))))
+        }
+      }
     }
   }
 
@@ -201,5 +267,18 @@ extension MemberMain {
     case .routeToProfile:
       return .none
     }
+  }
+}
+
+fileprivate extension AttendanceMyScheduleResponse {
+  func toPresentation() -> ScheduleModel {
+    return .init(
+      id: id,
+      title: name,
+      description: desc,
+      month: month,
+      day: day,
+      status: .init(rawValue: status) ?? .none
+    )
   }
 }
