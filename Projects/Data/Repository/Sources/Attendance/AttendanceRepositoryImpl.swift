@@ -14,9 +14,9 @@ import Service
 @preconcurrency import AsyncMoya
 
 @Observable
-final public class AttendanceRepositoryImpl: AttendanceInterface , Sendable {
+final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
   private let provider: MoyaProvider<AttendanceService>
-
+  
   public init(
     provider: MoyaProvider<AttendanceService> = MoyaProvider<AttendanceService>.authorized
   ) {

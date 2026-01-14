@@ -23,11 +23,11 @@ public struct AttendanceRepositoryDependency: DependencyKey {
   public static var liveValue: AttendanceInterface {
     UnifiedDI.resolve(AttendanceInterface.self) ?? DefaultAttendanceRepositoryImpl()
   }
-
+  
   public static var testValue: AttendanceInterface {
     UnifiedDI.resolve(AttendanceInterface.self) ?? DefaultAttendanceRepositoryImpl()
   }
-
+  
   public static var previewValue: AttendanceInterface = liveValue
 }
 

@@ -1,0 +1,43 @@
+//
+//  FetchSchedulesUseCase.swift
+//  UseCase
+//
+//  Created by 홍은표 on 1/12/26.
+//
+
+import Foundation
+
+import DomainInterface
+import Entity
+
+import WeaveDI
+
+public protocol FetchMySchedulesUseCase: Sendable {
+  func execute() async throws -> [AttendanceMyScheduleResponse]
+}
+
+public struct FetchMySchedulesUseCaseImpl: FetchMySchedulesUseCase {
+  private let repository: any MyPageRepositoryInterface
+  
+  public init(repository: any MyPageRepositoryInterface) {
+    self.repository = repository
+  }
+  
+  public func execute() async throws -> [AttendanceMyScheduleResponse] {
+    return try await repository.fetchSchedules()
+  }
+}
+
+public enum FetchMySchedulesUseCaseKey: DependencyKey {
+  static public var liveValue: any FetchMySchedulesUseCase {
+    @Dependency(\.myPageRepository) var repository
+    return FetchMySchedulesUseCaseImpl(repository: repository)
+  }
+}
+
+public extension DependencyValues {
+  var fetchMySchedulesUseCase: any FetchMySchedulesUseCase {
+    get { self[FetchMySchedulesUseCaseKey.self] }
+    set { self[FetchMySchedulesUseCaseKey.self] = newValue }
+  }
+}

@@ -126,7 +126,7 @@ struct MemberMainView: View {
 
   private var generationScheduleListView: some View {
     VStack(alignment: .leading, spacing: 16) {
-      Text("\(store.member?.generation ?? "")기 일정표")
+      Text("\(store.member?.generation ?? "") 일정표")
         .pretendardFont(family: .Medium, size: 24)
         .foregroundStyle(.textPrimary)
 
@@ -154,23 +154,23 @@ struct MemberMainView: View {
 
   private var scheduleList: some View {
     LazyVStack(alignment: .leading, spacing: 12) {
-      ForEach(store.schedules, id: \.id) { _ in
-//        ScheduleCell(
-//          month: $0.month,
-//          day: $0.day,
-//          title: $0.name,
-//          description: $0.description,
-//          style: $0.status.toScheduleCellStyle
-//        )
+      ForEach(store.schedules) {
+        ScheduleCell(
+          month: $0.month,
+          day: $0.day,
+          title: $0.title,
+          description: $0.description,
+          style: $0.status.toScheduleCellStyle
+        )
       }
     }
   }
 }
 
-private extension AttendanceStatus {
+private extension ScheduleModel.AttendanceStatus {
   var toScheduleCellStyle: ScheduleCellStyle {
     switch self {
-      case  .attended:
+      case .attended:
       return .init(
         backgroundColor: .blue40,
         stampImage: Image(asset: .present_stamp),
@@ -197,14 +197,14 @@ private extension AttendanceStatus {
         titleDescriptionOpacity: 0.3
       )
 
-//    case .tbd, .exception:
-//      return .init(
-//        backgroundColor: .gray90,
-//        stampImage: nil,
-//        dashBorder: false,
-//        monthDayOpacity: 1.0,
-//        titleDescriptionOpacity: 1.0
-//      )
+    case .none:
+      return .init(
+        backgroundColor: .gray90,
+        stampImage: nil,
+        dashBorder: false,
+        monthDayOpacity: 1.0,
+        titleDescriptionOpacity: 1.0
+      )
     }
   }
 }
