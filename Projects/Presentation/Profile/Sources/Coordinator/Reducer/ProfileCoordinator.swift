@@ -105,7 +105,7 @@ extension ProfileCoordinator {
 
 
       case .routeAction(id: _, action: .profile(.navigation(.presentAppPeedBackWeb))):
-        state.routes.push(.web(.init(url: "https://dddset.notion.site/DDD-2d424441b0b08080a518ed42f1315b20?source=copy_link")))
+        state.routes.push(.web(.init(url: "https://forms.gle/a2idQmnxjbC5czfP7")))
         return .none
 
 
