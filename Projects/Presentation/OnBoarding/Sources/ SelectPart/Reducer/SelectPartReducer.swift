@@ -20,13 +20,14 @@ public struct SelectPartReducer {
   @ObservableState
   public struct State: Equatable {
     public init() {}
-    
+
     var activeSelectPart: Bool = false
     var selectPart: SelectParts? = .all
-    var selectJobs: [SelectJob]? = []
+    var selectJobs: IdentifiedArrayOf<SelectJob> = .init(uniqueElements: [])
     var errorMessage: String?
     var loading: Bool = false
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+
   }
   
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -172,7 +173,7 @@ extension SelectPartReducer {
         switch result {
           case .success(let data):
             state.loading = false
-            state.selectJobs = data
+            state.selectJobs = .init(uniqueElements: data)
 
           case .failure(let error):
             state.errorMessage = error.errorDescription
