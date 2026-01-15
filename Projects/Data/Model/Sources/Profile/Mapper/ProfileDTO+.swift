@@ -11,6 +11,7 @@ import Entity
 public extension ProfileDTO {
   func toDomain() -> ProfileEntity {
     return ProfileEntity(
+      userID: self.userID,
       name: self.name,
       generation: self.generation,
       team: SelectTeams(rawValue: self.team ?? ""),

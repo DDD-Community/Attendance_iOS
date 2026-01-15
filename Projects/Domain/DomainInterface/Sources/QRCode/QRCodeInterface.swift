@@ -13,7 +13,7 @@ import WeaveDI
 
 /// QRCode 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol QRCodeInterface: Sendable {
-  func createQRCode() async throws -> String
+  func createQRCode(userID: Int) async throws -> String
   func generateQRCode(from string: String) async -> Image?
   func qrValidateCheck(from code: String) async throws -> QRValidateEntity
 }

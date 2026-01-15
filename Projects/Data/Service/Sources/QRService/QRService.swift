@@ -14,7 +14,7 @@ import AsyncMoya
 
 public enum QRService {
   case qrAttendanceCheck(qrCode: String)
-  case createQRCode
+  case createQRCode(userID: Int)
 }
 
 extension QRService: BaseTargetType {
@@ -33,8 +33,8 @@ extension QRService: BaseTargetType {
     switch self {
     case .qrAttendanceCheck:
       return QRAPI.validate.description
-    case .createQRCode:
-      return ""
+    case .createQRCode(let userID):
+      return "/\(userID)/qr"
     }
   }
   
@@ -43,16 +43,16 @@ extension QRService: BaseTargetType {
     case .qrAttendanceCheck:
       return .post
     case .createQRCode:
-      return .post
+      return .get
     }
   }
   
   public var parameters: [String: Any]? {
     switch self {
     case .qrAttendanceCheck(let qrCode):
-        return qrCode.toDictionary(key: "qrCode")
-    case .createQRCode:
-      return nil
+      return qrCode.toDictionary(key: "qrCode")
+    case .createQRCode(let userID):
+      return ["id": userID]
     }
   }
   
@@ -60,7 +60,7 @@ extension QRService: BaseTargetType {
     return APIHeader.baseHeader
   }
   
-  public var error: [Int : AsyncMoya.NetworkError]? {
-    return  nil
+  public var error: [Int: AsyncMoya.NetworkError]? {
+    return nil
   }
 }
