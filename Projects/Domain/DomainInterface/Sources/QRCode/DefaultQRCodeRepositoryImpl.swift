@@ -11,16 +11,17 @@ import Model
 import Entity
 
 final public class DefaultQRCodeRepositoryImpl: QRCodeInterface {
+  
   public init() {}
-
-  public func createQRCode() async throws -> String {
+  
+  public func createQRCode(userID: Int) async throws -> String {
     return ""
   }
-
+  
   public func generateQRCode(from string: String) async -> Image? {
     return nil
   }
-
+  
   public func qrValidateCheck(
     from code: String
   ) async throws -> QRValidateEntity {

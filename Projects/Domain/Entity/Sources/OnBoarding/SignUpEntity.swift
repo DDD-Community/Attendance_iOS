@@ -8,6 +8,7 @@
 import Foundation
 
 public struct UserSession: Equatable {
+  public var userID: Int
   public var name: String
   public var selectPart: SelectParts
   public var userRole: Staff
@@ -23,6 +24,7 @@ public struct UserSession: Equatable {
   public var inviteCode: String
 
   public init(
+    userID: Int = 0,
     name: String = "",
     selectPart: SelectParts = .all,
     userRole: Staff = .member,
@@ -37,6 +39,7 @@ public struct UserSession: Equatable {
     inviteCode: String = "",
     generation: String = ""
   ) {
+    self.userID = userID
     self.name = name
     self.selectPart = selectPart
     self.userRole = userRole

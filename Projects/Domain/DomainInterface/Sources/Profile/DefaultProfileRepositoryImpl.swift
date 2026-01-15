@@ -54,6 +54,7 @@ final public class DefaultProfileRepositoryImpl: ProfileInterface {
 
     // 수정된 프로필 반환
     let updatedProfile = ProfileEntity(
+      userID: 1,
       name: input.name,
       generation: generation,
       team: team,
@@ -79,6 +80,7 @@ private extension DefaultProfileRepositoryImpl {
 
   func createMemberProfile() -> ProfileEntity {
     return ProfileEntity(
+      userID: 0,
       name: "김철수",
       generation: "2기",
       team: .ios1,
@@ -90,6 +92,7 @@ private extension DefaultProfileRepositoryImpl {
 
   func createTeamManagerProfile() -> ProfileEntity {
     return ProfileEntity(
+      userID: 1,
       name: "이영희",
       generation: "1기",
       team: .and1,
@@ -101,6 +104,7 @@ private extension DefaultProfileRepositoryImpl {
 
   func createStaffProfile() -> ProfileEntity {
     return ProfileEntity(
+      userID: 2,
       name: "박관리",
       generation: "0기",
       team: nil,
