@@ -20,7 +20,6 @@ public struct UnifiedOAuthUseCase {
   @Dependency(\.googleOAuthProvider) private var googleProvider: GoogleOAuthProviderInterface
   @Dependency(\.keychainManager) private var keychainManager: KeychainManaging
   @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
-  @Dependency(\.profileUseCase) var profileUseCase
   @Shared(.appStorage("staffRole")) var staffRole: Staff?
 
   public init() {}
@@ -87,12 +86,11 @@ public extension UnifiedOAuthUseCase {
     if loginEntity.isNewUser == true {
 
     } else {
-      let profile = try await profileUseCase.getProfile()
       self.$userSession.withLock {
-        $0.userRole = profile.role
+        $0.userRole = loginEntity.role ?? .member
       }
       self.$staffRole.withLock {
-        $0 = profile.role
+        $0 = loginEntity.role
       }
     }
     return loginEntity
@@ -119,9 +117,8 @@ public extension UnifiedOAuthUseCase {
     if loginEntity.isNewUser == true {
 
     } else {
-      let profile = try await profileUseCase.getProfile()
       self.$userSession.withLock {
-        $0.userRole = profile.role
+        $0.userRole = loginEntity.role ?? .member
       }
     }
 
