@@ -10,6 +10,9 @@ import Alamofire
 import DomainInterface
 import Entity
 import Dependencies
+import Moya
+import Combine
+import LogMacro
 
 // MARK: - Token Refresh Manager
 actor TokenRefreshManager {
@@ -17,26 +20,24 @@ actor TokenRefreshManager {
     @Dependency(\.keychainManager) private var keychainManager
 
     private var isRefreshing = false
-    private var refreshTask: Task<AccessTokenCredential, Error>?
 
     func refreshCredentialIfNeeded() async throws -> AccessTokenCredential {
-        // 이미 갱신 중인 요청이 있다면 그 결과를 기다림
-        if let refreshTask = refreshTask {
-            return try await refreshTask.value
+        // 이미 갱신 중인 요청이 있다면 양보 후 재시도
+        if isRefreshing {
+            // 다른 작업에 양보하고 재시도
+           await _Concurrency.Task.yield()
+            return try await refreshCredentialIfNeeded()
         }
 
-        // 새로운 갱신 작업 시작
-        let task = Task<AccessTokenCredential, Error> {
-            defer {
-                isRefreshing = false
-                refreshTask = nil
-            }
+        isRefreshing = true
+        defer { isRefreshing = false }
 
-            isRefreshing = true
+      #logDebug("🔄 Starting token refresh...")
 
-            print("🔄 Starting token refresh...")
+        do {
             let tokens = try await authRepository.refresh()
-            print(tokens)
+          #logDebug("✅ Token refresh completed successfully: \(tokens)")
+
             // 키체인에 새 토큰 저장
             keychainManager.save(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
 
@@ -51,12 +52,66 @@ actor TokenRefreshManager {
                 AuthSessionManager.shared.credential = newCredential
             }
 
-            print("✅ Token refresh completed successfully")
             return newCredential
+        } catch {
+          #logDebug("❌ Token refresh failed: \(error)")
+
+            // Refresh token이 만료된 경우 자동 로그아웃 수행
+            if isRefreshTokenExpiredError(error) {
+              #logDebug("🚪 Refresh token expired, performing automatic logout...")
+                await performAutomaticLogout()
+                throw AuthError.refreshTokenExpired
+            } else {
+                throw error
+            }
+        }
+    }
+
+    /// Refresh token이 만료된 에러인지 확인
+    private func isRefreshTokenExpiredError(_ error: Error) -> Bool {
+        // Moya의 MoyaError를 통해 HTTP 상태 코드 확인
+        if let moyaError = error as? MoyaError {
+            switch moyaError {
+            case .statusCode(let response):
+                // 401 Unauthorized는 refresh token 만료를 의미
+                return response.statusCode == 401
+            default:
+                return false
+            }
         }
 
-        refreshTask = task
-        return try await task.value
+        // AuthError인 경우
+        if let authError = error as? AuthError {
+            return authError.isTokenExpiredError
+        }
+
+        return false
+    }
+
+    /// 자동 로그아웃 수행 (로컬 상태 정리만)
+    private func performAutomaticLogout() async {
+      #logDebug("🚪 Performing automatic logout due to refresh token expiration...")
+
+        // Refresh token이 만료된 상황이므로 서버 API 호출은 불가능
+        // 로컬 상태만 정리함
+
+        // 1. Keychain에서 모든 토큰 제거
+        keychainManager.clear()
+
+        // 2. AuthSessionManager credential 정리
+        await MainActor.run {
+            AuthSessionManager.shared.credential = nil
+        }
+
+      #logDebug("✅ Local state cleared successfully")
+
+        // 3. 전역 로그인 만료 알림 전송
+        await MainActor.run {
+            NotificationCenter.default.post(
+                name: NSNotification.Name("RefreshTokenExpired"),
+                object: nil
+            )
+        }
     }
 }
 
@@ -76,14 +131,14 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
 
         // 토큰이 곧 만료되는지 확인
         if credential.requiresRefresh {
-            Task {
+          _Concurrency.Task {
                 do {
                     // 토큰 갱신 (동시성 안전하게 처리됨)
                     let newCredential = try await tokenRefreshManager.refreshCredentialIfNeeded()
                     adaptedRequest.headers.update(.authorization(bearerToken: newCredential.accessToken))
                     completion(.success(adaptedRequest))
                 } catch {
-                    print("❌ Token refresh failed in adapt: \(error)")
+                  #logDebug("❌ Token refresh failed in adapt: \(error)")
                     completion(.failure(error))
                 }
             }
@@ -101,18 +156,27 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
             return
         }
 
-        print("🚨 401 Unauthorized detected, attempting token refresh for retry")
+      #logDebug("🚨 401 Unauthorized detected, attempting token refresh for retry")
 
-        Task {
+      _Concurrency.Task {
             do {
                 // 토큰 갱신 시도
                 _ = try await tokenRefreshManager.refreshCredentialIfNeeded()
                 // 갱신 성공 시 원래 요청 재시도
                 completion(.retry)
             } catch {
-                print("❌ Token refresh failed in retry: \(error)")
-                // 갱신 실패 시 재시도하지 않고 에러 전달
-                completion(.doNotRetryWithError(error))
+              #logDebug("❌ Token refresh failed in retry: \(error)")
+
+                // Refresh token이 만료된 경우 특별 처리
+                if let authError = error as? AuthError, authError.isTokenExpiredError {
+                  #logDebug("🚪 Refresh token expired in retry - user will be automatically logged out")
+                    // 자동 로그아웃이 이미 TokenRefreshManager에서 수행되었으므로
+                    // 단순히 에러를 전달하여 UI가 적절히 대응할 수 있도록 함
+                    completion(.doNotRetryWithError(authError))
+                } else {
+                    // 갱신 실패 시 재시도하지 않고 에러 전달
+                    completion(.doNotRetryWithError(error))
+                }
             }
         }
     }

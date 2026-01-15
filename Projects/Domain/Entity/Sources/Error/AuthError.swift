@@ -30,6 +30,8 @@ public enum AuthError: Error, Equatable, LocalizedError, Hashable {
   case accountDeletionNotAllowed
   /// 이미 탈퇴된 계정
   case accountAlreadyDeleted
+  /// refresh token이 만료된 경우
+  case refreshTokenExpired
   /// 그 외 알 수 없는 에러
   case unknownError(String)
 
@@ -59,6 +61,8 @@ public enum AuthError: Error, Equatable, LocalizedError, Hashable {
       return "회원 탈퇴 권한이 없습니다."
     case .accountAlreadyDeleted:
       return "이미 탈퇴된 계정입니다."
+    case .refreshTokenExpired:
+      return "로그인이 만료되었습니다. 다시 로그인해주세요."
     case .unknownError(let message):
       return "알 수 없는 오류가 발생했습니다: \(message)"
     }
@@ -96,6 +100,15 @@ public extension AuthError {
   var isAccountDeletionError: Bool {
     switch self {
     case .accountDeletionFailed, .accountDeletionNotAllowed, .accountAlreadyDeleted:
+      return true
+    default:
+      return false
+    }
+  }
+
+  var isTokenExpiredError: Bool {
+    switch self {
+    case .refreshTokenExpired:
       return true
     default:
       return false
