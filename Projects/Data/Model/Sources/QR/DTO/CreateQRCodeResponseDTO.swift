@@ -8,9 +8,6 @@
 import Foundation
 
 public struct CreateQRCodeResponseDTO: Decodable {
-  public let qrString: String
-
-  enum CodingKeys: String, CodingKey {
-    case qrString = "qr_string"
-  }
+  public let id: Int
+  public let qrBase64: String
 }

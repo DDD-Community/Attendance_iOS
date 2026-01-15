@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 
 import Shareds
+import Entity
 
 import ComposableArchitecture
 import LogMacro
@@ -23,6 +24,8 @@ public struct MemberQRCode {
     var didAppear: Bool = false
 
     var qrCodeImage: SwiftUI.Image? = nil
+    
+    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   }
 
   public enum Action: BindableAction, FeatureAction {
@@ -135,9 +138,10 @@ extension MemberQRCode {
   ) -> Effect<Action> {
     switch action {
     case .createQRCode:
+      let userID = state.userSession.userID
       return .run { send in
         let result = await Result {
-          try await qrCodeUseCase.createQRCode()
+          try await qrCodeUseCase.createQRCode(userID: userID)
         }
 
         switch result {

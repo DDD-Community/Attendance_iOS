@@ -34,7 +34,13 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
       $0 = profileResult.role
     }
     self.$userSession.withLock {
+      $0.userID = profileResult.userID
+      $0.name = profileResult.name
       $0.generation = profileResult.generation
+      $0.selectTeam = profileResult.team ?? .unknown
+      $0.selectPart = profileResult.jobRole
+      $0.userRole = profileResult.role
+      $0.managing = profileResult.manger ?? []
     }
     return profileResult
 
