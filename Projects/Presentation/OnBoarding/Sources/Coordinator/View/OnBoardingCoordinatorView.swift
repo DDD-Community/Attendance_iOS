@@ -24,7 +24,7 @@ public struct OnBoardingCoordinatorView: View {
       switch screens.case {
         case .InviteCode(let InviteCodeStore):
           InviteCodeView(store: InviteCodeStore) {
-            store.send(.view(.backAction))
+            store.send(.navigation(.backToRoot))
           }
           .navigationBarBackButtonHidden()
 

@@ -49,6 +49,7 @@ public struct OnBoardingCoordinator {
   }
 
   public enum NavigationAction: Equatable {
+    case backToRoot
     case presentLogin
     case presentStaff
     case presentMember
@@ -174,6 +175,9 @@ extension OnBoardingCoordinator {
         return .none
 
       case .presentLogin:
+        return .none
+
+      case .backToRoot:
         return .none
     }
   }
