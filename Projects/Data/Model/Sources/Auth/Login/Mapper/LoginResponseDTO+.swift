@@ -20,7 +20,8 @@ public extension LoginResponseDTO {
       name: self.name ?? "",
       isNewUser: self.isNewUser,
       provider: SocialType(rawValue: oauthProvider ?? "") ?? .apple,
-      token: token
+      token: token,
+      role: Staff.from(apiKey: self.role ?? "")
     )
   }
 }

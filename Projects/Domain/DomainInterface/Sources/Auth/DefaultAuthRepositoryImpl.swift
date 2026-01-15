@@ -22,7 +22,8 @@ final public class DefaultAuthRepositoryImpl: AuthInterface {
       token: AuthTokens(
         accessToken: "mock_access_token_\(UUID().uuidString)",
         refreshToken: "mock_refresh_token_\(UUID().uuidString)"
-      )
+      ),
+      role: .member
     )
   }
 

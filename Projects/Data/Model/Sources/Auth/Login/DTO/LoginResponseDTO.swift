@@ -17,4 +17,5 @@ public struct LoginResponseDTO: Decodable {
   let accessToken: String?
   let refreshToken: String?
   let oauthRefreshToken: String?
+  let role: String?
 }
