@@ -119,7 +119,10 @@ extension ProfileCoordinator {
       case .routeAction(id: _, action: .onBoarding(.navigation(.presentLogin))):
         return .send(.navigation(.presentLogin))
 
-
+      case .routeAction(id: _, action: .onBoarding(.navigation(.backToRoot))):
+        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
+          $0.goBackTo(\.profile)
+        }
 
     default:
       return .none

@@ -312,7 +312,7 @@ extension ProfileReducer {
         return .none
 
       case .presentEditGeneration:
-        state.$editGeneration.withLock { $0.toggle() }
+        state.$editGeneration.withLock { $0 = true }
         return .none
 
       case .presentAppPeedBackWeb:

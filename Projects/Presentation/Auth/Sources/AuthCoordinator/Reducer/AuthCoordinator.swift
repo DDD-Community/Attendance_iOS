@@ -125,13 +125,17 @@ extension AuthCoordinator {
       case .routeAction(id: _, action: .web(.backToRoot)):
         return .send(.view(.backAction))
 
+      case .routeAction(id: _, action: .onboarding(.navigation(.backToRoot))):
+        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
+          $0.goBackTo(\.login)
+        }
+
 
       case .routeAction(id: _, action: .onboarding(.navigation(.presentStaff))):
         return .send(.navigation(.presentStaff))
 
       case .routeAction(id: _, action: .onboarding(.navigation(.presentMember))):
         return .send(.navigation(.presentMember))
-
 
 
       default:
