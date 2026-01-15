@@ -48,7 +48,7 @@ extension AttendanceService: BaseTargetType {
         return AttendanceAPI.status.description
 
       case .editAttendance(let body):
-        return AttendanceAPI.editAttendance(attendanceId: body.attendanceId).description
+        return AttendanceAPI.editAttendance.description
 
     }
   }

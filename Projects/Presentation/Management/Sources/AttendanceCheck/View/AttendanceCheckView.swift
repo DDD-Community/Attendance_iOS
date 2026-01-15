@@ -217,7 +217,7 @@ extension AttendanceCheckView {
         store.send(
           .view(
             .showEditAttendanceModal(
-              id: item.id ?? .zero,
+              id: item.id,
               userId: item.userID
             )
           )

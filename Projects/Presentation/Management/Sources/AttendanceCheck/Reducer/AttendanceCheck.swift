@@ -44,7 +44,7 @@ public struct AttendanceCheck {
     var attendanceByTeam: [Int: [Attendance]] = [:]
     var attendanceStatus: IdentifiedArrayOf<AttendanceStatus> = .init(uniqueElements: [])
     var editAttendance: EditAttendance?
-    var attendanceId: Int = 0
+    var attendanceId: Int? = nil
     var editAttendanceUserId: String = ""
 
     @Presents var attendanceModal: AttendanceModalState<AttendanceModalAction>?
@@ -81,7 +81,7 @@ public struct AttendanceCheck {
     case swipePrevious
     case closeModal
     case tapSelectDate
-    case showEditAttendanceModal(id: Int, userId: String)
+    case showEditAttendanceModal(id: Int?, userId: String)
     case refreshData // 수동 새로고침
   }
 
@@ -323,11 +323,13 @@ extension AttendanceCheck {
 
       case .editAttendance(let userid, let status):
         return .run {  [
-          attendanceId = state.attendanceId
+          attendanceId = state.attendanceId,
+          scheduleId = state.selectScheduleID
         ] send in
           let editAttendanceResult = await Result {
             let input = EditAttendanceInput(
               attendanceId: attendanceId,
+              scheduleId: scheduleId,
               status: status,
               userId: userid
             )

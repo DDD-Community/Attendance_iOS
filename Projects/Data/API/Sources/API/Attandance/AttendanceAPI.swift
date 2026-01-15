@@ -12,7 +12,7 @@ public enum AttendanceAPI {
   case fetchTeams
   case sessionAttendances(scheduleId: Int, teamId: Int)
   case status
-  case editAttendance(attendanceId: Int)
+  case editAttendance
 
   public var description: String {
     switch self {
@@ -29,8 +29,8 @@ public enum AttendanceAPI {
       case .status:
         return "/status"
 
-      case .editAttendance(let attendanceId):
-        return "/\(attendanceId)"
+      case .editAttendance:
+        return ""
     }
   }
 }

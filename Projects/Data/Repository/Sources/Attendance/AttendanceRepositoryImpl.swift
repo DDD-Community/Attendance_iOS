@@ -56,9 +56,10 @@ final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
     input: EditAttendanceInput
   ) async throws -> EditAttendance {
     let request = EditAttendanceRequestDTO(
-      attendanceId: input.attendanceId,
+      attendanceId: input.attendanceId.map(String.init),
       status: input.status.rawValue,
-      userId: input.userId
+      userId: input.userId,
+      scheduleId: "\(input.scheduleId)"
     )
     let response = try await provider.requestResponse(.editAttendance(body: request))
     let decoder = JSONDecoder()
