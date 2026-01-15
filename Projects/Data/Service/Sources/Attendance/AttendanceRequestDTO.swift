@@ -22,22 +22,27 @@ public struct AttendanceRequestDTO: Equatable, Encodable {
 
 
 public struct EditAttendanceRequestDTO: Equatable, Encodable {
-  public let attendanceId: Int // URL path용 (encode 제외)
+  public let attendanceId: String?
   public let status: String
   public let userId: String
+  public let scheduleId: String
 
   public init(
-    attendanceId: Int,
+    attendanceId: String?,
     status: String,
-    userId: String
+    userId: String,
+    scheduleId: String
   ) {
     self.attendanceId = attendanceId
     self.status = status
     self.userId = userId
+    self.scheduleId = scheduleId
   }
 
   // encode할 때 attendanceId는 제외
   private enum CodingKeys: String, CodingKey {
+    case attendanceId
+    case scheduleId
     case status
     case userId
   }
