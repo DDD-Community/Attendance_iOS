@@ -60,7 +60,7 @@ public struct AppReducer: Sendable {
 
   //MARK: - 비동기 처리 액션
   public enum AsyncAction: Equatable {
-
+    case refreshTokenExpired
   }
 
   //MARK: - 네비게이션 연결 액션
@@ -84,6 +84,7 @@ public struct AppReducer: Sendable {
       switch action {
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
+          .merge(with: setupRefreshTokenExpiredListener())
 
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
@@ -145,7 +146,13 @@ public struct AppReducer: Sendable {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    return .none
+    switch action {
+    case .refreshTokenExpired:
+      // Refresh token이 만료된 경우 로그인 화면으로 이동
+      print("🚪 Refresh token expired - redirecting to login screen")
+      state = .auth(.init())
+      return .none
+    }
   }
 
   private func handleInnerAction(
@@ -207,6 +214,15 @@ public struct AppReducer: Sendable {
 
     default:
       return .none
+    }
+  }
+
+  /// Refresh token 만료 감지 리스너 설정
+  private func setupRefreshTokenExpiredListener() -> Effect<Action> {
+    return .publisher {
+      NotificationCenter.default
+        .publisher(for: NSNotification.Name("RefreshTokenExpired"))
+        .map { _ in Action.async(.refreshTokenExpired) }
     }
   }
 }
