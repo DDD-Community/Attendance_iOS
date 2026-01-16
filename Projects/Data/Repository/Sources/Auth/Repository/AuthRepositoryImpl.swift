@@ -13,6 +13,7 @@ import Service
 import WeaveDI
 import Dependencies
 import Moya
+import LogMacro
 
 @preconcurrency import AsyncMoya
 
