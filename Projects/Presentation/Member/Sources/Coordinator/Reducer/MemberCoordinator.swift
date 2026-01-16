@@ -11,6 +11,7 @@ import Shareds
 
 import ComposableArchitecture
 import TCACoordinators
+import LogMacro
 import Profile
 
 @Reducer
@@ -42,7 +43,8 @@ public struct MemberCoordinator {
   }
 
   public enum AsyncAction: Equatable {
-
+    case startNotificationListener
+    case refreshTokenExpired
   }
 
   public enum InnerAction: Equatable {
@@ -144,7 +146,13 @@ extension MemberCoordinator {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
+    switch action {
+    case .startNotificationListener:
+      return setupRefreshTokenExpiredListener()
 
+    case .refreshTokenExpired:
+      return .send(.navigation(.presentLogin))
+    }
   }
 
   private func handleNavigationAction(
@@ -158,6 +166,20 @@ extension MemberCoordinator {
         return .none
     }
   }
+
+  /// Refresh token 만료 감지 리스너 설정
+  private func setupRefreshTokenExpiredListener() -> Effect<Action> {
+    #logDebug("🔔 [MemberCoordinator] Setting up RefreshTokenExpired notification listener...")
+    return .publisher {
+      NotificationCenter.default
+        .publisher(for: NSNotification.Name("RefreshTokenExpired"))
+        .map { notification in
+          #logDebug("🔔 [MemberCoordinator] 🎯 RefreshTokenExpired notification received! \(notification)")
+          return Action.async(.refreshTokenExpired)
+        }
+    }
+  }
+
 }
 
 extension MemberCoordinator {

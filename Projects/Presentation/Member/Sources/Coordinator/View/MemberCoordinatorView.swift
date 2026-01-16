@@ -26,7 +26,7 @@ public struct MemberCoordinatorView: View {
       case .member(let store):
         MemberMainView(store: store)
           .navigationBarBackButtonHidden()
-        
+
       case .profile(let profileStore):
        ProfileCoordinatorView(store: profileStore)
         .navigationBarBackButtonHidden()
@@ -38,6 +38,9 @@ public struct MemberCoordinatorView: View {
         }
         .navigationBarBackButtonHidden()
       }
+    }
+    .onAppear {
+      store.send(.async(.startNotificationListener))
     }
   }
 }

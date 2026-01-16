@@ -10,6 +10,7 @@ import Utill
 import Profile
 import ComposableArchitecture
 import TCACoordinators
+import LogMacro
 
 @Reducer
 public struct StaffCoordinator {
@@ -44,7 +45,8 @@ public struct StaffCoordinator {
   // MARK: - AsyncAction 비동기 처리 액션
 
   public enum AsyncAction: Equatable {
-
+    case startNotificationListener
+    case refreshTokenExpired
   }
 
   // MARK: - 앱내에서 사용하는 액션
@@ -157,7 +159,13 @@ extension StaffCoordinator {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
+    switch action {
+    case .startNotificationListener:
+      return setupRefreshTokenExpiredListener()
 
+    case .refreshTokenExpired:
+      return .send(.navigation(.presentLogin))
+    }
   }
 
   private func handleInnerAction(
@@ -165,6 +173,19 @@ extension StaffCoordinator {
     action: InnerAction
   ) -> Effect<Action> {
 
+  }
+
+  /// Refresh token 만료 감지 리스너 설정
+  private func setupRefreshTokenExpiredListener() -> Effect<Action> {
+    #logDebug("🔔 [StaffCoordinator] Setting up RefreshTokenExpired notification listener...")
+    return .publisher {
+      NotificationCenter.default
+        .publisher(for: NSNotification.Name("RefreshTokenExpired"))
+        .map { notification in
+          #logDebug("🔔 [StaffCoordinator] 🎯 RefreshTokenExpired notification received! \(notification)")
+          return Action.async(.refreshTokenExpired)
+        }
+    }
   }
 }
 

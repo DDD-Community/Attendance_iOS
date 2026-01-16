@@ -8,6 +8,7 @@
 import Presentation
 import ComposableArchitecture
 import Entity
+import LogMacro
 
 @Reducer
 public struct AppReducer: Sendable {
@@ -148,7 +149,7 @@ public struct AppReducer: Sendable {
     switch action {
     case .refreshTokenExpired:
       // Refresh token이 만료된 경우 로그인 화면으로 이동
-      print("🚪 Refresh token expired - redirecting to login screen")
+        #logDebug("🚪 Refresh token expired - redirecting to login screen")
       state = .auth(.init())
       return .none
     }
@@ -220,10 +221,14 @@ public struct AppReducer: Sendable {
 
   /// Refresh token 만료 감지 리스너 설정
   private func setupRefreshTokenExpiredListener() -> Effect<Action> {
+    #logDebug("🔔 [AppReducer] Setting up RefreshTokenExpired notification listener...")
     return .publisher {
       NotificationCenter.default
         .publisher(for: NSNotification.Name("RefreshTokenExpired"))
-        .map { _ in Action.async(.refreshTokenExpired) }
+        .map { notification in
+          #logDebug("🔔 [AppReducer] 🎯 RefreshTokenExpired notification received! \(notification)")
+          return Action.async(.refreshTokenExpired)
+        }
     }
   }
 }

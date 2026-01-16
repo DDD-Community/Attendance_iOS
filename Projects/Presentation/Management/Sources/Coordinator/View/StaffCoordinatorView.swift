@@ -32,5 +32,8 @@ public struct StaffCoordinatorView: View {
         .navigationBarBackButtonHidden()
       }
     }
+    .onAppear {
+      store.send(.async(.startNotificationListener))
+    }
   }
 }

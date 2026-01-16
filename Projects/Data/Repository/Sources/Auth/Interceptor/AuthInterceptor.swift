@@ -69,22 +69,44 @@ actor TokenRefreshManager {
 
     /// Refresh token이 만료된 에러인지 확인
     private func isRefreshTokenExpiredError(_ error: Error) -> Bool {
-        // Moya의 MoyaError를 통해 HTTP 상태 코드 확인
+        #logDebug("🔍 [TokenRefreshManager] Checking if error is refresh token expired: \(error)")
+
+        // 1. statusCodeError(401) 직접 감지 (최우선)
+        let errorString = String(describing: error)
+        if errorString.contains("statusCodeError(401)") {
+            #logDebug("📋 ✅ statusCodeError(401) detected: \(errorString)")
+            return true
+        }
+
+        // 2. Moya의 MoyaError를 통해 HTTP 상태 코드 확인
         if let moyaError = error as? MoyaError {
             switch moyaError {
             case .statusCode(let response):
-                // 401 Unauthorized는 refresh token 만료를 의미
+                #logDebug("📋 MoyaError statusCode: \(response.statusCode)")
                 return response.statusCode == 401
+            case .underlying(_, let response):
+                #logDebug("📋 MoyaError underlying statusCode: \(String(describing: response?.statusCode))")
+                return response?.statusCode == 401
             default:
+                #logDebug("📋 Other MoyaError: \(moyaError)")
                 return false
             }
         }
 
-        // AuthError인 경우
+        // 3. AuthError인 경우
         if let authError = error as? AuthError {
+            #logDebug("📋 AuthError: \(authError)")
             return authError.isTokenExpiredError
         }
 
+        // 4. 에러 메시지에서 401 키워드 확인
+        let errorDesc = error.localizedDescription.lowercased()
+        if errorDesc.contains("401") || errorDesc.contains("unauthorized") || errorDesc.contains("유효하지 않은 토큰") {
+            #logDebug("📋 Error description contains 401/unauthorized: \(errorDesc)")
+            return true
+        }
+
+        #logDebug("📋 Error is NOT refresh token expired")
         return false
     }
 
@@ -107,10 +129,12 @@ actor TokenRefreshManager {
 
         // 3. 전역 로그인 만료 알림 전송
         await MainActor.run {
+          #logDebug("📢 [TokenRefreshManager] Posting RefreshTokenExpired notification...")
             NotificationCenter.default.post(
                 name: NSNotification.Name("RefreshTokenExpired"),
                 object: nil
             )
+          #logDebug("📢 [TokenRefreshManager] RefreshTokenExpired notification posted successfully!")
         }
     }
 }
