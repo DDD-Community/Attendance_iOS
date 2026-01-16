@@ -136,41 +136,8 @@ extension QRCode {
       return .run { [
         scannedText = state.scannedText
       ] send in
-        // Base64 이미지인지 확인하고 QR 코드 디코딩 시도
-        let finalQRCode: String
-        let needsEncoding: Bool
-
-        if isBase64Image(scannedText) {
-          // Base64 이미지를 QR 코드로 디코딩
-          if let decodedQRText = await decodeQRFromBase64(scannedText) {
-            finalQRCode = decodedQRText
-            needsEncoding = false  // 디코딩된 텍스트는 인코딩 안함
-            #logNetwork("Base64 이미지에서 QR 디코딩 성공", decodedQRText)
-          } else {
-            finalQRCode = scannedText
-            needsEncoding = true   // Base64 원본은 인코딩함
-            #logNetwork("Base64 QR 디코딩 실패, 원본 사용", scannedText)
-          }
-        } else {
-          // 일반 텍스트인 경우
-          finalQRCode = scannedText
-          // Base64 특수문자가 포함된 경우만 인코딩
-          needsEncoding = scannedText.contains("+") || scannedText.contains("/") || scannedText.contains("=")
-          #logNetwork("일반 텍스트 QR 코드", scannedText)
-        }
-
-        // 필요한 경우에만 URL 인코딩
-        let encodedQRCode: String
-        if needsEncoding {
-          encodedQRCode = finalQRCode.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? finalQRCode
-          #logNetwork("QR 인코딩 후 전송", encodedQRCode)
-        } else {
-          encodedQRCode = finalQRCode
-          #logNetwork("QR 인코딩 없이 전송", encodedQRCode)
-        }
-
         let qrCodeValidateResult = await Result {
-          try await qrCodeUseCase.qrValidateCheck(from: encodedQRCode)
+          try await qrCodeUseCase.qrValidateCheck(from: scannedText)
         }
           .mapError(AttendanceError.from)
         return await send(.inner(.qrCodeValidateResponse(qrCodeValidateResult)))

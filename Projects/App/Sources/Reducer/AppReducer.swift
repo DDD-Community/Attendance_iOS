@@ -84,7 +84,6 @@ public struct AppReducer: Sendable {
       switch action {
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
-          .merge(with: setupRefreshTokenExpiredListener())
 
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
@@ -182,17 +181,19 @@ public struct AppReducer: Sendable {
 
     case .splash(.navigation(.presentStaff)):
       return .run { send in
-        try await self.clock.sleep(for: .seconds(0.5))
+        try await self.clock.sleep(for: .seconds(1))
         await send(.scope(.splash(.async(.fetchUser))))
         await send(.view(.presentStaff))
       }
+      .merge(with: setupRefreshTokenExpiredListener())
 
     case .splash(.navigation(.presentMember)):
       return .run { send in
-        try await self.clock.sleep(for: .seconds(0.5))
+        try await self.clock.sleep(for: .seconds(1))
         await send(.scope(.splash(.async(.fetchUser))))
         await send(.view(.presentMember))
       }
+      .merge(with: setupRefreshTokenExpiredListener())
 
     case .auth(.navigation(.presentStaff)):
       return .send(.view(.presentStaff))
