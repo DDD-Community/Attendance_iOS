@@ -57,45 +57,22 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
     } catch {
       #logDebug("🔍 [AuthRepositoryImpl] Refresh failed: \(error)")
 
-      // statusCodeError(401) 감지 시 즉시 로그아웃 Notification 발송
+      // 401 에러 감지 및 처리는 AuthInterceptor에서 처리하므로 여기서는 단순히 에러 전달
+      // AuthInterceptor가 더 정확하고 포괄적인 401 에러 감지를 수행
       let errorString = String(describing: error)
       if errorString.contains("statusCodeError(401)") {
-        #logDebug("🚪 [AuthRepositoryImpl] statusCodeError(401) detected - sending logout notification")
-        keychainManager.clear()
-        await MainActor.run {
-          NotificationCenter.default.post(
-            name: NSNotification.Name("RefreshTokenExpired"),
-            object: nil
-          )
-          #logDebug("📢 [AuthRepositoryImpl] RefreshTokenExpired notification posted as backup!")
-        }
+        #logDebug("🚪 [AuthRepositoryImpl] statusCodeError(401) detected - AuthInterceptor will handle logout")
         throw AuthError.refreshTokenExpired
       }
 
-      // 다른 401 에러들도 체크
+      // MoyaError 401 체크
       if let moyaError = error as? MoyaError {
         switch moyaError {
         case .statusCode(let response) where response.statusCode == 401:
-          #logDebug("🚪 [AuthRepositoryImpl] MoyaError statusCode 401 detected - sending logout notification")
-          keychainManager.clear()
-          await MainActor.run {
-            NotificationCenter.default.post(
-              name: NSNotification.Name("RefreshTokenExpired"),
-              object: nil
-            )
-            #logDebug("📢 [AuthRepositoryImpl] RefreshTokenExpired notification posted for MoyaError!")
-          }
+          #logDebug("🚪 [AuthRepositoryImpl] MoyaError statusCode 401 detected - AuthInterceptor will handle logout")
           throw AuthError.refreshTokenExpired
         case .underlying(_, let response) where response?.statusCode == 401:
-          #logDebug("🚪 [AuthRepositoryImpl] MoyaError underlying 401 detected - sending logout notification")
-          keychainManager.clear()
-          await MainActor.run {
-            NotificationCenter.default.post(
-              name: NSNotification.Name("RefreshTokenExpired"),
-              object: nil
-            )
-            #logDebug("📢 [AuthRepositoryImpl] RefreshTokenExpired notification posted for underlying MoyaError!")
-          }
+          #logDebug("🚪 [AuthRepositoryImpl] MoyaError underlying 401 detected - AuthInterceptor will handle logout")
           throw AuthError.refreshTokenExpired
         default:
           break
@@ -105,15 +82,7 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
       // 에러 메시지에서 401 키워드 체크
       let errorDesc = error.localizedDescription.lowercased()
       if errorDesc.contains("401") || errorDesc.contains("유효하지 않은 토큰") {
-        #logDebug("🚪 [AuthRepositoryImpl] Error description contains 401/invalid token - sending logout notification")
-        keychainManager.clear()
-        await MainActor.run {
-          NotificationCenter.default.post(
-            name: NSNotification.Name("RefreshTokenExpired"),
-            object: nil
-          )
-          #logDebug("📢 [AuthRepositoryImpl] RefreshTokenExpired notification posted for error description!")
-        }
+        #logDebug("🚪 [AuthRepositoryImpl] Error description contains 401/invalid token - AuthInterceptor will handle logout")
         throw AuthError.refreshTokenExpired
       }
 

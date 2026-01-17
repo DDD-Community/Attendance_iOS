@@ -61,6 +61,7 @@ public struct AppReducer: Sendable {
 
   //MARK: - 비동기 처리 액션
   public enum AsyncAction: Equatable {
+    case startNotificationListener
     case refreshTokenExpired
   }
 
@@ -79,6 +80,11 @@ public struct AppReducer: Sendable {
   }
 
   @Dependency(\.continuousClock) var clock
+
+  private enum CancelID {
+    case refreshTokenExpiredListener
+    case splashRouting
+  }
 
   public var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -147,11 +153,16 @@ public struct AppReducer: Sendable {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
+    case .startNotificationListener:
+      return setupRefreshTokenExpiredListener()
+        .cancellable(id: CancelID.refreshTokenExpiredListener, cancelInFlight: true)
+
     case .refreshTokenExpired:
       // Refresh token이 만료된 경우 로그인 화면으로 이동
-        #logDebug("🚪 Refresh token expired - redirecting to login screen")
+        #logDebug("🚪 [AppReducer] 🔥 REFRESH TOKEN EXPIRED - REDIRECTING TO LOGIN!")
       state = .auth(.init())
-      return .none
+        #logDebug("✅ [AppReducer] 🎯 STATE CHANGED TO LOGIN SCREEN!")
+      return .cancel(id: CancelID.splashRouting)
     }
   }
 
@@ -186,7 +197,7 @@ public struct AppReducer: Sendable {
         await send(.scope(.splash(.async(.fetchUser))))
         await send(.view(.presentStaff))
       }
-      .merge(with: setupRefreshTokenExpiredListener())
+      .cancellable(id: CancelID.splashRouting, cancelInFlight: true)
 
     case .splash(.navigation(.presentMember)):
       return .run { send in
@@ -194,7 +205,7 @@ public struct AppReducer: Sendable {
         await send(.scope(.splash(.async(.fetchUser))))
         await send(.view(.presentMember))
       }
-      .merge(with: setupRefreshTokenExpiredListener())
+      .cancellable(id: CancelID.splashRouting, cancelInFlight: true)
 
     case .auth(.navigation(.presentStaff)):
       return .send(.view(.presentStaff))
@@ -221,12 +232,13 @@ public struct AppReducer: Sendable {
 
   /// Refresh token 만료 감지 리스너 설정
   private func setupRefreshTokenExpiredListener() -> Effect<Action> {
-    #logDebug("🔔 [AppReducer] Setting up RefreshTokenExpired notification listener...")
+    #logDebug("🔔 [AppReducer] 🚨 SETTING UP REFRESH TOKEN EXPIRED LISTENER...")
     return .publisher {
       NotificationCenter.default
         .publisher(for: NSNotification.Name("RefreshTokenExpired"))
         .map { notification in
-          #logDebug("🔔 [AppReducer] 🎯 RefreshTokenExpired notification received! \(notification)")
+          #logDebug("🔔 [AppReducer] 🔥 🎯 REFRESH TOKEN EXPIRED NOTIFICATION RECEIVED!")
+          #logDebug("🔔 [AppReducer] Notification details: \(notification)")
           return Action.async(.refreshTokenExpired)
         }
     }
