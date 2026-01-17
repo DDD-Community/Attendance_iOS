@@ -39,8 +39,5 @@ public struct MemberCoordinatorView: View {
         .navigationBarBackButtonHidden()
       }
     }
-    .onAppear {
-      store.send(.async(.startNotificationListener))
-    }
   }
 }

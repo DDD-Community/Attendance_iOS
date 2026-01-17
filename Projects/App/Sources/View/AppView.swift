@@ -61,6 +61,9 @@ struct AppView: View {
       .spring(response: 0.52, dampingFraction: 0.94, blendDuration: 0.14),
       value: store.state.animationID
     )
+    .onAppear {
+      store.send(.async(.startNotificationListener))
+    }
   }
 }
 

@@ -43,8 +43,7 @@ public struct MemberCoordinator {
   }
 
   public enum AsyncAction: Equatable {
-    case startNotificationListener
-    case refreshTokenExpired
+    // RefreshTokenExpired는 AppReducer에서 처리하므로 중복 제거
   }
 
   public enum InnerAction: Equatable {
@@ -146,13 +145,8 @@ extension MemberCoordinator {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-    switch action {
-    case .startNotificationListener:
-      return setupRefreshTokenExpiredListener()
-
-    case .refreshTokenExpired:
-      return .send(.navigation(.presentLogin))
-    }
+    // RefreshTokenExpired는 AppReducer에서 처리하므로 여기서는 처리할 액션이 없음
+    return .none
   }
 
   private func handleNavigationAction(
@@ -167,18 +161,7 @@ extension MemberCoordinator {
     }
   }
 
-  /// Refresh token 만료 감지 리스너 설정
-  private func setupRefreshTokenExpiredListener() -> Effect<Action> {
-    #logDebug("🔔 [MemberCoordinator] Setting up RefreshTokenExpired notification listener...")
-    return .publisher {
-      NotificationCenter.default
-        .publisher(for: NSNotification.Name("RefreshTokenExpired"))
-        .map { notification in
-          #logDebug("🔔 [MemberCoordinator] 🎯 RefreshTokenExpired notification received! \(notification)")
-          return Action.async(.refreshTokenExpired)
-        }
-    }
-  }
+  // RefreshTokenExpired listener는 AppReducer에서 처리하므로 중복 제거
 
 }
 

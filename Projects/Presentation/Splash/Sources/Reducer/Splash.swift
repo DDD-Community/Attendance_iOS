@@ -76,6 +76,7 @@ public struct Splash {
   @Dependency(\.continuousClock) var clock
   @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.keychainManager) var keychainManager
   
   public var body: some Reducer<State, Action> {
     BindingReducer()
@@ -111,10 +112,13 @@ extension Splash {
           staffRole = state.staffRole
         ] send in
           if staffRole == .manager {
+            #logDebug("👔 [Splash] Redirecting to staff")
             return await send(.navigation(.presentStaff))
           } else if staffRole == .member {
+            #logDebug("👤 [Splash] Redirecting to member")
             return await send(.navigation(.presentMember))
           } else {
+            #logDebug("❓ [Splash] No staff role - redirecting to login")
             return await send(.navigation(.presentLogin))
           }
         }
@@ -148,12 +152,18 @@ extension Splash {
       case .fetchUserResponse(let result):
         switch result {
         case .success(let profileDTOData):
+          #logDebug("✅ [Splash] User profile fetched successfully")
           state.profileModel = profileDTOData
+          return .none // 성공한 경우 navigation은 이미 처리됨
 
         case .failure(let error):
-          #logError("유저 정보 가져오기", error.localizedDescription)
+          #logError("❌ [Splash] Failed to fetch user profile", error.localizedDescription)
+
+          // 토큰 만료나 인증 에러의 경우 로그인으로 이동
+          // 다른 네트워크 에러의 경우에도 안전하게 로그인으로 이동
+          keychainManager.clear()
+          return .send(.navigation(.presentLogin))
         }
-        return .none
     }
   }
 
@@ -166,10 +176,10 @@ extension Splash {
       return .none
 
     case .presentStaff:
-      return .none
+        return .send(.async(.fetchUser))
 
     case .presentMember:
-      return .none
+        return .send(.async(.fetchUser))
     }
   }
 }

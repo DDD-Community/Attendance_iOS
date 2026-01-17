@@ -13,11 +13,13 @@ import Dependencies
 import Moya
 import Combine
 import LogMacro
+import ComposableArchitecture
 
 // MARK: - Token Refresh Manager
 actor TokenRefreshManager {
     @Dependency(\.authRepository) private var authRepository
     @Dependency(\.keychainManager) private var keychainManager
+  @Shared(.appStorage("staffRole")) var staffRole: Staff?
 
     private var isRefreshing = false
 
@@ -58,10 +60,12 @@ actor TokenRefreshManager {
 
             // Refresh token이 만료된 경우 자동 로그아웃 수행
             if isRefreshTokenExpiredError(error) {
-              #logDebug("🚪 Refresh token expired, performing automatic logout...")
+              #logDebug("🚪 [TokenRefreshManager] 401 ERROR DETECTED! Starting automatic logout...")
                 await performAutomaticLogout()
+              #logDebug("✅ [TokenRefreshManager] Automatic logout completed, throwing refresh token expired error")
                 throw AuthError.refreshTokenExpired
             } else {
+              #logDebug("⚠️ [TokenRefreshManager] Non-401 error, rethrowing: \(error)")
                 throw error
             }
         }
@@ -69,12 +73,12 @@ actor TokenRefreshManager {
 
     /// Refresh token이 만료된 에러인지 확인
     private func isRefreshTokenExpiredError(_ error: Error) -> Bool {
-        #logDebug("🔍 [TokenRefreshManager] Checking if error is refresh token expired: \(error)")
+        #logDebug("🔍 [TokenRefreshManager] 🚨 CHECKING IF 401 ERROR: \(error)")
 
         // 1. statusCodeError(401) 직접 감지 (최우선)
         let errorString = String(describing: error)
         if errorString.contains("statusCodeError(401)") {
-            #logDebug("📋 ✅ statusCodeError(401) detected: \(errorString)")
+            #logDebug("🎯 [TokenRefreshManager] ✅ statusCodeError(401) DETECTED!")
             return true
         }
 
@@ -82,60 +86,79 @@ actor TokenRefreshManager {
         if let moyaError = error as? MoyaError {
             switch moyaError {
             case .statusCode(let response):
-                #logDebug("📋 MoyaError statusCode: \(response.statusCode)")
-                return response.statusCode == 401
+                #logDebug("📋 [TokenRefreshManager] MoyaError statusCode: \(response.statusCode)")
+                if response.statusCode == 401 {
+                    #logDebug("🎯 [TokenRefreshManager] ✅ MoyaError 401 DETECTED!")
+                    return true
+                }
             case .underlying(_, let response):
-                #logDebug("📋 MoyaError underlying statusCode: \(String(describing: response?.statusCode))")
-                return response?.statusCode == 401
+                #logDebug("📋 [TokenRefreshManager] MoyaError underlying statusCode: \(String(describing: response?.statusCode))")
+                if response?.statusCode == 401 {
+                    #logDebug("🎯 [TokenRefreshManager] ✅ MoyaError underlying 401 DETECTED!")
+                    return true
+                }
             default:
-                #logDebug("📋 Other MoyaError: \(moyaError)")
-                return false
+                #logDebug("📋 [TokenRefreshManager] Other MoyaError: \(moyaError)")
             }
         }
 
         // 3. AuthError인 경우
         if let authError = error as? AuthError {
-            #logDebug("📋 AuthError: \(authError)")
-            return authError.isTokenExpiredError
+            #logDebug("📋 [TokenRefreshManager] AuthError: \(authError)")
+            if authError.isTokenExpiredError {
+                #logDebug("🎯 [TokenRefreshManager] ✅ AuthError TOKEN EXPIRED DETECTED!")
+                return true
+            }
         }
 
-        // 4. 에러 메시지에서 401 키워드 확인
+        // 4. 에러 메시지에서 401 키워드 확인 (더 포괄적으로)
         let errorDesc = error.localizedDescription.lowercased()
-        if errorDesc.contains("401") || errorDesc.contains("unauthorized") || errorDesc.contains("유효하지 않은 토큰") {
-            #logDebug("📋 Error description contains 401/unauthorized: \(errorDesc)")
+        if errorDesc.contains("401") ||
+           errorDesc.contains("unauthorized") ||
+           errorDesc.contains("유효하지 않은 토큰") ||
+           errorDesc.contains("invalid token") ||
+           errorDesc.contains("token expired") ||
+           errorDesc.contains("authentication failed") {
+            #logDebug("🎯 [TokenRefreshManager] ✅ ERROR MESSAGE 401 DETECTED: \(errorDesc)")
             return true
         }
 
-        #logDebug("📋 Error is NOT refresh token expired")
+        #logDebug("❌ [TokenRefreshManager] Error is NOT 401 - continuing normally")
         return false
     }
 
     /// 자동 로그아웃 수행 (로컬 상태 정리만)
     private func performAutomaticLogout() async {
-      #logDebug("🚪 Performing automatic logout due to refresh token expiration...")
+      #logDebug("🚪 [TokenRefreshManager] 🔥 PERFORMING AUTOMATIC LOGOUT - 401 ERROR DETECTED!")
 
         // Refresh token이 만료된 상황이므로 서버 API 호출은 불가능
         // 로컬 상태만 정리함
 
         // 1. Keychain에서 모든 토큰 제거
+        #logDebug("🔑 [TokenRefreshManager] Clearing keychain tokens...")
         keychainManager.clear()
+        self.$staffRole.withLock { $0 = nil }
+        #logDebug("✅ [TokenRefreshManager] Keychain cleared")
 
         // 2. AuthSessionManager credential 정리
+        #logDebug("🗂️ [TokenRefreshManager] Clearing session manager...")
         await MainActor.run {
             AuthSessionManager.shared.credential = nil
         }
+        #logDebug("✅ [TokenRefreshManager] Session manager cleared")
 
-      #logDebug("✅ Local state cleared successfully")
-
-        // 3. 전역 로그인 만료 알림 전송
+        // 3. 전역 로그인 만료 알림 전송 - 확실하게 발송
+        #logDebug("📢 [TokenRefreshManager] 🚨 SENDING LOGOUT NOTIFICATION...")
         await MainActor.run {
-          #logDebug("📢 [TokenRefreshManager] Posting RefreshTokenExpired notification...")
             NotificationCenter.default.post(
                 name: NSNotification.Name("RefreshTokenExpired"),
-                object: nil
+                object: nil,
+                userInfo: ["reason": "401_refresh_failed"] // 추가 정보
             )
-          #logDebug("📢 [TokenRefreshManager] RefreshTokenExpired notification posted successfully!")
+            #logDebug("✅ [TokenRefreshManager] 🎯 RefreshTokenExpired NOTIFICATION SENT!")
         }
+
+        #logDebug("✅ [TokenRefreshManager] 🔥 AUTOMATIC LOGOUT COMPLETED!")
     }
 }
 
