@@ -124,6 +124,11 @@ extension ProfileCoordinator {
           $0.goBackTo(\.profile)
         }
 
+      case .routeAction(id: _, action: .onBoarding(.navigation(.presentProfile))):
+        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
+          $0.goBackTo(\.profile)
+        }
+
     default:
       return .none
     }
