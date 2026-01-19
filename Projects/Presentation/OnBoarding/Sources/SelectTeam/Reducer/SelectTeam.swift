@@ -86,6 +86,7 @@ public struct SelectTeam {
     case presentMember
     case presentManager
     case presentLogin
+    case presentProfile
   }
   
   nonisolated enum CancelID: Hashable {
@@ -186,8 +187,10 @@ extension SelectTeam {
     case .presentManager:
       return .none
 
-
       case .presentLogin:
+        return .none
+
+      case .presentProfile:
         return .none
     }
   }
@@ -283,7 +286,7 @@ extension SelectTeam {
             state.editProfile = data
             state.$editGeneration.withLock { $0 = false }
 
-            return .send(.navigation(.presentLogin))
+            return .send(.navigation(.presentProfile))
 
           case .failure(let error):
             state.errorMessage = error.errorDescription

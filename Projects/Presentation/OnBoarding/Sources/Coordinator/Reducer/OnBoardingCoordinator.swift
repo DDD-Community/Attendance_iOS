@@ -53,6 +53,7 @@ public struct OnBoardingCoordinator {
     case presentLogin
     case presentStaff
     case presentMember
+    case presentProfile
   }
 
   @Dependency(\.continuousClock) var clock
@@ -128,6 +129,9 @@ extension OnBoardingCoordinator {
       case .routeAction(id: _, action: .selectTeam(.navigation(.presentLogin))):
         return .send(.navigation(.presentLogin))
 
+      case .routeAction(id: _, action: .selectTeam(.navigation(.presentProfile))):
+        return .send(.navigation(.presentProfile))
+
     default:
       return .none
     }
@@ -178,6 +182,9 @@ extension OnBoardingCoordinator {
         return .none
 
       case .backToRoot:
+        return .none
+
+      case .presentProfile:
         return .none
     }
   }

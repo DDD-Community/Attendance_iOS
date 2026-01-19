@@ -24,6 +24,8 @@ public struct AttendanceCheck {
     var selectAttendanceDate: Date = .now
     var selectAttendanceDateMonth: Date = .now
     var selectPart: SelectTeams? = .web1
+    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+
     var selectTeamID: Int = 0
 
     var dividerWidths: [Int: CGFloat] = [:]
@@ -187,6 +189,8 @@ extension AttendanceCheck {
     switch action {
       case .onAppear:
         // 첫 진입 시에만 전체 데이터 로드, 이후에는 중요한 데이터만 새로고침
+        state.selectPart = state.userSession.selectTeam
+        print("선택 된 팀", state.selectPart, state.userSession.selectTeam)
         if !state.hasFetchedAttendance {
           state.hasFetchedAttendance = true
           return .merge(
@@ -394,7 +398,10 @@ extension AttendanceCheck {
                 state.attendanceByTeam[team.teamId] = []
               }
             }
-            if let firstTeam = orderedTeams.first {
+            if let userTeam = orderedTeams.first(where: { $0.teams == state.userSession.selectTeam }) {
+              state.selectPart = userTeam.teams
+              state.selectTeamID = userTeam.teamId
+            } else if let firstTeam = orderedTeams.first {
               state.selectPart = firstTeam.teams
               state.selectTeamID = firstTeam.teamId
             }
