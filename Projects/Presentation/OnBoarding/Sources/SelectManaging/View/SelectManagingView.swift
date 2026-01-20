@@ -49,10 +49,11 @@ public struct SelectManagingView: View {
         } else {
           selectManagingList()
 
-          signUpSelectMangeButton()
+          signUpSelectManageButton()
         }
 
       }
+      .alert($store.scope(state: \.alert, action: \.scope.alert))
       .onAppear {
         store.userSession.managing = []
         store.send(.view(.onAppear))
@@ -68,7 +69,7 @@ extension SelectManagingView {
   private func signUpSelectManagingText() -> some View {
     SignUpPartText(
       content: "담당 업무를 선택해주세요",
-      title: "프로젝트 참여하시는 직무을 선택해 주세요.",
+      title: "프로젝트 참여하시는 직무를 선택해 주세요.",
       subtitle: ""
     )
   }
@@ -81,7 +82,7 @@ extension SelectManagingView {
       
       ScrollView {
         VStack {
-          ForEach(store.selectMangers ?? [], id: \.managingKeys) { item in
+          ForEach(store.selectMangers, id: \.managingKeys) { item in
             SelectPartItem(
               content: item.managing.desc,
               isActive: store.userSession.managing.contains(item.managing)) {
@@ -98,13 +99,17 @@ extension SelectManagingView {
   
   
   @ViewBuilder
-  private func signUpSelectMangeButton() -> some View {
+  private func signUpSelectManageButton() -> some View {
     VStack {
       Spacer()
       
       CustomButton(
         action: {
-          store.send(.navigation(.presentSelectTeam))
+          if store.userSession.managing.contains(.teamManaging) {
+            store.send(.navigation(.presentSelectTeam))
+          } else {
+            store.send(.view(.signUp))
+          }
         },
         title: store.userSession.managing.contains(.teamManaging) ? "다음" : "가입완료",
         config: CustomButtonConfig.create(),

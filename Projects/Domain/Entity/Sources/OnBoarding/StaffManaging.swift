@@ -29,6 +29,12 @@ public enum StaffManaging: String, CaseIterable, Codable, Equatable {
   public var apiKey: String { rawValue }
 
   public static func from(apiKey: String) -> StaffManaging? {
-    StaffManaging(rawValue: apiKey.uppercased())
+    // 먼저 영어 rawValue로 매핑 시도
+    if let staffManaging = StaffManaging(rawValue: apiKey.uppercased()) {
+      return staffManaging
+    }
+
+    // 한국어 desc로 매핑 시도
+    return StaffManaging.allCases.first { $0.desc == apiKey }
   }
 }

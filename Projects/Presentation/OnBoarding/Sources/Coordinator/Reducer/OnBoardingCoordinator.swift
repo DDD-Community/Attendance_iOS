@@ -112,8 +112,11 @@ extension OnBoardingCoordinator {
         state.routes.push(.selectTeam(.init()))
         return .none
 
-      case .routeAction(id: _, action: .selectManaging(.navigation(.presentCoreMember))):
+      case .routeAction(id: _, action: .selectManaging(.navigation(.presentManager))):
         return .send(.navigation(.presentStaff))
+
+      case .routeAction(id: _, action: .selectManaging(.navigation(.presentProfile))):
+        return .send(.navigation(.presentProfile))
 
       case .routeAction(id: _, action: .selectTeam(.navigation(.presentManager))):
         return .send(.navigation(.presentStaff))
