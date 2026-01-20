@@ -499,7 +499,7 @@ extension AttendanceCheck {
 
         return .run { send in
           try await clock.sleep(for: .milliseconds(100))
-          await send(.async(.fetchAttendanceCount))
+          await send(.view(.onAppear))
         }
         
       default:

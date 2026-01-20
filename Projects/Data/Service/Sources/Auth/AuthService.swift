@@ -80,7 +80,7 @@ extension AuthService: BaseTargetType {
 
   public var headers: [String : String]? {
     switch self {
-      case .refresh, .withdraw, .logout:
+      case .withdraw, .logout:
         return APIHeader.baseHeader
       default:
         return APIHeader.notAccessTokenHeader

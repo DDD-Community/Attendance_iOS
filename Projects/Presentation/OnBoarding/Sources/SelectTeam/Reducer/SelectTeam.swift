@@ -92,6 +92,7 @@ public struct SelectTeam {
   nonisolated enum CancelID: Hashable {
     case selectTeam
     case signUpUser
+    case editProfile
   }
 
   
@@ -237,6 +238,7 @@ extension SelectTeam {
           .mapError(ProfileError.from)
           return await send(.inner(.editProfileResponse(editProfileResult)))
         }
+        .cancellable(id: CancelID.editProfile, cancelInFlight: true)
     }
   }
 

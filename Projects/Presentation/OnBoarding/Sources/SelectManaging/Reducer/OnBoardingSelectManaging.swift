@@ -27,8 +27,11 @@ public struct SelectManagingReducer {
     var errorMessage: String?
     var selectMangers: IdentifiedArrayOf<SelectManaging> = .init(uniqueElements: [])
     var signUpUser: SignUpUser?
+    var editProfile: ProfileEntity?
 
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+    @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
+    @Presents var alert: AlertState<AlertAction>?
 
 
   }
@@ -39,6 +42,7 @@ public struct SelectManagingReducer {
     case async(AsyncAction)
     case inner(InnerAction)
     case navigation(NavigationAction)
+    case scope(ScopeAction)
   }
 
   // MARK: - ViewAction
@@ -47,32 +51,53 @@ public struct SelectManagingReducer {
   public enum View {
     case onAppear
     case selectManagingButton(selectManaging: SelectManaging)
+    case signUp
   }
+
+  @CasePathable
+  public enum ScopeAction {
+      case alert(PresentationAction<AlertAction>)
+  }
+
+  @CasePathable
+  public enum AlertAction {
+    case confirmTapped
+  }
+
 
   // MARK: - AsyncAction 비동기 처리 액션
 
   public enum AsyncAction: Equatable {
     case fetchMangerList
+    case signUpUser
+    case editProfile
   }
 
   // MARK: - 앱내에서 사용하는 액션
 
   public enum InnerAction: Equatable {
     case mangerListResponse(Result<[SelectManaging], SignUpError>)
+    case signUpUserResponse(Result<SignUpUser, SignUpError>)
+    case editProfileResponse(Result<ProfileEntity, ProfileError>)
   }
 
   // MARK: - NavigationAction
 
   public enum NavigationAction: Equatable {
-    case presentCoreMember
+    case presentManager
     case presentSelectTeam
+    case presentProfile
   }
 
   nonisolated enum CancelID: Hashable {
     case fetchMangerList
+    case signUpUser
+    case editProfile
   }
 
   @Dependency(\.onBoardingUseCase) var onBoardingUseCase
+  @Dependency(\.signUpUseCase) var signUpUseCase
+  @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
 
@@ -94,8 +119,12 @@ public struct SelectManagingReducer {
 
         case .navigation(let navigationAction):
           return handleNavigationAction(state: &state, action: navigationAction)
+
+        case .scope:
+          return .none
       }
     }
+    .ifLet(\.$alert, action: \.scope.alert)
   }
 }
 
@@ -125,6 +154,18 @@ extension SelectManagingReducer {
 
         state.activeButton = !updatedManaging.isEmpty
         return .none
+
+
+      case .signUp:
+        return .run { [
+          editGeneration = state.editGeneration
+        ] send in
+          if editGeneration == true {
+            await send(.async(.editProfile))
+          } else {
+            await send(.async(.signUpUser))
+          }
+        }
     }
   }
 
@@ -133,10 +174,13 @@ extension SelectManagingReducer {
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-      case .presentCoreMember:
+      case .presentManager:
         return .none
 
       case .presentSelectTeam:
+        return .none
+
+      case .presentProfile:
         return .none
     }
   }
@@ -157,6 +201,31 @@ extension SelectManagingReducer {
         }
         .cancellable(id: CancelID.fetchMangerList, cancelInFlight: true)
 
+      case .signUpUser:
+        return .run { [
+          userSession = state.userSession
+        ] send in
+          let signUpUserResult = await Result {
+            return try await signUpUseCase.registerUser(userSession: userSession)
+          }
+          .mapError(SignUpError.from)
+          return await send(.inner(.signUpUserResponse(signUpUserResult)))
+        }
+        .cancellable(id: CancelID.signUpUser, cancelInFlight: true)
+
+
+      case .editProfile:
+        return .run { [
+          userSession = state.userSession
+        ] send in
+          let editProfileResult = await Result {
+            return try await profileUseCase.editUser(userSession: userSession)
+          }
+          .mapError(ProfileError.from)
+          return await send(.inner(.editProfileResponse(editProfileResult)))
+        }
+        .cancellable(id: CancelID.editProfile, cancelInFlight: true)
+
     }
   }
 
@@ -176,6 +245,50 @@ extension SelectManagingReducer {
 
         }
         return .none
+
+      case .signUpUserResponse(let result):
+        switch result {
+          case .success(let data):
+            state.signUpUser = data
+
+            return .send(.navigation(.presentManager))
+
+          case .failure(let error):
+            state.errorMessage = error.errorDescription
+            state.alert = AlertState {
+              TextState("회원가입 실패")
+            } actions: {
+              ButtonState(action: .confirmTapped) {
+                TextState("확인")
+              }
+            } message: {
+              TextState(error.errorDescription ?? "알 수 없는 오류가 발생했습니다.")
+            }
+            return .none
+        }
+
+      case .editProfileResponse(let result):
+        switch result {
+          case .success(let data):
+            state.editProfile = data
+            state.$editGeneration.withLock { $0 = false }
+
+            return .send(.navigation(.presentProfile))
+
+          case .failure(let error):
+            state.errorMessage = error.errorDescription
+            state.$editGeneration.withLock { $0 = false }
+            state.alert = AlertState {
+              TextState("프로필 수정 실패")
+            } actions: {
+              ButtonState(action: .confirmTapped) {
+                TextState("확인")
+              }
+            } message: {
+              TextState(error.errorDescription ?? "알 수 없는 오류가 발생했습니다.")
+            }
+            return .none
+        }
     }
 
   }
