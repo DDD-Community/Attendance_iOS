@@ -1,0 +1,3 @@
+The official attendance app for DDD IT Community.
+Check attendance instantly with QR codes and manage schedules
+and member participation in one place.

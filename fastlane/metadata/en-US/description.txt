@@ -1,0 +1,15 @@
+DDD Attendance App is the official attendance and schedule management app
+designed for the DDD IT Community.
+
+• QR Code Attendance Check
+Managers can scan each member’s QR code to record attendance instantly.
+
+• Centralized Schedule Management
+View and manage all DDD events and sessions in one place.
+
+• Individual Attendance Profiles
+Members can track and share their attendance history through personal profiles.
+
+• Efficient Admin Management
+Organizers gain clear visibility into participation data,
+ensuring transparent and efficient community operations. 
