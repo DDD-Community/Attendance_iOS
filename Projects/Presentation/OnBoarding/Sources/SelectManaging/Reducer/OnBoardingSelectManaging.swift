@@ -89,7 +89,7 @@ public struct SelectManagingReducer {
     case presentProfile
   }
 
-  nonisolated enum CancelID: Hashable {
+  nonisolated enum CancelID: Hashable, CaseIterable {
     case fetchMangerList
     case signUpUser
     case editProfile
@@ -135,6 +135,10 @@ extension SelectManagingReducer {
   ) -> Effect<Action> {
     switch action {
       case .onAppear:
+        // 이미 데이터가 있다면 다시 fetch하지 않음
+        if !state.selectMangers.isEmpty {
+          return .none
+        }
         return .send(.async(.fetchMangerList))
 
       case .selectManagingButton(let selectManaging):
@@ -173,15 +177,20 @@ extension SelectManagingReducer {
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
+    // 모든 navigation에서 진행 중인 effect를 cancel
+    let cancelEffects = Effect.merge(
+      CancelID.allCases.map { .cancel(id: $0) }
+    )
+
     switch action {
       case .presentManager:
-        return .none
+        return cancelEffects
 
       case .presentSelectTeam:
-        return .none
+        return cancelEffects
 
       case .presentProfile:
-        return .none
+        return cancelEffects
     }
   }
 
