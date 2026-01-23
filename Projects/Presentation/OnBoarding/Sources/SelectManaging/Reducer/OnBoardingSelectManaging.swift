@@ -178,19 +178,19 @@ extension SelectManagingReducer {
     action: NavigationAction
   ) -> Effect<Action> {
     // 모든 navigation에서 진행 중인 effect를 cancel
-    let cancelEffects = Effect.merge(
-      CancelID.allCases.map { .cancel(id: $0) }
-    )
+//    let cancelEffects = Effect<Action>.merge(
+//      CancelID.allCases.map { .cancel(id: $0) }
+//    )
 
     switch action {
       case .presentManager:
-        return cancelEffects
+        return .none
 
       case .presentSelectTeam:
-        return cancelEffects
+        return .none
 
       case .presentProfile:
-        return cancelEffects
+        return .none
     }
   }
 

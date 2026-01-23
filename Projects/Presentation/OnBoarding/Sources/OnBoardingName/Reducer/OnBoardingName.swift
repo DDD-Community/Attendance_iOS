@@ -85,7 +85,9 @@ extension OnBoardingName {
       }
 
     case .initSignUpName:
-      state.$userSession.withLock { $0.name = "" }
+        if state.userSession.provider == .google {
+          state.$userSession.withLock { $0.name = "" }
+        }
       return .none
     }
   }

@@ -21,6 +21,7 @@ public struct UnifiedOAuthUseCase {
   @Dependency(\.keychainManager) private var keychainManager: KeychainManaging
   @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   @Shared(.appStorage("staffRole")) var staffRole: Staff?
+  @Shared(.appStorage("appleUserName")) var savedAppleUserName: String?
 
   public init() {}
 }
@@ -60,10 +61,24 @@ public extension UnifiedOAuthUseCase {
       nonce: nonce
     )
     Log.debug("apple authcode", payload.authorizationCode)
+
+    // Apple 로그인 시 이름 저장 로직 개선
+    let userName: String = {
+      if let displayName = payload.displayName, !displayName.isEmpty {
+        // 새로운 이름이 있으면 UserDefaults에 저장
+        self.$savedAppleUserName.withLock { $0 = displayName }
+        return displayName
+      } else {
+        // 이름이 없으면 이전에 저장된 이름 사용, 그것도 없으면 빈 문자열
+        return self.savedAppleUserName ?? ""
+      }
+    }()
+
     self.$userSession.withLock {
       $0.token = payload.authorizationCode ?? ""
       $0.accessToken = payload.idToken
       $0.oauthRefreshToken = payload.idToken
+      $0.name = userName
     }
     let loginEntity = try await authRepository.login(
       provider: .apple,
