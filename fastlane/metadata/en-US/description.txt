@@ -12,4 +12,4 @@ Members can track and share their attendance history through personal profiles.
 
 • Efficient Admin Management
 Organizers gain clear visibility into participation data,
-ensuring transparent and efficient community operations. 
+ensuring transparent and efficient community operations.

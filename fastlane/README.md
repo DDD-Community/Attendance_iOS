@@ -47,6 +47,22 @@ Upload to TestFlight (Debug)
 
 Submit to App Store
 
+### ios submit_for_review
+
+```sh
+[bundle exec] fastlane ios submit_for_review
+```
+
+Submit already uploaded version for review
+
+### ios check_status
+
+```sh
+[bundle exec] fastlane ios check_status
+```
+
+Check App Store Connect status for debugging
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

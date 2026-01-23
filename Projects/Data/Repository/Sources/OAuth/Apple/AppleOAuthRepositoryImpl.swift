@@ -13,6 +13,7 @@ import DomainInterface
 
 import LogMacro
 import WeaveDI
+import ComposableArchitecture
 
 #if canImport(UIKit)
 import UIKit
@@ -21,6 +22,7 @@ import UIKit
 public final class AppleOAuthRepositoryImpl: NSObject, AppleOAuthInterface, @unchecked Sendable {
   private let logger = LogMacro.Log.self
   @Dependency(\.appleManger) var appleLoginManger
+  @Shared(.appStorage("appleUserName")) var appleUserName: String?
 
   private var currentNonce: String?
   private var signInContinuation: CheckedContinuation<AppleOAuthPayload, Error>?
@@ -112,7 +114,9 @@ extension AppleOAuthRepositoryImpl: ASAuthorizationControllerDelegate {
       nonce: nonce
     )
 
-    logger.info("Apple Sign In successful for user: \(displayName ?? "unknown")")
+    self.$appleUserName.withLock { $0 = displayName }
+
+    logger.info("Apple Sign In successful for user: \(displayName ?? "unknown"), \(appleUserName)")
     signInContinuation?.resume(returning: payload)
     signInContinuation = nil
     currentNonce = nil
