@@ -48,9 +48,12 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pods-
 
-    - name: Install Tuist
+    - name: Setup mise
+      uses: jdx/mise-action@v2
+
+    - name: Install Tuist via mise
       run: |
-        curl -Ls https://install.tuist.io | bash
+        mise install tuist
         echo "$(tuist version)"
 
     - name: Generate Tuist project
