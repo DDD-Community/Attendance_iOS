@@ -64,12 +64,82 @@ jobs:
         TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
         CI: true
         TUIST_STATS_OPT_OUT: 1
+        BASE_URL: ${{ secrets.BASE_URL || 'api.dddstudy.site/' }}
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_IOS_CLIENT_ID: ${{ secrets.GOOGLE_IOS_CLIENT_ID }}
+        REVERSED_CLIENT_ID: ${{ secrets.REVERSED_CLIENT_ID }}
       run: |
         echo "Current directory: $(pwd)"
         echo "Files in current directory:"
         ls -la
         echo "Config files:"
         ls -la Config/ || echo "Config directory not found"
+
+        # Create Config files for CI based on actual structure
+        mkdir -p Config
+
+        # Create Shared.xcconfig
+        cat > Config/Shared.xcconfig << 'EOF'
+//
+//  Shared.xcconfig - Auto-generated for CI
+//
+MARKETING_VERSION=1.0.0
+CURRENT_PROJECT_VERSION=20
+EOF
+
+        # Create Dev.xcconfig with environment variables
+        cat > Config/Dev.xcconfig << EOF
+//
+//  Dev.xcconfig - Auto-generated for CI
+//
+#include "./Shared.xcconfig"
+
+OTHER_SWIFT_FLAGS[config=STAGE][sdk=*] = \$(inherited) -DDEBUG
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = STAGE
+BUNDLE_DISPLAY_NAME = DDD
+BASE_URL= ${BASE_URL}
+GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+GOOGLE_IOS_CLIENT_ID=${GOOGLE_IOS_CLIENT_ID}
+REVERSED_CLIENT_ID=${REVERSED_CLIENT_ID}
+EOF
+
+        # Create Stage.xcconfig
+        cat > Config/Stage.xcconfig << EOF
+//
+//  Stage.xcconfig - Auto-generated for CI
+//
+#include "./Shared.xcconfig"
+
+OTHER_SWIFT_FLAGS[config=STAGE][sdk=*] = \$(inherited) -DDEBUG
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = STAGE
+BUNDLE_DISPLAY_NAME = DDD
+BASE_URL= ${BASE_URL}
+GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+GOOGLE_IOS_CLIENT_ID=${GOOGLE_IOS_CLIENT_ID}
+REVERSED_CLIENT_ID=${REVERSED_CLIENT_ID}
+EOF
+
+        # Create Release.xcconfig
+        cat > Config/Release.xcconfig << EOF
+//
+//  Release.xcconfig - Auto-generated for CI
+//
+#include "./Shared.xcconfig"
+
+OTHER_SWIFT_FLAGS[config=PROD][sdk=*] = \$(inherited) -PROD
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = PROD
+BUNDLE_DISPLAY_NAME = DDD
+BASE_URL= ${BASE_URL}
+GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+GOOGLE_IOS_CLIENT_ID=${GOOGLE_IOS_CLIENT_ID}
+REVERSED_CLIENT_ID=${REVERSED_CLIENT_ID}
+EOF
+
+        # Create Prod.xcconfig (copy of Release but with PROD settings)
+        cp Config/Release.xcconfig Config/Prod.xcconfig
+
+        echo "Config files created:"
+        ls -la Config/
 
         # Ensure we're in the right directory
         if [ ! -f "Tuist.swift" ]; then
