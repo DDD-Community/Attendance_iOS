@@ -13,6 +13,9 @@ permissions:
 env:
   FASTLANE_SKIP_UPDATE_CHECK: true
   FASTLANE_OPT_OUT_USAGE: true
+  FASTLANE_DISABLE_COLORS: true
+  FASTLANE_HIDE_GITHUB_ISSUES: true
+  SKIP_UPDATE_CHECK: true
 
 jobs:
   testflight-deploy:
@@ -33,7 +36,13 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.2'
-        bundler-cache: true
+        bundler-cache: false
+
+    - name: Install Ruby dependencies
+      run: |
+        gem install bundler --no-document
+        bundle config set --local deployment false
+        bundle install --jobs 4 --retry 3
 
     - name: Cache Tuist
       uses: actions/cache@v4
@@ -128,12 +137,20 @@ jobs:
         mkdir -p private_keys
         echo "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
 
+    - name: Verify bundle setup
+      run: |
+        echo "Bundle version: $(bundle version)"
+        echo "Checking Gemfile.lock..."
+        bundle check || echo "Bundle check failed, but continuing..."
+
     - name: Run Fastlane QA
       env:
         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         FASTLANE_APPLE_ID: ${{ secrets.FASTLANE_APPLE_ID }}
         APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        FASTLANE_SKIP_UPDATE_CHECK: true
+        FASTLANE_DISABLE_COLORS: true
       run: |
         bundle exec fastlane QA
 
