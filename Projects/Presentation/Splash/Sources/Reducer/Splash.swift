@@ -108,20 +108,23 @@ extension Splash {
   ) -> Effect<Action> {
     switch action {
       case .onAppear:
-        return .run { [
-          staffRole = state.staffRole
-        ] send in
+        let staffRole = state.staffRole
+        return .run { send in
+          // 먼저 딜레이를 주고
+          try await clock.sleep(for: .seconds(0.5))
+
           if staffRole == .manager {
             #logDebug("👔 [Splash] Redirecting to staff")
-            return await send(.navigation(.presentStaff))
+            await send(.async(.fetchUser))
           } else if staffRole == .member {
             #logDebug("👤 [Splash] Redirecting to member")
-            return await send(.navigation(.presentMember))
+            await send(.async(.fetchUser))
           } else {
             #logDebug("❓ [Splash] No staff role - redirecting to login")
-            return await send(.navigation(.presentLogin))
+            await send(.navigation(.presentLogin))
           }
         }
+        .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
     }
 
   }
@@ -154,15 +157,29 @@ extension Splash {
         case .success(let profileDTOData):
           #logDebug("✅ [Splash] User profile fetched successfully")
           state.profileModel = profileDTOData
-          return .none // 성공한 경우 navigation은 이미 처리됨
+
+          // 사용자 역할에 따라 적절한 화면으로 이동
+          let staffRole = state.staffRole
+          if staffRole == .manager {
+            #logDebug("👔 [Splash] Navigation to staff after profile fetch")
+            return .send(.navigation(.presentStaff))
+          } else if staffRole == .member {
+            #logDebug("👤 [Splash] Navigation to member after profile fetch")
+            return .send(.navigation(.presentMember))
+          } else {
+            #logDebug("❓ [Splash] No staff role after profile fetch - redirecting to login")
+            return .send(.navigation(.presentLogin))
+          }
 
         case .failure(let error):
           #logError("❌ [Splash] Failed to fetch user profile", error.localizedDescription)
 
           // 토큰 만료나 인증 에러의 경우 로그인으로 이동
           // 다른 네트워크 에러의 경우에도 안전하게 로그인으로 이동
-          keychainManager.clear()
-          return .send(.navigation(.presentLogin))
+          return .run { send in
+             keychainManager.clear()
+            await send(.navigation(.presentLogin))
+          }
         }
     }
   }
@@ -176,10 +193,10 @@ extension Splash {
       return .none
 
     case .presentStaff:
-        return .send(.async(.fetchUser))
+        return .none  // fetchUser는 이미 onAppear에서 처리됨
 
     case .presentMember:
-        return .send(.async(.fetchUser))
+        return .none  // fetchUser는 이미 onAppear에서 처리됨
     }
   }
 }

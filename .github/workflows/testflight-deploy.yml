@@ -1,0 +1,130 @@
+name: TestFlight Auto Deploy
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+    types: [closed]
+
+env:
+  FASTLANE_SKIP_UPDATE_CHECK: true
+  FASTLANE_OPT_OUT_USAGE: true
+
+jobs:
+  testflight-deploy:
+    if: github.event_name == 'push' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop')
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2'
+        bundler-cache: true
+
+    - name: Cache Tuist
+      uses: actions/cache@v4
+      with:
+        path: ~/.tuist
+        key: ${{ runner.os }}-tuist-${{ hashFiles('**/Tuist.swift', '**/Package.swift') }}
+        restore-keys: |
+          ${{ runner.os }}-tuist-
+
+    - name: Cache CocoaPods
+      uses: actions/cache@v4
+      with:
+        path: Pods
+        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pods-
+
+    - name: Install Tuist
+      run: |
+        curl -Ls https://install.tuist.io | bash
+        echo "$(tuist version)"
+
+    - name: Generate Tuist project
+      run: tuist install && tuist generate
+
+    - name: Install CocoaPods
+      run: |
+        cd DDDAttendance
+        pod install --repo-update
+
+    - name: Set up fastlane environment
+      env:
+        MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        FASTLANE_APPLE_ID: ${{ secrets.FASTLANE_APPLE_ID }}
+        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+      run: |
+        mkdir -p private_keys
+        echo "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+
+    - name: Run Fastlane QA
+      env:
+        MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        FASTLANE_APPLE_ID: ${{ secrets.FASTLANE_APPLE_ID }}
+        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      run: |
+        bundle exec fastlane QA
+
+    - name: Create QA commit
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        BUILD_NUMBER=$(grep -o 'CURRENT_PROJECT_VERSION = [0-9]*' Config/Shared.xcconfig | grep -o '[0-9]*')
+        MARKETING_VERSION=$(grep -o 'MARKETING_VERSION = [0-9.]*' Config/Shared.xcconfig | grep -o '[0-9.]*')
+
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+        # QA 커밋 메시지 생성
+        QA_MESSAGE="🚀 QA: TestFlight 배포 완료 v${MARKETING_VERSION}(${BUILD_NUMBER})"
+
+        # 빈 커밋으로 QA 기록 남기기
+        git commit --allow-empty -m "$QA_MESSAGE"
+        git push origin develop
+
+    - name: Create deployment issue
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const title = `🚨 TestFlight 배포 실패 - ${new Date().toISOString().split('T')[0]}`;
+          const body = `
+          ## 배포 실패 알림
+
+          **브랜치**: \`develop\`
+          **워크플로우**: ${context.workflow}
+          **실행 ID**: ${context.runId}
+
+          ### 실패한 스텝 확인
+          [워크플로우 실행 보기](${context.payload.repository.html_url}/actions/runs/${context.runId})
+
+          ### 체크리스트
+          - [ ] 빌드 에러 확인
+          - [ ] 인증서/프로비저닝 프로필 확인
+          - [ ] Fastlane 설정 확인
+          - [ ] GitHub Secrets 설정 확인
+          `;
+
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            body: body,
+            labels: ['bug', 'ci/cd', 'deployment-failure']
+          });

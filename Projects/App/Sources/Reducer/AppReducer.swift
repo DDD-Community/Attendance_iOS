@@ -84,6 +84,9 @@ public struct AppReducer: Sendable {
   private enum CancelID {
     case refreshTokenExpiredListener
     case splashRouting
+    case authEffects
+    case staffEffects
+    case memberEffects
   }
 
   public var body: some ReducerOf<Self> {
@@ -136,15 +139,24 @@ public struct AppReducer: Sendable {
 
     case .presentAuth:
       state = .auth(.init())
-      return .none
+      return .concatenate(
+        .cancel(id: CancelID.staffEffects),
+        .cancel(id: CancelID.memberEffects)
+      )
 
     case .presentStaff:
       state = .staff(.init())
-      return .none
+      return .concatenate(
+        .cancel(id: CancelID.authEffects),
+        .cancel(id: CancelID.memberEffects)
+      )
 
     case .presentMember:
       state = .member(.init())
-      return .none
+      return .concatenate(
+        .cancel(id: CancelID.authEffects),
+        .cancel(id: CancelID.staffEffects)
+      )
     }
   }
 
@@ -162,7 +174,11 @@ public struct AppReducer: Sendable {
         #logDebug("🚪 [AppReducer] 🔥 REFRESH TOKEN EXPIRED - REDIRECTING TO LOGIN!")
       state = .auth(.init())
         #logDebug("✅ [AppReducer] 🎯 STATE CHANGED TO LOGIN SCREEN!")
-      return .cancel(id: CancelID.splashRouting)
+      return .concatenate(
+        .cancel(id: CancelID.splashRouting),
+        .cancel(id: CancelID.staffEffects),
+        .cancel(id: CancelID.memberEffects)
+      )
     }
   }
 
@@ -193,37 +209,51 @@ public struct AppReducer: Sendable {
 
     case .splash(.navigation(.presentStaff)):
       return .run { send in
-        try await self.clock.sleep(for: .seconds(1))
-        await send(.scope(.splash(.async(.fetchUser))))
         await send(.view(.presentStaff))
       }
       .cancellable(id: CancelID.splashRouting, cancelInFlight: true)
 
     case .splash(.navigation(.presentMember)):
       return .run { send in
-        try await self.clock.sleep(for: .seconds(1))
-        await send(.scope(.splash(.async(.fetchUser))))
         await send(.view(.presentMember))
       }
       .cancellable(id: CancelID.splashRouting, cancelInFlight: true)
 
     case .auth(.navigation(.presentStaff)):
-      return .send(.view(.presentStaff))
+      return .concatenate(
+        .cancel(id: CancelID.authEffects),
+        .send(.view(.presentStaff))
+      )
 
     case .auth(.navigation(.presentMember)):
-      return .send(.view(.presentMember))
+      return .concatenate(
+        .cancel(id: CancelID.authEffects),
+        .send(.view(.presentMember))
+      )
 
     case .staff(.navigation(.presentLogin)):
-      return .send(.view(.presentAuth))
+      return .concatenate(
+        .cancel(id: CancelID.staffEffects),
+        .send(.view(.presentAuth))
+      )
 
     case .staff(.navigation(.presentMember)):
-      return .send(.view(.presentMember))
+      return .concatenate(
+        .cancel(id: CancelID.staffEffects),
+        .send(.view(.presentMember))
+      )
 
     case .member(.navigation(.presentLogin)):
-      return .send(.view(.presentAuth))
+      return .concatenate(
+        .cancel(id: CancelID.memberEffects),
+        .send(.view(.presentAuth))
+      )
 
     case .member(.navigation(.presentStaff)):
-      return .send(.view(.presentStaff))
+      return .concatenate(
+        .cancel(id: CancelID.memberEffects),
+        .send(.view(.presentStaff))
+      )
 
     default:
       return .none
