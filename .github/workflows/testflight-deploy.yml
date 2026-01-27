@@ -125,8 +125,8 @@ jobs:
           exit 1
         fi
 
-        # Generate with debug configuration
-        tuist install && tuist generate --configuration Debug
+        # Generate with release configuration for CI builds
+        tuist install && tuist generate --configuration Release
 
     - name: Set up SSH key for match repository
       env:
@@ -167,7 +167,16 @@ jobs:
         echo "Checking Gemfile.lock..."
         bundle check || echo "Bundle check failed, but continuing..."
 
-    - name: Run Fastlane QA
+    - name: Debug build setup
+      run: |
+        echo "Current directory contents:"
+        ls -la
+        echo "Available schemes:"
+        xcodebuild -workspace DDDAttendance.xcworkspace -list
+        echo "Available configurations:"
+        xcodebuild -workspace DDDAttendance.xcworkspace -scheme DDDAttendance-Stage -showBuildSettings | grep -E "^[[:space:]]*CONFIGURATION"
+
+    - name: Run Fastlane QA with verbose output
       env:
         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         FASTLANE_APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -175,9 +184,10 @@ jobs:
         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
         APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
         FASTLANE_SKIP_UPDATE_CHECK: true
-        FASTLANE_DISABLE_COLORS: true
+        FASTLANE_DISABLE_COLORS: false
+        FASTLANE_HIDE_GITHUB_ISSUES: false
       run: |
-        bundle exec fastlane QA
+        bundle exec fastlane QA --verbose
 
     - name: Create QA commit
       env:
