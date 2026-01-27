@@ -32,6 +32,7 @@ platform :ios do
      build_app(
       workspace: "#{APP_NAME}.xcworkspace",
       scheme: "DDDAttendance_Stage",
+      configuration: "Release",
       output_directory: OUTPUT_DIR,
       output_name: IPA_FILENAME,
       export_method: "app-store",
@@ -58,6 +59,7 @@ platform :ios do
     build_app(
       workspace: "#{APP_RELEASE_NAME}.xcworkspace",
       scheme: "#{APP_RELEASE_SCHEME}",
+      configuration: "Release",
       output_directory: OUTPUT_DIR,
       output_name: IPA_FILENAME,
       export_method: "app-store",
@@ -91,6 +93,7 @@ platform :ios do
     ipa_path = build_app(
       workspace: "#{APP_NAME}.xcworkspace",
       scheme: "#{APP_STAGE_SCHEME}",
+      configuration: "Release",
       output_directory: OUTPUT_DIR,
       output_name: IPA_FILENAME,
       export_method: "app-store",
@@ -134,6 +137,7 @@ platform :ios do
       ipa_path = build_app(
         workspace: "#{APP_RELEASE_NAME}.xcworkspace",
         scheme: "#{APP_RELEASE_SCHEME}",
+        configuration: "Release",
         output_directory: OUTPUT_DIR,
         output_name: IPA_FILENAME,
         export_method: "app-store",
