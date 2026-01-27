@@ -42,6 +42,8 @@ jobs:
       run: |
         gem install bundler --no-document
         bundle config set --local deployment false
+        # Update fastlane to latest version to avoid auto-update conflicts
+        bundle update fastlane
         bundle install --jobs 4 --retry 3
 
     - name: Cache Tuist
