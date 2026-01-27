@@ -62,11 +62,24 @@ jobs:
     - name: Generate Tuist project
       env:
         TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
+        CI: true
+        TUIST_STATS_OPT_OUT: 1
       run: |
         echo "Current directory: $(pwd)"
+        echo "Files in current directory:"
+        ls -la
         echo "Config files:"
         ls -la Config/ || echo "Config directory not found"
-        tuist install && tuist generate
+
+        # Ensure we're in the right directory
+        if [ ! -f "Tuist.swift" ]; then
+          echo "Tuist.swift not found, listing all Tuist.swift files:"
+          find . -name "Tuist.swift" -type f 2>/dev/null || echo "No Tuist.swift found"
+          exit 1
+        fi
+
+        # Generate with debug configuration
+        tuist install && tuist generate --configuration Debug
 
     - name: Install CocoaPods
       run: |

@@ -18,7 +18,10 @@ let tuist = Tuist(
       .local(path: .relativeToRoot("Plugins/DependencyPackagePlugin")),
       .local(path: .relativeToRoot("Plugins/DependencyPlugin")),
     ],
-    generationOptions: .options(),
+    generationOptions: .options(
+      optionalAuthentication: true,
+      disableSandbox: true
+    ),
     installOptions: .options()
   )
 )
