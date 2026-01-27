@@ -167,6 +167,22 @@ jobs:
         echo "Checking Gemfile.lock..."
         bundle check || echo "Bundle check failed, but continuing..."
 
+    - name: Debug build environment
+      run: |
+        echo "Checking generated workspace and schemes..."
+        ls -la *.xcworkspace 2>/dev/null || echo "No .xcworkspace files found"
+        ls -la *.xcodeproj 2>/dev/null || echo "No .xcodeproj files found"
+
+        echo "Checking available schemes..."
+        if [ -f "DDDAttendance.xcworkspace" ]; then
+          xcodebuild -workspace DDDAttendance.xcworkspace -list
+        elif [ -f "DDDAttendance.xcodeproj" ]; then
+          xcodebuild -project DDDAttendance.xcodeproj -list
+        else
+          echo "No valid Xcode workspace or project found"
+          find . -name "*.xcworkspace" -o -name "*.xcodeproj"
+        fi
+
     - name: Run Fastlane QA
       env:
         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
