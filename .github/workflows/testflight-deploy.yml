@@ -43,14 +43,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-tuist-
 
-    - name: Cache CocoaPods
-      uses: actions/cache@v4
-      with:
-        path: Pods
-        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-pods-
-
     - name: Setup mise
       uses: jdx/mise-action@v2
 
@@ -124,11 +116,6 @@ jobs:
 
         # Generate with debug configuration
         tuist install && tuist generate --configuration Debug
-
-    - name: Install CocoaPods
-      run: |
-        cd DDDAttendance
-        pod install --repo-update
 
     - name: Set up fastlane environment
       env:
