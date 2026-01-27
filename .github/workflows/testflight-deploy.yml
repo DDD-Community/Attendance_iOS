@@ -63,8 +63,10 @@ jobs:
       env:
         TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
       run: |
-        # Try with token first, fallback to local generation if auth fails
-        tuist install && tuist generate || (echo "Warning: Tuist auth failed, trying local generation" && tuist generate --no-cloud)
+        echo "Current directory: $(pwd)"
+        echo "Config files:"
+        ls -la Config/ || echo "Config directory not found"
+        tuist install && tuist generate
 
     - name: Install CocoaPods
       run: |
