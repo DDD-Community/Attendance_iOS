@@ -145,6 +145,17 @@ jobs:
         echo "Checking Gemfile.lock..."
         bundle check || echo "Bundle check failed, but continuing..."
 
+    - name: Debug environment variables
+      env:
+        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+        APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
+      run: |
+        echo "Checking environment variables..."
+        echo "APP_STORE_CONNECT_API_KEY_ID: ${APP_STORE_CONNECT_API_KEY_ID:0:10}..."
+        echo "APP_STORE_CONNECT_ISSUER_ID: ${APP_STORE_CONNECT_ISSUER_ID:0:10}..."
+        echo "APP_STORE_CONNECT_API_KEY_CONTENT length: ${#APP_STORE_CONNECT_API_KEY_CONTENT}"
+
     - name: Run Fastlane QA
       env:
         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
