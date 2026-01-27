@@ -10,6 +10,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  issues: write
 
 env:
   FASTLANE_SKIP_UPDATE_CHECK: true
@@ -108,33 +109,3 @@ jobs:
         git commit --allow-empty -m "$QA_MESSAGE"
         git push origin develop
 
-    - name: Create deployment issue
-      if: failure()
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const title = `🚨 TestFlight 배포 실패 - ${new Date().toISOString().split('T')[0]}`;
-          const body = `
-          ## 배포 실패 알림
-
-          **브랜치**: \`develop\`
-          **워크플로우**: ${context.workflow}
-          **실행 ID**: ${context.runId}
-
-          ### 실패한 스텝 확인
-          [워크플로우 실행 보기](${context.payload.repository.html_url}/actions/runs/${context.runId})
-
-          ### 체크리스트
-          - [ ] 빌드 에러 확인
-          - [ ] 인증서/프로비저닝 프로필 확인
-          - [ ] Fastlane 설정 확인
-          - [ ] GitHub Secrets 설정 확인
-          `;
-
-          github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: title,
-            body: body,
-            labels: ['bug', 'ci/cd', 'deployment-failure']
-          });
