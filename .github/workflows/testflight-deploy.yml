@@ -8,9 +8,7 @@ on:
     types: [closed]
 
 permissions:
-  id-token: write
   contents: read
-  issues: write
 
 env:
   FASTLANE_SKIP_UPDATE_CHECK: true
@@ -61,11 +59,12 @@ jobs:
         mise install tuist
         echo "$(tuist version)"
 
-    - name: Tuist auth login (OIDC)
-      run: tuist auth login
-
     - name: Generate Tuist project
-      run: tuist install && tuist generate
+      env:
+        TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
+      run: |
+        # Try with token first, fallback to local generation if auth fails
+        tuist install && tuist generate || (echo "Warning: Tuist auth failed, trying local generation" && tuist generate --no-cloud)
 
     - name: Install CocoaPods
       run: |
