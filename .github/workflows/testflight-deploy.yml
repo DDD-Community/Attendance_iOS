@@ -7,6 +7,10 @@ on:
     branches: [develop]
     types: [closed]
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   FASTLANE_SKIP_UPDATE_CHECK: true
   FASTLANE_OPT_OUT_USAGE: true
@@ -55,6 +59,9 @@ jobs:
       run: |
         mise install tuist
         echo "$(tuist version)"
+
+    - name: Tuist auth login (OIDC)
+      run: tuist auth login
 
     - name: Generate Tuist project
       run: tuist install && tuist generate
