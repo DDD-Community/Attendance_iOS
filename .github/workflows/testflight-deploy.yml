@@ -128,6 +128,27 @@ jobs:
         # Generate with debug configuration
         tuist install && tuist generate --configuration Debug
 
+    - name: Set up SSH key for match repository
+      env:
+        MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
+      run: |
+        # Set up SSH key for match repository access
+        mkdir -p ~/.ssh
+        echo "$MATCH_DEPLOY_KEY" > ~/.ssh/match_deploy_key
+        chmod 600 ~/.ssh/match_deploy_key
+
+        # Add GitHub to known hosts
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+        # Configure SSH to use the key
+        cat > ~/.ssh/config << EOF
+        Host github.com
+          HostName github.com
+          User git
+          IdentityFile ~/.ssh/match_deploy_key
+          IdentitiesOnly yes
+        EOF
+
     - name: Set up fastlane environment
       env:
         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
@@ -136,6 +157,7 @@ jobs:
         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
         APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
       run: |
+        # Set up App Store Connect API key
         mkdir -p private_keys
         echo "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}.p8
 
