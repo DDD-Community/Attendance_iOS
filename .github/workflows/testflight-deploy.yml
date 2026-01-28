@@ -156,6 +156,7 @@ jobs:
         APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
         APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
+        TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
         # Set up App Store Connect API key
         mkdir -p private_keys
@@ -183,6 +184,7 @@ jobs:
         APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
         APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
+        TEAM_ID: ${{ secrets.TEAM_ID }}
         FASTLANE_SKIP_UPDATE_CHECK: true
         FASTLANE_DISABLE_COLORS: false
         FASTLANE_HIDE_GITHUB_ISSUES: false
