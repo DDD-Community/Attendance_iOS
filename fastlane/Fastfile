@@ -94,14 +94,6 @@ platform :ios do
     )
     match(type: "appstore", readonly: true)
 
-    # Update project settings to use the match profiles
-    update_project_provisioning(
-      xcodeproj: "Projects/App/#{APP_NAME}.xcodeproj",
-      target_filter: ".*#{APP_NAME}.*",
-      profile: ENV["sigh_#{BUNDLE_ID.gsub('.', '_')}_appstore"],
-      build_configuration: "Release"
-    )
-
     # Try simpler approach first
     puts "🔍 Debug: APP_NAME = #{APP_NAME}"
     puts "🔍 Debug: APP_STAGE_SCHEME = #{APP_STAGE_SCHEME}"
@@ -118,6 +110,7 @@ platform :ios do
       clean: true,
       silent: false,
       verbose: true,
+      xcargs: "CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER='match AppStore #{BUNDLE_ID}' DEVELOPMENT_TEAM=#{ENV['TEAM_ID']}",
       export_options: {
         method: "app-store",
         signingStyle: "manual",
