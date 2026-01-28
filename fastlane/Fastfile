@@ -39,9 +39,11 @@ platform :ios do
       clean: true,
       silent: false, # 디버깅용 false
       verbose: true,
+      xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER='match AppStore #{BUNDLE_ID}' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{ENV['TEAM_ID']}",
       export_options: {
         signingStyle: "manual",
         uploadBitcode: false,
+        teamID: ENV["TEAM_ID"],
         provisioningProfiles: {
           "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
         }
@@ -66,9 +68,11 @@ platform :ios do
       clean: true,
       silent: false,
       verbose: true,
+      xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER='match AppStore #{BUNDLE_ID}' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{ENV['TEAM_ID']}",
       export_options: {
         signingStyle: "manual",
         uploadBitcode: false,
+        teamID: ENV["TEAM_ID"],
         provisioningProfiles: {
           "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
         }
@@ -100,9 +104,11 @@ platform :ios do
       clean: true,
       silent: false,
       verbose: true,
+      xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER='match AppStore #{BUNDLE_ID}' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{ENV['TEAM_ID']}",
       export_options: {
         signingStyle: "manual",
         uploadBitcode: false,
+        teamID: ENV["TEAM_ID"],
         provisioningProfiles: {
           "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
         }
@@ -144,6 +150,7 @@ platform :ios do
         clean: true,
         silent: false,
         verbose: true,
+        xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER='match AppStore #{BUNDLE_ID}' CODE_SIGN_STYLE=Manual",
         export_options: {
           signingStyle: "manual",
           uploadBitcode: false,
