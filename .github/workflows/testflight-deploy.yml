@@ -177,7 +177,24 @@ jobs:
         echo "Available configurations:"
         xcodebuild -workspace DDDAttendance.xcworkspace -scheme DDDAttendance-Stage -showBuildSettings | grep -E "^[[:space:]]*CONFIGURATION"
 
-    - name: Run Fastlane QA with verbose output
+    - name: Test simple xcodebuild
+      env:
+        TEAM_ID: ${{ secrets.TEAM_ID }}
+      run: |
+        echo "Testing simple xcodebuild command..."
+        xcodebuild -workspace DDDAttendance.xcworkspace \
+                   -scheme DDDAttendance-Stage \
+                   -configuration Release \
+                   -destination 'generic/platform=iOS' \
+                   -showBuildSettings | head -20
+
+        echo "Testing code signing settings..."
+        xcodebuild -workspace DDDAttendance.xcworkspace \
+                   -scheme DDDAttendance-Stage \
+                   -configuration Release \
+                   -showBuildSettings | grep -i "CODE_SIGN\|TEAM\|PROVISIONING" || echo "No code sign settings found"
+
+    - name: Run Fastlane QA with extensive debugging
       env:
         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         FASTLANE_APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -189,7 +206,32 @@ jobs:
         FASTLANE_DISABLE_COLORS: false
         FASTLANE_HIDE_GITHUB_ISSUES: false
       run: |
-        bundle exec fastlane QA --verbose
+        set -e  # Exit on any error
+        echo "Starting fastlane QA..."
+
+        # Run with maximum verbosity and capture output
+        bundle exec fastlane QA --verbose 2>&1 | tee fastlane_output.log || {
+          echo "=== FASTLANE FAILED ==="
+          echo "Exit code: $?"
+
+          # Show the gym log if it exists
+          if [ -f "$HOME/Library/Logs/gym/DDDAttendance_Stage-DDDAttendance-Stage.log" ]; then
+            echo "=== GYM BUILD LOG ==="
+            tail -50 "$HOME/Library/Logs/gym/DDDAttendance_Stage-DDDAttendance-Stage.log"
+          fi
+
+          # Show fastlane output
+          if [ -f "fastlane_output.log" ]; then
+            echo "=== FASTLANE OUTPUT (last 50 lines) ==="
+            tail -50 fastlane_output.log
+          fi
+
+          # Show any other relevant logs
+          echo "=== AVAILABLE LOG FILES ==="
+          find "$HOME/Library/Logs" -name "*gym*" -o -name "*fastlane*" 2>/dev/null || echo "No additional logs found"
+
+          exit 1
+        }
 
     - name: Create QA commit
       env:
