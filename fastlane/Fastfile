@@ -52,22 +52,51 @@ platform :ios do
       # Try to generate workspace if missing
       workspace_files = Dir.glob("*.xcworkspace")
       if workspace_files.empty?
-        puts "🔧 Generating workspace with tuist..."
+        puts "🔧 No workspace found, trying to generate..."
 
-        # Try make first
-        if File.exist?("make")
-          sh("./make generate") rescue puts("make generate failed")
-        else
-          sh("tuist generate") rescue puts("tuist generate failed")
+        # Debug info
+        puts "🔍 Checking tuist setup..."
+        puts "Make file exists: #{File.exist?('make')}"
+        puts "TuistTool.swift exists: #{File.exist?('TuistTool.swift')}"
+        puts "Tuist.swift exists: #{File.exist?('Tuist.swift')}"
+
+        begin
+          if File.exist?("make")
+            puts "🔧 Trying ./make install..."
+            sh("./make install")
+            puts "🔧 Trying ./make generate..."
+            sh("./make generate")
+          else
+            puts "🔧 Trying tuist directly..."
+            sh("tuist install")
+            sh("tuist generate")
+          end
+        rescue => e
+          puts "❌ Generation failed: #{e.message}"
+          puts "❌ Error details: #{e.backtrace.first(3)}"
         end
 
         workspace_files = Dir.glob("*.xcworkspace")
+        puts "🔍 Workspace files found: #{workspace_files}"
       end
 
       if workspace_files.empty?
-        puts "❌ Still no workspace found after generation!"
-        puts "📋 Current files: #{Dir.entries('.')}"
-        UI.user_error!("Cannot find or generate workspace file")
+        puts "❌ Still no workspace found!"
+        puts "🔍 All files in directory:"
+        Dir.entries('.').each { |f| puts "  #{f}" }
+
+        puts "🔧 Last attempt: trying tuist generate with --no-open..."
+        begin
+          sh("tuist generate --no-open")
+          workspace_files = Dir.glob("*.xcworkspace")
+          puts "🔍 After last attempt: #{workspace_files}"
+        rescue => e
+          puts "❌ Final attempt failed: #{e.message}"
+        end
+
+        if workspace_files.empty?
+          UI.user_error!("Cannot generate workspace file. Check tuist setup and plugins.")
+        end
       end
 
       workspace_name = workspace_files.first
