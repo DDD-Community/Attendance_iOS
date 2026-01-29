@@ -217,7 +217,11 @@ platform :ios do
         submit_for_review: true,
         automatic_release: false,
         precheck_include_in_app_purchases: false,
-        reject_if_possible: true
+        reject_if_possible: true,
+        release_notes: {
+          "ko" => options[:changelog] || "버그 수정 및 성능 개선",
+          "en-US" => options[:changelog] || "Bug fixes and performance improvements"
+        }
       )
 
       UI.success("🎉 앱 업로드 및 심사 요청 완료!")
