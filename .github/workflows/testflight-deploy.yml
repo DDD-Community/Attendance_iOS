@@ -87,11 +87,21 @@ jobs:
         APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
-        # Setup
+        # Setup SSH and API keys
         mkdir -p ~/.ssh private_keys
         echo "$MATCH_DEPLOY_KEY" > ~/.ssh/match_deploy_key
         chmod 600 ~/.ssh/match_deploy_key
         ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+        # Configure SSH to use the key
+        cat > ~/.ssh/config << EOF
+        Host github.com
+          HostName github.com
+          User git
+          IdentityFile ~/.ssh/match_deploy_key
+          IdentitiesOnly yes
+        EOF
+
         echo "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}.p8
 
         # Deploy
