@@ -59,11 +59,11 @@ jobs:
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
         set -e  # Exit immediately if any command fails
-        # Quick config
+        # Quick config - build number will be set by fastlane
         mkdir -p Config
         cat > Config/Shared.xcconfig << EOF
         MARKETING_VERSION=1.0.0
-        CURRENT_PROJECT_VERSION=20
+        CURRENT_PROJECT_VERSION=1
         EOF
 
         cat > Config/Stage.xcconfig << EOF
