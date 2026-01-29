@@ -75,11 +75,16 @@ jobs:
         CURRENT_PROJECT_VERSION=$BUILD_NUMBER
         EOF
 
-        cat > Config/Stage.xcconfig << EOF
+        # Create all required config files
+        cat > Config/Dev.xcconfig << EOF
         #include "./Shared.xcconfig"
         BUNDLE_DISPLAY_NAME = DDD
         GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-placeholder}
         EOF
+
+        cp Config/Dev.xcconfig Config/Stage.xcconfig
+        cp Config/Dev.xcconfig Config/Release.xcconfig
+        cp Config/Dev.xcconfig Config/Prod.xcconfig
 
         # Build with detailed logging
         echo "=== Compiling TuistTool ==="
