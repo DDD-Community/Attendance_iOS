@@ -20,7 +20,7 @@ jobs:
   testflight-deploy:
     if: github.event_name == 'push'
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
     - name: Checkout
@@ -31,46 +31,21 @@ jobs:
       with:
         xcode-version: latest-stable
 
-    - name: Setup Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.2'
-        bundler-cache: false
-
-    - name: Install Ruby dependencies
-      run: |
-        gem install bundler --no-document
-        bundle config set --local deployment false
-        # Update fastlane to latest version to avoid auto-update conflicts
-        bundle update fastlane
-        bundle install --jobs 4 --retry 3
-
     - name: Install fastlane
       run: brew install fastlane
 
-    - name: fastlane Version Check
-      run: fastlane --version
-
-    - name: Cache Tuist
+    - name: Cache Tuist and Dependencies
       uses: actions/cache@v4
       with:
-        path: ~/.tuist
+        path: |
+          ~/.tuist
+          Tuist/.build
+          ~/Library/Caches/org.swift.swiftpm
         key: ${{ runner.os }}-tuist-${{ hashFiles('**/Tuist.swift', '**/Package.swift') }}
         restore-keys: |
           ${{ runner.os }}-tuist-
 
-    - name: Setup mise
-      uses: jdx/mise-action@v2
 
-    - name: Install Tuist via mise
-      run: |
-        mise install tuist
-        echo "$(tuist version)"
-
-    - name: Verify repository setup
-      run: |
-        echo "Current directory: $(pwd)"
-        echo "Checking Tuist.swift: $(ls Tuist.swift 2>/dev/null && echo "✅ Found" || echo "❌ Missing")"
 
 
     - name: Generate Tuist project
@@ -84,87 +59,27 @@ jobs:
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
         set -e  # Exit immediately if any command fails
-        echo "Current directory: $(pwd)"
-        echo "Files in current directory:"
-        ls -la
-        echo "Config files:"
-        ls -la Config/ || echo "Config directory not found"
-
-        # Create Config files for CI based on actual structure
+        # Quick config
         mkdir -p Config
-
-        # Create Shared.xcconfig
-        echo "// Shared.xcconfig - Auto-generated for CI" > Config/Shared.xcconfig
-        echo "MARKETING_VERSION=1.0.0" >> Config/Shared.xcconfig
-        echo "CURRENT_PROJECT_VERSION=20" >> Config/Shared.xcconfig
-
-        # Create Dev.xcconfig
-        echo "// Dev.xcconfig - Auto-generated for CI" > Config/Dev.xcconfig
-        echo "#include \"./Shared.xcconfig\"" >> Config/Dev.xcconfig
-        echo "" >> Config/Dev.xcconfig
-        echo "OTHER_SWIFT_FLAGS[config=STAGE][sdk=*] = \$(inherited) -DDEBUG" >> Config/Dev.xcconfig
-        echo "SWIFT_ACTIVE_COMPILATION_CONDITIONS = STAGE" >> Config/Dev.xcconfig
-        echo "BUNDLE_DISPLAY_NAME = DDD" >> Config/Dev.xcconfig
-        echo "BASE_URL= api.dddstudy.site/" >> Config/Dev.xcconfig
-        echo "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-placeholder}" >> Config/Dev.xcconfig
-        echo "GOOGLE_IOS_CLIENT_ID=${GOOGLE_IOS_CLIENT_ID:-placeholder}" >> Config/Dev.xcconfig
-        echo "REVERSED_CLIENT_ID=${REVERSED_CLIENT_ID:-placeholder}" >> Config/Dev.xcconfig
-
-        # Create Stage.xcconfig
-        cp Config/Dev.xcconfig Config/Stage.xcconfig
-
-        # Create Release.xcconfig
-        echo "// Release.xcconfig - Auto-generated for CI" > Config/Release.xcconfig
-        echo "#include \"./Shared.xcconfig\"" >> Config/Release.xcconfig
-        echo "" >> Config/Release.xcconfig
-        echo "OTHER_SWIFT_FLAGS[config=PROD][sdk=*] = \$(inherited) -PROD" >> Config/Release.xcconfig
-        echo "SWIFT_ACTIVE_COMPILATION_CONDITIONS = PROD" >> Config/Release.xcconfig
-        echo "BUNDLE_DISPLAY_NAME = DDD" >> Config/Release.xcconfig
-        echo "BASE_URL= api.dddstudy.site/" >> Config/Release.xcconfig
-        echo "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-placeholder}" >> Config/Release.xcconfig
-        echo "GOOGLE_IOS_CLIENT_ID=${GOOGLE_IOS_CLIENT_ID:-placeholder}" >> Config/Release.xcconfig
-        echo "REVERSED_CLIENT_ID=${REVERSED_CLIENT_ID:-placeholder}" >> Config/Release.xcconfig
-
-        # Create Prod.xcconfig (same as Release)
-        cp Config/Release.xcconfig Config/Prod.xcconfig
-
-        echo "Config files created:"
-        ls -la Config/
-
-        echo "=== Compiling TuistTool ==="
-        swiftc TuistTool.swift -o make
-
-        echo "=== Installing dependencies ==="
-        ./make install || echo "tuist install failed, continuing..."
-
-        echo "=== Generating workspace ==="
-        ./make generate
-
-        echo "✅ Config and workspace ready"
-
-    - name: Set up SSH key for match repository
-      env:
-        MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
-      run: |
-        # Set up SSH key for match repository access
-        mkdir -p ~/.ssh
-        echo "$MATCH_DEPLOY_KEY" > ~/.ssh/match_deploy_key
-        chmod 600 ~/.ssh/match_deploy_key
-
-        # Add GitHub to known hosts
-        ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-        # Configure SSH to use the key
-        cat > ~/.ssh/config << EOF
-        Host github.com
-          HostName github.com
-          User git
-          IdentityFile ~/.ssh/match_deploy_key
-          IdentitiesOnly yes
+        cat > Config/Shared.xcconfig << EOF
+        MARKETING_VERSION=1.0.0
+        CURRENT_PROJECT_VERSION=20
         EOF
 
-    - name: Set up fastlane environment
+        cat > Config/Stage.xcconfig << EOF
+        #include "./Shared.xcconfig"
+        BUNDLE_DISPLAY_NAME = DDD
+        GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-placeholder}
+        EOF
+
+        # Build
+        swiftc TuistTool.swift -o make
+        ./make install
+        ./make generate
+
+    - name: Deploy to TestFlight
       env:
+        MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         FASTLANE_APPLE_ID: ${{ secrets.APPLE_ID }}
         APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
@@ -172,36 +87,14 @@ jobs:
         APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
-        # Set up App Store Connect API key
-        mkdir -p private_keys
+        # Setup
+        mkdir -p ~/.ssh private_keys
+        echo "$MATCH_DEPLOY_KEY" > ~/.ssh/match_deploy_key
+        chmod 600 ~/.ssh/match_deploy_key
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
         echo "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}.p8
 
-
-    - name: Run Fastlane QA
-      env:
-        MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-        FASTLANE_APPLE_ID: ${{ secrets.APPLE_ID }}
-        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
-        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
-        APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
-        TEAM_ID: ${{ secrets.TEAM_ID }}
-      run: |
+        # Deploy
         fastlane QA
 
-    - name: Create QA commit
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        BUILD_NUMBER=$(grep -o 'CURRENT_PROJECT_VERSION=20' Config/Shared.xcconfig | grep -o '[0-9]*')
-        MARKETING_VERSION=$(grep -o 'MARKETING_VERSION=1.0.0' Config/Shared.xcconfig | grep -o '[0-9.]*')
-
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-
-        # QA 커밋 메시지 생성
-        QA_MESSAGE="🚀 QA: TestFlight 배포 완료 v${MARKETING_VERSION}(${BUILD_NUMBER})"
-
-        # 빈 커밋으로 QA 기록 남기기
-        git commit --allow-empty -m "$QA_MESSAGE"
-        git push origin develop
 
