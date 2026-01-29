@@ -44,47 +44,68 @@ platform :ios do
       app_identifier: ["io.DDD.Attendance"]
     )
 
+    # Change to project root directory
+    Dir.chdir("..") do
+      puts "📁 Current directory: #{Dir.pwd}"
+      puts "📋 Available files: #{Dir.entries('.')}"
 
-    # Find workspace file in project root
-    workspace_files = Dir.glob("../*.xcworkspace")
-    if workspace_files.empty?
-      UI.user_error!("No workspace file found in project root! Available files: #{Dir.entries('..')}")
-    end
-    workspace_path = workspace_files.first
-    puts "Using workspace: #{workspace_path}"
+      # Try to generate workspace if missing
+      workspace_files = Dir.glob("*.xcworkspace")
+      if workspace_files.empty?
+        puts "🔧 Generating workspace with tuist..."
 
-    ipa_path = build_app(
-      workspace: workspace_path,
-      scheme: "DDDAttendance-Stage",
-      configuration: "Release",
-      export_method: "app-store",
-      output_directory: OUTPUT_DIR,
-      output_name: IPA_FILENAME,
-      clean: false,
-      silent: true,
-      xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
-              "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
-              "SWIFT_COMPILATION_MODE=wholemodule -parallelizeTargets",
-      export_options: {
-        signingStyle: "manual",
-        uploadBitcode: false,
-        teamID: TEAM_ID,
-        provisioningProfiles: {
-          "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
+        # Try make first
+        if File.exist?("make")
+          sh("./make generate") rescue puts("make generate failed")
+        else
+          sh("tuist generate") rescue puts("tuist generate failed")
+        end
+
+        workspace_files = Dir.glob("*.xcworkspace")
+      end
+
+      if workspace_files.empty?
+        puts "❌ Still no workspace found after generation!"
+        puts "📋 Current files: #{Dir.entries('.')}"
+        UI.user_error!("Cannot find or generate workspace file")
+      end
+
+      workspace_name = workspace_files.first
+      puts "✅ Using workspace: #{workspace_name}"
+
+      ipa_path = build_app(
+        workspace: workspace_name,
+        scheme: "DDDAttendance-Stage",
+        configuration: "Release",
+        export_method: "app-store",
+        output_directory: OUTPUT_DIR,
+        output_name: IPA_FILENAME,
+        clean: false,
+        silent: true,
+        xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
+                "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
+                "SWIFT_COMPILATION_MODE=wholemodule -parallelizeTargets",
+        export_options: {
+          signingStyle: "manual",
+          uploadBitcode: false,
+          teamID: TEAM_ID,
+          provisioningProfiles: {
+            "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
+          }
         }
-      }
-    )
+      )
 
-    upload_to_testflight(
-      ipa: ipa_path,
-      changelog: "변경사항",
-      groups: ["DDD", "ddd"],
-      beta_app_description: "DDD 출석 앱입니다.",
-      notify_external_testers: true,
-      skip_waiting_for_build_processing: true,
-      demo_account_required: false,
-      uses_non_exempt_encryption: false
-    )
+      upload_to_testflight(
+        ipa: ipa_path,
+        changelog: "변경사항",
+        groups: ["DDD", "ddd"],
+        beta_app_description: "DDD 출석 앱입니다.",
+        notify_external_testers: true,
+        skip_waiting_for_build_processing: true,
+        demo_account_required: false,
+        uses_non_exempt_encryption: false
+      )
+    end
   end
 
   # 🚀 App Store 배포
