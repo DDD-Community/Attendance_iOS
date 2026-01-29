@@ -143,6 +143,24 @@ platform :ios do
         is_key_content_base64: true,
         in_house: false
       )
+
+      # 자동으로 빌드 번호 증가
+      current_build_number = latest_testflight_build_number(
+        app_identifier: BUNDLE_ID,
+        platform: "ios"
+      )
+      new_build_number = current_build_number + 1
+      puts "🔢 Current build number: #{current_build_number}"
+      puts "🔢 New build number: #{new_build_number}"
+
+      # Config 파일 업데이트
+      config_content = <<~CONFIG
+        MARKETING_VERSION=#{options[:version]}
+        CURRENT_PROJECT_VERSION=#{new_build_number}
+      CONFIG
+
+      File.write("Config/Shared.xcconfig", config_content)
+      puts "✅ Updated build number to #{new_build_number} in Config/Shared.xcconfig"
       match(
         type: "appstore",
         readonly: true,
