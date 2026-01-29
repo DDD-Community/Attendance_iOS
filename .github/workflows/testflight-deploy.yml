@@ -45,6 +45,12 @@ jobs:
         bundle update fastlane
         bundle install --jobs 4 --retry 3
 
+    - name: Install fastlane
+      run: brew install fastlane
+
+    - name: fastlane Version Check
+      run: fastlane --version
+
     - name: Cache Tuist
       uses: actions/cache@v4
       with:
@@ -180,7 +186,7 @@ jobs:
         APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
         TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
-        bundle exec fastlane QA
+        fastlane QA
 
     - name: Create QA commit
       env:
