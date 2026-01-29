@@ -195,7 +195,7 @@ platform :ios do
 
       # clean_symbols_from_ipa(ipa_path: ipa_path)
 
-      # 먼저 업로드만 진행
+      # 업로드 후 자동으로 심사 요청
       upload_to_app_store(
         app_version: options[:version],
         username: "shuwj81@daum.net",
@@ -205,24 +205,21 @@ platform :ios do
         metadata_path: "./fastlane/metadata",
         skip_screenshots: true,
         force: true,
-        submit_for_review: false,
+        submit_for_review: true,
         automatic_release: false,
-        precheck_include_in_app_purchases: false
+        precheck_include_in_app_purchases: false,
+        reject_if_possible: true
       )
 
-      UI.success("🎉 앱 업로드 완료!")
+      UI.success("🎉 앱 업로드 및 심사 요청 완료!")
       UI.important("")
-      UI.important("📱 이제 App Store Connect에서 심사를 제출해주세요:")
+      UI.important("📱 심사 진행 상황 확인:")
       UI.important("   1. https://appstoreconnect.apple.com 접속")
       UI.important("   2. DDD Attendance 앱 선택")
-      UI.important("   3. 기존 제출이 있으면 '제출 취소' 클릭")
-      UI.important("   4. 새 버전 #{options[:version]} → '심사를 위해 제출' 클릭")
+      UI.important("   3. 버전 #{options[:version]} 심사 상태 확인")
       UI.important("")
-      UI.important("🔄 또는 App Store Connect에서 기존 제출을 취소한 후")
-      UI.important("   아래 명령어로 자동 제출 재시도:")
-      UI.important("   bundle exec fastlane submit_for_review version:'#{options[:version]}'")
-      UI.important("")
-      UI.success("✅ 빌드와 업로드가 성공적으로 완료되었습니다!")
+      UI.success("✅ 빌드, 업로드, 심사 요청이 모두 성공적으로 완료되었습니다!")
+      UI.success("🚀 이제 Apple의 심사를 기다리기만 하면 됩니다!")
     else
       UI.user_error!("⚠️ version 옵션을 지정해주세요: fastlane submit version:'1.0.0'")
     end
