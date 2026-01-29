@@ -78,6 +78,11 @@ jobs:
         ./make install
         ./make generate
 
+        # Check workspace files
+        echo "=== Checking workspace files ==="
+        ls -la *.xcworkspace 2>/dev/null || echo "No .xcworkspace files found"
+        find . -name "*.xcworkspace" -type d | head -5
+
     - name: Deploy to TestFlight
       env:
         MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}

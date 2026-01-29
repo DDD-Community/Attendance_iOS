@@ -45,8 +45,16 @@ platform :ios do
     )
 
 
+    # Find workspace file dynamically
+    workspace_files = Dir.glob("*.xcworkspace")
+    if workspace_files.empty?
+      UI.user_error!("No workspace file found! Available files: #{Dir.entries('.')}")
+    end
+    workspace_name = workspace_files.first
+    puts "Using workspace: #{workspace_name}"
+
     ipa_path = build_app(
-      workspace: "DDDAttendance.xcworkspace",
+      workspace: workspace_name,
       scheme: "DDDAttendance-Stage",
       configuration: "Release",
       export_method: "app-store",
