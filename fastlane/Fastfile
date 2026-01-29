@@ -153,7 +153,7 @@ platform :ios do
 
       ipa_path = build_app(
         workspace: "#{APP_RELEASE_NAME}.xcworkspace",
-        scheme: "#{APP_RELEASE_SCHEME}",
+        scheme: "DDDAttendance-Stage",
         configuration: "Release",
         output_directory: OUTPUT_DIR,
         output_name: IPA_FILENAME,
@@ -161,10 +161,16 @@ platform :ios do
         clean: true,
         silent: false,
         verbose: true,
-        xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER='match AppStore #{BUNDLE_ID}' CODE_SIGN_STYLE=Manual",
+        xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
+                "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
+                "SWIFT_COMPILATION_MODE=wholemodule -parallelizeTargets " +
+                "ENABLE_PARALLEL_SIGNING=YES DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES " +
+                "FRAMEWORK_SEARCH_PATHS='$(inherited)' LIBRARY_SEARCH_PATHS='$(inherited)' " +
+                "-allowProvisioningUpdates -quiet",
         export_options: {
           signingStyle: "manual",
           uploadBitcode: false,
+          teamID: TEAM_ID,
           provisioningProfiles: {
             "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
           }
