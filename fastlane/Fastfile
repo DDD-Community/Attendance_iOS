@@ -105,7 +105,10 @@ platform :ios do
         silent: true,
         xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
                 "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
-                "SWIFT_COMPILATION_MODE=wholemodule -parallelizeTargets",
+                "SWIFT_COMPILATION_MODE=wholemodule -parallelizeTargets " +
+                "ENABLE_PARALLEL_SIGNING=YES DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES " +
+                "FRAMEWORK_SEARCH_PATHS='$(inherited)' LIBRARY_SEARCH_PATHS='$(inherited)' " +
+                "-allowProvisioningUpdates -quiet",
         export_options: {
           signingStyle: "manual",
           uploadBitcode: false,

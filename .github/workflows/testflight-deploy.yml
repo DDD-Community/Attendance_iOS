@@ -19,8 +19,8 @@ env:
 jobs:
   testflight-deploy:
     if: github.event_name == 'push'
-    runs-on: macos-latest
-    timeout-minutes: 60
+    runs-on: macos-15-xlarge
+    timeout-minutes: 40
 
     steps:
     - name: Checkout
@@ -34,16 +34,19 @@ jobs:
     - name: Install fastlane
       run: brew install fastlane
 
-    - name: Cache Tuist and Dependencies
+    - name: Cache Build Dependencies
       uses: actions/cache@v4
       with:
         path: |
           ~/.tuist
           Tuist/.build
           ~/Library/Caches/org.swift.swiftpm
-        key: ${{ runner.os }}-tuist-${{ hashFiles('**/Tuist.swift', '**/Package.swift') }}
+          ~/Library/Caches/com.apple.dt.Xcode
+          ~/Library/Developer/Xcode/DerivedData
+        key: ${{ runner.os }}-xcode-${{ hashFiles('**/Tuist.swift', '**/Package.swift', '**/Podfile.lock') }}-${{ github.run_number }}
         restore-keys: |
-          ${{ runner.os }}-tuist-
+          ${{ runner.os }}-xcode-${{ hashFiles('**/Tuist.swift', '**/Package.swift', '**/Podfile.lock') }}
+          ${{ runner.os }}-xcode-
 
     - name: Setup mise
       uses: jdx/mise-action@v2
