@@ -54,12 +54,6 @@ platform :ios do
       if workspace_files.empty?
         puts "🔧 No workspace found, trying to generate..."
 
-        # Debug info
-        puts "🔍 Checking tuist setup..."
-        puts "Make file exists: #{File.exist?('make')}"
-        puts "TuistTool.swift exists: #{File.exist?('TuistTool.swift')}"
-        puts "Tuist.swift exists: #{File.exist?('Tuist.swift')}"
-
         # Check if tuist is available
         tuist_available = system("which tuist > /dev/null 2>&1")
         puts "Tuist available: #{tuist_available}"
@@ -72,21 +66,16 @@ platform :ios do
         begin
           if File.exist?("make")
             puts "🔧 Trying ./make install..."
-            result = sh("./make install", error_callback: ->(result) { puts "Install failed with: #{result}" })
-
+            sh("./make install")
             puts "🔧 Trying ./make generate..."
-            result = sh("./make generate", error_callback: ->(result) { puts "Generate failed with: #{result}" })
+            sh("./make generate")
           else
             puts "🔧 Trying tuist directly..."
-            puts "Tuist path: #{`which tuist`.strip}"
-            puts "Tuist version: #{`tuist version 2>&1`.strip}"
-
-            sh("tuist install", error_callback: ->(result) { puts "Tuist install failed: #{result}" })
-            sh("tuist generate", error_callback: ->(result) { puts "Tuist generate failed: #{result}" })
+            sh("tuist install")
+            sh("tuist generate --no-open")
           end
         rescue => e
           puts "❌ Generation failed: #{e.message}"
-          puts "❌ Error details: #{e.backtrace.first(3)}"
         end
 
         workspace_files = Dir.glob("*.xcworkspace")
@@ -97,30 +86,20 @@ platform :ios do
         puts "❌ Still no workspace found!"
         puts "🔍 All files in directory:"
         Dir.entries('.').each { |f| puts "  #{f}" }
-
-        puts "🔧 Last attempt: trying tuist generate with --no-open..."
-        begin
-          sh("tuist generate --no-open")
-          workspace_files = Dir.glob("*.xcworkspace")
-          puts "🔍 After last attempt: #{workspace_files}"
-        rescue => e
-          puts "❌ Final attempt failed: #{e.message}"
-        end
-
-        if workspace_files.empty?
-          UI.user_error!("Cannot generate workspace file. Check tuist setup and plugins.")
-        end
+        UI.user_error!("Cannot generate workspace file. Check tuist setup and plugins.")
       end
 
       workspace_name = workspace_files.first
+      workspace_path = File.expand_path(workspace_name)
       puts "✅ Using workspace: #{workspace_name}"
+      puts "✅ Full workspace path: #{workspace_path}"
 
       ipa_path = build_app(
-        workspace: workspace_name,
+        workspace: workspace_path,
         scheme: "DDDAttendance-Stage",
         configuration: "Release",
         export_method: "app-store",
-        output_directory: OUTPUT_DIR,
+        output_directory: File.expand_path("../#{OUTPUT_DIR}"),
         output_name: IPA_FILENAME,
         clean: false,
         silent: true,
@@ -136,18 +115,18 @@ platform :ios do
           }
         }
       )
-
-      upload_to_testflight(
-        ipa: ipa_path,
-        changelog: "변경사항",
-        groups: ["DDD", "ddd"],
-        beta_app_description: "DDD 출석 앱입니다.",
-        notify_external_testers: true,
-        skip_waiting_for_build_processing: true,
-        demo_account_required: false,
-        uses_non_exempt_encryption: false
-      )
     end
+
+    upload_to_testflight(
+      ipa: ipa_path,
+      changelog: "변경사항",
+      groups: ["DDD", "ddd"],
+      beta_app_description: "DDD 출석 앱입니다.",
+      notify_external_testers: true,
+      skip_waiting_for_build_processing: true,
+      demo_account_required: false,
+      uses_non_exempt_encryption: false
+    )
   end
 
   # 🚀 App Store 배포
