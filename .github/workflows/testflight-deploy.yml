@@ -45,6 +45,14 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-tuist-
 
+    - name: Setup mise
+      uses: jdx/mise-action@v2
+
+    - name: Install Tuist via mise
+      run: |
+        mise install tuist
+        echo "$(tuist version)"
+
 
 
 
@@ -73,15 +81,44 @@ jobs:
         GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-placeholder}
         EOF
 
-        # Build
+        # Build with detailed logging
+        echo "=== Compiling TuistTool ==="
         swiftc TuistTool.swift -o make
-        ./make install || echo "⚠️ install failed, continuing..."
-        ./make generate || echo "⚠️ generate failed, fastlane will retry..."
 
-        # Check workspace files
-        echo "=== Checking workspace files ==="
-        ls -la *.xcworkspace 2>/dev/null || echo "No .xcworkspace files found"
-        find . -name "*.xcworkspace" -type d | head -5 || echo "No workspace directories found"
+        echo "=== Checking environment ==="
+        echo "Current directory: $(pwd)"
+        echo "PATH: $PATH"
+        echo "Which tuist: $(which tuist)"
+        echo "Tuist version: $(tuist version 2>&1 || echo 'tuist not found')"
+        echo "Swift version: $(swift --version | head -1)"
+
+        echo "=== Installing dependencies ==="
+        if ./make install; then
+          echo "✅ make install succeeded"
+        else
+          echo "❌ make install failed, trying tuist directly"
+          tuist install
+        fi
+
+        echo "=== Generating workspace ==="
+        if ./make generate; then
+          echo "✅ make generate succeeded"
+        else
+          echo "❌ make generate failed, trying tuist directly"
+          tuist generate --no-open
+        fi
+
+        # Force check workspace creation
+        echo "=== Final workspace check ==="
+        if ls *.xcworkspace 1>/dev/null 2>&1; then
+          echo "✅ Workspace found:"
+          ls -la *.xcworkspace
+        else
+          echo "❌ No workspace found!"
+          echo "Available files:"
+          ls -la
+          exit 1
+        fi
 
     - name: Deploy to TestFlight
       env:

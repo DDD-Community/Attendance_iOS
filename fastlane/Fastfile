@@ -60,16 +60,29 @@ platform :ios do
         puts "TuistTool.swift exists: #{File.exist?('TuistTool.swift')}"
         puts "Tuist.swift exists: #{File.exist?('Tuist.swift')}"
 
+        # Check if tuist is available
+        tuist_available = system("which tuist > /dev/null 2>&1")
+        puts "Tuist available: #{tuist_available}"
+
+        unless tuist_available
+          puts "🔧 Installing tuist with brew..."
+          sh("brew install tuist")
+        end
+
         begin
           if File.exist?("make")
             puts "🔧 Trying ./make install..."
-            sh("./make install")
+            result = sh("./make install", error_callback: ->(result) { puts "Install failed with: #{result}" })
+
             puts "🔧 Trying ./make generate..."
-            sh("./make generate")
+            result = sh("./make generate", error_callback: ->(result) { puts "Generate failed with: #{result}" })
           else
             puts "🔧 Trying tuist directly..."
-            sh("tuist install")
-            sh("tuist generate")
+            puts "Tuist path: #{`which tuist`.strip}"
+            puts "Tuist version: #{`tuist version 2>&1`.strip}"
+
+            sh("tuist install", error_callback: ->(result) { puts "Tuist install failed: #{result}" })
+            sh("tuist generate", error_callback: ->(result) { puts "Tuist generate failed: #{result}" })
           end
         rescue => e
           puts "❌ Generation failed: #{e.message}"
