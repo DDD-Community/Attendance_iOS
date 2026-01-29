@@ -2,7 +2,6 @@ name: TestFlight Auto Deploy
 
 on:
   push:
-    branches: [develop]
   pull_request:
     branches: [develop]
     types: [closed]
@@ -19,7 +18,7 @@ env:
 
 jobs:
   testflight-deploy:
-    if: github.event_name == 'push' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop')
+    if: github.event_name == 'push'
     runs-on: macos-latest
     timeout-minutes: 30
 
@@ -62,6 +61,12 @@ jobs:
         mise install tuist
         echo "$(tuist version)"
 
+    - name: Verify repository setup
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Checking Tuist.swift: $(ls Tuist.swift 2>/dev/null && echo "✅ Found" || echo "❌ Missing")"
+
+
     - name: Generate Tuist project
       env:
         TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
@@ -70,7 +75,9 @@ jobs:
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         GOOGLE_IOS_CLIENT_ID: ${{ secrets.GOOGLE_IOS_CLIENT_ID }}
         REVERSED_CLIENT_ID: ${{ secrets.REVERSED_CLIENT_ID }}
+        TEAM_ID: ${{ secrets.TEAM_ID }}
       run: |
+        set -e  # Exit immediately if any command fails
         echo "Current directory: $(pwd)"
         echo "Files in current directory:"
         ls -la
@@ -118,15 +125,16 @@ jobs:
         echo "Config files created:"
         ls -la Config/
 
-        # Ensure we're in the right directory
-        if [ ! -f "Tuist.swift" ]; then
-          echo "Tuist.swift not found, listing all Tuist.swift files:"
-          find . -name "Tuist.swift" -type f 2>/dev/null || echo "No Tuist.swift found"
-          exit 1
-        fi
+        echo "=== Compiling TuistTool ==="
+        swiftc TuistTool.swift -o make
 
-        # Generate with release configuration for CI builds
-        tuist install && tuist generate --configuration Release
+        echo "=== Installing dependencies ==="
+        ./make install || echo "tuist install failed, continuing..."
+
+        echo "=== Generating workspace ==="
+        ./make generate
+
+        echo "✅ Config and workspace ready"
 
     - name: Set up SSH key for match repository
       env:
@@ -162,39 +170,9 @@ jobs:
         mkdir -p private_keys
         echo "$APP_STORE_CONNECT_API_KEY_CONTENT" | base64 --decode > private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}.p8
 
-    - name: Verify bundle setup
-      run: |
-        echo "Bundle version: $(bundle version)"
-        echo "Checking Gemfile.lock..."
-        bundle check || echo "Bundle check failed, but continuing..."
-
-    - name: Debug build setup
-      run: |
-        echo "Current directory contents:"
-        ls -la
-        echo "Available schemes:"
-        xcodebuild -workspace DDDAttendance.xcworkspace -list
-        echo "Available configurations:"
-        xcodebuild -workspace DDDAttendance.xcworkspace -scheme DDDAttendance-Stage -showBuildSettings | grep -E "^[[:space:]]*CONFIGURATION"
-
-    - name: Test simple xcodebuild
-      env:
-        TEAM_ID: ${{ secrets.TEAM_ID }}
-      run: |
-        echo "Testing simple xcodebuild command..."
-        xcodebuild -workspace DDDAttendance.xcworkspace \
-                   -scheme DDDAttendance-Stage \
-                   -configuration Release \
-                   -destination 'generic/platform=iOS' \
-                   -showBuildSettings | head -20
-
-        echo "Testing code signing settings..."
-        xcodebuild -workspace DDDAttendance.xcworkspace \
-                   -scheme DDDAttendance-Stage \
-                   -configuration Release \
-                   -showBuildSettings | grep -i "CODE_SIGN\|TEAM\|PROVISIONING" || echo "No code sign settings found"
 
     - name: Run Fastlane QA with extensive debugging
+      working-directory: .
       env:
         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         FASTLANE_APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -206,39 +184,124 @@ jobs:
         FASTLANE_DISABLE_COLORS: false
         FASTLANE_HIDE_GITHUB_ISSUES: false
       run: |
-        set -e  # Exit on any error
         echo "Starting fastlane QA..."
+        echo "Current working directory: $(pwd)"
+        echo "Gemfile location: $(find . -name Gemfile)"
+        echo "Fastfile location: $(find . -name Fastfile)"
+        echo "Directory contents:"
+        ls -la
 
-        # Run with maximum verbosity and capture output
-        bundle exec fastlane QA --verbose 2>&1 | tee fastlane_output.log || {
-          echo "=== FASTLANE FAILED ==="
-          echo "Exit code: $?"
+        # Ensure we're in project root and run fastlane
+        echo "Before CD - Current directory: $(pwd)"
+        echo "Repository structure debug:"
+        echo "Looking for Tuist.swift: $(find . -name "Tuist.swift" | head -5)"
+        echo "Looking for .xcworkspace: $(find . -name "*.xcworkspace" | head -5)"
+        echo "Looking for Fastfile: $(find . -name "Fastfile" | head -5)"
 
-          # Show the gym log if it exists
-          if [ -f "$HOME/Library/Logs/gym/DDDAttendance_Stage-DDDAttendance-Stage.log" ]; then
-            echo "=== GYM BUILD LOG ==="
-            tail -50 "$HOME/Library/Logs/gym/DDDAttendance_Stage-DDDAttendance-Stage.log"
+        # Find the actual project root (where Tuist.swift and .xcworkspace files are)
+        echo "=== FINDING PROJECT ROOT ==="
+        TUIST_FILE=$(find . -name "Tuist.swift" -type f | head -1)
+        echo "Found Tuist.swift at: $TUIST_FILE"
+
+        if [ -n "$TUIST_FILE" ]; then
+          PROJECT_ROOT=$(dirname "$TUIST_FILE")
+          echo "Calculated project root: $PROJECT_ROOT"
+
+          # Convert to absolute path and navigate there
+          ABSOLUTE_PROJECT_ROOT=$(cd "$PROJECT_ROOT" && pwd)
+          echo "Absolute project root: $ABSOLUTE_PROJECT_ROOT"
+
+          cd "$ABSOLUTE_PROJECT_ROOT"
+          echo "Successfully changed to: $(pwd)"
+        else
+          echo "Could not find Tuist.swift, staying in current directory: $(pwd)"
+        fi
+
+        echo "=== PROJECT STRUCTURE VERIFICATION ==="
+        echo "Current working directory: $(pwd)"
+        echo "Files in current directory:"
+        ls -la
+        echo "Files in fastlane directory:"
+        ls -la fastlane/ 2>/dev/null || echo "No fastlane directory found"
+        echo "Workspace files in current directory:"
+        ls -la *.xcworkspace 2>/dev/null || echo "No workspace files found"
+
+        echo "=== STARTING FASTLANE ==="
+        FASTLANE_WORKING_DIR=$(pwd)
+        export FASTLANE_WORKING_DIR
+        echo "Fastlane working directory: $FASTLANE_WORKING_DIR"
+
+        bundle exec fastlane QA --verbose 2>&1 | tee fastlane_output.log
+        FASTLANE_EXIT_CODE=${PIPESTATUS[0]}
+
+        echo ""
+        echo "=== FASTLANE EXIT CODE: $FASTLANE_EXIT_CODE ==="
+        echo ""
+
+        if [ $FASTLANE_EXIT_CODE -ne 0 ]; then
+          echo "=== FASTLANE FAILED - DETAILED LOGS ==="
+
+          # Show fastlane output first
+          echo "=== FASTLANE OUTPUT (last 200 lines) ==="
+          tail -200 fastlane_output.log
+          echo ""
+
+          # Find and show ALL gym logs with error focus
+          echo "=== SEARCHING FOR GYM LOGS ==="
+          if [ -d "$HOME/Library/Logs/gym" ]; then
+            find "$HOME/Library/Logs/gym" -name "*.log" 2>/dev/null | while read -r log_file; do
+              echo "=== Found gym log: $log_file ==="
+
+              # First look for errors in the log
+              echo "=== SEARCHING FOR ERRORS IN GYM LOG ==="
+              if grep -i -n -A5 -B5 "error\|failed\|exception\|abort" "$log_file" 2>/dev/null; then
+                echo "Found error messages above"
+              else
+                echo "No obvious error keywords found, showing end of log:"
+                echo "=== Last 100 lines of $log_file ==="
+                tail -100 "$log_file" 2>/dev/null || echo "Could not read log file"
+              fi
+              echo ""
+            done
+          else
+            echo "No gym logs directory found at $HOME/Library/Logs/gym"
           fi
 
-          # Show fastlane output
-          if [ -f "fastlane_output.log" ]; then
-            echo "=== FASTLANE OUTPUT (last 50 lines) ==="
-            tail -50 fastlane_output.log
+          # Find any xcodebuild logs in Logs directory
+          echo "=== SEARCHING FOR XCODEBUILD LOGS ==="
+          find "$HOME/Library/Logs" -name "*xcodebuild*" -o -name "*build*" 2>/dev/null | while read -r log_file; do
+            echo "=== Found build log: $log_file ==="
+            tail -100 "$log_file" 2>/dev/null || echo "Could not read log file"
+            echo ""
+          done
+
+          # Show DerivedData logs if available
+          echo "=== CHECKING DERIVED DATA LOGS ==="
+          if [ -d "$HOME/Library/Developer/Xcode/DerivedData" ]; then
+            find "$HOME/Library/Developer/Xcode/DerivedData" -name "*.log" 2>/dev/null | head -5 | while read -r log_file; do
+              echo "=== Found DerivedData log: $log_file ==="
+              tail -100 "$log_file" 2>/dev/null || echo "Could not read log file"
+              echo ""
+            done
+          else
+            echo "No DerivedData directory found"
           fi
 
-          # Show any other relevant logs
-          echo "=== AVAILABLE LOG FILES ==="
-          find "$HOME/Library/Logs" -name "*gym*" -o -name "*fastlane*" 2>/dev/null || echo "No additional logs found"
+          # List all available logs for debugging
+          echo "=== ALL LOG FILES IN ~/Library/Logs ==="
+          find "$HOME/Library/Logs" -name "*.log" 2>/dev/null | head -30
 
-          exit 1
-        }
+          exit $FASTLANE_EXIT_CODE
+        else
+          echo "=== FASTLANE SUCCEEDED ==="
+        fi
 
     - name: Create QA commit
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        BUILD_NUMBER=$(grep -o 'CURRENT_PROJECT_VERSION = [0-9]*' Config/Shared.xcconfig | grep -o '[0-9]*')
-        MARKETING_VERSION=$(grep -o 'MARKETING_VERSION = [0-9.]*' Config/Shared.xcconfig | grep -o '[0-9.]*')
+        BUILD_NUMBER=$(grep -o 'CURRENT_PROJECT_VERSION=20' Config/Shared.xcconfig | grep -o '[0-9]*')
+        MARKETING_VERSION=$(grep -o 'MARKETING_VERSION=1.0.0' Config/Shared.xcconfig | grep -o '[0-9.]*')
 
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
