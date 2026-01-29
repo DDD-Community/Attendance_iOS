@@ -2,6 +2,8 @@ name: TestFlight Auto Deploy
 
 on:
   push:
+    branches: [develop]
+    tags: ['v*']
   pull_request:
     branches: [develop]
     types: [closed]
