@@ -44,19 +44,6 @@ platform :ios do
       app_identifier: ["io.DDD.Attendance"]
     )
 
-    # Auto increment build number to avoid duplicates
-    begin
-      latest_build = latest_testflight_build_number
-      new_build_number = latest_build + 1
-      increment_build_number(build_number: new_build_number)
-      puts "✅ Build number incremented to #{new_build_number}"
-    rescue => e
-      puts "⚠️ Failed to get latest build number, using default increment"
-      # Get current build number and increment by 1
-      current_build = get_build_number.to_i
-      increment_build_number(build_number: current_build + 1)
-      puts "✅ Build number incremented to #{current_build + 1}"
-    end
 
     ipa_path = build_app(
       workspace: "DDDAttendance.xcworkspace",
