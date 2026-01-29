@@ -159,7 +159,7 @@ platform :ios do
         CURRENT_PROJECT_VERSION=#{new_build_number}
       CONFIG
 
-      File.write("Config/Shared.xcconfig", config_content)
+      File.write("../Config/Shared.xcconfig", config_content)
       puts "✅ Updated build number to #{new_build_number} in Config/Shared.xcconfig"
       match(
         type: "appstore",
