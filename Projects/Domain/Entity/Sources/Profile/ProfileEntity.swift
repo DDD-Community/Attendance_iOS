@@ -34,3 +34,54 @@ public struct ProfileEntity: Equatable {
     self.manger = manger
   }
 }
+
+// MARK: - Mock Data
+public extension ProfileEntity {
+  static func mockData() -> ProfileEntity {
+    return ProfileEntity(
+      userID: 1,
+      name: "김철수",
+      generation: "1기",
+      team: .ios1,
+      jobRole: .ios,
+      role: .manager,
+      manger: [.teamManaging, .scheduleReminder]
+    )
+  }
+
+  static func mockMemberUser() -> ProfileEntity {
+    return ProfileEntity(
+      userID: 2,
+      name: "이영희",
+      generation: "2기",
+      team: .and1,
+      jobRole: .android,
+      role: .member,
+      manger: nil
+    )
+  }
+
+  static func mockManagerUser() -> ProfileEntity {
+    return ProfileEntity(
+      userID: 3,
+      name: "박민수",
+      generation: "1기",
+      team: .web1,
+      jobRole: .frontend,
+      role: .manager,
+      manger: [.attendanceCheck, .photo, .snsManagement]
+    )
+  }
+
+  static func mockNewGenUser() -> ProfileEntity {
+    return ProfileEntity(
+      userID: 4,
+      name: "최지은",
+      generation: "3기",
+      team: .ios2,
+      jobRole: .ios,
+      role: .member,
+      manger: nil
+    )
+  }
+}
