@@ -7,6 +7,7 @@
       "Bash(./TuistTool.swift:*)",
       "Bash(swiftc:*)",
       "Bash(./make:*)"
+
     ]
   }
 }
