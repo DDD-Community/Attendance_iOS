@@ -6,7 +6,6 @@
 //
 
 import Testing
-import XCTest
 @testable import Entity
 
 @Suite("Attendance Entity Tests")
@@ -45,17 +44,37 @@ struct AttendanceEntityTest {
         #expect(response.code == "200")
         #expect(response.message != nil)
     }
-}
 
-class AttendanceEntityXCTest: XCTestCase {
-    func test_Attendance_array_mock_data() {
+    @Test("Attendance 배열 Mock 데이터 테스트")
+    func test_Attendance_array_mock_data() throws {
         // Given
         let attendances = Attendance.mockDataArray()
 
         // Then
-        XCTAssertEqual(attendances.count, 5)
-        XCTAssertEqual(attendances[0].status, .attended)
-        XCTAssertEqual(attendances[1].status, .late)
-        XCTAssertEqual(attendances[2].status, .absent)
+        #expect(attendances.count == 5)
+        #expect(attendances[0].status == .attended)
+        #expect(attendances[1].status == .late)
+        #expect(attendances[2].status == .absent)
+    }
+
+    @Test("AttendanceStatus 랜덤 Mock 데이터 테스트")
+    func test_AttendanceStatus_random_mock() throws {
+        // Given & When
+        let randomStatus = AttendanceStatus.mockRandomStatus()
+
+        // Then
+        #expect(AttendanceStatus.allCases.contains(randomStatus))
+    }
+
+    @Test("EditAttendanceInput Mock 데이터 테스트")
+    func test_EditAttendanceInput_mock_data() throws {
+        // Given
+        let input = EditAttendanceInput.mockData()
+
+        // Then
+        #expect(input.userId == "user_001")
+        #expect(input.scheduleId == 5)
+        #expect(input.status == .attended)
+        #expect(input.attendanceId == 1)
     }
 }

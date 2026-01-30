@@ -6,7 +6,6 @@
 //
 
 import Testing
-import XCTest
 @testable import Entity
 
 @Suite("Auth Entity Tests")
@@ -45,16 +44,36 @@ struct AuthEntityTest {
         #expect(payload.displayName == "Kim Chulsu")
         #expect(payload.authorizationCode != nil)
     }
-}
 
-class AuthEntityXCTest: XCTestCase {
-    func test_WithdrawEntity_success_response() {
+    @Test("WithdrawEntity 성공 응답 테스트")
+    func test_WithdrawEntity_success_response() throws {
         // Given
         let withdraw = WithdrawEntity.mockSuccessData()
 
         // Then
-        XCTAssertTrue(withdraw.isSuccess)
-        XCTAssertEqual(withdraw.code, "200")
-        XCTAssertNotNil(withdraw.message)
+        #expect(withdraw.isSuccess == true)
+        #expect(withdraw.code == "200")
+        #expect(withdraw.message != nil)
+    }
+
+    @Test("AuthExitEntity 로그아웃 테스트")
+    func test_AuthExitEntity_logout() throws {
+        // Given
+        let authExit = AuthExitEntity.mockSuccessData()
+
+        // Then
+        #expect(authExit.code == "200")
+        #expect(authExit.message?.contains("로그아웃") == true)
+    }
+
+    @Test("Google OAuth Payload 토큰 테스트")
+    func test_GoogleOAuthPayload_tokens() throws {
+        // Given
+        let payload = GoogleOAuthPayload.mockData()
+
+        // Then
+        #expect(payload.idToken.contains("mock_google_id_token"))
+        #expect(payload.accessToken?.contains("mock_google_access_token") == true)
+        #expect(payload.displayName == "Kim Chulsu")
     }
 }
