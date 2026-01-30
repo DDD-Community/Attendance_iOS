@@ -11,6 +11,7 @@ STAGE_SCHEME = "DDDAttendance-Stage"
 BUNDLE_ID = "io.DDD.Attendance"
 OUTPUT_DIR = "./fastlane/output"
 IPA_FILENAME = "#{APP_NAME}.ipa"
+TEAM_ID = ENV["TEAM_ID"] || "N94CS4N6VR"
 
 # 릴리스용 변수 (누락되어 있던 부분 보완)
 APP_RELEASE_NAME = APP_NAME
@@ -22,69 +23,11 @@ APP_STAGE_SCHEME = STAGE_SCHEME
 platform :ios do
 
 
-  # 📦 Debug 빌드 + 정리
-  desc "Build Debug IPA and clean ._Symbols"
-  lane :build_ipa_debug_and_strip do
-    clear_derived_data
-    # cleanup_output_folder
-    match(type: "appstore", readonly: true)
-
-     build_app(
-      workspace: "#{APP_NAME}.xcworkspace",
-      scheme: "DDDAttendance_Stage",
-      configuration: "Release",
-      output_directory: OUTPUT_DIR,
-      output_name: IPA_FILENAME,
-      export_method: "app-store",
-      clean: true,
-      silent: false, # 디버깅용 false
-      verbose: true,
-      xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER='match AppStore #{BUNDLE_ID}' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{ENV['TEAM_ID']}",
-      export_options: {
-        signingStyle: "manual",
-        uploadBitcode: false,
-        teamID: ENV["TEAM_ID"],
-        provisioningProfiles: {
-          "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
-        }
-      }
-    )
-
-  end
-
-  # 📦 Release 빌드 + 정리
-  desc "Build Release IPA and clean ._Symbols"
-  lane :build_ipa_release_and_strip do
-    clear_derived_data
-    match(type: "appstore", readonly: true)
-
-    build_app(
-      workspace: "#{APP_RELEASE_NAME}.xcworkspace",
-      scheme: "#{APP_RELEASE_SCHEME}",
-      configuration: "Release",
-      output_directory: OUTPUT_DIR,
-      output_name: IPA_FILENAME,
-      export_method: "app-store",
-      clean: true,
-      silent: false,
-      verbose: true,
-      xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER='match AppStore #{BUNDLE_ID}' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{ENV['TEAM_ID']}",
-      export_options: {
-        signingStyle: "manual",
-        uploadBitcode: false,
-        teamID: ENV["TEAM_ID"],
-        provisioningProfiles: {
-          "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
-        }
-      }
-    )
-
-    # clean_symbols_from_ipa(ipa_path: ipa_path)
-  end
 
   # 🚀 TestFlight 업로드 (Debug)
   desc "Upload to TestFlight (Debug)"
   lane :QA do
+
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
@@ -92,35 +35,90 @@ platform :ios do
       is_key_content_base64: true,
       in_house: false
     )
-    match(type: "appstore", readonly: true)
 
-    # Try simpler approach first
-    puts "🔍 Debug: APP_NAME = #{APP_NAME}"
-    puts "🔍 Debug: APP_STAGE_SCHEME = #{APP_STAGE_SCHEME}"
-    puts "🔍 Debug: BUNDLE_ID = #{BUNDLE_ID}"
-    puts "🔍 Debug: TEAM_ID = #{ENV['TEAM_ID']}"
-
-    ipa_path = build_app(
-      workspace: "#{APP_NAME}.xcworkspace",
-      scheme: "#{APP_STAGE_SCHEME}",
-      configuration: "Release",
-      output_directory: OUTPUT_DIR,
-      output_name: IPA_FILENAME,
-      export_method: "app-store",
-      clean: true,
-      silent: false,
-      verbose: true,
-      xcargs: "CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER='match AppStore #{BUNDLE_ID}' DEVELOPMENT_TEAM=#{ENV['TEAM_ID']}",
-      export_options: {
-        method: "app-store",
-        signingStyle: "manual",
-        uploadBitcode: false,
-        teamID: ENV["TEAM_ID"],
-        provisioningProfiles: {
-          "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
-        }
-      }
+    match(
+      type: "appstore",
+      readonly: true,
+      git_url: "git@github.com:Roy-wonji/Fastalne.git",
+      storage_mode: "git",
+      app_identifier: ["io.DDD.Attendance"]
     )
+
+    # Change to project root directory
+    Dir.chdir("..") do
+      puts "📁 Current directory: #{Dir.pwd}"
+      puts "📋 Available files: #{Dir.entries('.')}"
+
+      # Try to generate workspace if missing
+      workspace_files = Dir.glob("*.xcworkspace")
+      if workspace_files.empty?
+        puts "🔧 No workspace found, trying to generate..."
+
+        # Check if tuist is available
+        tuist_available = system("which tuist > /dev/null 2>&1")
+        puts "Tuist available: #{tuist_available}"
+
+        unless tuist_available
+          puts "🔧 Installing tuist with brew..."
+          sh("brew install tuist")
+        end
+
+        begin
+          if File.exist?("make")
+            puts "🔧 Trying ./make install..."
+            sh("./make install")
+            puts "🔧 Trying ./make generate..."
+            sh("./make generate")
+          else
+            puts "🔧 Trying tuist directly..."
+            sh("tuist install")
+            sh("tuist generate --no-open")
+          end
+        rescue => e
+          puts "❌ Generation failed: #{e.message}"
+        end
+
+        workspace_files = Dir.glob("*.xcworkspace")
+        puts "🔍 Workspace files found: #{workspace_files}"
+      end
+
+      if workspace_files.empty?
+        puts "❌ Still no workspace found!"
+        puts "🔍 All files in directory:"
+        Dir.entries('.').each { |f| puts "  #{f}" }
+        UI.user_error!("Cannot generate workspace file. Check tuist setup and plugins.")
+      end
+
+      workspace_name = workspace_files.first
+      workspace_path = File.expand_path(workspace_name)
+      puts "✅ Using workspace: #{workspace_name}"
+      puts "✅ Full workspace path: #{workspace_path}"
+
+      ipa_path = build_app(
+        workspace: workspace_path,
+        scheme: "DDDAttendance-Stage",
+        configuration: "Release",
+        export_method: "app-store",
+        output_directory: File.expand_path("../#{OUTPUT_DIR}"),
+        output_name: IPA_FILENAME,
+        clean: false,
+        silent: true,
+        xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
+                "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
+                "SWIFT_COMPILATION_MODE=wholemodule -parallelizeTargets " +
+                "ENABLE_PARALLEL_SIGNING=YES DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES " +
+                "FRAMEWORK_SEARCH_PATHS='$(inherited)' LIBRARY_SEARCH_PATHS='$(inherited)' " +
+                "-allowProvisioningUpdates -quiet",
+        export_options: {
+          signingStyle: "manual",
+          uploadBitcode: false,
+          teamID: TEAM_ID,
+          provisioningProfiles: {
+            "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
+          }
+        }
+      )
+    end
 
     upload_to_testflight(
       ipa: ipa_path,
@@ -145,11 +143,44 @@ platform :ios do
         is_key_content_base64: true,
         in_house: false
       )
-      match(type: "appstore", readonly: true)
+
+      # 자동으로 빌드 번호 증가
+      current_build_number = latest_testflight_build_number(
+        app_identifier: BUNDLE_ID,
+        platform: "ios"
+      )
+      new_build_number = current_build_number + 1
+      puts "🔢 Current build number: #{current_build_number}"
+      puts "🔢 New build number: #{new_build_number}"
+
+      # Extension+String.swift 파일에서 빌드 번호 업데이트
+      extension_file_path = "../Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
+      content = File.read(extension_file_path)
+
+      # 빌드 번호 라인 수정
+      updated_content = content.gsub(/public static func appBuildVersion\(buildVersion: String = "\d+"\) -> String \{/,
+                                   "public static func appBuildVersion(buildVersion: String = \"#{new_build_number}\") -> String {")
+
+      File.write(extension_file_path, updated_content)
+      puts "✅ Updated build number to #{new_build_number} in Extension+String.swift"
+
+      # Tuist 프로젝트 재생성
+      Dir.chdir("..") do
+        puts "🔧 Regenerating Tuist workspace with new build number..."
+        sh("tuist generate --no-open")
+        puts "✅ Tuist workspace regenerated"
+      end
+      match(
+        type: "appstore",
+        readonly: true,
+        git_url: "git@github.com:Roy-wonji/Fastalne.git",
+        storage_mode: "git",
+        app_identifier: ["io.DDD.Attendance"]
+      )
 
       ipa_path = build_app(
         workspace: "#{APP_RELEASE_NAME}.xcworkspace",
-        scheme: "#{APP_RELEASE_SCHEME}",
+        scheme: "DDDAttendance-Prod",
         configuration: "Release",
         output_directory: OUTPUT_DIR,
         output_name: IPA_FILENAME,
@@ -157,10 +188,14 @@ platform :ios do
         clean: true,
         silent: false,
         verbose: true,
-        xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER='match AppStore #{BUNDLE_ID}' CODE_SIGN_STYLE=Manual",
+        xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
+                "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
+                "SWIFT_COMPILATION_MODE=wholemodule " +
+                "-allowProvisioningUpdates",
         export_options: {
           signingStyle: "manual",
           uploadBitcode: false,
+          teamID: TEAM_ID,
           provisioningProfiles: {
             "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
           }
@@ -169,7 +204,7 @@ platform :ios do
 
       # clean_symbols_from_ipa(ipa_path: ipa_path)
 
-      # 먼저 업로드만 진행
+      # 업로드 후 자동으로 심사 요청
       upload_to_app_store(
         app_version: options[:version],
         username: "shuwj81@daum.net",
@@ -179,24 +214,21 @@ platform :ios do
         metadata_path: "./fastlane/metadata",
         skip_screenshots: true,
         force: true,
-        submit_for_review: false,
+        submit_for_review: true,
         automatic_release: false,
-        precheck_include_in_app_purchases: false
+        precheck_include_in_app_purchases: false,
+        reject_if_possible: true
       )
 
-      UI.success("🎉 앱 업로드 완료!")
+      UI.success("🎉 앱 업로드 및 심사 요청 완료!")
       UI.important("")
-      UI.important("📱 이제 App Store Connect에서 심사를 제출해주세요:")
+      UI.important("📱 심사 진행 상황 확인:")
       UI.important("   1. https://appstoreconnect.apple.com 접속")
       UI.important("   2. DDD Attendance 앱 선택")
-      UI.important("   3. 기존 제출이 있으면 '제출 취소' 클릭")
-      UI.important("   4. 새 버전 #{options[:version]} → '심사를 위해 제출' 클릭")
+      UI.important("   3. 버전 #{options[:version]} 심사 상태 확인")
       UI.important("")
-      UI.important("🔄 또는 App Store Connect에서 기존 제출을 취소한 후")
-      UI.important("   아래 명령어로 자동 제출 재시도:")
-      UI.important("   bundle exec fastlane submit_for_review version:'#{options[:version]}'")
-      UI.important("")
-      UI.success("✅ 빌드와 업로드가 성공적으로 완료되었습니다!")
+      UI.success("✅ 빌드, 업로드, 심사 요청이 모두 성공적으로 완료되었습니다!")
+      UI.success("🚀 이제 Apple의 심사를 기다리기만 하면 됩니다!")
     else
       UI.user_error!("⚠️ version 옵션을 지정해주세요: fastlane submit version:'1.0.0'")
     end
@@ -246,39 +278,4 @@ platform :ios do
     end
   end
 
-  # 🔍 App Store Connect 상태 확인 (디버깅용)
-  desc "Check App Store Connect status for debugging"
-  lane :check_status do
-    app_store_connect_api_key(
-      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
-      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
-      is_key_content_base64: true,
-      in_house: false
-    )
-
-    require 'spaceship'
-
-    begin
-      Spaceship::ConnectAPI.login
-      app = Spaceship::ConnectAPI::App.find("io.DDD.Attendance")
-
-      if app
-        UI.important("📱 앱 정보:")
-        UI.important("   이름: #{app.name}")
-        UI.important("   Bundle ID: #{app.bundle_id}")
-        UI.important("")
-
-        versions = app.get_app_store_versions
-        UI.important("📋 버전 상태:")
-        versions.each do |version|
-          UI.important("   버전 #{version.version_string}: #{version.app_store_state}")
-        end
-      else
-        UI.error("앱을 찾을 수 없습니다.")
-      end
-    rescue => ex
-      UI.error("상태 확인 실패: #{ex.message}")
-    end
-  end
 end
