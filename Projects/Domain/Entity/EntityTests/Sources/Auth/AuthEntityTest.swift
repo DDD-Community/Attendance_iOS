@@ -12,37 +12,49 @@ import XCTest
 @Suite("Auth Entity Tests")
 struct AuthEntityTest {
 
-    @Test("Auth entity creation with valid data")
-    func test_Auth_entity_creation_with_valid_data() throws {
-        // Given: Valid entity data
-        // When: Creating Auth entity
-        // Then: Entity should be created successfully with correct values
+    @Test("AuthTokens Mock 데이터 생성 테스트")
+    func test_AuthTokens_mock_data_creation() throws {
+        // Given
+        let tokens = AuthTokens.mockData()
 
-        #expect(true, "Implement Auth entity creation test")
+        // Then
+        #expect(tokens.accessToken.contains("mock_access_token"))
+        #expect(tokens.refreshToken.contains("mock_refresh_token"))
+        #expect(tokens.oauthRefreshToken != nil)
     }
 
-    @Test("Auth entity equality comparison")
-    func test_Auth_entity_equality() throws {
-        // Given: Two identical Auth entities
-        // When: Comparing for equality
-        // Then: They should be equal
+    @Test("LoginEntity Google 사용자 테스트")
+    func test_LoginEntity_google_user() throws {
+        // Given
+        let loginEntity = LoginEntity.mockGoogleUser()
 
-        #expect(true, "Implement Auth entity equality test")
+        // Then
+        #expect(loginEntity.name == "김철수")
+        #expect(loginEntity.provider == .google)
+        #expect(loginEntity.isNewUser == false)
+        #expect(loginEntity.role == .member)
     }
 
-    @Test("Auth entity codable conformance")
-    func test_Auth_entity_codable() throws {
-        // Given: Auth entity
-        // When: Encoding and decoding
-        // Then: Should maintain data integrity
+    @Test("AppleOAuthPayload Mock 데이터 테스트")
+    func test_AppleOAuthPayload_mock_data() throws {
+        // Given
+        let payload = AppleOAuthPayload.mockData()
 
-        #expect(true, "Implement Auth entity codable test")
+        // Then
+        #expect(payload.idToken.contains("mock_apple_id_token"))
+        #expect(payload.displayName == "Kim Chulsu")
+        #expect(payload.authorizationCode != nil)
     }
 }
 
-// MARK: - XCTest compatibility
 class AuthEntityXCTest: XCTestCase {
-    func test_Auth_entity_xctest_compatibility() {
-        XCTAssertTrue(true, "XCTest compatibility placeholder")
+    func test_WithdrawEntity_success_response() {
+        // Given
+        let withdraw = WithdrawEntity.mockSuccessData()
+
+        // Then
+        XCTAssertTrue(withdraw.isSuccess)
+        XCTAssertEqual(withdraw.code, "200")
+        XCTAssertNotNil(withdraw.message)
     }
 }
