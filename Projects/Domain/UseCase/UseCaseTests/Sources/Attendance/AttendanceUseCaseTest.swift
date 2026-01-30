@@ -2,7 +2,7 @@
 //  AttendanceUseCaseTest.swift
 //  UseCaseTests
 //
-//  Created by TDD AI Automation on 2026-01-30 14:58:36
+//  Created by TDD AI Automation on 2026-01-30 14:59:08
 //
 
 import Testing
