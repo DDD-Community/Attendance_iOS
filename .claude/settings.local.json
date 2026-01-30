@@ -1,6 +1,8 @@
 {
   "permissions": {
     "allow": [
+      "Bash(gh pr list:*)",
+      "Bash(gh pr close:*)"
       "WebFetch(domain:github.com)",
       "Bash(./TuistTool.swift:*)",
       "Bash(swiftc:*)",
