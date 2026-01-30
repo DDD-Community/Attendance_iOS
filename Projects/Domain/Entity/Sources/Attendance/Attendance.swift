@@ -49,3 +49,68 @@ public extension Attendance {
     return SelectParts.from(apiKey: parts[1])
   }
 }
+
+// MARK: - Mock Data
+public extension Attendance {
+  static func mockData() -> Attendance {
+    return Attendance(
+      id: 1,
+      userID: "user_001",
+      userName: "김철수",
+      userInfo: "iOS 1팀/iOS",
+      status: .attended
+    )
+  }
+
+  static func mockAttendedData() -> Attendance {
+    return Attendance(
+      id: 1,
+      userID: "user_001",
+      userName: "김철수",
+      userInfo: "iOS 1팀/iOS",
+      status: .attended
+    )
+  }
+
+  static func mockLateData() -> Attendance {
+    return Attendance(
+      id: 2,
+      userID: "user_002",
+      userName: "이영희",
+      userInfo: "Android 1팀/Android",
+      status: .late
+    )
+  }
+
+  static func mockAbsentData() -> Attendance {
+    return Attendance(
+      id: 3,
+      userID: "user_003",
+      userName: "박민수",
+      userInfo: "WEB 1팀/Frontend",
+      status: .absent
+    )
+  }
+
+  static func mockDataArray() -> [Attendance] {
+    return [
+      mockAttendedData(),
+      mockLateData(),
+      mockAbsentData(),
+      Attendance(
+        id: 4,
+        userID: "user_004",
+        userName: "최지은",
+        userInfo: "iOS 2팀/iOS",
+        status: .attended
+      ),
+      Attendance(
+        id: 5,
+        userID: "user_005",
+        userName: "정우성",
+        userInfo: "Android 2팀/Android",
+        status: .late
+      )
+    ]
+  }
+}

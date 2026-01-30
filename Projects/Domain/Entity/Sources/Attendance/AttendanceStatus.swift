@@ -35,3 +35,10 @@ public enum AttendanceStatus: String, CaseIterable, Equatable, Identifiable {
     AttendanceStatus(rawValue: apiKey.uppercased())
   }
 }
+
+// MARK: - Mock Data
+public extension AttendanceStatus {
+  static func mockRandomStatus() -> AttendanceStatus {
+    return AttendanceStatus.allCases.randomElement() ?? .attended
+  }
+}
