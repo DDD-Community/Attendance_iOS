@@ -1,0 +1,91 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches: [develop]
+  push:
+    branches: [feature/**, fix/**]
+
+permissions:
+  contents: read
+
+env:
+  FASTLANE_SKIP_UPDATE_CHECK: true
+  FASTLANE_OPT_OUT_USAGE: true
+
+jobs:
+  test:
+    runs-on: macos-latest
+    timeout-minutes: 20
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+
+    - name: Setup mise
+      uses: jdx/mise-action@v2
+
+    - name: Install Tuist via mise
+      run: |
+        mise install tuist
+        echo "Tuist version: $(tuist version)"
+
+    - name: Cache Tuist
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.tuist
+          Tuist/.build
+        key: ${{ runner.os }}-tuist-${{ hashFiles('**/Tuist.swift', '**/Package.swift') }}
+        restore-keys: |
+          ${{ runner.os }}-tuist-
+
+    - name: Generate Tuist project
+      env:
+        TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
+        CI: true
+        TUIST_STATS_OPT_OUT: 1
+      run: |
+        # Create required Config files for CI
+        mkdir -p Config
+        echo "MARKETING_VERSION=1.0.0" > Config/Shared.xcconfig
+        echo "CURRENT_PROJECT_VERSION=1" >> Config/Shared.xcconfig
+
+        # Generate workspace
+        tuist install
+        tuist generate --no-open
+
+    - name: Run Tests
+      run: |
+        # Get available simulators
+        echo "Available iOS simulators:"
+        xcrun simctl list devices ios | grep -E "iPhone.*Booted|iPhone.*Shutdown" | head -5
+
+        # Find a suitable iPhone simulator
+        SIMULATOR_ID=$(xcrun simctl list devices ios | grep "iPhone" | grep -E "15|16" | head -1 | grep -o "[0-9A-F-]{36}")
+        SIMULATOR_NAME=$(xcrun simctl list devices ios | grep "iPhone" | grep -E "15|16" | head -1 | cut -d '(' -f 1 | xargs)
+
+        echo "Using simulator: $SIMULATOR_NAME ($SIMULATOR_ID)"
+
+        # Run tests
+        xcodebuild test \
+          -workspace DDDAttendance.xcworkspace \
+          -scheme DDDAttendance \
+          -destination "platform=iOS Simulator,name=$SIMULATOR_NAME" \
+          -configuration Debug \
+          -enableCodeCoverage YES \
+          -resultBundlePath TestResults.xcresult
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: |
+          TestResults.xcresult
+          ~/Library/Developer/Xcode/DerivedData/**/Logs/Test/*.xcactivitylog
