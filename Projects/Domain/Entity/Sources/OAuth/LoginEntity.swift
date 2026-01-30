@@ -28,3 +28,56 @@ public struct LoginEntity: Equatable {
     self.role = role
   }
 }
+
+// MARK: - Mock Data
+public extension LoginEntity {
+  static func mockData() -> LoginEntity {
+    return LoginEntity(
+      name: "김철수",
+      isNewUser: false,
+      provider: .google,
+      token: AuthTokens.mockData(),
+      role: .member
+    )
+  }
+
+  static func mockGoogleUser() -> LoginEntity {
+    return LoginEntity(
+      name: "김철수",
+      isNewUser: false,
+      provider: .google,
+      token: AuthTokens.mockGoogleTokens(),
+      role: .member
+    )
+  }
+
+  static func mockAppleUser() -> LoginEntity {
+    return LoginEntity(
+      name: "이영희",
+      isNewUser: false,
+      provider: .apple,
+      token: AuthTokens.mockAppleTokens(),
+      role: .manager
+    )
+  }
+
+  static func mockNewUser() -> LoginEntity {
+    return LoginEntity(
+      name: "박민수",
+      isNewUser: true,
+      provider: .google,
+      token: AuthTokens.mockData(),
+      role: nil
+    )
+  }
+
+  static func mockManagerUser() -> LoginEntity {
+    return LoginEntity(
+      name: "최지은",
+      isNewUser: false,
+      provider: .apple,
+      token: AuthTokens.mockAppleTokens(),
+      role: .manager
+    )
+  }
+}
