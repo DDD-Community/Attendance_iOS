@@ -15,22 +15,6 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
-### ios build_ipa_debug_and_strip
-
-```sh
-[bundle exec] fastlane ios build_ipa_debug_and_strip
-```
-
-Build Debug IPA and clean ._Symbols
-
-### ios build_ipa_release_and_strip
-
-```sh
-[bundle exec] fastlane ios build_ipa_release_and_strip
-```
-
-Build Release IPA and clean ._Symbols
-
 ### ios QA
 
 ```sh
@@ -54,14 +38,6 @@ Submit to App Store
 ```
 
 Submit already uploaded version for review
-
-### ios check_status
-
-```sh
-[bundle exec] fastlane ios check_status
-```
-
-Check App Store Connect status for debugging
 
 ----
 
