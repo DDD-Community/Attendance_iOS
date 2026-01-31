@@ -32,16 +32,16 @@ jobs:
     - name: 🏗️ 프로젝트 빌드
       run: |
         xcodebuild clean build \
-          -workspace DDD-Attendance.xcworkspace \
-          -scheme DDD-Attendance \
+          -workspace DDDAttendance.xcworkspace \
+          -scheme DDDAttendance \
           -destination 'platform=iOS Simulator,name=iPhone 15' \
           -configuration Debug
 
     - name: 🧪 UseCase 테스트 실행
       run: |
         xcodebuild test \
-          -workspace DDD-Attendance.xcworkspace \
-          -scheme DDD-Attendance \
+          -workspace DDDAttendance.xcworkspace \
+          -scheme DDDAttendance \
           -destination 'platform=iOS Simulator,name=iPhone 15' \
           -only-testing:UseCaseTests \
           -resultBundlePath TestResults
@@ -49,8 +49,8 @@ jobs:
     - name: 🧪 Repository 테스트 실행
       run: |
         xcodebuild test \
-          -workspace DDD-Attendance.xcworkspace \
-          -scheme DDD-Attendance \
+          -workspace DDDAttendance.xcworkspace \
+          -scheme DDDAttendance \
           -destination 'platform=iOS Simulator,name=iPhone 15' \
           -only-testing:RepositoryTests \
           -resultBundlePath TestResults
@@ -75,8 +75,8 @@ jobs:
     - name: 📊 코드 커버리지 생성
       run: |
         xcodebuild test \
-          -workspace DDD-Attendance.xcworkspace \
-          -scheme DDD-Attendance \
+          -workspace DDDAttendance.xcworkspace \
+          -scheme DDDAttendance \
           -destination 'platform=iOS Simulator,name=iPhone 15' \
           -enableCodeCoverage YES \
           -resultBundlePath CoverageResults
