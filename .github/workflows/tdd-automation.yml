@@ -29,9 +29,9 @@ jobs:
     - name: 📋 Xcode 버전 확인
       run: xcodebuild -version
 
-    - name: 🔧 Tuist 프로젝트 생성
+    - name: 🔧 Tuist 설치 및 프로젝트 생성
       run: |
-        curl -Ls https://install.tuist.io | bash
+        brew install tuist
         tuist generate
 
     - name: 🏗️ 프로젝트 빌드
