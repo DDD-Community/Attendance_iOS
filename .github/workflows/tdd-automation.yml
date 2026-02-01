@@ -37,6 +37,7 @@ jobs:
     - name: 🔧 Tuist 설치 및 프로젝트 생성
       run: |
         mise install
+        mise exec -- tuist install
         mise exec -- tuist generate
 
     - name: 🏗️ 프로젝트 빌드
