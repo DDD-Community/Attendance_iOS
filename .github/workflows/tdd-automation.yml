@@ -15,7 +15,7 @@ on:
 jobs:
   tdd-tests:
     name: 🧪 TDD 테스트 실행
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
     - name: 📥 체크아웃
@@ -75,7 +75,7 @@ jobs:
 
   coverage-report:
     name: 📈 커버리지 리포트
-    runs-on: macos-14
+    runs-on: macos-15
     needs: tdd-tests
 
     steps:
@@ -99,7 +99,7 @@ jobs:
 
   auto-deployment:
     name: 🚀 자동 배포
-    runs-on: macos-14
+    runs-on: macos-15
     needs: [tdd-tests, coverage-report]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
