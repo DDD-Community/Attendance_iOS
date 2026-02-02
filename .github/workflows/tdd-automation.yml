@@ -24,7 +24,7 @@ jobs:
     - name: 🔧 Xcode 설정
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '16.1'
+        xcode-version: 'latest-stable'
 
     - name: 📋 Xcode 버전 확인
       run: xcodebuild -version
