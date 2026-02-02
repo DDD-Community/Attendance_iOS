@@ -29,16 +29,15 @@ jobs:
     - name: 📋 Xcode 버전 확인
       run: xcodebuild -version
 
-    - name: 🔧 mise 설치 및 도구 설정
+    - name: 🔧 Tuist 직접 설치
       run: |
-        curl https://mise.run | sh
+        curl -Ls https://install.tuist.io | bash
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-    - name: 🔧 Tuist 설치 및 프로젝트 생성
+    - name: 🔧 프로젝트 생성
       run: |
-        mise install
-        mise exec -- tuist install
-        mise exec -- tuist generate
+        tuist install
+        tuist generate
 
     - name: 🏗️ 프로젝트 빌드
       run: |
