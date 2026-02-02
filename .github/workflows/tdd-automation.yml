@@ -29,10 +29,9 @@ jobs:
     - name: 📋 Xcode 버전 확인
       run: xcodebuild -version
 
-    - name: 🔧 Tuist 직접 설치
+    - name: 🔧 Tuist 설치 (Homebrew)
       run: |
-        curl -Ls https://install.tuist.io | bash
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        brew install tuist
 
     - name: 🔧 프로젝트 생성
       run: |
