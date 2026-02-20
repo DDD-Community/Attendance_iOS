@@ -673,6 +673,10 @@ func build()    { clean(); install(); generate() }  // fetch -> install로 변�
 func edit()     { run("tuist", arguments: ["edit"]) }
 func clean()    { run("tuist", arguments: ["clean"]) }
 func install()  { run("tuist", arguments: ["install"]) }  // 새로운 install 명령어 사용
+func test()     {
+    let args = Array(CommandLine.arguments.dropFirst(2))  // "test" 다음의 모든 인자들
+    run("tuist", arguments: ["test"] + args)
+}
 func cache()    {
     print("🚀 바이너리 캐시 생성 중...")
     run("tuist", arguments: ["cache"])  // 프로젝트명 제거하고 일반화
@@ -1992,7 +1996,7 @@ func generateEntityTestContent(domain: String) -> String {
 
 // MARK: - Entrypoint
 enum Command: String {
-  case edit, generate, fetch, build, clean, install, cache, reset, moduleinit, newproject, preview
+  case edit, generate, fetch, build, clean, install, cache, reset, moduleinit, newproject, preview, test
   case inspect, inspectimports = "inspect-imports", inspectcoverage = "inspect-coverage"
   case tddauto = "tdd-auto", usecasetest = "usecase-test", repositorytest = "repository-test", fulltest = "full-test"
 }
@@ -2043,6 +2047,7 @@ switch command {
   case .build:            build()
   case .clean:            clean()
   case .install:          install()
+  case .test:             test()
   case .cache:            cache()
   case .reset:            reset()
   case .moduleinit:       registerModule()
