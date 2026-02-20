@@ -38,42 +38,25 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-tuist-
 
-    - name: Install mise via Homebrew
+    - name: Install dependencies using TuistTool
       run: |
-        brew install mise
-
-    - name: Install tools from .tool-versions
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        mise install
-        # mise 환경을 활성화하여 PATH에 도구들 추가
-        echo 'eval "$(mise activate bash)"' >> ~/.bashrc
-
-    - name: Install dependencies
-      run: |
-        # mise 환경 활성화
-        eval "$(mise activate bash)"
-        tuist install
+        swift TuistTool.swift install
 
     - name: Run Repository Tests
       run: |
-        eval "$(mise activate bash)"
         echo "Running Repository Layer Tests..."
-        tuist test --path Projects/Data/Repository
+        swift TuistTool.swift test --path Projects/Data/Repository
 
     - name: Run UseCase Tests
       run: |
-        eval "$(mise activate bash)"
         echo "Running UseCase Layer Tests..."
-        tuist test --path Projects/Domain/UseCase
+        swift TuistTool.swift test --path Projects/Domain/UseCase
       continue-on-error: true
 
     - name: Run All Tests
       run: |
-        eval "$(mise activate bash)"
         echo "Running All Project Tests..."
-        tuist test
+        swift TuistTool.swift test
       continue-on-error: true
 
     - name: Upload test results
