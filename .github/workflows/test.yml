@@ -47,25 +47,32 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         mise install
+        # mise 환경을 활성화하여 PATH에 도구들 추가
+        echo 'eval "$(mise activate bash)"' >> ~/.bashrc
 
     - name: Install dependencies
       run: |
+        # mise 환경 활성화
+        eval "$(mise activate bash)"
         tuist install
 
     - name: Run Repository Tests
       run: |
-        echo "🧪 Running Repository Layer Tests..."
+        eval "$(mise activate bash)"
+        echo "Running Repository Layer Tests..."
         tuist test --path Projects/Data/Repository
 
     - name: Run UseCase Tests
       run: |
-        echo "🧪 Running UseCase Layer Tests..."
+        eval "$(mise activate bash)"
+        echo "Running UseCase Layer Tests..."
         tuist test --path Projects/Domain/UseCase
       continue-on-error: true
 
     - name: Run All Tests
       run: |
-        echo "🧪 Running All Project Tests..."
+        eval "$(mise activate bash)"
+        echo "Running All Project Tests..."
         tuist test
       continue-on-error: true
 
