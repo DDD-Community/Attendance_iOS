@@ -38,9 +38,14 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-tuist-
 
-    - name: Install Tuist
+    - name: Install mise
       run: |
-        brew install tuist
+        curl https://mise.run | sh
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Install tools via mise
+      run: |
+        ~/.local/bin/mise install
 
     - name: Install dependencies
       run: |
