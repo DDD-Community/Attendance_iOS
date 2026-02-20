@@ -40,7 +40,7 @@ jobs:
 
     - name: Install Tuist
       run: |
-        curl -Ls https://install.tuist.io | bash
+        brew install tuist
 
     - name: Install dependencies
       run: |
