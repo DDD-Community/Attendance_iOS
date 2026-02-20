@@ -2060,7 +2060,6 @@ switch command {
     } else {
         newProject()
     }
-  case .tddauto:          tddAuto()
 }
 
 // MARK: - TDD 자동화 시스템
@@ -2098,23 +2097,6 @@ func parseDomains() -> [String] {
   return ["Attendance", "Auth", "Profile"]
 }
 
-func createTestFilesForDomain(_ domain: String) {
-  print("📝 \(domain) 도메인 테스트 파일 생성 중...")
-
-  let testContent = generateTestContent(for: domain)
-  let testPath = "Projects/Domain/Entity/EntityTests/Sources/\(domain)/\(domain)EntityTest.swift"
-
-  // 디렉토리 생성
-  _ = run("mkdir", arguments: ["-p", "Projects/Domain/Entity/EntityTests/Sources/\(domain)"])
-
-  // 테스트 파일 작성
-  do {
-    try testContent.write(toFile: testPath, atomically: true, encoding: .utf8)
-    print("✅ \(domain) 테스트 파일 생성 완료")
-  } catch {
-    print("❌ \(domain) 테스트 파일 생성 실패: \(error)")
-  }
-}
 
 func generateTestContent(for domain: String) -> String {
   return """
