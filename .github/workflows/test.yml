@@ -38,10 +38,15 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-tuist-
 
-    - name: Install Tuist
+    - name: Install mise via Homebrew
       run: |
-        # CI 환경에서는 안정성을 위해 Homebrew 사용
-        brew install tuist
+        brew install mise
+
+    - name: Install tools from .tool-versions
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        mise install
 
     - name: Install dependencies
       run: |
