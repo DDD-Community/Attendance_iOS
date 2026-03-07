@@ -199,7 +199,10 @@ extension AttendanceCheck {
           )
         } else {
           // 이미 데이터가 있는 경우 출석 현황과 출석 리스트만 조용히 새로고침
-          return .send(.async(.fetchSchedule)) // scheduleID 업데이트 후 attendanceCount와 teams 자동 호출
+          return .concatenate(
+            .run { await $0(.async(.fetchSchedule)) }, // 성공시 fetchAttendanceCount와 fetchTeams 자동 호출
+            .run { await $0(.async(.fetchStatus)) }, // scheduleID 업데이트 후 attendanceCount와 teams 자동 호출
+          )
         }
 
       case .refreshData:
@@ -516,10 +519,11 @@ extension AttendanceCheck {
 
         state.destination = nil
 
-        return .run { send in
-          try await clock.sleep(for: .milliseconds(100))
-          await send(.view(.onAppear))
-        }
+        // 새로운 스케줄 선택시 해당 스케줄의 출석 데이터를 새로 가져오기
+        return .merge(
+          .send(.async(.fetchAttendanceCount)), // 새 스케줄의 출석 통계
+          .send(.async(.fetchAttendance)) // 새 스케줄의 출석 리스트
+        )
         
       default:
         return .none
