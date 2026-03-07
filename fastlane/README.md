@@ -13,6 +13,17 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 # Available Actions
 
+### tdd_ci
+
+```sh
+[bundle exec] fastlane tdd_ci
+```
+
+TDD 테스트 및 자동 배포
+
+----
+
+
 ## iOS
 
 ### ios QA
