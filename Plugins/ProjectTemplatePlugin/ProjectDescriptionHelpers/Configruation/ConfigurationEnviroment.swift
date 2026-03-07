@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum ConfiguratuonEnviroment: CaseIterable {
+public enum ConfigurationEnvironment: CaseIterable {
     case dev, stage, prod
 
     public var name: String {

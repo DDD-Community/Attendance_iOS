@@ -13,8 +13,8 @@ let project = Project.makeModule(
   dependencies: [
 
     .SPM.composableArchitecture,
-    .SPM.tcaCoordinator
   
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: false
 )

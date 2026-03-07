@@ -12,5 +12,6 @@ let project = Project.makeModule(
   dependencies: [
     .Network(implements: .Foundations),
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: false
 )

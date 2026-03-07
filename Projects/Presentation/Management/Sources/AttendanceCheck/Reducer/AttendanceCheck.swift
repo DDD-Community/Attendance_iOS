@@ -193,28 +193,19 @@ extension AttendanceCheck {
         print("선택 된 팀", state.selectPart, state.userSession.selectTeam)
         if !state.hasFetchedAttendance {
           state.hasFetchedAttendance = true
-          return .merge(
-            .run { await $0(.async(.fetchSchedule)) },
-            .run { await $0(.async(.fetchAttendanceCount)) },
-            .run { await $0(.async(.fetchTeams)) },
-            .run { await $0(.async(.fetchAttendance)) },
+          return .concatenate(
+            .run { await $0(.async(.fetchSchedule)) }, // 성공시 fetchAttendanceCount와 fetchTeams 자동 호출
             .run { await $0(.async(.fetchStatus)) },
           )
         } else {
           // 이미 데이터가 있는 경우 출석 현황과 출석 리스트만 조용히 새로고침
-          return .merge(
-            .run { await $0(.async(.fetchAttendanceCount)) },
-            .run { await $0(.async(.fetchAttendance)) }
-          )
+          return .send(.async(.fetchSchedule)) // scheduleID 업데이트 후 attendanceCount와 teams 자동 호출
         }
 
       case .refreshData:
         // 수동 새로고침: 모든 데이터를 다시 가져옴
         return .merge(
-          .run { await $0(.async(.fetchSchedule)) },
-          .run { await $0(.async(.fetchAttendanceCount)) },
-          .run { await $0(.async(.fetchTeams)) },
-          .run { await $0(.async(.fetchAttendance)) },
+          .run { await $0(.async(.fetchSchedule)) }, // 성공시 fetchAttendanceCount와 fetchTeams 자동 호출
           .run { await $0(.async(.fetchStatus)) }
         )
 
@@ -279,9 +270,15 @@ extension AttendanceCheck {
         .cancellable(id: CancelID.fetchSchedule, cancelInFlight: true)
 
       case .fetchAttendanceCount:
-        return .run { [
-          scheduleID = state.selectScheduleID
-        ]send in
+        let scheduleID = state.selectScheduleID
+
+        // scheduleId가 유효한지 확인
+        guard scheduleID > 0 else {
+          #logDebug("fetchAttendanceCount 건너뜀", "scheduleId: \(scheduleID)")
+          return .none
+        }
+
+        return .run { send in
           let attendanceResult = await Result {
             try await attendanceUseCase.adminAttendanceCount(scheduleId: scheduleID)
           }
@@ -302,10 +299,16 @@ extension AttendanceCheck {
         .cancellable(id: CancelID.fetchTeams, cancelInFlight: true)
 
       case .fetchAttendance:
-        return .run {  [
-          teamId = state.selectTeamID,
-          scheduleId = state.selectScheduleID
-        ]send in
+        let scheduleId = state.selectScheduleID
+        let teamId = state.selectTeamID
+
+        // scheduleId와 teamId가 유효한지 확인
+        guard scheduleId > 0, teamId > 0 else {
+          #logDebug("fetchAttendance 건너뜀", "scheduleId: \(scheduleId), teamId: \(teamId)")
+          return .none
+        }
+
+        return .run { send in
           let attendanceResult = await Result {
             try await attendanceUseCase.sessionAttendance(scheduleId: scheduleId, teamId: teamId)
           }
@@ -364,13 +367,21 @@ extension AttendanceCheck {
           case .success(let schedules):
             state.scheduleModel = .init(uniqueElements: schedules)
             state.loading = false
-            state.selectScheduleID = todayScheduleId(from: schedules) ?? .zero
+            state.selectScheduleID = todayScheduleId(from: schedules)
+              ?? schedules.first?.id
+              ?? state.selectScheduleID
+
+            // 스케줄이 설정된 후 출석 통계 및 팀 정보 가져오기
+            return .merge(
+              .send(.async(.fetchAttendanceCount)),
+              .send(.async(.fetchTeams)) // team 설정 후 fetchAttendance 자동 호출됨
+            )
 
           case .failure(let error):
             #logNetwork("스케줄 조회 실패", error.localizedDescription)
             state.loading = false
+            return .none
         }
-        return .none
 
       case .attendanceCountResponse(let result):
         switch result {
@@ -405,10 +416,18 @@ extension AttendanceCheck {
               state.selectPart = firstTeam.teams
               state.selectTeamID = firstTeam.teamId
             }
+
+            // team 설정 후 출석 데이터 가져오기 (scheduleId가 유효한 경우에만)
+            if state.selectScheduleID > 0 {
+              return .send(.async(.fetchAttendance))
+            } else {
+              return .none
+            }
+
           case .failure(let error):
             #logNetwork("기수 팀 조회 실패", error.localizedDescription)
+            return .none
         }
-        return .none
 
       case .attendanceResponse(let teamId, let result):
         switch result {

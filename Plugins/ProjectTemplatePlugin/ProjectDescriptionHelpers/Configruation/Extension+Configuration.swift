@@ -9,9 +9,9 @@ import Foundation
 import ProjectDescription
 
 extension ConfigurationName {
-    static let dev = ConfigurationName.configuration(ConfiguratuonEnviroment.dev.name)
-    static let stage = ConfigurationName.configuration(ConfiguratuonEnviroment.stage.name)
-    static let prod = ConfigurationName.configuration(ConfiguratuonEnviroment.prod.name)
+    static let dev = ConfigurationName.configuration(ConfigurationEnvironment.dev.name)
+    static let stage = ConfigurationName.configuration(ConfigurationEnvironment.stage.name)
+    static let prod = ConfigurationName.configuration(ConfigurationEnvironment.prod.name)
 }
 
 public extension Array where Element == Configuration {
