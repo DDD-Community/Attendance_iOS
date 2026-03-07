@@ -14,5 +14,7 @@ let project = Project.makeModule(
     .Data(implements: .Model),
     .SPM.weaveDI,
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: false
+  
 )

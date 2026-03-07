@@ -12,5 +12,6 @@ let project = Project.makeModule(
     .Network(implements: .ThirdPartys),
     .Domain(implements: .UseCase)
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: false
 )
