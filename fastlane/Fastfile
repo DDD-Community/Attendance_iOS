@@ -279,3 +279,47 @@ platform :ios do
   end
 
 end
+
+# 🤖 TDD 자동화 CI 레인
+desc "TDD 테스트 및 자동 배포"
+lane :tdd_ci do |options|
+  domain = options[:domain] || "All"
+
+  UI.header "🧪 #{domain} 도메인 TDD CI 시작"
+
+  # 1. 클린 빌드
+  clear_derived_data
+
+  # 2. 테스트 실행
+  run_tests(
+    workspace: "DDD-Attendance.xcworkspace",
+    devices: ["iPhone 15"],
+    scheme: "DDD-Attendance"
+  )
+
+  # 3. 커버리지 체크
+  slather(
+    cobertura_xml: true,
+    jenkins: true,
+    scheme: "DDD-Attendance",
+    workspace: "DDD-Attendance.xcworkspace"
+  )
+
+  # 4. 성공 시 알림
+  slack(
+    message: "✅ #{domain} 도메인 TDD 테스트 성공!",
+    success: true,
+    channel: "#ios-dev"
+  ) if ENV["SLACK_URL"]
+
+  UI.success "🎉 #{domain} 도메인 TDD CI 완료!"
+end
+
+# 🚨 TDD 테스트 실패 시 처리
+error do |lane, exception|
+  slack(
+    message: "❌ TDD 테스트 실패: #{exception.message}",
+    success: false,
+    channel: "#ios-dev"
+  ) if ENV["SLACK_URL"]
+end

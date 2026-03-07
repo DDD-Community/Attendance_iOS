@@ -37,6 +37,7 @@ public extension SelectTeamEntity {
     case .unknown: return nil
     }
   }
+  
 }
 
 extension IdentifiedArrayOf where Element == SelectTeamEntity {

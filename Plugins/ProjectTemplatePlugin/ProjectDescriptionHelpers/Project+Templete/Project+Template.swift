@@ -200,7 +200,7 @@ extension Scheme {
 
 
 public extension Scheme {
-    static func scheme(name: String, environment: ConfiguratuonEnviroment) -> Scheme {
+    static func scheme(name: String, environment: ConfigurationEnvironment) -> Scheme {
       let appName = Project.Environment.appName
         let schemeName = switch environment {
         case .prod: appName

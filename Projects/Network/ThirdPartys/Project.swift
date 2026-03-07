@@ -13,5 +13,6 @@ let project = Project.makeModule(
     .SPM.asyncMoya,
     .SPM.weaveDI
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: false
 )
