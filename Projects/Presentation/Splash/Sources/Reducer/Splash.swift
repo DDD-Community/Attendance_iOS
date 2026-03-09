@@ -11,6 +11,7 @@ import Shareds
 import Utill
 import UseCase
 import Entity
+import DesignSystem
 
 import ComposableArchitecture
 import LogMacro
@@ -26,6 +27,12 @@ public struct Splash {
     @Shared(.appStorage("staffRole")) var staffRole: Staff?
     var profileModel: ProfileEntity?
 
+    // 앱 업데이트 관련
+    @Presents var customAlert: CustomAlertState<CustomAlertAction>?
+    var appStoreUrl: String = ""
+    var isUpdateCheckCompleted: Bool = false
+    var profileFetchCompleted: Bool = false
+
     public init() {
 
     }
@@ -37,6 +44,17 @@ public struct Splash {
     case async(AsyncAction)
     case inner(InnerAction)
     case navigation(NavigationAction)
+    case scope(ScopeAction)
+
+    @CasePathable
+    public enum ScopeAction {
+      case alert(PresentationAction<AlertAction>)
+      case customAlert(PresentationAction<CustomAlertAction>)
+    }
+  }
+
+  public enum AlertAction: Equatable {
+    // 필요시 추가
   }
   
   // MARK: - ViewAction
@@ -48,15 +66,17 @@ public struct Splash {
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
-  
+
   public enum AsyncAction: Equatable {
     case fetchUser
+    case checkAppUpdate
   }
   
   // MARK: - 앱내에서 사용하는 액션
-  
+
   public enum InnerAction: Equatable {
     case fetchUserResponse(Result<ProfileEntity, ProfileError>)
+    case checkAppUpdateResponse(Result<AppUpdateInfo?, AppUpdateError>)
   }
   
   // MARK: - NavigationAction
@@ -69,12 +89,15 @@ public struct Splash {
   
   nonisolated enum CancelID: Hashable {
     case fetchProfile
+    case checkAppUpdate
   }
 
 
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.profileUseCase) var profileUseCase
+  @Dependency(\.appUpdateUseCase) var appUpdateUseCase
+  @Dependency(\.openURL) var openURL
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.keychainManager) var keychainManager
   
@@ -84,7 +107,7 @@ public struct Splash {
       switch action {
       case .binding(_):
         return .none
-        
+
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
 
@@ -93,10 +116,31 @@ public struct Splash {
 
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
-        
+
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
+
+      case .scope(.customAlert(.presented(.confirmTapped))):
+        // 앱스토어로 이동
+        return .run { [appStoreUrl = state.appStoreUrl] _ in
+          if let url = URL(string: appStoreUrl) {
+            await openURL(url)
+          }
+        }
+
+      case .scope(.customAlert(.presented(.cancelTapped))):
+        // "나중에 할게요" 선택 시 화면 이동
+        if state.profileFetchCompleted {
+          return navigateToNextScreen(state: &state)
+        }
+        return .none
+
+      case .scope:
+        return .none
       }
+    }
+    .ifLet(\.$customAlert, action: \.scope.customAlert) {
+      EmptyReducer()
     }
   }
 }
@@ -112,6 +156,9 @@ extension Splash {
         return .run { send in
           // 먼저 딜레이를 주고
           try await clock.sleep(for: .seconds(0.5))
+
+          // 앱 업데이트 체크 (백그라운드에서)
+          await send(.async(.checkAppUpdate))
 
           if staffRole == .manager {
             #logDebug("👔 [Splash] Redirecting to staff")
@@ -144,6 +191,16 @@ extension Splash {
           return await send(.inner(.fetchUserResponse(fetchUserResult)))
         }
         .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
+
+      case .checkAppUpdate:
+        return .run { send in
+          let updateResult = await Result {
+            try await appUpdateUseCase.checkForUpdate()
+          }
+            .mapError(AppUpdateError.from)
+          await send(.inner(.checkAppUpdateResponse(updateResult)))
+        }
+        .cancellable(id: CancelID.checkAppUpdate, cancelInFlight: true)
     }
   }
 
@@ -155,21 +212,16 @@ extension Splash {
       case .fetchUserResponse(let result):
         switch result {
         case .success(let profileDTOData):
-          #logDebug("✅ [Splash] User profile fetched successfully")
+          #logDebug("[Splash] User profile fetched successfully")
           state.profileModel = profileDTOData
+          state.profileFetchCompleted = true
 
-          // 사용자 역할에 따라 적절한 화면으로 이동
-          let staffRole = state.staffRole
-          if staffRole == .manager {
-            #logDebug("👔 [Splash] Navigation to staff after profile fetch")
-            return .send(.navigation(.presentStaff))
-          } else if staffRole == .member {
-            #logDebug("👤 [Splash] Navigation to member after profile fetch")
-            return .send(.navigation(.presentMember))
-          } else {
-            #logDebug("❓ [Splash] No staff role after profile fetch - redirecting to login")
-            return .send(.navigation(.presentLogin))
+          // 업데이트 체크가 완료되고 팝업이 없는 경우에만 화면 이동
+          if state.isUpdateCheckCompleted && state.customAlert == nil {
+            return navigateToNextScreen(state: &state)
           }
+
+          return .none
 
         case .failure(let error):
           #logError("❌ [Splash] Failed to fetch user profile", error.localizedDescription)
@@ -180,6 +232,51 @@ extension Splash {
              keychainManager.clear()
             await send(.navigation(.presentLogin))
           }
+        }
+
+      case .checkAppUpdateResponse(let result):
+        state.isUpdateCheckCompleted = true
+
+        switch result {
+        case .success(let updateInfo):
+          // 업데이트가 필요한 경우에만 Alert 표시
+          if let updateInfo = updateInfo {
+            #logDebug("[Splash] App update available: \(updateInfo.latestVersion)")
+            state.appStoreUrl = updateInfo.appStoreUrl
+
+            // 릴리즈 노트에서 실제 버전 추출
+            let actualVersion = extractVersionFromReleaseNotes(
+              releaseNotes: updateInfo.releaseNotes,
+              fallbackVersion: updateInfo.latestVersion
+            )
+
+            let message = "새로운 버전 \(actualVersion)이 출시되었습니다!\n\n더 나은 경험을 위해 지금 업데이트하세요!"
+
+            state.customAlert = .alert(
+              title: "새로운 버전이 출시되었어요!",
+              message: message,
+              confirmTitle: "지금 업데이트",
+              cancelTitle: "나중에 할게요",
+              isDestructive: false
+            )
+          } else {
+            #logDebug("[Splash] App is up to date")
+
+            // 업데이트가 없고 프로필 fetch가 완료되었다면 화면 이동
+            if state.profileFetchCompleted {
+              return navigateToNextScreen(state: &state)
+            }
+          }
+          return .none
+
+        case .failure(let error):
+          #logError("[Splash] Failed to check app update", error.localizedDescription)
+
+          // 에러가 발생해도 프로필 fetch가 완료되었다면 화면 이동
+          if state.profileFetchCompleted {
+            return navigateToNextScreen(state: &state)
+          }
+          return .none
         }
     }
   }
@@ -198,5 +295,49 @@ extension Splash {
     case .presentMember:
         return .none  // fetchUser는 이미 onAppear에서 처리됨
     }
+  }
+
+  private func navigateToNextScreen(state: inout State) -> Effect<Action> {
+    let staffRole = state.staffRole
+
+    if staffRole == .manager {
+      #logDebug("[Splash] Navigation to staff after checks completed")
+      return .send(.navigation(.presentStaff))
+    } else if staffRole == .member {
+      #logDebug("[Splash] Navigation to member after checks completed")
+      return .send(.navigation(.presentMember))
+    } else {
+      #logDebug("[Splash] No staff role after checks completed - redirecting to login")
+      return .send(.navigation(.presentLogin))
+    }
+  }
+
+  private func extractVersionFromReleaseNotes(
+    releaseNotes: String?,
+    fallbackVersion: String
+  ) -> String {
+    guard let releaseNotes = releaseNotes else {
+      return fallbackVersion
+    }
+
+    // "[v 1.0.2]" 또는 "v 1.0.2" 패턴에서 버전 추출
+    let patterns = [
+      #"\[v\s*([0-9]+\.[0-9]+\.[0-9]+)\]"#,  // [v 1.0.2]
+      #"v\s*([0-9]+\.[0-9]+\.[0-9]+)"#        // v 1.0.2
+    ]
+
+    for pattern in patterns {
+      if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
+        let range = NSRange(location: 0, length: releaseNotes.count)
+        if let match = regex.firstMatch(in: releaseNotes, range: range) {
+          let versionRange = Range(match.range(at: 1), in: releaseNotes)
+          if let versionRange = versionRange {
+            return String(releaseNotes[versionRange])
+          }
+        }
+      }
+    }
+
+    return fallbackVersion
   }
 }

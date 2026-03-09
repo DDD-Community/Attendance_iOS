@@ -41,6 +41,7 @@ public struct SplashView: View {
     .onAppear {
       store.send(.view(.onAppear))
     }
+    .customAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
   }
 }
 

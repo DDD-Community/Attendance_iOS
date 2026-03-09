@@ -37,8 +37,8 @@ public extension Attendance {
     case "WEB2팀": return .web2
     case "IOS1팀": return .ios1
     case "IOS2팀": return .ios2
-    case "ANDROID1팀": return .and1
-    case "ANDROID2팀": return .and2
+    case "ANDROID1팀", "AND1팀": return .and1
+    case "ANDROID2팀", "AND2팀": return .and2
     default: return nil
     }
   }

@@ -47,6 +47,7 @@ public struct AttendanceCheckStatusCard: View {
             Text("\(selectTeam.attandanceCardDescription) / \(selectPart.desc) ")
               .pretendardCustomFont(textStyle: .body2NormalBold)
               .foregroundStyle(isDisabled ? .borderDisabled : .staticWhite)
+              .minimumScaleFactor(0.7)
           }
           
           Spacer()

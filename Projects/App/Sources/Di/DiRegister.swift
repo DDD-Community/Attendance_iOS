@@ -32,6 +32,7 @@ public class AppDIManager: @unchecked Sendable {
         return KeychainTokenProvider(keychainManager: keychainManager) as TokenProviding
       }
       .register(ProfileInterface.self) { ProfileRepositoryImpl() }
+      .register(AppUpdateInterface.self) { AppUpdateRepositoryImpl() as AppUpdateInterface }
     // MARK: - 로그인
       .register { AuthRepositoryImpl() as AuthInterface }
       .register { GoogleOAuthRepositoryImpl() as GoogleOAuthInterface }
