@@ -198,10 +198,9 @@ extension AttendanceCheck {
             .run { await $0(.async(.fetchStatus)) },
           )
         } else {
-          // 이미 데이터가 있는 경우 출석 현황과 출석 리스트만 조용히 새로고침
           return .concatenate(
-            .run { await $0(.async(.fetchSchedule)) }, // 성공시 fetchAttendanceCount와 fetchTeams 자동 호출
-            .run { await $0(.async(.fetchStatus)) }, // scheduleID 업데이트 후 attendanceCount와 teams 자동 호출
+            .run { await $0(.async(.fetchSchedule)) },
+            .run { await $0(.async(.fetchStatus)) },
           )
         }
 
@@ -437,6 +436,15 @@ extension AttendanceCheck {
           case .success(let data):
             state.attendanceModel = data
             state.attendanceByTeam[teamId] = data
+
+            // 특정 팀 데이터를 받았을 때 해당 팀으로 selectPart 변경
+            if let firstAttendance = data.first,
+               let teamEntity = firstAttendance.selectTeamEntity,
+               teamEntity != .unknown {
+              state.selectPart = teamEntity
+              #logDebug("[AttendanceCheck] Updated selectPart to: \(teamEntity.rawValue)")
+            }
+
           case .failure(let error):
             #logNetwork("기수 출석 현황 조회 실패", error.localizedDescription)
         }

@@ -120,4 +120,23 @@ public extension CustomAlertState where Action == CustomAlertAction {
       checkboxTitle: "개인정보처리방침 동의"
     )
   }
+
+  static func appUpdate(
+    version: String,
+    releaseNotes: String? = nil
+  ) -> CustomAlertState<CustomAlertAction> {
+    let message = if let releaseNotes = releaseNotes, !releaseNotes.isEmpty {
+      "새로운 버전 \(version)이 출시되었습니다!\n\n\(releaseNotes)\n\n더 나은 경험을 위해 업데이트하세요!"
+    } else {
+      "새로운 버전 \(version)이 준비되었습니다!\n\n더 나은 경험을 위해 지금 업데이트하세요!"
+    }
+
+    return .alert(
+      title: "새로운 버전이 출시되었어요!",
+      message: message,
+      confirmTitle: "지금 업데이트",
+      cancelTitle: "나중에 할게요",
+      isDestructive: false
+    )
+  }
 }
