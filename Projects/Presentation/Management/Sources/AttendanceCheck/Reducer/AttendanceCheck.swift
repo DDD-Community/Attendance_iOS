@@ -190,7 +190,6 @@ extension AttendanceCheck {
       case .onAppear:
         // 첫 진입 시에만 전체 데이터 로드, 이후에는 중요한 데이터만 새로고침
         state.selectPart = state.userSession.selectTeam
-        print("선택 된 팀", state.selectPart, state.userSession.selectTeam)
         if !state.hasFetchedAttendance {
           state.hasFetchedAttendance = true
           return .concatenate(
@@ -199,8 +198,7 @@ extension AttendanceCheck {
           )
         } else {
           return .concatenate(
-            .run { await $0(.async(.fetchSchedule)) },
-            .run { await $0(.async(.fetchStatus)) },
+            .run { await $0(.view(.refreshData)) },
           )
         }
 

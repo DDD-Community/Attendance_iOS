@@ -10,6 +10,7 @@ import Foundation
 import Shareds
 import UseCase
 
+
 import AsyncMoya
 import ComposableArchitecture
 import Entity
@@ -18,7 +19,7 @@ import DesignSystem
 @Reducer
 public struct ProfileReducer {
   public init() {}
-  
+
   @ObservableState
   public struct State: Equatable {
     var isLoading: Bool = false
@@ -46,12 +47,12 @@ public struct ProfileReducer {
 
     public init() {}
   }
-  
+
   @Reducer(state: .equatable)
   public enum Destination {
     case createApp(CreateApp)
   }
-  
+
   public enum Action: ViewAction, FeatureAction, BindableAction {
     case destination(PresentationAction<Destination.Action>)
     case binding(BindingAction<State>)
@@ -62,7 +63,7 @@ public struct ProfileReducer {
     case navigation(NavigationAction)
 
   }
-  
+
   // MARK: - View action
   @CasePathable
   public enum View {
@@ -71,7 +72,7 @@ public struct ProfileReducer {
     case showWithdrawAlert
     case showLogoutAlert
   }
-  
+
   // MARK: - 비동기 처리 액션
   @CasePathable
   public enum AsyncAction: Equatable {
@@ -79,7 +80,7 @@ public struct ProfileReducer {
     case deleteUser
     case logout
   }
-  
+
   // MARK: - 앱내에서 사용하는 액션
   @CasePathable
   public enum InnerAction: Equatable {
@@ -87,7 +88,7 @@ public struct ProfileReducer {
     case deleteUserResponse(Result<WithdrawEntity, AuthError>)
     case logoutResponses(Result<AuthExitEntity, AuthError>)
   }
-  
+
   // MARK: - 네비게이션 연결 액션
   @CasePathable
   public enum NavigationAction: Equatable {
@@ -119,32 +120,32 @@ public struct ProfileReducer {
   @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.continuousClock) var clock
-  
+
   public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {
       case .binding(_):
         return .none
-        
+
       case .destination(let destinationAction):
         return handleDestinationAction(state: &state, action: destinationAction)
 
       // MARK: - ViewAction
-        
+
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
-        
+
       // MARK: - AsyncAction
 
       case .async(let asyncAction):
         return handleAsyncAction(state: &state, action: asyncAction)
-        
+
       // MARK: - InnerAction
-        
+
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
-        
+
       // MARK: - NavigationAction
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)

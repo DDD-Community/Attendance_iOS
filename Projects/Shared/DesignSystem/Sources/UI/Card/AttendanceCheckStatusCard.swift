@@ -100,7 +100,7 @@ public struct AttendanceCheckStatusCard: View {
   }
 
   private var isDisabled: Bool {
-    attendanceStatus == .absent
+    attendanceStatus == .absent || attendanceStatus == .defaults
   }
 
   private var imageName: String {
@@ -111,6 +111,9 @@ public struct AttendanceCheckStatusCard: View {
       return "Late_icons"
     case .absent:
       return "Abesent_icons"
+      case .defaults:
+        return "Default_icons"
+
     }
   }
 }
