@@ -14,7 +14,7 @@ public extension AttendanceDTOResponse {
       userID: "\(self.userID)",
       userName: self.userName,
       userInfo: self.userInfo,
-      status: AttendanceStatus.from(apiKey: self.attendanceStatus) ?? .absent
+      status: AttendanceStatus.from(apiKey: self.attendanceStatus) ?? .defaults
     )
   }
 }

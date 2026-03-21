@@ -11,6 +11,7 @@ public enum AttendanceStatus: String, CaseIterable, Equatable, Identifiable {
   case attended = "ATTENDED"
   case late = "LATE"
   case absent = "ABSENT"
+  case defaults = "DEFAULT"
 
   public var id: String {
     rawValue
@@ -24,6 +25,8 @@ public enum AttendanceStatus: String, CaseIterable, Equatable, Identifiable {
       return "지각"
     case .absent:
       return "결석"
+      case .defaults:
+        return "대기"
     }
   }
 

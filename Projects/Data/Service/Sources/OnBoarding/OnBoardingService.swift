@@ -19,7 +19,7 @@ public enum OnBoardingService {
 }
 
 
-extension OnBoardingService: BaseTargetType {
+extension OnBoardingService: BaseTargetType  {
   public typealias Domain = AttendanceDomain
 
   public var domain: AttendanceDomain {
