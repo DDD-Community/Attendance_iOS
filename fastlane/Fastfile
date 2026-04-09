@@ -207,7 +207,7 @@ platform :ios do
       # 업로드 후 자동으로 심사 요청
       upload_to_app_store(
         app_version: options[:version],
-        username: "shuwj81@daum.net",
+        username: ENV["APPLE_ID"],
         team_id: "KL4Y9PB9B8",
         ipa: ipa_path,
         skip_metadata: false,
@@ -249,7 +249,7 @@ platform :ios do
       begin
         upload_to_app_store(
           app_version: options[:version],
-          username: "shuwj81@daum.net",
+          username: ENV["APPLE_ID"],
           team_id: "KL4Y9PB9B8",
           skip_binary_upload: true,
           skip_metadata: false,

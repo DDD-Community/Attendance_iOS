@@ -203,9 +203,10 @@ extension AttendanceCheck {
         }
 
       case .refreshData:
-        // 수동 새로고침: 모든 데이터를 다시 가져옴
+        // 수동 새로고침: 실시간 데이터만 다시 가져옴 (스케줄은 제외)
         return .merge(
-          .run { await $0(.async(.fetchSchedule)) }, // 성공시 fetchAttendanceCount와 fetchTeams 자동 호출
+          .run { await $0(.async(.fetchAttendanceCount)) },
+          .run { await $0(.async(.fetchTeams)) },
           .run { await $0(.async(.fetchStatus)) }
         )
 
@@ -367,7 +368,7 @@ extension AttendanceCheck {
           case .success(let schedules):
             state.scheduleModel = .init(uniqueElements: schedules)
             state.loading = false
-            state.selectScheduleID = todayScheduleId(from: schedules)
+            state.selectScheduleID = closestScheduleId(from: schedules)
               ?? schedules.first?.id
               ?? state.selectScheduleID
 
@@ -591,5 +592,40 @@ private extension AttendanceCheck {
     guard let y = comps.year, let m = comps.month, let d = comps.day else { return nil }
 
     return schedules.first(where: { $0.year == y && $0.month == m && $0.day == d })?.id
+  }
+
+  /// 현재 날짜와 가장 가까운 스케줄 ID를 반환
+  /// 1. 오늘 날짜의 스케줄이 있으면 우선 반환
+  /// 2. 절대적 시간 거리가 가장 가까운 스케줄 선택 (과거/미래 구분 없이)
+  func closestScheduleId(
+    from schedules: [Schedule],
+    now: Date = Date(),
+    timeZone: TimeZone = .init(identifier: "Asia/Seoul")!
+  ) -> Int? {
+    var cal = Calendar(identifier: .gregorian)
+    cal.timeZone = timeZone
+
+    let today = cal.startOfDay(for: now)
+
+    // 오늘 날짜의 스케줄이 있으면 우선 반환
+    if let todayId = todayScheduleId(from: schedules, now: now, timeZone: timeZone) {
+      return todayId
+    }
+
+    // 모든 스케줄을 절대적 시간 거리 기준으로 정렬
+    let closestSchedule = schedules
+      .compactMap { schedule -> (Schedule, Date, TimeInterval)? in
+        guard let scheduleDate = schedule.toDate(timeZone: timeZone) else { return nil }
+        let scheduleDay = cal.startOfDay(for: scheduleDate)
+
+        // 오늘과 같은 날짜는 제외 (이미 위에서 처리됨)
+        guard scheduleDay != today else { return nil }
+
+        let timeInterval = abs(scheduleDay.timeIntervalSince(today))
+        return (schedule, scheduleDate, timeInterval)
+      }
+      .min(by: { $0.2 < $1.2 }) // 절대적 시간 거리 기준으로 가장 가까운 것 선택
+
+    return closestSchedule?.0.id
   }
 }
