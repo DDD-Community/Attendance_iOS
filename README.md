@@ -38,7 +38,7 @@
 |:---:|:---:|:---:|
 | <img width="200" src="fastlane/screenshots/ko/0_APP_IPHONE_65_0.png"> | <img width="200" src="fastlane/screenshots/ko/1_APP_IPHONE_65_1.png"> | <img width="200" src="fastlane/screenshots/ko/2_APP_IPHONE_65_2.png"> |
 
-| 출석 멤버 | 전체 멤버 | 프로필 |
+| 출석 멤버 | 프로필 | 일정 |
 |:---:|:---:|:---:|
 | <img width="200" src="fastlane/screenshots/ko/3_APP_IPHONE_65_3.png"> | <img width="200" src="fastlane/screenshots/ko/4_APP_IPHONE_65_4.png"> | <img width="200" src="fastlane/screenshots/ko/5_APP_IPHONE_65_5.png"> |
 
