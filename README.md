@@ -169,34 +169,41 @@ Network/Service → Data (API 통신)
 ## 🛠 기술 스택
 
 ### Core Technologies
-- **🎯 Architecture**: The Composable Architecture (TCA)
+- **🎯 Architecture**: The Composable Architecture (TCA) 1.18.0
 - **📦 Modularization**: Tuist 4.x (Micro Feature Architecture)
-- **💉 Dependency Injection**: 커스텀 DI Container
-- **🔀 Navigation**: TCA Navigation
+- **💉 Dependency Injection**: WeaveDI 3.4.0
+- **🔀 Navigation**: TCACoordinators 0.11.1
 - **⚡ Concurrency**: Swift Concurrency (async/await)
 
 ### Key Dependencies
-- **ComposableArchitecture**: 상태 관리 및 단방향 데이터 플로우
-- **Swift Concurrency**: Actor 기반 Thread-Safe 비동기 처리
-- **GoogleSignIn**: Google OAuth 2.0 인증
+- **ComposableArchitecture** 1.18.0: 상태 관리 및 단방향 데이터 플로우
+- **TCACoordinators** 0.11.1: TCA 기반 화면 전환 및 네비게이션
+- **WeaveDI** 3.4.0: 의존성 주입 컨테이너 (커스텀 포크)
+- **GoogleSignIn** 9.0.0: Google OAuth 2.0 인증
+- **Firebase** 12.7.0: 백엔드 서비스 (Analytics, Crashlytics)
+- **AsyncMoya** 1.1.8: async/await 기반 네트워킹 (커스텀 포크)
+- **AppAuth** 2.0.0: OAuth 2.0 및 OpenID Connect 클라이언트
 
 ### UI & UX
-- **🎨 UI Framework**: SwiftUI
+- **🎨 UI Framework**: SwiftUI + SwiftUIX 0.2.3
+- **🖼️ Image Loading**: SDWebImageSwiftUI 2.0.0
 - **🎨 Design System**: 커스텀 DesignSystem 모듈
 - **📱 Responsive Design**: 모든 iOS 기기 대응
 
 ### Networking & Data
-- **🌐 HTTP Client**: URLSession + async/await
+- **🌐 HTTP Client**: AsyncMoya 1.1.8 (Moya + async/await)
 - **📱 API Architecture**: RESTful API with JSON
 - **💾 Local Storage**: UserDefaults, Keychain
 - **🔄 State Management**: TCA Store
+- **🔥 Backend Services**: Firebase 12.7.0
 
 ### Development Tools
-- **📊 Analytics**: 커스텀 로깅 시스템
-- **🔧 Build Tool**: Tuist + SPM
-- **🧪 Testing**: XCTest + TCA Testing
+- **📊 Analytics & Logging**: Firebase Analytics + LogMacro
+- **🔧 Build Tool**: Tuist + SPM (Swift Package Manager)
+- **🧪 Testing**: XCTest + TCA Testing + XCTestDynamicOverlay
 - **📱 Automation**: fastlane (스크린샷, 배포)
-- **⚡ Performance**: Swift 6.0
+- **⚡ Performance**: Swift 6.0 + Concurrency Extras
+- **🐛 Crash Reporting**: Firebase Crashlytics
 
 ## 🚀 빠른 시작
 
