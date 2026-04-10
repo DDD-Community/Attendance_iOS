@@ -5,7 +5,7 @@
 
 <img width="150" alt="DDD Logo" src="https://github.com/user-attachments/assets/667db68b-d600-4e2d-a50f-f517de7b30fa">
 
-**효율적인 스터디 관리, 스마트한 출석 체크 시스템**
+**DDD IT 동아리를 위한 출석 관리 시스템**
 
 ![Platform](https://img.shields.io/badge/Platform-iOS-orange.svg)
 ![Language](https://img.shields.io/badge/Language-Swift-FA7343.svg?logo=swift&logoColor=white)
@@ -23,12 +23,12 @@
 
 ## 📖 프로젝트 소개
 
-**DDD 출석**은 개발자 스터디 그룹의 출석 관리를 효율적으로 도와주는 iOS 애플리케이션입니다.
-간단하고 직관적인 인터페이스로 스터디원들의 출석 현황을 관리하고, 스터디 운영을 체계화할 수 있도록 지원합니다.
+**DDD 출석**은 DDD IT 동아리의 출석 관리를 효율적으로 도와주는 iOS 애플리케이션입니다.
+간단하고 직관적한 인터페이스로 동아리원들의 출석 현황을 관리하고, 동아리 활동을 체계화할 수 있도록 지원합니다.
 
 > 💡 **우리는 왜 이 앱을 만들었을까요?**
-> 스터디 출석 관리를 위한 번거로운 과정을 줄이고,
-> 개발자들이 학습에 더 집중할 수 있는 환경을 만들고자 합니다.
+> DDD IT 동아리의 출석 관리를 위한 번거로운 과정을 줄이고,
+> 개발자들이 학습과 네트워킹에 더 집중할 수 있는 환경을 만들고자 합니다.
 
 ### 📱 스크린샷
 
