@@ -2,7 +2,8 @@
 
 <div align="center">
 
-<img width="150" alt="DDD Logo" src="https://github.com/user-attachments/assets/b5425aa7-8301-4692-afb9-acb2234afcdf">
+
+<img width="150" alt="DDD Logo" src="https://github.com/user-attachments/assets/667db68b-d600-4e2d-a50f-f517de7b30fa">
 
 **효율적인 스터디 관리, 스마트한 출석 체크 시스템**
 
