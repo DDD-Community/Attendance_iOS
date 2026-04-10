@@ -108,7 +108,6 @@ Dependencies/
 # https://docs.fastlane.tools/best-practices/source-control/#source-control
 fastlane/report.xml
 fastlane/Preview.html
-fastlane/screenshots/**/*.png
 fastlane/test_output
 fastlane/Fastfile.swp
 fastlane/output/**

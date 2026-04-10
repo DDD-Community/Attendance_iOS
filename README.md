@@ -219,8 +219,8 @@ Network/Service → Data (API 통신)
 
 #### 1️⃣ 저장소 클론
 ```bash
-git clone https://github.com/Roy-wonji/DDD-Attendance-iOS.git
-cd DDD-Attendance-iOS
+git clone https://github.com/DDD-Community/Attendance_iOS.git
+cd Attendance_iOS
 ```
 
 #### 2️⃣ Tuist 설치
@@ -361,8 +361,8 @@ fastlane ios build_for_testing  # 테스트 빌드
 ## 📞 문의 및 지원
 
 - 📧 **이메일**: suhwj81@gmail.com
-- 🐛 **버그 신고**: [Issues](https://github.com/Roy-wonji/DDD-Attendance-iOS/issues)
-- 💡 **기능 제안**: [Discussions](https://github.com/Roy-wonji/DDD-Attendance-iOS/discussions)
+- 🐛 **버그 신고**: [Issues](https://github.com/DDD-Community/Attendance_iOS/issues)
+- 💡 **기능 제안**: [Discussions](https://github.com/DDD-Community/Attendance_iOS/discussions)
 - 📱 **App Store**: [DDD 출석 다운로드](https://apps.apple.com/kr/app/ddd/id6736766383)
 
 ---
@@ -371,6 +371,6 @@ fastlane ios build_for_testing  # 테스트 빌드
 
 **Made with ❤️ by DDD Team**
 
-[![Star this repo](https://img.shields.io/github/stars/Roy-wonji/DDD-Attendance-iOS?style=social)](https://github.com/Roy-wonji/DDD-Attendance-iOS)
+[![Star this repo](https://img.shields.io/github/stars/Roy-wonji/DDD-Attendance-iOS?style=social)](https://github.com/DDD-Community/Attendance_iOS)
 
 </div>
