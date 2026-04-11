@@ -11,7 +11,7 @@ import OnBoarding
 import Web
 
 import ComposableArchitecture
-import TCACoordinators
+import TCAFlow
 
 
 public struct AuthCoordinatorView: View {
@@ -24,12 +24,12 @@ public struct AuthCoordinatorView: View {
   }
   
   public var body: some View {
-    TCARouter(store.scope(state: \.routes, action: \.router)) { screens in
-      switch screens.case {
+    TCAFlowRouter(store.scope(state: \.routes, action: \.router)) { screen in
+      switch screen.case {
       case .login(let loginStore):
         LoginView(store: loginStore)
           .navigationBarBackButtonHidden()
-        
+
         case .onboarding(let onBoardingStore):
           OnBoardingCoordinatorView(store: onBoardingStore)
             .navigationBarBackButtonHidden()

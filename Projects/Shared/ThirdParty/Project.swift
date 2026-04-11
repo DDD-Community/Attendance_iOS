@@ -13,7 +13,7 @@ let project = Project.makeModule(
     .SPM.asyncMoya,
     .SPM.composableArchitecture,
     .SPM.concurrencyExtras,
-    .SPM.tcaCoordinator,
+    .SPM.tcaFlow,
     .SPM.sdwebImage,
     .SPM.swiftUIX,
     .SPM.googleSignIn,

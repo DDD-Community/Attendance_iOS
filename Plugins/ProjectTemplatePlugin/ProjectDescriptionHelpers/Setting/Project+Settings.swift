@@ -124,12 +124,12 @@ extension Settings {
               .relativeToRoot("./Config/dev.xcconfig")
         ),
         .debug(
-          name: "QA",
+          name: .stage,
           settings: commonBaseSettings(
             appName: appName
           ),
           xcconfig:
-              .relativeToRoot("./Config/qa.xcconfig")
+              .relativeToRoot("./Config/stage.xcconfig")
         ),
         .release(
           name: .release,

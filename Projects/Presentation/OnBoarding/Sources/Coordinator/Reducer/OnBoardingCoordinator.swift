@@ -10,9 +10,9 @@ import Foundation
 import Shareds
 
 import ComposableArchitecture
-import TCACoordinators
+import TCAFlow
 
-@Reducer
+@FlowCoordinator(screen: "OnBoardingScreen", navigation: true)
 public struct OnBoardingCoordinator {
   public init() {}
 
@@ -25,8 +25,8 @@ public struct OnBoardingCoordinator {
     }
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
-    case binding(BindingAction<State>)
+  @CasePathable
+  public enum Action {
     case router(IndexedRouterActionOf<OnBoardingScreen>)
     case view(View)
     case inner(InnerAction)
@@ -56,38 +56,28 @@ public struct OnBoardingCoordinator {
     case presentProfile
   }
 
-  @Dependency(\.continuousClock) var clock
+  func handleRoute(state: inout State, action: Action) -> Effect<Action> {
+    switch action {
+      case .router(let routeAction):
+        return routerAction(state: &state, action: routeAction)
 
-  public var body: some Reducer<State, Action> {
-    BindingReducer()
+      case .view(let viewAction):
+        return handleViewAction(state: &state, action: viewAction)
 
-    Reduce { state, action in
-      switch action {
-      case .binding:
-        return .none
+      case .inner(let innerAction):
+        return handleInnerAction(state: &state, action: innerAction)
 
-      case .router(let action):
-        return handleRouterAction(state: &state, action: action)
+      case .async(let asyncAction):
+        return handleAsyncAction(state: &state, action: asyncAction)
 
-      case .view(let action):
-        return handleViewAction(state: &state, action: action)
-
-      case .inner(let action):
-        return handleInnerAction(state: &state, action: action)
-
-      case .async(let action):
-        return handleAsyncAction(state: &state, action: action)
-
-      case .navigation(let action):
-        return handleNavigationAction(state: &state, action: action)
-      }
+      case .navigation(let navigationAction):
+        return handleNavigationAction(state: &state, action: navigationAction)
     }
-    .forEachRoute(\.routes, action: \.router)
   }
 }
 
 extension OnBoardingCoordinator {
-  private func handleRouterAction(
+  private func routerAction(
     state: inout State,
     action: IndexedRouterActionOf<OnBoardingScreen>
   ) -> Effect<Action> {
@@ -150,9 +140,8 @@ extension OnBoardingCoordinator {
       return .none
 
     case .backToRootAction:
-      return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-        $0.goBackToRoot()
-      }
+      state.routes.goBackToRoot()
+      return .none
     }
   }
 
@@ -160,14 +149,14 @@ extension OnBoardingCoordinator {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-
+    return .none
   }
 
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-
+    return .none
   }
 
   private func handleNavigationAction(
@@ -194,7 +183,7 @@ extension OnBoardingCoordinator {
 }
 
 extension OnBoardingCoordinator {
-  @Reducer(state: .equatable)
+  @Reducer
   public enum OnBoardingScreen {
     case InviteCode(InviteCodeReducer)
     case onBoardingName(OnBoardingName)
@@ -203,3 +192,5 @@ extension OnBoardingCoordinator {
     case selectTeam(SelectTeam)
   }
 }
+
+extension OnBoardingCoordinator.OnBoardingScreen.State: Equatable {}

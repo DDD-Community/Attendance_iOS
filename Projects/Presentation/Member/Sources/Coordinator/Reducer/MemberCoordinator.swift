@@ -10,11 +10,11 @@ import Foundation
 import Shareds
 
 import ComposableArchitecture
-import TCACoordinators
+import TCAFlow
 import LogMacro
 import Profile
 
-@Reducer
+@FlowCoordinator(screen: "MemberScreen", navigation: true)
 public struct MemberCoordinator {
   public init() {}
 
@@ -27,8 +27,8 @@ public struct MemberCoordinator {
     }
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
-    case binding(BindingAction<State>)
+  @CasePathable
+  public enum Action {
     case router(IndexedRouterActionOf<MemberScreen>)
     case view(View)
     case inner(InnerAction)
@@ -57,16 +57,10 @@ public struct MemberCoordinator {
 
   @Dependency(\.continuousClock) var clock
 
-  public var body: some Reducer<State, Action> {
-    BindingReducer()
-
-    Reduce { state, action in
-      switch action {
-      case .binding:
-        return .none
-
+  func handleRoute(state: inout State, action: Action) -> Effect<Action> {
+    switch action {
       case .router(let action):
-        return handleRouterAction(state: &state, action: action)
+        return routerAction(state: &state, action: action)
 
       case .view(let action):
         return handleViewAction(state: &state, action: action)
@@ -79,14 +73,12 @@ public struct MemberCoordinator {
 
       case .navigation(let action):
         return handleNavigationAction(state: &state, action: action)
-      }
     }
-    .forEachRoute(\.routes, action: \.router)
   }
 }
 
 extension MemberCoordinator {
-  private func handleRouterAction(
+  private func routerAction(
     state: inout State,
     action: IndexedRouterActionOf<MemberScreen>
   ) -> Effect<Action> {
@@ -123,9 +115,8 @@ extension MemberCoordinator {
       return .none
 
     case .backToRootAction:
-      return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-        $0.goBackToRoot()
-      }
+      state.routes.goBackToRoot()
+      return .none
     }
   }
 
@@ -166,10 +157,12 @@ extension MemberCoordinator {
 }
 
 extension MemberCoordinator {
-  @Reducer(state: .equatable)
+  @Reducer
   public enum MemberScreen {
     case member(MemberMain)
     case profile(ProfileCoordinator)
     case qrCode(MemberQRCode)
   }
 }
+
+extension MemberCoordinator.MemberScreen.State: Equatable {}

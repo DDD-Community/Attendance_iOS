@@ -105,15 +105,15 @@ extension SelectManagingView {
       
       CustomButton(
         action: {
-          if store.userSession.managing.contains(.teamManaging) {
+          if store.userSession.managing.contains(.teamManaging) || store.userSession.userRole == .manager {
             store.send(.navigation(.presentSelectTeam))
           } else {
             store.send(.view(.signUp))
           }
         },
-        title: store.userSession.managing.contains(.teamManaging) ? "다음" : "가입완료",
+        title: (store.userSession.managing.contains(.teamManaging) || store.userSession.userRole == .manager) ? "다음" : "가입완료",
         config: CustomButtonConfig.create(),
-        isEnable: store.activeButton
+        isEnable: !store.userSession.managing.isEmpty
       )
       
       Spacer()

@@ -259,6 +259,8 @@ extension ProfileReducer {
           case .success(let data):
             state.deleteUser = data
             if data.isSuccess {
+              // 탈퇴 성공 시 UserSession의 이름 제거
+              state.$userSession.withLock { $0.name = "" }
               return .send(.navigation(.presentLogOut))
             }
             return .none

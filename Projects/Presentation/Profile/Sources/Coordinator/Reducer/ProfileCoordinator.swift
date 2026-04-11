@@ -11,11 +11,11 @@ import Foundation
 import Shareds
 
 import ComposableArchitecture
-import TCACoordinators
+import TCAFlow
 import OnBoarding
 import Web
 
-@Reducer
+@FlowCoordinator(screen: "ProfileScreen", navigation: true)
 public struct ProfileCoordinator {
   public init() {}
 
@@ -28,8 +28,8 @@ public struct ProfileCoordinator {
     }
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
-    case binding(BindingAction<State>)
+  @CasePathable
+  public enum Action {
     case router(IndexedRouterActionOf<ProfileScreen>)
     case view(View)
     case inner(InnerAction)
@@ -58,18 +58,10 @@ public struct ProfileCoordinator {
     case presentMember
   }
 
-  @Dependency(\.continuousClock) var clock
-
-  public var body: some ReducerOf<Self> {
-    BindingReducer()
-
-    Reduce { state, action in
-      switch action {
-      case .binding:
-        return .none
-
+  func handleRoute(state: inout State, action: Action) -> Effect<Action> {
+    switch action {
       case .router(let action):
-        return handleRouterAction(state: &state, action: action)
+        return routerAction(state: &state, action: action)
 
       case .view(let action):
         return handleViewAction(state: &state, action: action)
@@ -82,14 +74,12 @@ public struct ProfileCoordinator {
 
       case .navigation(let action):
         return handleNavigationAction(state: &state, action: action)
-      }
     }
-    .forEachRoute(\.routes, action: \.router)
   }
 }
 
 extension ProfileCoordinator {
-  private func handleRouterAction(
+  private func routerAction(
     state: inout State,
     action: IndexedRouterActionOf<ProfileScreen>
   ) -> Effect<Action> {
@@ -120,14 +110,12 @@ extension ProfileCoordinator {
         return .send(.navigation(.presentLogin))
 
       case .routeAction(id: _, action: .onBoarding(.navigation(.backToRoot))):
-        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-          $0.goBackTo(\.profile)
-        }
+        state.routes.goBackTo(\.profile)
+        return .none
 
       case .routeAction(id: _, action: .onBoarding(.navigation(.presentProfile))):
-        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-          $0.goBackTo(\.profile)
-        }
+        state.routes.goBackTo(\.profile)
+        return .none
 
     default:
       return .none
@@ -144,9 +132,8 @@ extension ProfileCoordinator {
       return .none
 
     case .backToRootAction:
-      return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-        $0.goBackToRoot()
-      }
+      state.routes.goBackToRoot()
+      return .none
     }
   }
 
@@ -154,14 +141,14 @@ extension ProfileCoordinator {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-   
+    return .none
   }
 
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-
+    return .none
   }
 
   private func handleNavigationAction(
@@ -185,10 +172,12 @@ extension ProfileCoordinator {
 }
 
 extension ProfileCoordinator {
-  @Reducer(state: .equatable)
+  @Reducer
   public enum ProfileScreen {
     case profile(ProfileReducer)
     case web(WebReducer)
     case onBoarding(OnBoardingCoordinator)
   }
 }
+
+extension ProfileCoordinator.ProfileScreen.State: Equatable {}

@@ -8,7 +8,7 @@
 import SwiftUI
 
 import ComposableArchitecture
-import TCACoordinators
+import TCAFlow
 
 public struct OnBoardingCoordinatorView: View {
   @Bindable var store: StoreOf<OnBoardingCoordinator>
@@ -20,8 +20,8 @@ public struct OnBoardingCoordinatorView: View {
   }
 
   public var body: some View {
-    TCARouter(store.scope(state: \.routes, action: \.router)) { screens in
-      switch screens.case {
+    TCAFlowRouter(store.scope(state: \.routes, action: \.router)) { screen in
+      switch screen.case {
         case .InviteCode(let InviteCodeStore):
           InviteCodeView(store: InviteCodeStore) {
             store.send(.navigation(.backToRoot))
