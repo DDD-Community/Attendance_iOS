@@ -230,7 +230,6 @@ extension AttendanceCheckView {
         Spacer()
 
         Image(asset: .stamp)
-          .renderingMode(.template)
           .resizable()
           .scaledToFit()
           .frame(width: 100, height: 100)
