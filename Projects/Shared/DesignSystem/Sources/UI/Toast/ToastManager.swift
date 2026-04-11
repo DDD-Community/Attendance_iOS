@@ -49,8 +49,9 @@ public class ToastManager: ObservableObject {
       isVisible = false
     }
 
-    // 애니메이션 완료 후 토스트 제거
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+    // 애니메이션 완료 후 토스트 제거 (메인 스레드 블로킹 방지)
+    Task { @MainActor in
+      try? await Task.sleep(for: .seconds(0.3))
       self.currentToast = nil
     }
 

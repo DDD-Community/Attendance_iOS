@@ -202,13 +202,9 @@ extension InviteCodeView {
             }
 
             if newValue.count == 1 {
-              DispatchQueue.main.async {
-                completion(false) // 다음 칸으로 이동
-              }
+              completion(false) // 다음 칸으로 이동 (SwiftUI 자동 메인 스레드)
             } else if newValue.isEmpty {
-              DispatchQueue.main.async {
-                completion(true) // 이전 칸으로 이동
-              }
+              completion(true) // 이전 칸으로 이동 (SwiftUI 자동 메인 스레드)
             }
           }
       }
@@ -224,6 +220,7 @@ extension InviteCodeView {
         HStack {
           Spacer()
           Image(asset: .error)
+            .renderingMode(.template) // 에러 아이콘 템플릿 모드 최적화
             .resizable()
             .scaledToFit()
             .frame(width: 20, height: 20)

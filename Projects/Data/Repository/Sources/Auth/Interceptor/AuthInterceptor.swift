@@ -15,6 +15,13 @@ import Combine
 import LogMacro
 import ComposableArchitecture
 
+// MARK: - 알림 상수 정의 (타입 안전성 및 재사용성)
+extension NSNotification.Name {
+    /// 리프레시 토큰 만료 시 발송되는 알림
+    /// 관찰자는 사용 후 반드시 removeObserver를 호출하여 메모리 누수를 방지해야 함
+    static let refreshTokenExpired = NSNotification.Name("RefreshTokenExpired")
+}
+
 // MARK: - Token Refresh Manager
 actor TokenRefreshManager {
     @Dependency(\.authRepository) private var authRepository
@@ -148,10 +155,11 @@ actor TokenRefreshManager {
         #logDebug("✅ [TokenRefreshManager] Session manager cleared")
 
         // 3. 전역 로그인 만료 알림 전송 - 확실하게 발송
+        // ⚠️ 중요: 이 알림을 관찰하는 코드는 반드시 deinit에서 removeObserver를 호출해야 함
         #logDebug("📢 [TokenRefreshManager] 🚨 SENDING LOGOUT NOTIFICATION...")
         await MainActor.run {
             NotificationCenter.default.post(
-                name: NSNotification.Name("RefreshTokenExpired"),
+                name: .refreshTokenExpired,
                 object: nil,
                 userInfo: ["reason": "401_refresh_failed"] // 추가 정보
             )

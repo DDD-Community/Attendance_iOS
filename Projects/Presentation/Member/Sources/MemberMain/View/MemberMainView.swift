@@ -141,6 +141,7 @@ struct MemberMainView: View {
   private var emptyScheduleView: some View {
     LazyVStack(spacing: 16) {
       Image(asset: .stamp)
+        .renderingMode(.template)
         .resizable()
         .scaledToFit()
         .frame(width: 100, height: 100)
@@ -154,14 +155,15 @@ struct MemberMainView: View {
 
   private var scheduleList: some View {
     LazyVStack(alignment: .leading, spacing: 12) {
-      ForEach(store.schedules) {
+      ForEach(store.schedules, id: \.id) { schedule in
         ScheduleCell(
-          month: $0.month,
-          day: $0.day,
-          title: $0.title,
-          description: $0.description,
-          style: $0.status.toScheduleCellStyle
+          month: schedule.month,
+          day: schedule.day,
+          title: schedule.title,
+          description: schedule.description,
+          style: schedule.status.toScheduleCellStyle
         )
+        .id(schedule.id) // SwiftUI 뷰 재사용 최적화
       }
     }
   }

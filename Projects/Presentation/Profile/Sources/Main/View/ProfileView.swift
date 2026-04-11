@@ -96,171 +96,205 @@ extension ProfileView {
 
   @ViewBuilder
   fileprivate func mangerCardImage() -> some View {
-    let team = store.profileModel?.team ?? .unknown
-
     LazyVStack {
       Spacer()
         .frame(height: 17)
 
-      VStack(alignment: .leading, spacing: .zero) {
-        if store.profileModel?.role == .manager {
-          Spacer()
-            .frame(height: 24)
-        }
-
-        HStack {
-          Text(store.profileModel?.role == .manager ? "매니저" : "멤버")
-            .pretendardCustomFont(textStyle: .body3NormalBold)
-            .foregroundStyle(.statusFocus)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 5)
-            .overlay {
-              RoundedRectangle(cornerRadius: 20)
-                .stroke(.statusFocus, lineWidth: 1)
-                .background(.clear)
-            }
-
-          Spacer()
-
-          HStack {
-            Image(asset: .edit)
-              .resizable()
-              .scaledToFit()
-              .frame(width: 13, height: 15)
-
-            Spacer()
-              .frame(width: 7)
-
-            Text("기수 변경")
-              .pretendardCustomFont(textStyle: .body3NormalMedium)
-              .foregroundStyle(.staticWhite)
-          }
-          .padding(.horizontal, 18)
-          .padding(.vertical, 10)
-          .background {
-            RoundedRectangle(cornerRadius: 20)
-              .fill(.dangerBlue.opacity(0.7))
-          }
-          .onTapGesture {
-            store.send(.navigation(.presentEditGeneration))
-          }
-
-          
-        }
-
-        Text("\(store.profileModel?.name ?? "")님")
-          .pretendardCustomFont(textStyle: .headline5Bold)
-          .foregroundStyle(.borderInverse)
-
-        if store.profileModel?.role == .manager {
-          Spacer()
-            .frame(height: 20)
-        } else {
-          Spacer()
-          
-        }
-
-        VStack(alignment: .leading, spacing: 20) {
-          // 1. 직군 (항상 표시)
-          managerTextComponent(
-            title: store.managerProfileRoleType,
-            subTitle: store.profileModel?.jobRole.desc ?? "",
-            managingTeam: "",
-            isManaging: false,
-            isGeneration: false
-          )
-
-          if store.profileModel?.role == .manager {
-            // Manager 순서: 직군 → 담당 팀 → 소속 기수 → 담당 업무
-
-            // 2. 담당 팀
-            managerTextComponent(
-              title: store.memberSelectTeam,
-              subTitle: "매니징",
-              managingTeam: team.attendanceListDescription,
-              isManaging: true,
-              isGeneration: false
-            )
-
-            // 3. 소속 기수
-            managerTextComponent(
-              title: store.managerProfileGeneration,
-              subTitle: store.profileModel?.generation ?? "",
-              managingTeam: "",
-              isManaging: false,
-              isGeneration: true
-            )
-
-            // 4. 담당 업무 (해당 업무가 있는 경우만)
-            if let managerRoles = store.profileModel?.manger, !managerRoles.isEmpty {
-              managerTextComponent(
-                title: store.managerProfileManaging,
-                subTitle: managerRoles.map { $0.desc }.joined(separator: " / "),
-                managingTeam: "",
-                isManaging: false,
-                isGeneration: false
-              )
-            }
-
-          } else if store.profileModel?.role == .member {
-            // Member 순서: 직군 → 소속 팀 → 소속 기수
-
-            // 2. 소속 팀
-            managerTextComponent(
-              title: store.memberSelectTeam,
-              subTitle: team.attendanceListDescription,
-              managingTeam: "",
-              isManaging: false,
-              isGeneration: false
-            )
-
-            // 3. 소속 기수
-            managerTextComponent(
-              title: store.managerProfileGeneration,
-              subTitle: store.profileModel?.generation ?? "",
-              managingTeam: "",
-              isManaging: false,
-              isGeneration: true
-            )
-          }
-
-        }
-
-        if store.profileModel?.role == .manager {
-          Spacer()
-
-        } else {
-          Spacer()
-            .frame(height: 40)
-        }
-
-
-        HStack {
-          Spacer()
-
-          Text("Dynamic Developer Designers")
-            .pretendardCustomFont(textStyle: .body3NormalMedium)
-            .foregroundStyle(.textSecondary100)
-
-          Spacer()
-        }
-
-        if store.profileModel?.role == .manager {
-          Spacer()
-            .frame(height: 24)
-        }
-      }
-      .padding(24)
-      .background(
-        Image(asset: .profileBack)
-          .resizable()
-          .cornerRadius(20)
-          .padding(.horizontal, 10)
-      )
-      .frame(height: UIScreen.screenHeight * 0.65)
-
+      profileCardContent
+        .padding(24)
+        .background(profileCardBackground)
+        .frame(height: UIScreen.screenHeight * 0.65)
     }
     .padding(.horizontal, 24)
+  }
+
+  private var profileCardContent: some View {
+    VStack(alignment: .leading, spacing: .zero) {
+      if store.profileModel?.role == .manager {
+        Spacer()
+          .frame(height: 24)
+      }
+
+      profileHeader
+      profileName
+      profileSpacingAfterName
+      profileInfoContent
+      profileBottomSpacer
+      profileFooter
+
+      if store.profileModel?.role == .manager {
+        Spacer()
+          .frame(height: 24)
+      }
+    }
+  }
+
+  private var profileHeader: some View {
+    HStack {
+      profileRoleBadge
+      Spacer()
+      generationEditButton
+    }
+  }
+
+  private var profileRoleBadge: some View {
+    Text(store.profileModel?.role == .manager ? "매니저" : "멤버")
+      .pretendardCustomFont(textStyle: .body3NormalBold)
+      .foregroundStyle(.statusFocus)
+      .padding(.horizontal, 14)
+      .padding(.vertical, 5)
+      .overlay {
+        RoundedRectangle(cornerRadius: 20)
+          .stroke(.statusFocus, lineWidth: 1)
+          .background(.clear)
+      }
+  }
+
+  private var generationEditButton: some View {
+    HStack {
+      Image(asset: .edit)
+        .renderingMode(.template)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 13, height: 15)
+
+      Spacer()
+        .frame(width: 7)
+
+      Text("기수 변경")
+        .pretendardCustomFont(textStyle: .body3NormalMedium)
+        .foregroundStyle(.staticWhite)
+    }
+    .padding(.horizontal, 18)
+    .padding(.vertical, 10)
+    .background {
+      RoundedRectangle(cornerRadius: 20)
+        .fill(.dangerBlue.opacity(0.7))
+    }
+    .onTapGesture {
+      store.send(.navigation(.presentEditGeneration))
+    }
+  }
+
+  private var profileName: some View {
+    Text("\(store.profileModel?.name ?? "")님")
+      .pretendardCustomFont(textStyle: .headline5Bold)
+      .foregroundStyle(.borderInverse)
+  }
+
+  private var profileSpacingAfterName: some View {
+    Group {
+      if store.profileModel?.role == .manager {
+        Spacer()
+          .frame(height: 20)
+      } else {
+        Spacer()
+      }
+    }
+  }
+
+  private var profileInfoContent: some View {
+    VStack(alignment: .leading, spacing: 20) {
+      jobRoleComponent
+
+      if store.profileModel?.role == .manager {
+        managerSpecificComponents
+      } else if store.profileModel?.role == .member {
+        memberSpecificComponents
+      }
+    }
+  }
+
+  private var jobRoleComponent: some View {
+    managerTextComponent(
+      title: store.managerProfileRoleType,
+      subTitle: store.profileModel?.jobRole.desc ?? "",
+      managingTeam: "",
+      isManaging: false,
+      isGeneration: false
+    )
+  }
+
+  private var managerSpecificComponents: some View {
+    let team = store.profileModel?.team ?? .unknown
+
+    return Group {
+      managerTextComponent(
+        title: store.memberSelectTeam,
+        subTitle: "매니징",
+        managingTeam: team.attendanceListDescription,
+        isManaging: true,
+        isGeneration: false
+      )
+
+      managerTextComponent(
+        title: store.managerProfileGeneration,
+        subTitle: store.profileModel?.generation ?? "",
+        managingTeam: "",
+        isManaging: false,
+        isGeneration: true
+      )
+
+      if let managerRoles = store.profileModel?.manger, !managerRoles.isEmpty {
+        managerTextComponent(
+          title: store.managerProfileManaging,
+          subTitle: managerRoles.map { $0.desc }.joined(separator: " / "),
+          managingTeam: "",
+          isManaging: false,
+          isGeneration: false
+        )
+      }
+    }
+  }
+
+  private var memberSpecificComponents: some View {
+    let team = store.profileModel?.team ?? .unknown
+
+    return Group {
+      managerTextComponent(
+        title: store.memberSelectTeam,
+        subTitle: team.attendanceListDescription,
+        managingTeam: "",
+        isManaging: false,
+        isGeneration: false
+      )
+
+      managerTextComponent(
+        title: store.managerProfileGeneration,
+        subTitle: store.profileModel?.generation ?? "",
+        managingTeam: "",
+        isManaging: false,
+        isGeneration: true
+      )
+    }
+  }
+
+  private var profileBottomSpacer: some View {
+    Group {
+      if store.profileModel?.role == .manager {
+        Spacer()
+      } else {
+        Spacer()
+          .frame(height: 40)
+      }
+    }
+  }
+
+  private var profileFooter: some View {
+    HStack {
+      Spacer()
+      Text("Dynamic Developer Designers")
+        .pretendardCustomFont(textStyle: .body3NormalMedium)
+        .foregroundStyle(.textSecondary100)
+      Spacer()
+    }
+  }
+
+  private var profileCardBackground: some View {
+    Image(asset: .profileBack)
+      .resizable()
+      .cornerRadius(20)
+      .padding(.horizontal, 10)
   }
 
   @ViewBuilder

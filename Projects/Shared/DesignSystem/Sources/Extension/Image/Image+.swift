@@ -24,17 +24,23 @@ public extension UIImage {
   }
   
   func setRoundedCorners() -> UIImage? {
-    let imageView = UIImageView(image: self)
-    let layer = imageView.layer
-    layer.masksToBounds = true
-    layer.cornerRadius = imageView.frame.width / 2.0
-    UIGraphicsBeginImageContext(imageView.bounds.size)
-    defer { UIGraphicsEndImageContext() }
-    guard let context = UIGraphicsGetCurrentContext() else {
-      return nil
+    // 이미지 크기와 코너 반경 직접 계산 (UIImageView 생성 불필요)
+    let imageSize = self.size
+    let cornerRadius = min(imageSize.width, imageSize.height) / 2.0
+
+    // 현대적인 UIGraphicsImageRenderer 사용 (메모리 효율적)
+    let renderer = UIGraphicsImageRenderer(size: imageSize)
+    let roundedImage = renderer.image { context in
+      // 코너 반경으로 클리핑 패스 생성
+      let rect = CGRect(origin: .zero, size: imageSize)
+      let path = UIBezierPath(roundedRect: rect, cornerRadius: cornerRadius)
+      context.cgContext.addPath(path.cgPath)
+      context.cgContext.clip()
+
+      // 원본 이미지 그리기
+      self.draw(in: rect)
     }
-    layer.render(in: context)
-    let roundedImage = UIGraphicsGetImageFromCurrentImageContext()
+
     return roundedImage
   }
 }

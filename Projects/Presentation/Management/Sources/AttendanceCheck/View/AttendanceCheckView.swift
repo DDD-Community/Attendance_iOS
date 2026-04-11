@@ -107,12 +107,8 @@ extension AttendanceCheckView {
                     Text("\(item.teams.attendanceListDescription)")
                       .pretendardFont(family: .Bold, size: 16)
                       .foregroundColor(store.selectPart == mappedTeam ? .staticWhite : .gray600)
-                      .background(
-                        GeometryReader { geometry in
-                          Color.clear
-                            .preference(key: TeamTextWidthPreferenceKey.self, value: [item.id: geometry.size.width])
-                        }
-                      )
+                      .fixedSize() // 텍스트 크기 고정으로 GeometryReader 불필요
+                      .id("team-\(item.id)") // 효율적인 뷰 식별
 
                     Spacer()
                       .frame(width: 16)
@@ -127,11 +123,8 @@ extension AttendanceCheckView {
                       .background(.blue40)
                   }
                 }
-                .onPreferenceChange(TeamTextWidthPreferenceKey.self) { newWidths in
-                  for (key, width) in newWidths {
-                    store.dividerWidths[key] = width
-                  }
-                }
+                // GeometryReader 최적화로 preference 기반 width 측정 불필요
+                // 텍스트는 fixedSize()로 자연스러운 크기 사용
                 .onTapGesture {
                   store.send(.view(.selectPartButton(selectPart: item)))
                 }
@@ -237,6 +230,7 @@ extension AttendanceCheckView {
         Spacer()
 
         Image(asset: .stamp)
+          .renderingMode(.template)
           .resizable()
           .scaledToFit()
           .frame(width: 100, height: 100)
