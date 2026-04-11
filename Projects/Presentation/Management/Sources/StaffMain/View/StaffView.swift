@@ -102,6 +102,7 @@ extension StaffView {
                   .frame(width: 10)
               
             Image(systemName: store.isExpandedDropDown ? "chevron.up" : "chevron.down")
+                  .renderingMode(.template) // 시스템 이미지 렌더링 최적화
                   .foregroundColor(.white)
                   .frame(width: 12, height: 7)
                   .bold()

@@ -129,7 +129,6 @@ extension ScheduleReducer {
           try await scheduleUseCase.getSchedule()
         }
           .mapError(ScheduleError.from)
-        try await clock.sleep(for: .seconds(0.8))
         return await send(.inner(.fetchScheduleResponse(scheduleResult)))
 
       }

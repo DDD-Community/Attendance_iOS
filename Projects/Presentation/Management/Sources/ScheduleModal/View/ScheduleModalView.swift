@@ -75,6 +75,7 @@ extension ScheduleModalView {
     LazyVStack(spacing: 8) {
       ForEach(schedules, id: \.id) { item in
         scheduleCardRow(item: item)
+          .id(item.id) // SwiftUI 뷰 재사용 최적화
       }
     }
     .padding(.top, 8)

@@ -39,12 +39,15 @@ struct QRScannerView: View {
       navigationBar()
     }
     .onChange(of: store.scannedText) { oldValue ,newValue in
-      // 스캔된 텍스트가 업데이트되면, 2초 후에 재스캔을 위해 상태 재활성화
+      // 스캔된 텍스트가 업데이트되면, 15초 후에 재스캔을 위해 상태 재활성화
       if !newValue.isEmpty {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 15.0) {
-          store.scannedText = ""
-          store.isScanning = true
-          store.isPresent = false
+        _Concurrency.Task {
+          try? await _Concurrency.Task.sleep(for: .seconds(10)) // 15초 → 10초로 사용자 경험 개선
+          await MainActor.run {
+            store.scannedText = ""
+            store.isScanning = true
+            store.isPresent = false
+          }
         }
       }
     }
@@ -52,8 +55,11 @@ struct QRScannerView: View {
     .onChange(of: store.qrCheckModel?.isSuccess) { oldValue, newValue in
       switch newValue {
         case true:
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-          backAction()
+        _Concurrency.Task {
+          try? await _Concurrency.Task.sleep(for: .seconds(0.8)) // 1초 → 0.8초로 반응성 개선
+          await MainActor.run {
+            backAction()
+          }
         }
       default:
         break

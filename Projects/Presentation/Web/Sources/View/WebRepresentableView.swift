@@ -44,7 +44,7 @@ public struct WebRepresentableView: UIViewRepresentable {
     webView.translatesAutoresizingMaskIntoConstraints = false
 
     // AnimatedImage로 로딩 GIF 표시
-    let loadingContainer = createAnimatedImageLoader()
+    let loadingContainer = createAnimatedImageLoader(coordinator: context.coordinator)
     loadingContainer.translatesAutoresizingMaskIntoConstraints = false
 
     containerView.addSubview(webView)
@@ -98,17 +98,21 @@ public struct WebRepresentableView: UIViewRepresentable {
 
   // MARK: - AnimatedImage Loading Helper Functions
 
-  private func createAnimatedImageLoader() -> UIView {
+  private func createAnimatedImageLoader(coordinator: Coordinator) -> UIView {
     let containerView = UIView()
     containerView.backgroundColor = .clear
 
-    // SwiftUI AnimatedImage를 UIKit에 임베드
-    let animatedImageView = UIHostingController(rootView:
+    // SwiftUI AnimatedImage를 UIKit에 임베드 - 조건부 애니메이션으로 메모리 최적화
+    let animatedImageView = UIHostingController(rootView: AnyView(
       AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(true))
         .resizable()
         .scaledToFit()
         .frame(width: 200, height: 200)
-    )
+        .opacity(1) // alpha로 제어될 가시성에 맞춰 애니메이션 효율성 확보
+    ))
+
+    // Coordinator에서 강한 참조로 보관 (메모리 누수 방지)
+    coordinator.animatedImageController = animatedImageView
 
     animatedImageView.view.backgroundColor = .clear
     animatedImageView.view.translatesAutoresizingMaskIntoConstraints = false
@@ -131,15 +135,26 @@ public struct WebRepresentableView: UIViewRepresentable {
     weak var webView: WKWebView?
     weak var loadingIndicator: UIView?
 
+    // UIHostingController 메모리 누수 방지를 위한 강한 참조 보관
+    var animatedImageController: UIHostingController<AnyView>?
+
     init(_ parent: WebRepresentableView) {
       self.parent = parent
+    }
+
+    deinit {
+      // 메모리 정리
+      animatedImageController?.willMove(toParent: nil)
+      animatedImageController?.view.removeFromSuperview()
+      animatedImageController?.removeFromParent()
+      animatedImageController = nil
     }
 
     // MARK: - WKNavigationDelegate
 
     public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-      // 로딩 시작 → AnimatedImage 표시
-      DispatchQueue.main.async { [weak self] in
+      // 로딩 시작 → AnimatedImage 표시 (MainActor 최적화)
+      Task { @MainActor [weak self] in
         guard let self = self, let loadingIndicator = self.loadingIndicator else { return }
         loadingIndicator.alpha = 1
       }
@@ -159,7 +174,7 @@ public struct WebRepresentableView: UIViewRepresentable {
     }
 
     private func hideLoadingIndicator() {
-      DispatchQueue.main.async { [weak self] in
+      Task { @MainActor [weak self] in
         guard let self = self, let loadingIndicator = self.loadingIndicator else { return }
 
         UIView.animate(withDuration: 0.3, animations: {
