@@ -16,7 +16,7 @@ import OnBoarding
 import Web
 
 @FlowCoordinator(screen: "ProfileScreen", navigation: true)
-public struct ProfileCoordinator {
+public struct ProfileCoordinator: Sendable {
   public init() {}
 
   @ObservableState

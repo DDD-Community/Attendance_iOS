@@ -17,7 +17,7 @@ import Entity
 import DesignSystem
 
 @Reducer
-public struct ProfileReducer {
+public struct ProfileReducer: Sendable {
   public init() {}
 
   @ObservableState
@@ -48,8 +48,8 @@ public struct ProfileReducer {
     public init() {}
   }
 
-  @Reducer(state: .equatable)
-  public enum Destination {
+  @Reducer
+  public enum Destination: Sendable {
     case createApp(CreateApp)
   }
 
@@ -110,7 +110,7 @@ public struct ProfileReducer {
     case confirmTapped
   }
 
-  nonisolated enum CancelID: Hashable {
+  public nonisolated enum CancelID: Hashable, Sendable {
     case fetchProfile
     case deleteUser
     case logoutUser
@@ -374,3 +374,5 @@ extension ProfileReducer {
     }
   }
 }
+
+extension ProfileReducer.Destination.State: Equatable {}
