@@ -9,6 +9,7 @@ import Presentation
 import ComposableArchitecture
 import Entity
 import LogMacro
+import Profile
 
 @Reducer
 public struct AppReducer: Sendable {
@@ -141,21 +142,30 @@ public struct AppReducer: Sendable {
       state = .auth(.init())
       return .concatenate(
         .cancel(id: CancelID.staffEffects),
-        .cancel(id: CancelID.memberEffects)
+        .cancel(id: CancelID.memberEffects),
+        .cancel(id: ProfileReducer.CancelID.fetchProfile),
+        .cancel(id: ProfileReducer.CancelID.deleteUser),
+        .cancel(id: ProfileReducer.CancelID.logoutUser)
       )
 
     case .presentStaff:
       state = .staff(.init())
       return .concatenate(
         .cancel(id: CancelID.authEffects),
-        .cancel(id: CancelID.memberEffects)
+        .cancel(id: CancelID.memberEffects),
+        .cancel(id: ProfileReducer.CancelID.fetchProfile),
+        .cancel(id: ProfileReducer.CancelID.deleteUser),
+        .cancel(id: ProfileReducer.CancelID.logoutUser)
       )
 
     case .presentMember:
       state = .member(.init())
       return .concatenate(
         .cancel(id: CancelID.authEffects),
-        .cancel(id: CancelID.staffEffects)
+        .cancel(id: CancelID.staffEffects),
+        .cancel(id: ProfileReducer.CancelID.fetchProfile),
+        .cancel(id: ProfileReducer.CancelID.deleteUser),
+        .cancel(id: ProfileReducer.CancelID.logoutUser)
       )
     }
   }

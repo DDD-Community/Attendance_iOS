@@ -94,6 +94,10 @@ public extension SettingsDictionary {
     return self.merging(["CFBundleDevelopmentRegion": SettingValue(stringLiteral: value)]) { (_, new) in new }
   }
 
+  func setStrictConcurrency(_ value: String = "minimal") -> SettingsDictionary {
+    return self.merging(["SWIFT_STRICT_CONCURRENCY": SettingValue(stringLiteral: value)]) { (_, new) in new }
+  }
+
   func setAllowNonModularIncludesInFrameworkModules(_ value: Bool) -> SettingsDictionary {
     let stringValue = value ? "YES" : "NO"
     return merging([
