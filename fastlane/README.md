@@ -26,38 +26,6 @@ TDD 테스트 및 자동 배포
 
 ## iOS
 
-### ios match_dev
-
-```sh
-[bundle exec] fastlane ios match_dev
-```
-
-Get development certificates and profiles
-
-### ios match_store
-
-```sh
-[bundle exec] fastlane ios match_store
-```
-
-Get AppStore certificates and profiles
-
-### ios match_dev_readonly
-
-```sh
-[bundle exec] fastlane ios match_dev_readonly
-```
-
-Get development certificates and profiles (readonly)
-
-### ios match_store_readonly
-
-```sh
-[bundle exec] fastlane ios match_store_readonly
-```
-
-Get AppStore certificates and profiles (readonly)
-
 ### ios QA
 
 ```sh
