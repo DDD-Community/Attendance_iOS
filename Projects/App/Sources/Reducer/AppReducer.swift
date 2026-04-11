@@ -150,11 +150,7 @@ public struct AppReducer: Sendable {
         MemberCoordinator()
       }
 
-    // 🔥 Parent reducer는 마지막에 처리 + 디버그 로깅
     Reduce { state, action in
-      // 🔍 디버그: action과 현재 state 로깅
-      #logDebug("🎯 [AppReducer] Current State: \(state) | Incoming Action: \(action)")
-
       switch action {
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
@@ -169,7 +165,6 @@ public struct AppReducer: Sendable {
         return handleNavigationAction(state: &state, action: navigationAction)
 
       case .scope(let scopeAction):
-        #logDebug("🔍 [AppReducer] Scope Action Received: \(scopeAction)")
         return handleScopeAction(state: &state, action: scopeAction)
       }
     }

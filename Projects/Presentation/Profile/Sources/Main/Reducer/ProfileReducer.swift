@@ -201,12 +201,6 @@ extension ProfileReducer {
 
     case .fetchUser:
       // 🔥 추가 검증: 유효한 세션이 없으면 즉시 중단
-      guard !state.userSession.accessToken.isEmpty else {
-        #logDebug("❌ [ProfileReducer] No valid session - cancelling fetchUser")
-        return .none
-      }
-
-      #logDebug("✅ [ProfileReducer] Starting fetchUser with valid session")
       state.isLoading = true
 
       return .run { send in

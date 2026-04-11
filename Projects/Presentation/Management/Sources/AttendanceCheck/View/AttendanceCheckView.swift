@@ -28,14 +28,12 @@ struct AttendanceCheckView: View {
     }
     .onAppear {
       store.send(.view(.onAppear))
-      
     }
     .sheet(item: $store.scope(state: \.destination?.scheduleModal, action: \.destination.scheduleModal)) { scheduleModalStore in
       ScheduleModalView(store: scheduleModalStore)
         .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
         .presentationCornerRadius(20)
         .presentationDragIndicator(.visible)
-
     }
     .alert($store.scope(state: \.alert, action: \.scope.alert))
     .attendanceModal($store.scope(state: \.attendanceModal, action: \.scope.attendanceModal))
@@ -107,8 +105,12 @@ extension AttendanceCheckView {
                     Text("\(item.teams.attendanceListDescription)")
                       .pretendardFont(family: .Bold, size: 16)
                       .foregroundColor(store.selectPart == mappedTeam ? .staticWhite : .gray600)
-                      .fixedSize() // 텍스트 크기 고정으로 GeometryReader 불필요
-                      .id("team-\(item.id)") // 효율적인 뷰 식별
+                      .background(
+                        GeometryReader { geometry in
+                          Color.clear
+                            .preference(key: TeamTextWidthPreferenceKey.self, value: [item.id: geometry.size.width])
+                        }
+                      )
 
                     Spacer()
                       .frame(width: 16)
@@ -123,8 +125,11 @@ extension AttendanceCheckView {
                       .background(.blue40)
                   }
                 }
-                // GeometryReader 최적화로 preference 기반 width 측정 불필요
-                // 텍스트는 fixedSize()로 자연스러운 크기 사용
+                .onPreferenceChange(TeamTextWidthPreferenceKey.self) { newWidths in
+                  for (key, width) in newWidths {
+                    store.dividerWidths[key] = width
+                  }
+                }
                 .onTapGesture {
                   store.send(.view(.selectPartButton(selectPart: item)))
                 }
@@ -133,6 +138,7 @@ extension AttendanceCheckView {
             }
             .padding(.horizontal, 24)
           }
+          .scrollDisabled(true)
 
           Spacer()
             .frame(height: 12)
@@ -149,9 +155,19 @@ extension AttendanceCheckView {
                 }) else { return }
           proxy.scrollTo(target.id, anchor: .center)
         }
-
       }
     }
+    .simultaneousGesture(
+      DragGesture(minimumDistance: 20)
+        .onEnded { value in
+          let swipeThreshold: CGFloat = 50
+          if value.translation.width > swipeThreshold {
+            store.send(.view(.swipeNext))
+          } else if value.translation.width < -swipeThreshold {
+            store.send(.view(.swipePrevious))
+          }
+        }
+    )
   }
 
   @ViewBuilder
@@ -159,11 +175,33 @@ extension AttendanceCheckView {
     if let selectPart = store.selectPart,
        [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart) {
       selectPartAttendanceStatusCard()
+        .simultaneousGesture(
+          DragGesture(minimumDistance: 20)
+            .onEnded { value in
+              let swipeThreshold: CGFloat = 50
+              if value.translation.width > swipeThreshold {
+                store.send(.view(.swipePrevious))
+              } else if value.translation.width < -swipeThreshold {
+                store.send(.view(.swipeNext))
+              }
+            }
+        )
 
       Spacer()
         .frame(height: 20)
     } else {
       selectPartAttendanceStatusCard()
+        .simultaneousGesture(
+          DragGesture(minimumDistance: 20)
+            .onEnded { value in
+              let swipeThreshold: CGFloat = 50
+              if value.translation.width > swipeThreshold {
+                store.send(.view(.swipePrevious))
+              } else if value.translation.width < -swipeThreshold {
+                store.send(.view(.swipeNext))
+              }
+            }
+        )
     }
   }
 
