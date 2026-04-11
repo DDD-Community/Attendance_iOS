@@ -179,50 +179,23 @@ Network/Service → Data (API 통신)
 ### 📚 주요 라이브러리
 
 #### 🎯 아키텍처 & 상태 관리
-- **[ComposableArchitecture](https://github.com/pointfreeco/swift-composable-architecture)** 1.25.5
-  - 단방향 데이터 플로우 및 상태 관리
-  - Effect 기반 비동기 처리
-  - 테스트 가능한 아키텍처
-  
-- **[TCAFlow](https://github.com/Roy-wonji/TCAFlow.git)** 1.1.0 ⭐️ *커스텀 라이브러리*
-  - TCA 기반 화면 전환 및 네비게이션
-  - Coordinator 패턴 구현
-  - 프로그래매틱 네비게이션 지원
-
-- **[WeaveDI](https://github.com/Roy-wonji/WeaveDI.git)** 3.4.0 ⭐️ *커스텀 포크*
-  - 의존성 주입 컨테이너
-  - 컴파일 타임 안전성
-  - 자동 의존성 해결
+- **[ComposableArchitecture](https://github.com/pointfreeco/swift-composable-architecture)** 1.25.5 - 단방향 데이터 플로우 및 상태 관리
+- **[TCAFlow](https://github.com/Roy-wonji/TCAFlow.git)** 1.1.0 ⭐️ - TCA 기반 화면 전환 및 네비게이션 (커스텀)
+- **[WeaveDI](https://github.com/Roy-wonji/WeaveDI.git)** 3.4.0 ⭐️ - 의존성 주입 컨테이너 (커스텀 포크)
 
 #### 🔐 인증 & 보안
-- **[GoogleSignIn-iOS](https://github.com/google/GoogleSignIn-iOS)** 9.0.0
-  - Google OAuth 2.0 인증
-  - 간편한 소셜 로그인
-  
-- **[AppAuth-iOS](https://github.com/openid/AppAuth-iOS.git)** 2.0.0
-  - OAuth 2.0 및 OpenID Connect 클라이언트
-  - 보안 강화된 인증 플로우
+- **[GoogleSignIn-iOS](https://github.com/google/GoogleSignIn-iOS)** 9.0.0 - Google OAuth 2.0 인증
+- **[AppAuth-iOS](https://github.com/openid/AppAuth-iOS.git)** 2.0.0 - OAuth 2.0 및 OpenID Connect 클라이언트
 
 #### 🌐 네트워킹
-- **[AsyncMoya](https://github.com/Roy-wonji/AsyncMoya)** 1.1.8 ⭐️ *커스텀 라이브러리*
-  - async/await 기반 HTTP 클라이언트
-  - Moya의 Swift Concurrency 지원
-  - 타입 안전한 API 레이어
+- **[AsyncMoya](https://github.com/Roy-wonji/AsyncMoya)** 1.1.8 ⭐️ - async/await 기반 HTTP 클라이언트 (커스텀)
 
 #### 🎨 UI & UX
-- **[SwiftUIX](https://github.com/SwiftUIX/SwiftUIX.git)** 0.2.3
-  - SwiftUI 확장 컴포넌트
-  - 추가 레이아웃 및 UI 요소
-  
-- **[SDWebImageSwiftUI](https://github.com/SDWebImage/SDWebImageSwiftUI.git)** 2.0.0
-  - 비동기 이미지 로딩 및 캐싱
-  - 메모리 효율적인 이미지 처리
+- **[SwiftUIX](https://github.com/SwiftUIX/SwiftUIX.git)** 0.2.3 - SwiftUI 확장 컴포넌트
+- **[SDWebImageSwiftUI](https://github.com/SDWebImage/SDWebImageSwiftUI.git)** 2.0.0 - 비동기 이미지 로딩 및 캐싱
 
 #### 🔥 백엔드 서비스
-- **[Firebase iOS SDK](https://github.com/firebase/firebase-ios-sdk)** 12.7.0
-  - Firebase Analytics: 사용자 행동 분석
-  - Firebase Crashlytics: 크래시 리포팅
-  - Firebase Remote Config: 원격 설정 관리
+- **[Firebase iOS SDK](https://github.com/firebase/firebase-ios-sdk)** 12.7.0 - Analytics, Crashlytics, Remote Config
 
 ### 🛠 개발 도구 & 유틸리티
 
