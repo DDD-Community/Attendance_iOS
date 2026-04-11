@@ -141,3 +141,6 @@ Derived/
 # Config
 **/Config
 
+# Claude Code local settings (contains sensitive information)
+.claude/settings.local.json
+
