@@ -9,10 +9,10 @@ import Foundation
 import Utill
 import Profile
 import ComposableArchitecture
-import TCACoordinators
+import TCAFlow
 import LogMacro
 
-@Reducer
+@FlowCoordinator(screen: "CoreMemberScreen", navigation: true)
 public struct StaffCoordinator {
   public init() {}
 
@@ -25,8 +25,8 @@ public struct StaffCoordinator {
     var routes: [Route<CoreMemberScreen.State>]
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
-    case binding(BindingAction<State>)
+  @CasePathable
+  public enum Action {
     case router(IndexedRouterActionOf<CoreMemberScreen>)
     case view(View)
     case async(AsyncAction)
@@ -61,16 +61,11 @@ public struct StaffCoordinator {
     case presentMember
   }
 
-  
+
   @Dependency(\.continuousClock) var clock
 
-  public var body: some Reducer<State, Action> {
-    BindingReducer()
-    Reduce { state, action in
-      switch action {
-      case .binding(_):
-        return .none
-
+  func handleRoute(state: inout State, action: Action) -> Effect<Action> {
+    switch action {
       case .router(let routeAction):
         return routerAction(state: &state, action: routeAction)
 
@@ -85,9 +80,7 @@ public struct StaffCoordinator {
 
       case .navigation(let navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
-      }
     }
-    .forEachRoute(\.routes, action: \.router)
   }
 
 }
@@ -135,9 +128,8 @@ extension StaffCoordinator {
       return .none
 
     case .backToRootAction:
-      return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-        $0.goBackToRoot()
-      }
+      state.routes.goBackToRoot()
+      return .none
     }
   }
 
@@ -166,16 +158,18 @@ extension StaffCoordinator {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-
+    return .none
   }
 
   // RefreshTokenExpired listener는 AppReducer에서 처리하므로 중복 제거
 }
 
 extension StaffCoordinator {
-  @Reducer(state: .equatable)
-  public enum CoreMemberScreen{
+  @Reducer
+  public enum CoreMemberScreen {
     case coreMember(Staff)
     case profile(ProfileCoordinator)
   }
 }
+
+extension StaffCoordinator.CoreMemberScreen.State: Equatable {}

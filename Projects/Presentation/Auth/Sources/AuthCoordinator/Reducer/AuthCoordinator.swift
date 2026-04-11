@@ -11,11 +11,11 @@ import Utill
 import Entity
 
 import ComposableArchitecture
-import TCACoordinators
+import TCAFlow
 import OnBoarding
 import Web
 
-@Reducer
+@FlowCoordinator(screen: "AuthScreen", navigation: true)
 public struct AuthCoordinator {
   public init() {}
 
@@ -29,8 +29,8 @@ public struct AuthCoordinator {
     }
   }
 
-  public enum Action: FeatureAction, BindableAction {
-    case binding(BindingAction<State>)
+  @CasePathable
+  public enum Action {
     case router(IndexedRouterActionOf<AuthScreen>)
     case view(View)
     case async(AsyncAction)
@@ -66,30 +66,23 @@ public struct AuthCoordinator {
     case cleanup
   }
 
-  public var body: some Reducer<State, Action> {
-    BindingReducer()
-    Reduce { state, action in
-      switch action {
-        case .binding(_):
-          return .none
+  func handleRoute(state: inout State, action: Action) -> Effect<Action> {
+    switch action {
+      case .router(let routeAction):
+        return routerAction(state: &state, action: routeAction)
 
-        case .router(let routeAction):
-          return routerAction(state: &state, action: routeAction)
+      case .view(let viewAction):
+        return handleViewAction(state: &state, action: viewAction)
 
-        case .view(let viewAction):
-          return handleViewAction(state: &state, action: viewAction)
+      case .async(let asyncAction):
+        return handleAsyncAction(state: &state, action: asyncAction)
 
-        case .async(let asyncAction):
-          return handleAsyncAction(state: &state, action: asyncAction)
+      case .inner(let innerAction):
+        return handleInnerAction(state: &state, action: innerAction)
 
-        case .inner(let innerAction):
-          return handleInnerAction(state: &state, action: innerAction)
-
-        case .navigation(let navigationAction):
-          return handleNavigationAction(state: &state, action: navigationAction)
-      }
+      case .navigation(let navigationAction):
+        return handleNavigationAction(state: &state, action: navigationAction)
     }
-    .forEachRoute(\.routes, action: \.router)
   }
 }
 
@@ -126,17 +119,14 @@ extension AuthCoordinator {
         return .send(.view(.backAction))
 
       case .routeAction(id: _, action: .onboarding(.navigation(.backToRoot))):
-        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-          $0.goBackTo(\.login)
-        }
-
+        state.routes.goBackTo(\.login)
+        return .none
 
       case .routeAction(id: _, action: .onboarding(.navigation(.presentStaff))):
         return .send(.navigation(.presentStaff))
 
       case .routeAction(id: _, action: .onboarding(.navigation(.presentMember))):
         return .send(.navigation(.presentMember))
-
 
       default:
         return .none
@@ -153,9 +143,8 @@ extension AuthCoordinator {
         return .none
 
       case .backToRootAction:
-        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-          $0.goBackToRoot()
-        }
+        state.routes.goBackToRoot()
+        return .none
     }
   }
 
@@ -183,22 +172,24 @@ extension AuthCoordinator {
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-
+    return .none
   }
 
   private func handleInnerAction(
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-
+    return .none
   }
 }
 
 extension AuthCoordinator {
-  @Reducer(state: .equatable)
+  @Reducer
   public enum AuthScreen {
     case login(Login)
     case onboarding(OnBoardingCoordinator)
     case web(WebReducer)
   }
 }
+
+extension AuthCoordinator.AuthScreen.State: Equatable {}

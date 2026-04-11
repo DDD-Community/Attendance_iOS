@@ -13,8 +13,9 @@ let project = Project.makeModule(
     .Presentation(implements: .Splash),
     .Presentation(implements: .Management),
     .Presentation(implements: .Member),
-
-
+    .Presentation(implements: .OnBoarding),
+    .Presentation(implements: .Profile),
+    .Presentation(implements: .Web)
   ],
   sources: ["Sources/**"]
 )
