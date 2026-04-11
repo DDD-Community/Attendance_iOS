@@ -64,6 +64,11 @@ public struct StaffCoordinator {
 
   @Dependency(\.continuousClock) var clock
 
+  public nonisolated enum CancelID: Hashable, Sendable {
+    case allEffects
+    case profileEffects
+  }
+
   func handleRoute(state: inout State, action: Action) -> Effect<Action> {
     switch action {
       case .router(let routeAction):
@@ -94,7 +99,12 @@ extension StaffCoordinator {
       // MARK: - 운영진 프로필
     case .routeAction(id: _, action: .coreMember(.navigation(.presentManagerProfile))):
       state.routes.push(.profile(.init()))
-      return .none
+      return .concatenate(
+        .cancel(id: CancelID.profileEffects),
+        .cancel(id: ProfileReducer.CancelID.fetchProfile),
+        .cancel(id: ProfileReducer.CancelID.deleteUser),
+        .cancel(id: ProfileReducer.CancelID.logoutUser)
+      )
 
 
       // MARK: - 로그아웃
@@ -103,15 +113,34 @@ extension StaffCoordinator {
         try await clock.sleep(for: .seconds(0.5))
         await send(.navigation(.presentLogin))
       }
+      .cancellable(id: CancelID.allEffects)
 
       case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
-        return .send(.view(.backAction))
+        return .concatenate(
+          .cancel(id: CancelID.profileEffects),
+          .cancel(id: ProfileReducer.CancelID.fetchProfile),
+          .cancel(id: ProfileReducer.CancelID.deleteUser),
+          .cancel(id: ProfileReducer.CancelID.logoutUser),
+          .send(.view(.backAction))
+        )
 
       case .routeAction(id: _, action: .profile(.navigation(.presentMember))):
-        return .send(.navigation(.presentMember))
+        return .concatenate(
+          .cancel(id: CancelID.profileEffects),
+          .cancel(id: ProfileReducer.CancelID.fetchProfile),
+          .cancel(id: ProfileReducer.CancelID.deleteUser),
+          .cancel(id: ProfileReducer.CancelID.logoutUser),
+          .send(.navigation(.presentMember))
+        )
 
       case .routeAction(id: _, action: .profile(.navigation(.presentStaff))):
-        return .send(.view(.backToRootAction))
+        return .concatenate(
+          .cancel(id: CancelID.profileEffects),
+          .cancel(id: ProfileReducer.CancelID.fetchProfile),
+          .cancel(id: ProfileReducer.CancelID.deleteUser),
+          .cancel(id: ProfileReducer.CancelID.logoutUser),
+          .send(.view(.backToRootAction))
+        )
 
     default:
       return .none

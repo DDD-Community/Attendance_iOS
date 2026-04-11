@@ -57,6 +57,11 @@ public struct MemberCoordinator {
 
   @Dependency(\.continuousClock) var clock
 
+  public nonisolated enum CancelID: Hashable, Sendable {
+    case allEffects
+    case profileEffects
+  }
+
   func handleRoute(state: inout State, action: Action) -> Effect<Action> {
     switch action {
       case .router(let action):
@@ -89,16 +94,28 @@ extension MemberCoordinator {
 
     case .routeAction(id: _, action: .member(.navigation(.routeToProfile))):
       state.routes.push(.profile(.init()))
-      return .none
+      return .concatenate(
+        .cancel(id: CancelID.profileEffects),
+        .cancel(id: ProfileReducer.CancelID.fetchProfile),
+        .cancel(id: ProfileReducer.CancelID.deleteUser),
+        .cancel(id: ProfileReducer.CancelID.logoutUser)
+      )
 
     case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
       return .run { send in
         try await clock.sleep(for: .seconds(0.5))
         await send(.navigation(.presentLogin))
       }
+      .cancellable(id: CancelID.allEffects)
 
       case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
-        return .send(.view(.backAction))
+        return .concatenate(
+          .cancel(id: CancelID.profileEffects),
+          .cancel(id: ProfileReducer.CancelID.fetchProfile),
+          .cancel(id: ProfileReducer.CancelID.deleteUser),
+          .cancel(id: ProfileReducer.CancelID.logoutUser),
+          .send(.view(.backAction))
+        )
 
     default:
       return .none
