@@ -48,7 +48,6 @@ public struct ProfileReducer: Sendable {
     public init() {}
   }
 
-  @Reducer
   public enum Destination: Sendable {
     case createApp(CreateApp)
   }
