@@ -33,13 +33,7 @@ public struct ProfileView: View {
       .alert($store.scope(state: \.alert, action: \.scope.alert))
       .customAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
       .onAppear {
-        // 🔥 조건부 실행: 유효한 세션이 있을 때만 fetchUser 실행
-        if !store.userSession.accessToken.isEmpty {
-          #logDebug("✅ [ProfileView] Valid session - executing fetchUser")
-          store.send(.async(.fetchUser))
-        } else {
-          #logDebug("❌ [ProfileView] No valid session - skipping fetchUser")
-        }
+        store.send(.async(.fetchUser))
       }
 
       if store.destination?.createApp != nil {
