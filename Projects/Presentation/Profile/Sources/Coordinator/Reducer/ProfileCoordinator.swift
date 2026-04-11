@@ -129,11 +129,20 @@ extension ProfileCoordinator {
     switch action {
     case .backAction:
       state.routes.goBack()
-      return .none
+      // 🔥 TCA 해결책 2: navigation 시 모든 Profile Effect 취소
+      return .concatenate(
+        .cancel(id: ProfileReducer.CancelID.fetchProfile),
+        .cancel(id: ProfileReducer.CancelID.deleteUser),
+        .cancel(id: ProfileReducer.CancelID.logoutUser)
+      )
 
     case .backToRootAction:
       state.routes.goBackToRoot()
-      return .none
+      return .concatenate(
+        .cancel(id: ProfileReducer.CancelID.fetchProfile),
+        .cancel(id: ProfileReducer.CancelID.deleteUser),
+        .cancel(id: ProfileReducer.CancelID.logoutUser)
+      )
     }
   }
 
