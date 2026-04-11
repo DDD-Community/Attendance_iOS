@@ -26,6 +26,7 @@ public struct Login {
     var appleLoginFullName: ASAuthorizationAppleIDCredential? = nil
 
     @Shared var userSession: UserSession
+    @Shared(.appStorage("staffRole")) var staffRole: Staff?
     var loginEntity: LoginEntity?
     var currentSocialType: SocialType?
     @Presents public var customAlert: CustomAlertState<CustomAlertAction>?
@@ -202,6 +203,7 @@ extension Login {
         switch result {
           case .success(let loginEntity):
             state.loginEntity = loginEntity
+            state.$staffRole.withLock { $0 = loginEntity.role}
 
             if loginEntity.isNewUser  {
               return .send(.view(.showPolicyPopUp))

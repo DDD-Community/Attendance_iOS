@@ -117,73 +117,56 @@ struct CustomConfirmationPopup: View {
 
   private var consentContent: some View {
     VStack(alignment: .center, spacing: 16) {
-      titleView
-      messageView
-      checkboxRow
-    }
-  }
-
-  private var titleView: some View {
-    Text(title)
-      .pretendardCustomFont(textStyle: .title3NormalBold)
-      .foregroundStyle(.staticWhite)
-      .multilineTextAlignment(.center)
-  }
-
-  @ViewBuilder
-  private var messageView: some View {
-    if !message.isEmpty {
-      Text(message)
-        .pretendardCustomFont(textStyle: .body3NormalRegular)
-        .foregroundStyle(.textSecondary)
+      Text(title)
+        .pretendardCustomFont(textStyle: .title3NormalBold)
+        .foregroundStyle(.staticWhite)
         .multilineTextAlignment(.center)
-    }
-  }
 
-  private var checkboxRow: some View {
-    HStack(spacing: 8) {
-      checkboxButton
-      checkboxText
-    }
-    .padding(.top, 4)
-  }
-
-  private var checkboxButton: some View {
-    Button {
-      isChecked.toggle()
-      if isChecked {
-        onConfirm()
+      if !message.isEmpty {
+        Text(message)
+          .pretendardCustomFont(textStyle: .body3NormalRegular)
+          .foregroundStyle(.textSecondary)
+          .multilineTextAlignment(.center)
       }
-    } label: {
-      checkboxIcon
-        .padding(6)
-        .contentShape(Rectangle())
-    }
-    .buttonStyle(.plain)
-  }
 
-  private var checkboxIcon: some View {
-    RoundedRectangle(cornerRadius: 4)
-      .stroke(.gray60, lineWidth: 1)
-      .frame(width: 15, height: 15)
-      .overlay {
-        if isChecked {
-          Image(systemName: "checkmark")
-            .renderingMode(.template)
-            .font(.system(size: 12, weight: .bold))
-            .foregroundStyle(.staticWhite)
+      HStack(spacing: 8) {
+        Button {
+          isChecked.toggle()
+          if isChecked {
+            onConfirm()
+          }
+        } label: {
+          RoundedRectangle(cornerRadius: 4)
+            .stroke(.gray60, lineWidth: 1)
+            .frame(width: 15, height: 15)
+            .overlay {
+              if isChecked {
+                Image(systemName: "checkmark")
+                  .font(.system(size: 12, weight: .bold))
+                  .foregroundStyle(.staticWhite)
+              }
+            }
+            .padding(6)
+            .contentShape(Rectangle())
         }
-      }
-  }
+        .buttonStyle(.plain)
 
-  private var checkboxText: some View {
-    Text(checkboxTitle)
-      .pretendardCustomFont(textStyle: .body3NormalRegular)
-      .foregroundStyle(.staticWhite)
-      .underline(true, color: .mediumGray)
-      .onTapGesture {
-        onPolicyTap()
+        Text(checkboxTitle)
+          .pretendardCustomFont(textStyle: .body3NormalRegular)
+          .foregroundStyle(.staticWhite)
+          .underline(true, color: .mediumGray)
+          .onTapGesture {
+            onPolicyTap()
+          }
       }
+      .padding(.top, 4)
+    }
+    .padding(.vertical, 24)
+    .padding(.horizontal, 20)
+    .frame(width: 300)
+    .background(.gray90)
+    .clipShape(.rect(cornerRadius: 20))
+    .onTapGesture {}
   }
 
 }
