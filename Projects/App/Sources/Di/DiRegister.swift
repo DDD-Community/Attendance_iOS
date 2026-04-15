@@ -56,8 +56,4 @@ public final class AppDIManager {
       .configure()
   }
 
-  /// 🎯 PFW 철학: 타입 안전한 의존성 해결
-  nonisolated public func resolve<T>(_ type: T.Type) -> T? {
-    return UnifiedDI.resolve(type)
-  }
 }
