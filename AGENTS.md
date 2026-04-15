@@ -1411,6 +1411,56 @@ func testLogin() async {
 
 DDDAttendance 프로젝트를 위한 **2개의 전문 성능 최적화 스킬** 통합 활용 가이드
 
+## ⚠️ 필수 서브에이전트 호출 규칙
+
+**🔴 다음 상황에서는 반드시 서브에이전트를 호출해야 합니다:**
+
+### 1. TCA 관련 문제 (필수)
+- **ifCaseLet 오류**: 반드시 `@ios-performance-optimizer` 호출
+- **Effect 누수/취소 문제**: 반드시 `@ios-performance-optimizer` 호출  
+- **상태 관리 이슈**: 반드시 `@ios-performance-pfw` → `@ios-performance-optimizer` 순서로 호출
+
+### 2. SwiftUI 성능 문제 (필수)
+- **UI 렌더링 지연**: 반드시 `@ios-performance-pfw` 분석 후 `@ios-performance-optimizer` 적용
+- **메모리 누수**: 반드시 `@ios-performance-optimizer` 자동 검사
+- **스크롤 성능**: 반드시 `@ios-performance-pfw` 패턴 분석 필수
+
+### 3. 빌드/네비게이션 문제 (필수)  
+- **TCAFlow 오류**: 반드시 `@ios-performance-optimizer` 호출
+- **WeaveDI 통합 문제**: 반드시 두 스킬 모두 호출
+- **Tuist 빌드 시간**: 반드시 `@ios-performance-optimizer` 자동 최적화
+
+### 4. 빌드 오류/컴파일 문제 (필수)
+- **Cannot infer contextual base**: 반드시 `@ios-performance-optimizer` 호출
+- **Extensions must not contain stored properties**: 반드시 `@ios-performance-optimizer` 호출  
+- **Non-static property declared inside an extension**: 반드시 `@ios-performance-optimizer` 호출
+- **Type annotation missing**: 반드시 `@ios-performance-optimizer` 호출
+- **Referencing subscript requires wrapper 'Shared'**: 반드시 `@ios-performance-optimizer` 호출
+- **No candidates produce the expected contextual result type**: 반드시 `@ios-performance-optimizer` 호출
+- **SourceKit error**: 반드시 `@ios-performance-optimizer` 호출
+- **빌드 실패/컴파일 에러**: 반드시 `@ios-performance-optimizer` 호출
+
+### 5. 자동 호출 키워드
+다음 키워드가 언급되면 **무조건 서브에이전트 호출**:
+- `ifCaseLet`, `TCA`, `Effect`, `메모리 누수`, `성능`, `최적화`
+- `SwiftUI`, `렌더링`, `빌드 시간`, `TCAFlow`, `WeaveDI`
+- `Cannot infer`, `Extensions must not`, `Type annotation missing`
+- `빌드 오류`, `컴파일 에러`, `SourceKit error`
+
+**🚨 중요: 수동으로 코드를 직접 수정하기 전에 반드시 서브에이전트를 먼저 호출하세요!**
+
+### 6. 빌드 오류 해결 프로세스 (필수)
+```bash
+# 1단계: 빌드 오류 발생 시 즉시 서브에이전트 호출
+@ios-performance-optimizer "Cannot infer contextual base 빌드 오류 자동 수정해줘"
+
+# 2단계: Swift 문법 및 Extension 문제 해결
+@ios-performance-optimizer "Extension stored property 오류 자동 수정해줘"  
+
+# 3단계: SourceKit 문제 및 Type annotation 해결
+@ios-performance-optimizer "Type annotation missing 자동 수정해줘"
+```
+
 ### 🎯 사용 가능한 스킬
 
 #### 1. ios-performance-optimizer 
