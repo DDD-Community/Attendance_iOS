@@ -5,11 +5,12 @@ TimeSpot 프로젝트를 위한 **2개의 전문 성능 최적화 스킬** 통�
 ## 🎯 사용 가능한 스킬
 
 ### 1. ios-performance-optimizer 
-**완전 자동화 시스템 (v2.3)**
-- 📊 12개 서브에이전트 동시 실행
-- 🔧 자동 코드 수정 + 승인 프로세스
-- 🔨 빌드 시스템 통합 (Tuist/Xcode)
-- 🚀 TCAFlow & WeaveDI 3.4.0 전문
+**PFW 철학 통합 자동화 시스템 (v4.0)**
+- 🎯 **PFW 우선**: Point-Free Workshop 단순성 원칙 최우선 적용
+- 📊 **12개 서브에이전트 동시 실행** + PFW 패턴 통합 분석
+- 🔧 타입 안전한 상태 검증 자동 구현 (`switch (action, state)`)
+- 🚀 **TCAFlow & WeaveDI 3.4.1 전문** + PFW 철학 조화
+- 🚫 **v3.0 복잡성 제거**: 3-6개 핵심 CancelID만 사용 (40개 차단 시스템 제거)
 
 ### 2. ios-performance-pfw
 **Point-Free Workshop 전문**
@@ -64,15 +65,16 @@ TimeSpot 프로젝트를 위한 **2개의 전문 성능 최적화 스킬** 통�
 
 ## 📊 기능별 비교표
 
-| 기능 | ios-performance-optimizer | ios-performance-pfw |
+| 기능 | ios-performance-optimizer v4.0 | ios-performance-pfw |
 |------|------------------------|-------------------|
-| **자동 코드 수정** | ✅ 완전 자동화 | ❌ 분석만 |
-| **TCA 전문성** | ⚡ TCAFlow 특화 | ⚡ 전통 TCA 패턴 |
-| **빌드 통합** | ✅ Tuist/Xcode 자동 | ❌ 수동 |
-| **Point-Free 라이브러리** | ⚠️ 기본 수준 | ✅ 전문가 수준 |
-| **승인 프로세스** | ✅ 단계별 승인 | ❌ 즉시 제안 |
-| **서브에이전트** | 🚀 12개 전문 | 🏗️ 단일 통합 |
-| **WeaveDI 3.4.0** | 🚀 혁신 패턴 | ✅ 지원 |
+| **자동 코드 수정** | ✅ PFW 철학 기반 자동화 | ❌ 분석만 |
+| **TCA 전문성** | 🚀 **PFW + TCAFlow 통합** | ⚡ **전통 TCA 패턴 + Navigation은 TCAFlow 특화** |
+| **빌드 통합** | ✅ **Tuist/Xcode + PFW 자동** | ❌ 수동 |
+| **Point-Free 라이브러리** | 🚀 **PFW 통합 전문가 수준** | ✅ 전문가 수준 |
+| **승인 프로세스** | ✅ **PFW 기반 단계별 승인** | ❌ 즉시 제안 |
+| **서브에이전트** | 🚀 **PFW 통합 12개 전문** | 🏗️ 단일 통합 |
+| **단순성 원칙** | ✅ **3개 핵심 CancelID** | ✅ PFW 철학 준수 |
+| **WeaveDI 3.4.1** | 🚀 **PFW + WeaveDI 통합** | ✅ 지원 |
 
 ## 🎯 TimeSpot 특화 사용법
 
