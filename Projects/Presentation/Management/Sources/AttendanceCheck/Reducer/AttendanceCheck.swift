@@ -144,7 +144,8 @@ public struct AttendanceCheck {
 
     Reduce { state, action in
       switch action {
-        case .binding:
+        case .binding(_):
+          // BindingReducer가 자동으로 처리
           return .none
 
         case .view(let viewAction):
