@@ -177,6 +177,29 @@ Network/Service → Data (API 통신)
 - ✅ **Data**는 Domain의 Entity와 Repository Protocol을 구현
 - ✅ 모든 데이터 흐름은 **Domain을 중심**으로 진행
 
+## 📚 개발 가이드 문서
+
+프로젝트의 상세한 개발 가이드라인은 `docs/` 폴더의 문서들을 참고하세요:
+
+### 🏗️ 아키텍처 & 패턴
+- **[TCA 패턴 가이드](./docs/tca-patterns.md)** - TCA 기본 구조, Extension 패턴, Action 처리
+- **[SwiftUI 스타일 가이드](./docs/swiftui-patterns.md)** - View 구조화, Extension 패턴, @ViewBuilder 활용
+- **[의존성 주입 (DI)](./docs/dependency-injection.md)** - WeaveDI 3.4.1 패턴, AppDIManager
+- **[TCAFlow 네비게이션](./docs/tcaflow-navigation.md)** - @FlowCoordinator, 화면 전환, 딥 링크
+
+### 🎨 UI & UX 시스템
+- **[팝업 & 모달 시스템](./docs/popup-modal-system.md)** - CustomAlert, Toast, Modal 구현
+- **[Swift 코딩 규칙](./docs/swift-coding-rules.md)** - Swift 스타일, 에러 처리, 테스트 패턴
+
+### 🚀 성능 & 최적화
+- **[iOS 성능 최적화](./docs/ios-performance-optimization.md)** - 서브에이전트 호출, 빌드 오류 해결
+
+### 🛠️ 개발 환경 & 협업
+- **[Git 워크플로우](./docs/git-workflow.md)** - 브랜치 전략, PR 규칙, 코드 리뷰
+- **[개발 환경 설정](./docs/development-environment.md)** - Make 명령어, Xcode 설정, Tuist
+
+> 💡 **참고**: 이 가이드 문서들은 AI 에이전트들도 참조하여 프로젝트의 일관성 있는 코드 품질을 유지합니다.
+
 ## 🛠 기술 스택
 
 ### Core Technologies

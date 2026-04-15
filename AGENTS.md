@@ -69,267 +69,62 @@ Mixpanel: 5.1.3                    // 사용자 행동 분석
 
 ## 📚 세부 가이드 문서
 
-프로젝트의 상세한 가이드라인은 다음 agent 폴더의 문서들을 참고하세요:
+프로젝트의 상세한 가이드라인은 다음 docs 폴더의 문서들을 참고하세요:
 
-### 🔄 [TCA 패턴 가이드](./agent/tca-patterns.md)
+### 🔄 [TCA 패턴 가이드](./docs/tca-patterns.md)
 - TCA 기본 구조 및 규칙
 - Extension 패턴 활용법
 - Action 처리 메서드 분리
 - State Computed Properties
 - Coordinator Extension 패턴
 
-### 🎨 [SwiftUI 스타일 가이드](./agent/swiftui-patterns.md)
+### 🎨 [SwiftUI 스타일 가이드](./docs/swiftui-patterns.md)
 - SwiftUI 코드 구조화
 - View Extension 패턴
 - Computed Properties + @ViewBuilder 조합
 - 조건부 렌더링 및 Skeleton 패턴
 
-### 📏 [Swift 코딩 규칙](./agent/swift-coding-rules.md)
+### 📏 [Swift 코딩 규칙](./docs/swift-coding-rules.md)
 - Swift 스타일 가이드
 - 에러 처리 패턴
 - TCA 에러 처리 규칙
 - 테스트 패턴
 
-### 🚀 [iOS 성능 최적화](./agent/ios-performance-optimization.md)
+### 🚨 [팝업 & 모달 시스템](./docs/popup-modal-system.md)
+- CustomAlert (TCA 기반 커스텀 알림)
+- Toast 시스템 (전역 메시지)
+- CustomModal (드래그 지원 모달)
+- TCA Presentation 패턴 규칙
+
+### 🔄 [의존성 주입 (DI)](./docs/dependency-injection.md)
+- WeaveDI 3.4.1 패턴
+- AppDIManager 구조
+- TCA Dependencies 통합
+- Interface 기반 등록 규칙
+
+### 🚀 [iOS 성능 최적화](./docs/ios-performance-optimization.md)
 - 성능 최적화 통합 시스템
 - 서브에이전트 호출 규칙
 - TCA/SwiftUI 성능 문제 해결
 - 빌드 오류 해결 프로세스
 
-### 🎯 [Git 워크플로우](./agent/git-workflow.md)
+### 🎯 [Git 워크플로우](./docs/git-workflow.md)
 - 브랜치 전략
 - 커밋 메시지 컨벤션
 - Pull Request 규칙
 - 코드 리뷰 가이드라인
 
-### 🔧 [개발 환경 설정](./agent/development-environment.md)
+### 🧭 [TCAFlow 네비게이션](./docs/tcaflow-navigation.md)
+- @FlowCoordinator 패턴
+- 기본 네비게이션 동작 (Push, Present, Dismiss)
+- 화면 간 통신 패턴
+- 딥 링크 처리
+
+### 🔧 [개발 환경 설정](./docs/development-environment.md)
 - Make 명령어
 - Xcode 빌드 설정
 - Tuist 사용 규칙
 - 테스트 패턴
-
-## 🔄 DI (Dependency Injection) with WeaveDI
-
-### AppDIManager 구조
-
-```swift
-@MainActor
-public final class AppDIManager {
-    public static let shared = AppDIManager()
-    
-    public func registerDefaultDependencies() async {
-        WeaveDI.builder
-            // 인프라 계층
-            .register { KeychainManager() as KeychainManagingInterface }
-            .register { 
-                let keychainManager = UnifiedDI.resolve(KeychainManagingInterface.self) ?? KeychainManager()
-                return KeychainTokenProvider(keychainManager: keychainManager) as TokenProviding 
-            }
-            
-            // Repository 계층 (Data → Domain Interface)
-            .register { AuthRepositoryImpl() as AuthInterface }
-            .register { ProfileRepositoryImpl() as ProfileInterface }
-            .register { AttendanceRepositoryImpl() as AttendanceInterface }
-            
-            // OAuth Provider 계층
-            .register { GoogleOAuthRepositoryImpl() as GoogleOAuthInterface }
-            .register { AppleLoginRepositoryImpl() as AppleAuthRequestInterface }
-            
-            .configure()
-    }
-}
-```
-
-### DI 사용 패턴
-
-```swift
-// Repository에서 의존성 주입 (TCA Dependencies 활용)
-public final class AuthRepositoryImpl: AuthInterface {
-  @Dependency(\.keychainManager) private var keychainManager
-  private let provider: MoyaProvider<AuthService>
-  private let authProvider: MoyaProvider<AuthService>
-  
-  public init(
-    provider: MoyaProvider<AuthService> = MoyaProvider<AuthService>.default,
-    authProvider: MoyaProvider<AuthService> = MoyaProvider<AuthService>.authorized
-  ) {
-    self.provider = provider
-    self.authProvider = authProvider
-  }
-  
-  public func login(request: LoginRequest) async throws -> LoginResponse {
-    // 구현
-  }
-}
-
-// TCA Feature에서 의존성 사용
-@Reducer
-public struct LoginFeature {
-  @Dependency(\.authRepository) var authRepository
-  
-  public var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
-      case .loginButtonTapped:
-        return .run { [state] send in
-          let response = try await authRepository.login(request: state.loginRequest)
-          await send(.loginResponse(.success(response)))
-        }
-      }
-    }
-  }
-}
-```
-
-### 의존성 등록 규칙
-
-1. **Interface 기반 등록**: 구체 타입이 아닌 Protocol로 등록
-2. **계층별 분리**: Repository, UseCase, Provider별로 주석으로 그룹화  
-3. **생성자 주입**: `@Injected` 프로퍼티 래퍼 활용
-4. **싱글톤 관리**: `AppDIManager.shared`로 전역 관리
-
-## 🧭 TCAFlow 네비게이션 패턴
-
-### @FlowCoordinator 구조
-
-```swift
-@FlowCoordinator(screen: "ScreenName", navigation: true)
-public struct FeatureCoordinator {
-    
-    @ObservableState
-    public struct State: Equatable {
-        var routes: [Route<FeatureScreen.State>]
-        
-        public init() {
-            // 초기 화면 설정
-            self.routes = [.root(.login(.init()), embedInNavigationView: true)]
-        }
-    }
-    
-    @CasePathable
-    public enum Action {
-        case router(IndexedRouterActionOf<FeatureScreen>)
-        case view(View)
-        case async(AsyncAction) 
-        case inner(InnerAction)
-        case navigation(NavigationAction)
-    }
-    
-    // 라우팅 처리
-    func handleRoute(state: inout State, action: Action) -> Effect<Action> {
-        switch action {
-        case .router(let routeAction):
-            return routerAction(state: &state, action: routeAction)
-        // ...
-        }
-    }
-}
-
-// 화면 정의
-@Reducer
-public enum FeatureScreen {
-    case screenA(ScreenAFeature)
-    case screenB(ScreenBFeature)
-    case screenC(ScreenCFeature)
-}
-```
-
-### 네비게이션 동작
-
-```swift
-// Push
-state.routes.push(.screenA(.init()))
-
-// Present (Modal)
-state.routes.present(.screenB(.init()))
-
-// Go Back
-state.routes.goBack()
-
-// Go Back to Root
-state.routes.goBackToRoot()
-
-// Replace Current
-state.routes.replaceCurrent(.screenC(.init()))
-
-// 지연된 라우팅 (애니메이션 충돌 방지)
-return routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-    $0.push(.nextScreen(.init()))
-}
-```
-
-### 화면 간 통신
-
-```swift
-// 자식 → 부모 (Delegate Action)
-case .routeAction(id: _, action: .login(.delegate(.presentMain))):
-    return .send(.navigation(.presentMain))
-
-// 부모 → 자식 (State 업데이트)  
-case .routeAction(id: _, action: .profile(.inner(.updateUserInfo(let info)))):
-    // 자식 Feature의 상태를 부모에서 업데이트
-    return .none
-```
-
-## 🚨 팝업 & 모달 시스템
-
-프로젝트에서는 **3가지 방식**의 팝업/모달 시스템을 제공합니다.
-
-### 1. CustomAlert (TCA 기반 커스텀 알림)
-
-#### State 정의
-
-```swift
-@Reducer
-public struct FeatureName {
-  @ObservableState
-  public struct State: Equatable {
-    // CustomAlert 상태
-    @Presents public var customAlert: CustomAlertState<CustomAlertAction>?
-    var customAlertMode: CustomAlertMode? = nil
-  }
-  
-  public enum Action {
-    case view(View)
-    case inner(InnerAction)
-    case customAlert(PresentationAction<CustomAlertAction>)
-  }
-  
-  // CustomAlert 모드 정의
-  public enum CustomAlertMode: Equatable {
-    case loginRequired
-    case locationPermissionRequired
-    case withdrawAccount
-  }
-}
-```
-
-### 2. Toast 시스템 (전역 메시지)
-
-#### 기본 사용법
-
-```swift
-// TCA Reducer에서 Toast 표시
-case .loginSuccess:
-  ToastManager.shared.showSuccess("로그인에 성공했습니다!")
-  return .none
-  
-case .loginFailure(let error):
-  ToastManager.shared.showError("인증에 실패했어요. 다시 시도해주세요.")
-  return .none
-```
-
-### 3. CustomModal (드래그 지원 모달)
-
-```swift
-.presentDSModal(
-  item: $store.scope(state: \.trainStationSheet, action: \.trainStationSheet),
-  height: .fraction(0.8),  // 화면의 80% 높이
-  showDragIndicator: true
-) { store in
-  TrainStationView(store: store)
-}
-```
 
 ## 📊 지원 스킬 목록
 
