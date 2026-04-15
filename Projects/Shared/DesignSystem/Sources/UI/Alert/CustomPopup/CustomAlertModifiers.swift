@@ -42,7 +42,7 @@ public extension View {
           }
         )
         .transition(.move(edge: .bottom).combined(with: .opacity))
-        .animation(.easeInOut(duration: 0.3), value: alertState.title.isEmpty == false)
+        .animation(.appModal, value: alertState.title.isEmpty == false)
       }
     }
   }
@@ -98,7 +98,7 @@ struct CustomConfirmationPopupItemModifier: ViewModifier {
             onPolicyTap: item.onPolicyTap
           )
           .transition(.move(edge: .bottom).combined(with: .opacity))
-          .animation(.easeInOut(duration: 0.3), value: true)
+          .animation(.appModal, value: true)
         }
       }
   }
@@ -154,7 +154,7 @@ struct CustomConfirmationPopupModifier: ViewModifier {
             onPolicyTap: onPolicyTap
           )
           .transition(.move(edge: .bottom).combined(with: .opacity))
-          .animation(.easeInOut(duration: 0.3), value: isPresented)
+          .animation(.appModal, value: isPresented)
         }
       }
   }
