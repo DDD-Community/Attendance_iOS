@@ -1576,7 +1576,7 @@ DDDAttendance 프로젝트를 위한 **2개의 전문 성능 최적화 스킬** 
 | 기능 | ios-performance-optimizer v4.0 | ios-performance-pfw |
 |------|------------------------|-------------------|
 | **자동 코드 수정** | ✅ PFW 철학 기반 자동화 | ❌ 분석만 |
-| **TCA 전문성** | 🚀 **PFW + TCAFlow 통합** | ⚡ 전통 TCA 패턴 |
+| **TCA 전문성** | 🚀 **PFW + TCAFlow 통합** | ⚡ **전통 TCA 패턴 + Navigation은 TCAFlow 특화** |
 | **빌드 통합** | ✅ **Tuist/Xcode + PFW 자동** | ❌ 수동 |
 | **Point-Free 라이브러리** | 🚀 **PFW 통합 전문가 수준** | ✅ 전문가 수준 |
 | **승인 프로세스** | ✅ **PFW 기반 단계별 승인** | ❌ 즉시 제안 |
