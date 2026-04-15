@@ -1230,6 +1230,27 @@ Header 종류:
 - **PR**: `feature/#{issue}` → `develop` 머지
 - **Body**: 필요시 작성, 무엇을 왜 변경했는지 기술
 
+### Git 작업 플로우
+
+#### 1. 커밋 후 푸시
+```bash
+# 변경사항 스테이징
+git add .
+
+# 커밋 (한국어 메시지)
+git commit -m "[FEAT]: 기능 설명"
+
+# 푸시
+git push origin feature/브랜치명
+```
+
+#### 2. 푸시 규칙
+- **브랜치 푸시**: 작업 완료 후 즉시 원격 브랜치에 푸시
+- **Force Push 금지**: `git push --force` 절대 사용 금지 (협업 시 충돌 방지)  
+- **푸시 전 확인**: `git status`로 staged 파일 확인 후 푸시
+- **브랜치명 확인**: `git branch`로 현재 브랜치 확인 후 푸시
+- **메인 브랜치**: `develop` 브랜치에 직접 푸시 금지, PR 통해서만 머지
+
 ### 📋 Pull Request 규칙
 
 #### PR 크기 제한
