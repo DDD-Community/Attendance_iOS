@@ -100,7 +100,7 @@ struct CustomConfirmationPopup: View {
             .frame(maxWidth: .infinity)
             .frame(height: 62)
         }
-        .background(.gray20)
+        .background(.gray200)
         .clipShape(.rect(cornerRadius: 31))
         .contentShape(.rect(cornerRadius: 31))
 
