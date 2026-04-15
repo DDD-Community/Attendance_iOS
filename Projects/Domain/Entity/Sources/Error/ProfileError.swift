@@ -13,6 +13,8 @@ public enum ProfileError: Error, LocalizedError, Equatable {
   case profileAccessDenied
   case profileDataCorrupted
 
+  // MARK: - Session Related Errors
+  case invalidSession
 
   // MARK: - General Errors
   case unknownError(String)
@@ -29,6 +31,9 @@ public enum ProfileError: Error, LocalizedError, Equatable {
     case .profileDataCorrupted:
       return "프로필 데이터가 손상되었습니다"
 
+    // Session Related Errors
+    case .invalidSession:
+      return "세션이 유효하지 않습니다"
 
     // General Errors
     case .unknownError(let message):
@@ -76,7 +81,7 @@ public extension ProfileError {
   /// 프로필 조회 관련 에러인지 확인
   var isFetchError: Bool {
     switch self {
-    case .profileNotFound, .profileAccessDenied, .profileDataCorrupted:
+    case .profileNotFound, .profileAccessDenied, .profileDataCorrupted, .invalidSession:
       return true
     default:
       return false

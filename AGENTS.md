@@ -1416,14 +1416,14 @@ DDDAttendance 프로젝트를 위한 **2개의 전문 성능 최적화 스킬** 
 **🔴 다음 상황에서는 반드시 서브에이전트를 호출해야 합니다:**
 
 ### 1. TCA 관련 문제 (필수)
-- **ifCaseLet 오류**: 반드시 `@ios-performance-optimizer` 호출
-- **Effect 누수/취소 문제**: 반드시 `@ios-performance-optimizer` 호출  
-- **상태 관리 이슈**: 반드시 `@ios-performance-pfw` → `@ios-performance-optimizer` 순서로 호출
+- **ifCaseLet 오류**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출
+- **Effect 누수/취소 문제**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출  
+- **상태 관리 이슈**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출
 
 ### 2. SwiftUI 성능 문제 (필수)
-- **UI 렌더링 지연**: 반드시 `@ios-performance-pfw` 분석 후 `@ios-performance-optimizer` 적용
-- **메모리 누수**: 반드시 `@ios-performance-optimizer` 자동 검사
-- **스크롤 성능**: 반드시 `@ios-performance-pfw` 패턴 분석 필수
+- **UI 렌더링 지연**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출
+- **메모리 누수**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출
+- **스크롤 성능**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출
 
 ### 3. 빌드/네비게이션 문제 (필수)  
 - **TCAFlow 오류**: 반드시 `@ios-performance-optimizer` 호출
@@ -1431,14 +1431,14 @@ DDDAttendance 프로젝트를 위한 **2개의 전문 성능 최적화 스킬** 
 - **Tuist 빌드 시간**: 반드시 `@ios-performance-optimizer` 자동 최적화
 
 ### 4. 빌드 오류/컴파일 문제 (필수)
-- **Cannot infer contextual base**: 반드시 `@ios-performance-optimizer` 호출
-- **Extensions must not contain stored properties**: 반드시 `@ios-performance-optimizer` 호출  
-- **Non-static property declared inside an extension**: 반드시 `@ios-performance-optimizer` 호출
-- **Type annotation missing**: 반드시 `@ios-performance-optimizer` 호출
-- **Referencing subscript requires wrapper 'Shared'**: 반드시 `@ios-performance-optimizer` 호출
-- **No candidates produce the expected contextual result type**: 반드시 `@ios-performance-optimizer` 호출
-- **SourceKit error**: 반드시 `@ios-performance-optimizer` 호출
-- **빌드 실패/컴파일 에러**: 반드시 `@ios-performance-optimizer` 호출
+- **Cannot infer contextual base**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출
+- **Extensions must not contain stored properties**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출  
+- **Non-static property declared inside an extension**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출
+- **Type annotation missing**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출
+- **Referencing subscript requires wrapper 'Shared'**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출
+- **No candidates produce the expected contextual result type**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출
+- **SourceKit error**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출
+- **빌드 실패/컴파일 에러**: 반드시 `@ios-performance-optimizer` + `@ios-performance-pfw` 동시 호출
 
 ### 5. 자동 호출 키워드
 다음 키워드가 언급되면 **무조건 서브에이전트 호출**:
@@ -1449,16 +1449,56 @@ DDDAttendance 프로젝트를 위한 **2개의 전문 성능 최적화 스킬** 
 
 **🚨 중요: 수동으로 코드를 직접 수정하기 전에 반드시 서브에이전트를 먼저 호출하세요!**
 
+### 7. 두 에이전트 결과 비교 및 최적 솔루션 선택 (필수)
+
+#### 🔍 비교 기준:
+- **완성도**: 실제 작동하는 코드를 제공하는가?
+- **아키텍처**: TCA/PFW 베스트 프랙티스를 따르는가?
+- **성능**: 메모리 누수나 Effect 관리가 우수한가?
+- **유지보수성**: 코드가 읽기 쉽고 확장 가능한가?
+
+#### 🎯 선택 전략:
+```bash
+# 1. @ios-performance-optimizer 우선 (빠른 해결)
+- 완전 자동 수정 가능
+- 즉시 빌드 성공
+- 기본적인 TCA 패턴 준수
+
+# 2. @ios-performance-pfw 우선 (품질 우선)  
+- PFW 전문 패턴 제시
+- 더 나은 아키텍처 설계
+- 장기적 유지보수성 향상
+
+# 3. 하이브리드 접근 (최적 솔루션)
+- optimizer의 자동 수정 + pfw의 아키텍처 개선
+- 두 접근법의 장점 결합
+- 실용성과 품질의 균형
+```
+
+#### ✅ 최종 결정 프로세스:
+1. **두 에이전트 동시 호출**
+2. **결과 비교 및 분석** 
+3. **최적 솔루션 선택 및 적용**
+4. **선택 이유 명시**
+
 ### 6. 빌드 오류 해결 프로세스 (필수)
 ```bash
-# 1단계: 빌드 오류 발생 시 즉시 서브에이전트 호출
+# 1단계: 빌드 오류 발생 시 두 에이전트 동시 호출
 @ios-performance-optimizer "Cannot infer contextual base 빌드 오류 자동 수정해줘"
+@ios-performance-pfw "Cannot infer contextual base TCA 패턴 분석해줘"
 
 # 2단계: Swift 문법 및 Extension 문제 해결
 @ios-performance-optimizer "Extension stored property 오류 자동 수정해줘"  
+@ios-performance-pfw "Extension 패턴 및 TCA 베스트 프랙티스 분석해줘"
 
 # 3단계: SourceKit 문제 및 Type annotation 해결
 @ios-performance-optimizer "Type annotation missing 자동 수정해줘"
+@ios-performance-pfw "Type inference 패턴 및 TCA 타입 분석해줘"
+
+# 4단계: 두 에이전트 결과 비교 후 최적 솔루션 선택
+# - 자동화 우선: @ios-performance-optimizer 결과가 완전히 작동하면 채택
+# - 품질 우선: @ios-performance-pfw 분석이 더 나은 아키텍처를 제시하면 채택  
+# - 하이브리드: 두 접근법의 장점을 결합한 최적 솔루션 도출
 ```
 
 ### 🎯 사용 가능한 스킬
