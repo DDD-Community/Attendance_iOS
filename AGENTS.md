@@ -1504,11 +1504,13 @@ DDDAttendance 프로젝트를 위한 **2개의 전문 성능 최적화 스킬** 
 ### 🎯 사용 가능한 스킬
 
 #### 1. ios-performance-optimizer 
-**완전 자동화 시스템 (v2.3)**
-- 📊 12개 서브에이전트 동시 실행
-- 🔧 자동 코드 수정 + 승인 프로세스
-- 🔨 빌드 시스템 통합 (Tuist/Xcode)
-- 🚀 TCAFlow & WeaveDI 3.4.0 전문
+**PFW 철학 통합 자동화 시스템 (v4.0)**
+- 🎯 **PFW 우선**: Point-Free Workshop 단순성 원칙 최우선 적용
+- 📊 **12개 서브에이전트 동시 실행** + PFW 패턴 통합 분석
+- 🔧 타입 안전한 상태 검증 자동 구현 (`switch (action, state)`)
+- 🚀 **TCAFlow & WeaveDI 3.4.0 전문** + PFW 철학 조화
+- 🚫 **v3.0 복잡성 제거**: 3-6개 핵심 CancelID만 사용 (40개 차단 시스템 제거)
+- 🔨 빌드 시스템 통합 (Tuist/Xcode) + PFW 베스트 프랙티스
 
 ```bash
 @ios-performance-optimizer
@@ -1527,16 +1529,16 @@ DDDAttendance 프로젝트를 위한 **2개의 전문 성능 최적화 스킬** 
 
 ### 🎛️ 상황별 최적 스킬 선택
 
-#### 🔧 자동 최적화가 필요한 경우
+#### 🔧 PFW 철학 기반 자동 최적화 (v4.0)
 ```bash
-# 전체 프로젝트 자동 최적화
-@ios-performance-optimizer "DDDAttendance 프로젝트 전체 최적화해줘"
+# PFW 패턴 우선 전체 프로젝트 최적화
+@ios-performance-optimizer "PFW 단순성 원칙으로 DDDAttendance 최적화해줘 - 3개 핵심 CancelID만 사용"
 
-# TCAFlow 마이그레이션 
-@ios-performance-optimizer "TCACoordinator를 TCAFlow로 마이그레이션해줘"
+# TCAFlow + PFW 패턴 마이그레이션 
+@ios-performance-optimizer "PFW 철학 기반 TCAFlow 마이그레이션 - 복잡한 Effect 취소 금지"
 
-# WeaveDI 3.4.0 적용
-@ios-performance-optimizer "@DependencyConfiguration 패턴 적용해줘"
+# 타입 안전 상태 검증 자동 구현
+@ios-performance-optimizer "switch (action, state) 패턴으로 ifCaseLet 오류 해결 - v3.0 복잡성 제거"
 ```
 
 #### 🏗️ 아키텍처 분석이 필요한 경우  
@@ -1569,17 +1571,19 @@ DDDAttendance 프로젝트를 위한 **2개의 전문 성능 최적화 스킬** 
 @ios-performance-pfw "자동 최적화 후 TCA 패턴 검증해줘"
 ```
 
-### 📊 기능별 비교표
+### 📊 기능별 비교표 (v4.0 업데이트)
 
-| 기능 | ios-performance-optimizer | ios-performance-pfw |
+| 기능 | ios-performance-optimizer v4.0 | ios-performance-pfw |
 |------|------------------------|-------------------|
-| **자동 코드 수정** | ✅ 완전 자동화 | ❌ 분석만 |
-| **TCA 전문성** | ⚡ TCAFlow 특화 | ⚡ 전통 TCA 패턴 |
-| **빌드 통합** | ✅ Tuist/Xcode 자동 | ❌ 수동 |
-| **Point-Free 라이브러리** | ⚠️ 기본 수준 | ✅ 전문가 수준 |
-| **승인 프로세스** | ✅ 단계별 승인 | ❌ 즉시 제안 |
-| **서브에이전트** | 🚀 12개 전문 | 🏗️ 단일 통합 |
-| **WeaveDI 3.4.0** | 🚀 혁신 패턴 | ✅ 지원 |
+| **자동 코드 수정** | ✅ PFW 철학 기반 자동화 | ❌ 분석만 |
+| **TCA 전문성** | 🚀 **PFW + TCAFlow 통합** | ⚡ 전통 TCA 패턴 |
+| **빌드 통합** | ✅ **Tuist/Xcode + PFW 자동** | ❌ 수동 |
+| **Point-Free 라이브러리** | 🚀 **PFW 통합 전문가 수준** | ✅ 전문가 수준 |
+| **승인 프로세스** | ✅ **PFW 기반 단계별 승인** | ❌ 즉시 제안 |
+| **서브에이전트** | 🚀 **PFW 통합 12개 전문** | 🏗️ 단일 통합 |
+| **단순성 원칙** | ✅ **3개 핵심 CancelID** | ✅ PFW 철학 준수 |
+| **복잡성 제거** | ✅ **v3.0 과도한 취소 금지** | ✅ 단순 패턴 권장 |
+| **타입 안전성** | 🚀 **자동 튜플 매칭 구현** | ✅ 이론적 분석 |
 
 ### 🎯 DDDAttendance 특화 사용법
 
@@ -1646,14 +1650,19 @@ DDDAttendance 프로젝트를 위한 **2개의 전문 성능 최적화 스킬** 
 - [ ] 성능 개선 효과 측정
 - [ ] 추가 최적화 필요성 검토
 
-### 🎉 결론
+### 🎉 결론 (v4.0 업데이트)
 
-**🔥 최대 효과를 위한 조합:**
-1. **정확한 분석**: `@ios-performance-pfw`의 Point-Free 전문성
-2. **빠른 적용**: `@ios-performance-optimizer`의 자동화 시스템
-3. **품질 보증**: 두 스킬의 교차 검증
+**🚀 PFW 철학 통합으로 더욱 강력해진 최적 조합:**
+1. **정확한 분석**: `@ios-performance-pfw`의 **Point-Free 전문성** + v4.0 이론적 뒷받침
+2. **빠른 적용**: `@ios-performance-optimizer v4.0`의 **PFW 기반 자동화 시스템**
+3. **품질 보증**: **PFW 철학을 공유**하는 두 스킬의 **완벽한 교차 검증**
 
-**DDDAttendance 프로젝트에서 이 두 스킬을 조합하면 iOS 성능 최적화의 완벽한 솔루션을 얻을 수 있습니다!** 🚀
+**🎯 v4.0 핵심 개선:**
+- ✅ **복잡성 제거**: v3.0의 40개 Effect 차단 → 3개 핵심 CancelID
+- ✅ **PFW 우선**: performAtomicStateTransition 제거 → 단순 튜플 매칭
+- ✅ **타입 안전**: 수동 검증 → 자동 `switch (action, state)` 구현
+
+**DDDAttendance 프로젝트에서 PFW 철학이 통합된 이 두 스킬을 조합하면 iOS 성능 최적화의 완벽한 솔루션을 얻을 수 있습니다!** 🚀
 
 ---
 

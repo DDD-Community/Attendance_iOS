@@ -16,41 +16,48 @@ import ComposableArchitecture
 import WeaveDI
 import Auth
 
-/// 🚀 **앱 전역 DI 관리자**
-public class AppDIManager: @unchecked Sendable {
+/// 🚀 **PFW + WeaveDI 3.4.1 통합 DI 관리자**
+@MainActor
+public final class AppDIManager {
   public static let shared = AppDIManager()
-  
+
   private init() {}
-  
-  /// 🎯 기본 의존성들을 등록
+
+  /// 🎯 PFW 철학 + WeaveDI 3.4.1 패턴으로 의존성 등록
   public func registerDefaultDependencies() async {
-    // 🏗️ 1. WeaveDI.builder 패턴으로 실제 구현체들 등록
     WeaveDI.builder
+      // 🔧 인프라 계층 (PFW 단순성 원칙)
       .register { KeychainManager() as KeychainManaging }
       .register {
         let keychainManager = UnifiedDI.resolve(KeychainManaging.self) ?? KeychainManager()
         return KeychainTokenProvider(keychainManager: keychainManager) as TokenProviding
       }
-      .register(ProfileInterface.self) { ProfileRepositoryImpl() }
-      .register(AppUpdateInterface.self) { AppUpdateRepositoryImpl() as AppUpdateInterface }
-    // MARK: - 로그인
+
+      // 🏗️ Repository 계층 (Clean Architecture + PFW)
       .register { AuthRepositoryImpl() as AuthInterface }
+      .register { ProfileRepositoryImpl() as ProfileInterface }
+      .register { AppUpdateRepositoryImpl() as AppUpdateInterface }
+
+      // 🔐 OAuth Provider 계층 (PFW 조합 패턴)
       .register { GoogleOAuthRepositoryImpl() as GoogleOAuthInterface }
       .register { AppleLoginRepositoryImpl() as AppleAuthRequestInterface }
       .register { AppleOAuthRepositoryImpl() as AppleOAuthInterface }
       .register { AppleOAuthProvider() as AppleOAuthProviderInterface }
       .register { GoogleOAuthProvider() as GoogleOAuthProviderInterface }
-    // MARK: - 온보딩
-      .register { OnBoardingRepositoryImpl()  as OnBoardingInterface }
+
+      // 📝 비즈니스 로직 계층 (PFW 단일 책임)
+      .register { OnBoardingRepositoryImpl() as OnBoardingInterface }
       .register { SignUpRepositoryImpl() as SignUpInterface }
-    // MARK: - 출석
       .register { AttendanceRepositoryImpl() as AttendanceInterface }
-    // MARK: - 마이페이지
       .register { MyPageRepositoryImpl() as MyPageRepositoryInterface }
-    // MARK: - 스케줄
       .register { ScheduleRepositoryImpl() as ScheduleInterface }
-    // MARK: - QRCode
       .register { QRCodeRepositoryImpl() as QRCodeInterface }
+
       .configure()
+  }
+
+  /// 🎯 PFW 철학: 타입 안전한 의존성 해결
+  public func resolve<T>(_ type: T.Type) -> T? {
+    return UnifiedDI.resolve(type)
   }
 }
