@@ -84,77 +84,48 @@ public struct AppReducer: Sendable {
 
   @Dependency(\.continuousClock) var clock
 
-  private enum CancelID {
-    case refreshTokenExpiredListener
-    case splashRouting
-    case authEffects
-    case staffEffects
-    case memberEffects
-  }
+  // 🎯 PFW 패턴: 강타입 최소 CancelID (3개로 축소)
+  private enum CancelID: Hashable {
+    case coordinator(CoordinatorType)
+    case transition
+    case refreshTokenListener
 
-  // 🔥 개선: 공통 취소 패턴을 Helper 함수로 추출
-  private func cancelAllEffects() -> Effect<Action> {
-    let cancelIDs: [any Hashable & Sendable] = [
-      CancelID.splashRouting,
-      CancelID.authEffects,
-      CancelID.staffEffects,
-      CancelID.memberEffects,
-      StaffCoordinator.CancelID.allEffects,
-      StaffCoordinator.CancelID.profileEffects,
-      MemberCoordinator.CancelID.allEffects,
-      MemberCoordinator.CancelID.profileEffects,
-      ProfileReducer.CancelID.fetchProfile,
-      ProfileReducer.CancelID.deleteUser,
-      ProfileReducer.CancelID.logoutUser
-    ]
-
-    return .merge(cancelIDs.map { .cancel(id: $0) })
-  }
-
-  private func cancelCoordinatorEffects(excluding: CancelID) -> Effect<Action> {
-    let coordinatorCancelIDs: [any Hashable & Sendable] = [
-      CancelID.authEffects,
-      CancelID.staffEffects,
-      CancelID.memberEffects,
-      StaffCoordinator.CancelID.allEffects,
-      StaffCoordinator.CancelID.profileEffects,
-      MemberCoordinator.CancelID.allEffects,
-      MemberCoordinator.CancelID.profileEffects,
-      ProfileReducer.CancelID.fetchProfile,
-      ProfileReducer.CancelID.deleteUser,
-      ProfileReducer.CancelID.logoutUser
-    ].filter { id in
-      // 현재 활성화될 Coordinator는 제외
-      if let cancelID = id as? CancelID, cancelID == excluding {
-        return false
-      }
-      return true
+    enum CoordinatorType: Hashable {
+      case staff
+      case member
+      case auth
     }
-
-    return .merge(coordinatorCancelIDs.map { .cancel(id: $0) })
   }
+
+  // 🎯 PFW 패턴: 최소한의 핵심 취소 (3개만)
+  private func cancelAllCoordinatorEffects() -> Effect<Action> {
+    return .merge([
+      // PFW 권장: 최소한의 핵심 Coordinator Effect 취소
+      .cancel(id: CancelID.coordinator(.staff)),
+      .cancel(id: CancelID.coordinator(.member)),
+      .cancel(id: CancelID.coordinator(.auth)),
+
+      // ProfileReducer 핵심 Effect만
+      .cancel(id: ProfileReducer.CancelID.fetchProfile),
+      .cancel(id: ProfileReducer.CancelID.deleteUser),
+      .cancel(id: ProfileReducer.CancelID.logoutUser)
+    ])
+  }
+
+  // 🎯 PFW 패턴: 단순한 상태 전환
+  private func transitionToState() -> Effect<Action> {
+    return .concatenate(
+      cancelAllCoordinatorEffects(),
+      .run { _ in await Task.yield() } // 메모리 정리
+    )
+    .cancellable(id: CancelID.transition, cancelInFlight: true)
+  }
+
+  // 제거됨: PFW 권장사항에 따라 단순화
 
   public var body: some ReducerOf<Self> {
-    // 🔥 TCA 해결책 1: Child reducer들을 먼저 결합
-    EmptyReducer()
-      .ifCaseLet(\.splash, action: \.scope.splash) {
-        Splash()
-      }
-      .ifCaseLet(\.auth, action: \.scope.auth) {
-        AuthCoordinator()
-      }
-      .ifCaseLet(\.staff, action: \.scope.staff) {
-        StaffCoordinator()
-      }
-      .ifCaseLet(\.member, action: \.scope.member) {
-        MemberCoordinator()
-      }
-
-    // 🔥 Parent reducer는 마지막에 처리 + 디버그 로깅
+    // 🔥 TCA 해결책 4: Reduce를 ifCaseLet보다 먼저 배치하여 액션 필터링 우선 처리
     Reduce { state, action in
-      // 🔍 디버그: action과 현재 state 로깅
-      #logDebug("🎯 [AppReducer] Current State: \(state) | Incoming Action: \(action)")
-
       switch action {
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
@@ -169,9 +140,22 @@ public struct AppReducer: Sendable {
         return handleNavigationAction(state: &state, action: navigationAction)
 
       case .scope(let scopeAction):
-        #logDebug("🔍 [AppReducer] Scope Action Received: \(scopeAction)")
+        // 🎯 PFW 패턴: 단순한 위임 - 복잡한 검증은 handleScopeAction에서
         return handleScopeAction(state: &state, action: scopeAction)
       }
+    }
+    // 🔥 TCA 해결책 5: 강화된 ifCaseLet 체인 - 상태 불일치 방어
+    .ifCaseLet(\.splash, action: \.scope.splash) {
+      Splash()
+    }
+    .ifCaseLet(\.auth, action: \.scope.auth) {
+      AuthCoordinator()
+    }
+    .ifCaseLet(\.staff, action: \.scope.staff) {
+      StaffCoordinator()
+    }
+    .ifCaseLet(\.member, action: \.scope.member) {
+      MemberCoordinator()
     }
   }
 
@@ -186,21 +170,24 @@ public struct AppReducer: Sendable {
       }
 
     case .presentRoot:
-      // 기본적으로 멤버 화면으로 이동
+      // 🎯 PFW 패턴: 간단한 루트 전환
       state = .member(.init())
-      return cancelCoordinatorEffects(excluding: .memberEffects)
+      return transitionToState()
 
     case .presentAuth:
+      // 🔥 TCA 해결책 3: Auth 전환 원자성 보장
       state = .auth(.init())
-      return cancelCoordinatorEffects(excluding: .authEffects)
+      return transitionToState()
 
     case .presentStaff:
+      // 🔥 TCA 해결책 4: Staff 전환 원자성 보장
       state = .staff(.init())
-      return cancelCoordinatorEffects(excluding: .staffEffects)
+      return transitionToState()
 
     case .presentMember:
+      // 🔥 TCA 해결책 5: Member 전환 원자성 보장
       state = .member(.init())
-      return cancelCoordinatorEffects(excluding: .memberEffects)
+      return transitionToState()
     }
   }
 
@@ -211,14 +198,12 @@ public struct AppReducer: Sendable {
     switch action {
     case .startNotificationListener:
       return setupRefreshTokenExpiredListener()
-        .cancellable(id: CancelID.refreshTokenExpiredListener, cancelInFlight: true)
+        .cancellable(id: CancelID.refreshTokenListener, cancelInFlight: true)
 
     case .refreshTokenExpired:
-      // Refresh token이 만료된 경우 로그인 화면으로 이동
-        #logDebug("🚪 [AppReducer] 🔥 REFRESH TOKEN EXPIRED - REDIRECTING TO LOGIN!")
+      // 🔥 TCA 해결책: 토큰 만료시 완전한 Effect 정리
       state = .auth(.init())
-        #logDebug("✅ [AppReducer] 🎯 STATE CHANGED TO LOGIN SCREEN!")
-      return cancelAllEffects()
+      return transitionToState()
     }
   }
 
@@ -236,66 +221,104 @@ public struct AppReducer: Sendable {
     return .none
   }
 
+  // 🎯 PFW 철학: 단순하고 조합 가능한 상태 검증
+  private func isValidAction(_ action: ScopeAction, for state: State) -> Bool {
+    switch (action, state) {
+    case (.staff, .staff), (.member, .member), (.auth, .auth), (.splash, .splash):
+      return true
+    default:
+      return false
+    }
+  }
+
   private func handleScopeAction(
     state: inout State,
     action: ScopeAction
   ) -> Effect<Action> {
+    // 🎯 PFW 철학: 타입 안전한 상태 매칭
+    switch (action, state) {
+    case (.staff, .staff), (.member, .member),
+         (.auth, .auth), (.splash, .splash):
+      // ✅ 올바른 상태 매칭 - 네비게이션 처리 진행
+      break
+
+    case (.staff, _), (.member, _), (.auth, _), (.splash, _):
+      // ✅ 상태 불일치 - PFW 철학: 조용히 무시
+      return .none
+    }
+
+    // 🎯 PFW 패턴: 단순한 네비게이션 처리
+    return handleScopeNavigation(action: action)
+  }
+
+  // 🎯 PFW 패턴: 네비게이션 로직 분리
+  private func handleScopeNavigation(action: ScopeAction) -> Effect<Action> {
     switch action {
     case .splash(.navigation(.presentLogin)):
       return .run { send in
-        try await self.clock.sleep(for: .seconds(0.5))
+        try await clock.sleep(for: .seconds(0.5))
         await send(.view(.presentAuth))
       }
-      .cancellable(id: CancelID.splashRouting, cancelInFlight: true)
+      .cancellable(id: CancelID.transition, cancelInFlight: true)
 
     case .splash(.navigation(.presentStaff)):
-      state = .staff(.init())
-      return cancelCoordinatorEffects(excluding: .staffEffects)
+      return .send(.view(.presentStaff))
 
     case .splash(.navigation(.presentMember)):
-      state = .member(.init())
-      return cancelCoordinatorEffects(excluding: .memberEffects)
+      return .send(.view(.presentMember))
 
     case .auth(.navigation(.presentStaff)):
-      state = .staff(.init())
-      return cancelCoordinatorEffects(excluding: .staffEffects)
+      return .send(.view(.presentStaff))
 
     case .auth(.navigation(.presentMember)):
-      state = .member(.init())
-      return cancelCoordinatorEffects(excluding: .memberEffects)
+      return .send(.view(.presentMember))
 
     case .staff(.navigation(.presentLogin)):
-      state = .auth(.init())
-      return cancelCoordinatorEffects(excluding: .authEffects)
+      return .send(.view(.presentAuth))
 
     case .staff(.navigation(.presentMember)):
-      state = .member(.init())
-      return cancelCoordinatorEffects(excluding: .memberEffects)
+      return .send(.view(.presentMember))
 
     case .member(.navigation(.presentLogin)):
-      state = .auth(.init())
-      return cancelCoordinatorEffects(excluding: .authEffects)
+      return .send(.view(.presentAuth))
 
     case .member(.navigation(.presentStaff)):
-      state = .staff(.init())
-      return cancelCoordinatorEffects(excluding: .staffEffects)
+      return .send(.view(.presentStaff))
 
     default:
       return .none
     }
   }
 
-  /// Refresh token 만료 감지 리스너 설정
+  // 🎯 PFW 패턴: 간결한 상태 검증
+  private func isStaffState(_ state: State) -> Bool {
+    guard case .staff = state else { return false }
+    return true
+  }
+
+  private func isMemberState(_ state: State) -> Bool {
+    guard case .member = state else { return false }
+    return true
+  }
+
+  private func isAuthState(_ state: State) -> Bool {
+    guard case .auth = state else { return false }
+    return true
+  }
+
+  private func isSplashState(_ state: State) -> Bool {
+    guard case .splash = state else { return false }
+    return true
+  }
+
+
   private func setupRefreshTokenExpiredListener() -> Effect<Action> {
-    #logDebug("🔔 [AppReducer] 🚨 SETTING UP REFRESH TOKEN EXPIRED LISTENER...")
     return .publisher {
       NotificationCenter.default
         .publisher(for: NSNotification.Name("RefreshTokenExpired"))
-        .map { notification in
-          #logDebug("🔔 [AppReducer] 🔥 🎯 REFRESH TOKEN EXPIRED NOTIFICATION RECEIVED!")
-          #logDebug("🔔 [AppReducer] Notification details: \(notification)")
-          return Action.async(.refreshTokenExpired)
-        }
+        .map { _ in Action.async(.refreshTokenExpired) }
     }
+    .cancellable(id: CancelID.refreshTokenListener, cancelInFlight: true)
   }
+
 }

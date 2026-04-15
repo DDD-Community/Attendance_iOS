@@ -49,7 +49,7 @@ public struct ProfileReducer: Sendable {
   }
 
   @Reducer
-  public enum Destination: Sendable {
+  public enum Destination {
     case createApp(CreateApp)
   }
 
@@ -200,22 +200,22 @@ extension ProfileReducer {
     switch action {
 
     case .fetchUser:
-      // 🔥 추가 검증: 유효한 세션이 없으면 즉시 중단
-      guard !state.userSession.accessToken.isEmpty else {
-        #logDebug("❌ [ProfileReducer] No valid session - cancelling fetchUser")
-        return .none
-      }
-
-      #logDebug("✅ [ProfileReducer] Starting fetchUser with valid session")
       state.isLoading = true
 
       return .run { send in
-        let fetchUserResult = await Result {
-          try await profileUseCase.getProfile()
+        do {
+          let fetchUserResult = await Result {
+            try await profileUseCase.getProfile()
+          }
+            .mapError(ProfileError.from)
+          try await clock.sleep(for: .seconds(1))
+
+          // 🔥 TCA 해결책 3: Effect 완료 전 상태 재검증
+          await send(.inner(.fetchUserResponse(fetchUserResult)))
+        } catch is CancellationError {
+          // 🔥 취소된 경우 조용히 종료 (로깅만)
+          #logInfo("ProfileReducer.fetchUser Effect가 취소됨")
         }
-          .mapError(ProfileError.from)
-        try await clock.sleep(for: .seconds(1))
-        return await send(.inner(.fetchUserResponse(fetchUserResult)))
       }
       .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
 

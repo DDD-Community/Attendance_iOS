@@ -19,6 +19,7 @@ struct CustomConfirmationPopup: View {
   private let onCancel: () -> Void
   private let onPolicyTap: () -> Void
   @State private var isChecked = false
+  @State private var isContentVisible = false
 
   init(
     title: String,
@@ -47,7 +48,7 @@ struct CustomConfirmationPopup: View {
   var body: some View {
     ZStack {
       Color.black
-        .opacity(0.6)
+        .opacity(isContentVisible ? 0.6 : 0)
         .edgesIgnoringSafeArea(.all)
         .onTapGesture {
           if style != .consent {
@@ -55,10 +56,20 @@ struct CustomConfirmationPopup: View {
           }
         }
 
-      if style == .consent {
-        consentContent
-      } else {
-        confirmationContent
+      Group {
+        if style == .consent {
+          consentContent
+        } else {
+          confirmationContent
+        }
+      }
+      .padding(.horizontal, 10)
+      .offset(y: isContentVisible ? 0 : 120)
+      .opacity(isContentVisible ? 1 : 0)
+    }
+    .onAppear {
+      withAnimation(.appModal) {
+        isContentVisible = true
       }
     }
   }
