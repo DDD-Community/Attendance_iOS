@@ -18,11 +18,12 @@ extension Settings {
     return SettingsDictionary()
       .setProductName(appName)
       .setCFBundleDisplayName(displayName)
-      .setOtherLdFlags("-ObjC -all_load")
+      .setOtherLdFlags("-ObjC -all_load -w -Wl,-no_warn_unused_dylibs")
       .setDebugInformationFormat("dwarf-with-dsym")
       .setProvisioningProfileSpecifier(provisioningProfile)
       .setSkipInstall(setSkipInstall)
       .setCFBundleDevelopmentRegion("ko")
+      .setSuppressAllWarnings()
   }
   
   private static func commonBaseSettings(
@@ -30,8 +31,9 @@ extension Settings {
   ) -> SettingsDictionary {
     return SettingsDictionary()
       .setProductName(appName)
-      .setOtherLdFlags("-ObjC -all_load")
+      .setOtherLdFlags("-ObjC -all_load -w -Wl,-no_warn_unused_dylibs")
       .setStripStyle()
+      .setSuppressAllWarnings()
   }
   
   public static let appMainSetting: Settings = .settings(
@@ -52,7 +54,8 @@ extension Settings {
       .setProvisioningProfileSpecifier("match Development \(Project.Environment.bundlePrefix)")
       .setDevelopmentTeam(Project.Environment.organizationTeamId)
       .setCFBundleDevelopmentRegion()
-      .setDebugInformationFormat(),
+      .setDebugInformationFormat()
+      .setSuppressAllWarnings(),
     configurations: [
       .debug(
         name: .debug,
@@ -112,7 +115,8 @@ extension Settings {
         .setArchs()
         .setSwiftVersion("6.0")
         .setVersioningSystem()
-        .setDebugInformationFormat(),
+        .setDebugInformationFormat()
+        .setSuppressAllWarnings(),
       configurations: [
         .debug(
           name: .debug,
@@ -124,19 +128,19 @@ extension Settings {
               .relativeToRoot("./Config/dev.xcconfig")
         ),
         .debug(
-          name: "QA",
+          name: .stage,
           settings: commonBaseSettings(
             appName: appName
           ),
           xcconfig:
-              .relativeToRoot("./Config/qa.xcconfig")
+              .relativeToRoot("./Config/stage.xcconfig")
         ),
         .release(
           name: .release,
           settings: commonBaseSettings(
             appName: appName
           ),
-          xcconfig: .relativeToRoot("./Config/realse.xcconfig")
+          xcconfig: .relativeToRoot("./Config/release.xcconfig")
         )
       ], defaultSettings: .recommended)
     

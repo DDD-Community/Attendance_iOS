@@ -41,8 +41,7 @@ public extension View {
             alertStore.send(.policyTapped)
           }
         )
-        .transition(.move(edge: .bottom).combined(with: .opacity))
-        .animation(.easeInOut(duration: 0.3), value: alertState.title.isEmpty == false)
+        .transition(.opacity.animation(.appModal))
       }
     }
   }
@@ -97,8 +96,7 @@ struct CustomConfirmationPopupItemModifier: ViewModifier {
             onCancel: item.onCancel,
             onPolicyTap: item.onPolicyTap
           )
-          .transition(.move(edge: .bottom).combined(with: .opacity))
-          .animation(.easeInOut(duration: 0.3), value: true)
+          .transition(.opacity.animation(.appModal))
         }
       }
   }
@@ -153,8 +151,7 @@ struct CustomConfirmationPopupModifier: ViewModifier {
             onCancel: onCancel,
             onPolicyTap: onPolicyTap
           )
-          .transition(.move(edge: .bottom).combined(with: .opacity))
-          .animation(.easeInOut(duration: 0.3), value: isPresented)
+          .transition(.opacity.animation(.appModal))
         }
       }
   }

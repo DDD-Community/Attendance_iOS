@@ -42,7 +42,7 @@ public struct SelectTeamView: View {
           VStack {
             Spacer()
 
-            AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(true))
+            AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(store.loading))
               .resizable()
               .scaledToFit()
               .frame(width: 200, height: 200)

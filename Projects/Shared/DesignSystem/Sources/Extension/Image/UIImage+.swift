@@ -23,14 +23,16 @@ public extension Image {
       self.init(uiImage: uiImage)
     } else {
       self = Image(systemName: "questionmark")
+        .renderingMode(.template) // Fallback 이미지 템플릿 모드 최적화
     }
   }
-  
+
   init(assetName: String) {
     if let uiImage = UIImage(assetName: assetName) {
       self.init(uiImage: uiImage)
     } else {
       self = Image(systemName: "questionmark")
+        .renderingMode(.template) // Fallback 이미지 템플릿 모드 최적화
     }
   }
 }

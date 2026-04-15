@@ -823,7 +823,7 @@ func getDefaultDependencies(for layer: String) -> [String] {
 
   // 모든 모듈에 공통 SPM 의존성 추가
   dependencies.append(".SPM.composableArchitecture")
-  dependencies.append(".SPM.tcaCoordinator")
+  dependencies.append(".SPM.tcaFlow")
 
   // ✨ Presentation 레이어만 추가 내부 모듈 의존성 자동 추가
   switch layer {

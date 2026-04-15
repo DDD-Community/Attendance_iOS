@@ -28,14 +28,12 @@ struct AttendanceCheckView: View {
     }
     .onAppear {
       store.send(.view(.onAppear))
-      
     }
     .sheet(item: $store.scope(state: \.destination?.scheduleModal, action: \.destination.scheduleModal)) { scheduleModalStore in
       ScheduleModalView(store: scheduleModalStore)
         .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
         .presentationCornerRadius(20)
         .presentationDragIndicator(.visible)
-
     }
     .alert($store.scope(state: \.alert, action: \.scope.alert))
     .attendanceModal($store.scope(state: \.attendanceModal, action: \.scope.attendanceModal))
@@ -140,6 +138,7 @@ extension AttendanceCheckView {
             }
             .padding(.horizontal, 24)
           }
+          .scrollDisabled(true)
 
           Spacer()
             .frame(height: 12)
@@ -156,9 +155,19 @@ extension AttendanceCheckView {
                 }) else { return }
           proxy.scrollTo(target.id, anchor: .center)
         }
-
       }
     }
+    .simultaneousGesture(
+      DragGesture(minimumDistance: 20)
+        .onEnded { value in
+          let swipeThreshold: CGFloat = 50
+          if value.translation.width > swipeThreshold {
+            store.send(.view(.swipeNext))
+          } else if value.translation.width < -swipeThreshold {
+            store.send(.view(.swipePrevious))
+          }
+        }
+    )
   }
 
   @ViewBuilder
@@ -166,11 +175,33 @@ extension AttendanceCheckView {
     if let selectPart = store.selectPart,
        [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart) {
       selectPartAttendanceStatusCard()
+        .simultaneousGesture(
+          DragGesture(minimumDistance: 20)
+            .onEnded { value in
+              let swipeThreshold: CGFloat = 50
+              if value.translation.width > swipeThreshold {
+                store.send(.view(.swipePrevious))
+              } else if value.translation.width < -swipeThreshold {
+                store.send(.view(.swipeNext))
+              }
+            }
+        )
 
       Spacer()
         .frame(height: 20)
     } else {
       selectPartAttendanceStatusCard()
+        .simultaneousGesture(
+          DragGesture(minimumDistance: 20)
+            .onEnded { value in
+              let swipeThreshold: CGFloat = 50
+              if value.translation.width > swipeThreshold {
+                store.send(.view(.swipePrevious))
+              } else if value.translation.width < -swipeThreshold {
+                store.send(.view(.swipeNext))
+              }
+            }
+        )
     }
   }
 

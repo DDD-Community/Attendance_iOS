@@ -30,8 +30,17 @@ public struct ProfileSkeletonView: View {
       Spacer()
     }
     .onAppear {
-      withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+      // 효율적인 반복 제한 애니메이션 (CPU/배터리 최적화)
+      withAnimation(.easeInOut(duration: 1.2).repeatCount(8, autoreverses: true)) {
         isAnimating = true
+      }
+
+      // 8초 후 애니메이션 자동 종료 (메모리 효율성)
+      Task {
+        try? await Task.sleep(for: .seconds(10))
+        withAnimation(.easeOut(duration: 0.3)) {
+          isAnimating = false
+        }
       }
     }
   }

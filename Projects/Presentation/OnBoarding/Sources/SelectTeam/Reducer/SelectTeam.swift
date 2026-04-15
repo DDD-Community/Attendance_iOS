@@ -164,6 +164,15 @@ extension SelectTeam {
             .cancellable(id: CancelID.selectTeam, cancelInFlight: true)
 
       case .signUp:
+        // Manager인 경우 회원가입 시 팀매니징 자동 추가
+        if state.userSession.userRole == .manager {
+          state.$userSession.withLock {
+            if !$0.managing.contains(.teamManaging) {
+              $0.managing.append(.teamManaging)
+            }
+          }
+        }
+
         return .run { [
           editGeneration = state.editGeneration
         ] send in

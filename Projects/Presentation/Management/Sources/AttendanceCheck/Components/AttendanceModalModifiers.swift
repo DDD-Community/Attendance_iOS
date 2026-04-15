@@ -68,7 +68,7 @@ struct AttendanceModalStoreModifier: ViewModifier {
         if let store = store {
           AttendanceModalView(store: store)
             .transition(.move(edge: .bottom).combined(with: .opacity))
-            .animation(.easeInOut(duration: 0.3), value: self.store != nil)
+            .animation(.appModal, value: self.store != nil)
         }
       }
   }
@@ -117,7 +117,7 @@ struct AttendanceStatusModalItemModifier: ViewModifier {
             onCancel: item.onCancel
           )
           .transition(.move(edge: .bottom).combined(with: .opacity))
-          .animation(.easeInOut(duration: 0.3), value: true)
+          .animation(.appModal, value: true)
         }
       }
   }
@@ -165,7 +165,7 @@ struct AttendanceStatusModalModifier: ViewModifier {
             onCancel: onCancel
           )
           .transition(.move(edge: .bottom).combined(with: .opacity))
-          .animation(.easeInOut(duration: 0.3), value: isPresented)
+          .animation(.appModal, value: isPresented)
         }
       }
   }

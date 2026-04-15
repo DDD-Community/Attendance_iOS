@@ -30,6 +30,16 @@
 > DDD IT 동아리의 출석 관리를 위한 번거로운 과정을 줄이고,
 > 개발자들이 학습과 네트워킹에 더 집중할 수 있는 환경을 만들고자 합니다.
 
+## 🛠 Setup
+
+### AI 도구 연동
+
+프로젝트 규칙은 AGENTS.md에 정의되어 있습니다. Claude Code 사용 시 심볼릭 링크를 연결하세요.
+
+```bash
+ln -s AGENTS.md CLAUDE.md
+```
+
 ### 📱 스크린샷
 
 <div align="center">
@@ -170,41 +180,55 @@ Network/Service → Data (API 통신)
 ## 🛠 기술 스택
 
 ### Core Technologies
-- **🎯 Architecture**: The Composable Architecture (TCA) 1.18.0
+- **🎯 Architecture**: The Composable Architecture (TCA) 1.25.5
 - **📦 Modularization**: Tuist 4.x (Micro Feature Architecture)
 - **💉 Dependency Injection**: WeaveDI 3.4.0
-- **🔀 Navigation**: TCACoordinators 0.11.1
+- **🔀 Navigation**: TCAFlow 1.1.0 (커스텀 라이브러리)
 - **⚡ Concurrency**: Swift Concurrency (async/await)
 
-### Key Dependencies
-- **ComposableArchitecture** 1.18.0: 상태 관리 및 단방향 데이터 플로우
-- **TCACoordinators** 0.11.1: TCA 기반 화면 전환 및 네비게이션
-- **WeaveDI** 3.4.0: 의존성 주입 컨테이너 (커스텀 포크)
-- **GoogleSignIn** 9.0.0: Google OAuth 2.0 인증
-- **Firebase** 12.7.0: 백엔드 서비스 (Analytics, Crashlytics)
-- **AsyncMoya** 1.1.8: async/await 기반 네트워킹 (커스텀 포크)
-- **AppAuth** 2.0.0: OAuth 2.0 및 OpenID Connect 클라이언트
+### 📚 주요 라이브러리
 
-### UI & UX
-- **🎨 UI Framework**: SwiftUI + SwiftUIX 0.2.3
-- **🖼️ Image Loading**: SDWebImageSwiftUI 2.0.0
-- **🎨 Design System**: 커스텀 DesignSystem 모듈
-- **📱 Responsive Design**: 모든 iOS 기기 대응
+#### 🎯 아키텍처 & 상태 관리
+- **[ComposableArchitecture](https://github.com/pointfreeco/swift-composable-architecture)** 1.25.5 - 단방향 데이터 플로우 및 상태 관리
+- **[TCAFlow](https://github.com/Roy-wonji/TCAFlow.git)** 1.1.0 ⭐️ - TCA 기반 화면 전환 및 네비게이션 (커스텀)
+- **[WeaveDI](https://github.com/Roy-wonji/WeaveDI.git)** 3.4.0 ⭐️ - 의존성 주입 컨테이너 (커스텀 포크)
 
-### Networking & Data
-- **🌐 HTTP Client**: AsyncMoya 1.1.8 (Moya + async/await)
-- **📱 API Architecture**: RESTful API with JSON
-- **💾 Local Storage**: UserDefaults, Keychain
-- **🔄 State Management**: TCA Store
-- **🔥 Backend Services**: Firebase 12.7.0
+#### 🔐 인증 & 보안
+- **[GoogleSignIn-iOS](https://github.com/google/GoogleSignIn-iOS)** 9.0.0 - Google OAuth 2.0 인증
+- **[AppAuth-iOS](https://github.com/openid/AppAuth-iOS.git)** 2.0.0 - OAuth 2.0 및 OpenID Connect 클라이언트
 
-### Development Tools
-- **📊 Analytics & Logging**: Firebase Analytics + LogMacro
-- **🔧 Build Tool**: Tuist + SPM (Swift Package Manager)
-- **🧪 Testing**: XCTest + TCA Testing + XCTestDynamicOverlay
-- **📱 Automation**: fastlane (스크린샷, 배포)
-- **⚡ Performance**: Swift 6.0 + Concurrency Extras
-- **🐛 Crash Reporting**: Firebase Crashlytics
+#### 🌐 네트워킹
+- **[AsyncMoya](https://github.com/Roy-wonji/AsyncMoya)** 1.1.8 ⭐️ - async/await 기반 HTTP 클라이언트 (커스텀)
+
+#### 🎨 UI & UX
+- **[SwiftUIX](https://github.com/SwiftUIX/SwiftUIX.git)** 0.2.3 - SwiftUI 확장 컴포넌트
+- **[SDWebImageSwiftUI](https://github.com/SDWebImage/SDWebImageSwiftUI.git)** 2.0.0 - 비동기 이미지 로딩 및 캐싱
+
+#### 🔥 백엔드 서비스
+- **[Firebase iOS SDK](https://github.com/firebase/firebase-ios-sdk)** 12.7.0 - Analytics, Crashlytics, Remote Config
+
+### 🛠 개발 도구 & 유틸리티
+
+#### 📊 로깅 & 디버깅
+- **LogMacro**: 커스텀 로깅 매크로
+- **IssueReporting**: 개발 단계 이슈 추적
+- **XCTestDynamicOverlay**: 테스트 환경 오버레이
+
+#### ⚡ 성능 & 동시성
+- **Clocks**: 시간 관련 유틸리티
+- **ConcurrencyExtras**: Swift Concurrency 확장
+- **Swift 6.0**: 최신 Swift 언어 기능
+
+#### 🔧 빌드 & 배포
+- **Tuist**: 프로젝트 생성 및 의존성 관리
+- **Swift Package Manager (SPM)**: 패키지 의존성 관리
+- **fastlane**: 자동화된 빌드 및 배포
+
+### 📱 지원 환경
+- **💻 Xcode**: 16.0 이상
+- **📱 iOS**: 17.0 이상
+- **⚡ Swift**: 6.0 이상
+- **🔧 Tuist**: 4.x 이상
 
 ## 🚀 빠른 시작
 

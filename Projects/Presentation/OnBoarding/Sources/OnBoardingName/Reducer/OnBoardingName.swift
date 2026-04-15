@@ -85,9 +85,7 @@ extension OnBoardingName {
       }
 
     case .initSignUpName:
-        if state.userSession.provider == .google {
-          state.$userSession.withLock { $0.name = "" }
-        }
+      // 이름 초기화 로직 제거 - 사용자가 입력한 이름을 유지
       return .none
     }
   }

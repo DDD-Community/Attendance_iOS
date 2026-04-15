@@ -22,6 +22,7 @@ public struct ScheduleHeaderView: View {
           .foregroundStyle(.staticWhite)
 
         Image(systemName: "chevron.down")
+          .renderingMode(.template) // 시스템 이미지 렌더링 최적화
           .font(.system(size: 16, weight: .medium))
           .foregroundStyle(.staticWhite)
       }
@@ -35,6 +36,7 @@ public struct ScheduleHeaderView: View {
           // QR 코드 액션
         } label: {
           Image(systemName: "qrcode")
+            .renderingMode(.template)
             .font(.system(size: 20, weight: .medium))
             .foregroundStyle(.staticWhite)
             .frame(width: 44, height: 44)
@@ -47,6 +49,7 @@ public struct ScheduleHeaderView: View {
           // 프로필 액션
         } label: {
           Image(systemName: "person.circle.fill")
+            .renderingMode(.template)
             .font(.system(size: 20, weight: .medium))
             .foregroundStyle(.staticWhite)
             .frame(width: 44, height: 44)

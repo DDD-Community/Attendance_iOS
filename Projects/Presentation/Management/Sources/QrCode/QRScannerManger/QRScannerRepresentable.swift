@@ -24,6 +24,9 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
     var lastScannedText: String?
     var lastScannedTime: Date?
 
+    // 재사용 가능한 백그라운드 큐 (메모리 누수 방지)
+    private let timeoutQueue = DispatchQueue(label: "qr.scan.timeout", qos: .background)
+
     init(_ parent: QRScannerRepresentable) {
       self.parent = parent
     }
@@ -67,10 +70,10 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
           lastScannedText = text
           lastScannedTime = Date()
           parent.scannedText = text
-          DispatchQueue.main.async {
+          Task { @MainActor [weak self] in
             dataScanner.stopScanning()
-            self.parent.shouldStartScanning = false
-            self.parent.scannAction()
+            self?.parent.shouldStartScanning = false
+            self?.parent.scannAction()
           }
           // 30초 후 다시 같은 텍스트 허용 (초기화)
           scanTimeoutTask?.cancel()
@@ -78,7 +81,7 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
             self?.resetLastScanned()
           }
           scanTimeoutTask = task
-          DispatchQueue.main.asyncAfter(deadline: .now() + 15, execute: task)
+          timeoutQueue.asyncAfter(deadline: .now() + 15, execute: task)
           break
         }
       }

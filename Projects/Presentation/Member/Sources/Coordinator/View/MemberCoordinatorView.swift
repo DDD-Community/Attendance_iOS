@@ -8,7 +8,7 @@
 import SwiftUI
 
 import ComposableArchitecture
-import TCACoordinators
+import TCAFlow
 import Profile
 
 public struct MemberCoordinatorView: View {
@@ -21,7 +21,7 @@ public struct MemberCoordinatorView: View {
   }
   
   public var body: some View {
-    TCARouter(store.scope(state: \.routes, action: \.router)) { screens in
+    TCAFlowRouter(store.scope(state: \.routes, action: \.router)) { screens in
       switch screens.case {
       case .member(let store):
         MemberMainView(store: store)

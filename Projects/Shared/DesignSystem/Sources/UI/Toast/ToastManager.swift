@@ -15,7 +15,8 @@ public class ToastManager: ObservableObject {
   @Published public var currentToast: ToastType?
   @Published public var isVisible = false
 
-  private var dismissTimer: Timer?
+  private var dismissTask: Task<Void, Never>?
+  private var hideAnimationTask: Task<Void, Never>?
 
   private init() {}
 
@@ -23,8 +24,9 @@ public class ToastManager: ObservableObject {
     _ toast: ToastType,
     duration: TimeInterval? = 3.0
   ) {
-    // 기존 타이머 취소
-    dismissTimer?.invalidate()
+    // 기존 작업 취소
+    dismissTask?.cancel()
+    hideAnimationTask?.cancel()
 
     // 새 토스트 표시
     currentToast = toast
@@ -32,33 +34,37 @@ public class ToastManager: ObservableObject {
       isVisible = true
     }
 
-    // 자동 dismiss 타이머 설정
-    if let duration {
-      dismissTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { _ in
-        Task { @MainActor in
-          self.hideToast()
-        }
-      }
-    } else {
-      dismissTimer = nil
+    // 자동 dismiss 설정
+    guard let duration else {
+      dismissTask = nil
+      return
+    }
+
+    dismissTask = Task { [weak self] in
+      try? await Task.sleep(for: .seconds(duration))
+      guard !Task.isCancelled else { return }
+      self?.hideToast()
     }
   }
 
   public func hideToast() {
+    dismissTask?.cancel()
+    dismissTask = nil
+
     withAnimation(.easeIn(duration: 0.3)) {
       isVisible = false
     }
 
     // 애니메이션 완료 후 토스트 제거
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-      self.currentToast = nil
+    hideAnimationTask?.cancel()
+    hideAnimationTask = Task { [weak self] in
+      try? await Task.sleep(for: .seconds(0.3))
+      guard !Task.isCancelled else { return }
+      self?.currentToast = nil
     }
-
-    dismissTimer?.invalidate()
-    dismissTimer = nil
   }
 
-  // 편의 메소드들
+  // MARK: - 편의 메소드
   public func showSuccess(_ message: String) {
     showToast(.success(message))
   }
@@ -77,5 +83,10 @@ public class ToastManager: ObservableObject {
 
   public func showLoading(_ message: String) {
     showToast(.loading(message), duration: nil)
+  }
+
+  deinit {
+    dismissTask?.cancel()
+    hideAnimationTask?.cancel()
   }
 }

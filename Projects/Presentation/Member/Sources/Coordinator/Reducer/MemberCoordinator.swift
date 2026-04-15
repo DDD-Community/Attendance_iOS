@@ -10,11 +10,11 @@ import Foundation
 import Shareds
 
 import ComposableArchitecture
-import TCACoordinators
+import TCAFlow
 import LogMacro
 import Profile
 
-@Reducer
+@FlowCoordinator(screen: "MemberScreen", navigation: true)
 public struct MemberCoordinator {
   public init() {}
 
@@ -27,8 +27,8 @@ public struct MemberCoordinator {
     }
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
-    case binding(BindingAction<State>)
+  @CasePathable
+  public enum Action {
     case router(IndexedRouterActionOf<MemberScreen>)
     case view(View)
     case inner(InnerAction)
@@ -57,16 +57,15 @@ public struct MemberCoordinator {
 
   @Dependency(\.continuousClock) var clock
 
-  public var body: some Reducer<State, Action> {
-    BindingReducer()
+  public nonisolated enum CancelID: Hashable, Sendable {
+    case allEffects
+    case profileEffects
+  }
 
-    Reduce { state, action in
-      switch action {
-      case .binding:
-        return .none
-
+  func handleRoute(state: inout State, action: Action) -> Effect<Action> {
+    switch action {
       case .router(let action):
-        return handleRouterAction(state: &state, action: action)
+        return routerAction(state: &state, action: action)
 
       case .view(let action):
         return handleViewAction(state: &state, action: action)
@@ -79,14 +78,12 @@ public struct MemberCoordinator {
 
       case .navigation(let action):
         return handleNavigationAction(state: &state, action: action)
-      }
     }
-    .forEachRoute(\.routes, action: \.router)
   }
 }
 
 extension MemberCoordinator {
-  private func handleRouterAction(
+  private func routerAction(
     state: inout State,
     action: IndexedRouterActionOf<MemberScreen>
   ) -> Effect<Action> {
@@ -97,16 +94,28 @@ extension MemberCoordinator {
 
     case .routeAction(id: _, action: .member(.navigation(.routeToProfile))):
       state.routes.push(.profile(.init()))
-      return .none
+      return .concatenate(
+        .cancel(id: CancelID.profileEffects),
+        .cancel(id: ProfileReducer.CancelID.fetchProfile),
+        .cancel(id: ProfileReducer.CancelID.deleteUser),
+        .cancel(id: ProfileReducer.CancelID.logoutUser)
+      )
 
     case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
       return .run { send in
         try await clock.sleep(for: .seconds(0.5))
         await send(.navigation(.presentLogin))
       }
+      .cancellable(id: CancelID.allEffects)
 
       case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
-        return .send(.view(.backAction))
+        return .concatenate(
+          .cancel(id: CancelID.profileEffects),
+          .cancel(id: ProfileReducer.CancelID.fetchProfile),
+          .cancel(id: ProfileReducer.CancelID.deleteUser),
+          .cancel(id: ProfileReducer.CancelID.logoutUser),
+          .send(.view(.backAction))
+        )
 
     default:
       return .none
@@ -123,9 +132,8 @@ extension MemberCoordinator {
       return .none
 
     case .backToRootAction:
-      return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-        $0.goBackToRoot()
-      }
+      state.routes.goBackToRoot()
+      return .none
     }
   }
 
@@ -166,10 +174,12 @@ extension MemberCoordinator {
 }
 
 extension MemberCoordinator {
-  @Reducer(state: .equatable)
+  @Reducer
   public enum MemberScreen {
     case member(MemberMain)
     case profile(ProfileCoordinator)
     case qrCode(MemberQRCode)
   }
 }
+
+extension MemberCoordinator.MemberScreen.State: Equatable {}

@@ -42,6 +42,7 @@ struct SocialCircleButtonView: View {
           .allowsHitTesting(false)
 
         Image(systemName: type.image)
+          .renderingMode(.template) // 효율적인 시스템 이미지 렌더링
           .resizable()
           .scaledToFit()
           .frame(width: 18, height: 30)
@@ -60,6 +61,7 @@ struct SocialCircleButtonView: View {
           .shadow(color: .gray40, radius: 5, x: 0, y: 0)
           .overlay(
             Image(assetName: type.image)
+              .renderingMode(.original) // 커스텀 이미지 원본 렌더링 최적화
               .resizable()
               .scaledToFit()
               .frame(width: 20, height: 20)

@@ -11,12 +11,12 @@ import Foundation
 import Shareds
 
 import ComposableArchitecture
-import TCACoordinators
+import TCAFlow
 import OnBoarding
 import Web
 
-@Reducer
-public struct ProfileCoordinator {
+@FlowCoordinator(screen: "ProfileScreen", navigation: true)
+public struct ProfileCoordinator: Sendable {
   public init() {}
 
   @ObservableState
@@ -28,8 +28,8 @@ public struct ProfileCoordinator {
     }
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
-    case binding(BindingAction<State>)
+  @CasePathable
+  public enum Action {
     case router(IndexedRouterActionOf<ProfileScreen>)
     case view(View)
     case inner(InnerAction)
@@ -58,18 +58,10 @@ public struct ProfileCoordinator {
     case presentMember
   }
 
-  @Dependency(\.continuousClock) var clock
-
-  public var body: some ReducerOf<Self> {
-    BindingReducer()
-
-    Reduce { state, action in
-      switch action {
-      case .binding:
-        return .none
-
+  func handleRoute(state: inout State, action: Action) -> Effect<Action> {
+    switch action {
       case .router(let action):
-        return handleRouterAction(state: &state, action: action)
+        return routerAction(state: &state, action: action)
 
       case .view(let action):
         return handleViewAction(state: &state, action: action)
@@ -82,22 +74,25 @@ public struct ProfileCoordinator {
 
       case .navigation(let action):
         return handleNavigationAction(state: &state, action: action)
-      }
     }
-    .forEachRoute(\.routes, action: \.router)
   }
 }
 
 extension ProfileCoordinator {
-  private func handleRouterAction(
+  private func routerAction(
     state: inout State,
     action: IndexedRouterActionOf<ProfileScreen>
   ) -> Effect<Action> {
     switch action {
     case .routeAction(id: _, action: .profile(.navigation(.presentLogOut))):
-      return .run { send in
-        await send(.navigation(.presentLogin))
-      }
+      return .concatenate(
+        .cancel(id: ProfileReducer.CancelID.fetchProfile),
+        .cancel(id: ProfileReducer.CancelID.deleteUser),
+        .cancel(id: ProfileReducer.CancelID.logoutUser),
+        .run { send in
+          await send(.navigation(.presentLogin))
+        }
+      )
 
       case .routeAction(id: _, action: .profile(.navigation(.presentPrivacyPolicy))):
         state.routes.push(.web(.init(url: "https://dddset.notion.site/DDD-2d424441b0b08080a518ed42f1315b20?source=copy_link")))
@@ -120,14 +115,12 @@ extension ProfileCoordinator {
         return .send(.navigation(.presentLogin))
 
       case .routeAction(id: _, action: .onBoarding(.navigation(.backToRoot))):
-        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-          $0.goBackTo(\.profile)
-        }
+        state.routes.goBackTo(\.profile)
+        return .none
 
       case .routeAction(id: _, action: .onBoarding(.navigation(.presentProfile))):
-        return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-          $0.goBackTo(\.profile)
-        }
+        state.routes.goBackTo(\.profile)
+        return .none
 
     default:
       return .none
@@ -141,12 +134,20 @@ extension ProfileCoordinator {
     switch action {
     case .backAction:
       state.routes.goBack()
-      return .none
+      // 🔥 TCA 해결책 2: navigation 시 모든 Profile Effect 취소
+      return .concatenate(
+        .cancel(id: ProfileReducer.CancelID.fetchProfile),
+        .cancel(id: ProfileReducer.CancelID.deleteUser),
+        .cancel(id: ProfileReducer.CancelID.logoutUser)
+      )
 
     case .backToRootAction:
-      return .routeWithDelaysIfUnsupported(state.routes, action: \.router) {
-        $0.goBackToRoot()
-      }
+      state.routes.goBackToRoot()
+      return .concatenate(
+        .cancel(id: ProfileReducer.CancelID.fetchProfile),
+        .cancel(id: ProfileReducer.CancelID.deleteUser),
+        .cancel(id: ProfileReducer.CancelID.logoutUser)
+      )
     }
   }
 
@@ -154,14 +155,14 @@ extension ProfileCoordinator {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-   
+    return .none
   }
 
   private func handleAsyncAction(
     state: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
-
+    return .none
   }
 
   private func handleNavigationAction(
@@ -185,10 +186,12 @@ extension ProfileCoordinator {
 }
 
 extension ProfileCoordinator {
-  @Reducer(state: .equatable)
+  @Reducer
   public enum ProfileScreen {
     case profile(ProfileReducer)
     case web(WebReducer)
     case onBoarding(OnBoardingCoordinator)
   }
 }
+
+extension ProfileCoordinator.ProfileScreen.State: Equatable {}

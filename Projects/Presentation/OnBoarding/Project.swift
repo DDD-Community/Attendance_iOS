@@ -11,11 +11,8 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings:  .settings(),
   dependencies: [
-    .SPM.composableArchitecture,
-    .SPM.tcaCoordinator,
     .Domain(implements: .UseCase),
-    .Shared(implements: .Shareds)
-  
+    .Shared(implements: .Shareds)  
   ],
   sources: ["Sources/**"]
 )

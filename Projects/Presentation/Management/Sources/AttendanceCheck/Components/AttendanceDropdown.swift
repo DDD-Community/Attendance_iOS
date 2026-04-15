@@ -27,89 +27,114 @@ struct AttendanceDropdown: View {
   }
 
   var body: some View {
-    // 드롭다운 헤더 (고정 높이)
+    dropdownHeader
+      .overlay(dropdownOptionsOverlay, alignment: .topLeading)
+      .zIndex(isExpanded ? 9999 : 1)
+  }
+
+  private var dropdownHeader: some View {
     Button {
       withAnimation(.easeInOut(duration: 0.2)) {
         isExpanded.toggle()
       }
     } label: {
-      HStack {
-        Text(selectedStatus.desc)
-          .pretendardCustomFont(textStyle: .body2NormalMedium)
-          .foregroundStyle(.staticWhite)
-
-        Spacer()
-
-        Image(systemName: "chevron.down")
-          .font(.system(size: 14, weight: .medium))
-          .foregroundStyle(.gray60)
-          .rotationEffect(.degrees(isExpanded ? 180 : 0))
-      }
-      .padding(.horizontal, 16)
-      .padding(.vertical, 12)
-      .frame(height: 58)
-      .background(.gray80)
-      .clipShape(.rect(cornerRadius: 20))
-      .overlay {
-        RoundedRectangle(cornerRadius: 20)
-          .stroke(.gray80, lineWidth: 1)
-      }
+      headerContent
     }
     .buttonStyle(.plain)
-    .overlay(
-      // 드롭다운 옵션들을 오버레이로 완전히 분리
-      Group {
-        if isExpanded {
-          VStack(spacing: 0) {
-            ForEach(availableStatuses, id: \.rawValue) { status in
-              Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                  selectedStatus = status
-                  isExpanded = false
-                  onSelectionChanged(status) // AttendanceStatus 직접 반환
-                }
-              } label: {
-                HStack {
-                  Text(status.desc)
-                    .pretendardCustomFont(textStyle: .body2NormalMedium)
-                    .foregroundStyle(status == selectedStatus ? .blue40 : .staticWhite)
+  }
 
-                  Spacer()
+  private var headerContent: some View {
+    HStack {
+      Text(selectedStatus.desc)
+        .pretendardCustomFont(textStyle: .body2NormalMedium)
+        .foregroundStyle(.staticWhite)
 
-                  if status == selectedStatus {
-                    Image(systemName: "checkmark")
-                      .font(.system(size: 14, weight: .medium))
-                      .foregroundStyle(.blue40)
-                  }
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .frame(height: 44)
-                .background(.gray80)
-              }
-              .buttonStyle(.plain)
+      Spacer()
 
-              if status != availableStatuses.last {
-                Rectangle()
-                  .fill(.gray70)
-                  .frame(height: 1)
-                  .padding(.horizontal, 16)
-              }
-            }
-          }
-          .background(.gray80)
-          .clipShape(.rect(cornerRadius: 8))
-          .overlay {
-            RoundedRectangle(cornerRadius: 8)
-              .stroke(.gray70, lineWidth: 1)
-          }
-          .offset(y: 64) // 헤더(58) + 간격(6)
-          .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
+      Image(systemName: "chevron.down")
+        .renderingMode(.template)
+        .font(.system(size: 14, weight: .medium))
+        .foregroundStyle(.gray60)
+        .rotationEffect(.degrees(isExpanded ? 180 : 0))
+    }
+    .padding(.horizontal, 16)
+    .padding(.vertical, 12)
+    .frame(height: 58)
+    .background(.gray80)
+    .clipShape(.rect(cornerRadius: 20))
+    .overlay {
+      RoundedRectangle(cornerRadius: 20)
+        .stroke(.gray80, lineWidth: 1)
+    }
+  }
+
+  private var dropdownOptionsOverlay: some View {
+    Group {
+      if isExpanded {
+        dropdownOptions
+      }
+    }
+  }
+
+  private var dropdownOptions: some View {
+    VStack(spacing: 0) {
+      ForEach(availableStatuses, id: \.rawValue) { status in
+        optionRow(for: status)
+
+        if status != availableStatuses.last {
+          optionDivider
         }
-      },
-      alignment: .topLeading
-    )
-    .zIndex(isExpanded ? 9999 : 1) // 전체 컴포넌트의 zIndex 조정
+      }
+    }
+    .background(.gray80)
+    .clipShape(.rect(cornerRadius: 8))
+    .overlay {
+      RoundedRectangle(cornerRadius: 8)
+        .stroke(.gray70, lineWidth: 1)
+    }
+    .offset(y: 64)
+    .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
+  }
+
+  private func optionRow(for status: AttendanceStatus) -> some View {
+    Button {
+      withAnimation(.easeInOut(duration: 0.2)) {
+        selectedStatus = status
+        isExpanded = false
+        onSelectionChanged(status)
+      }
+    } label: {
+      optionRowContent(for: status)
+    }
+    .buttonStyle(.plain)
+  }
+
+  private func optionRowContent(for status: AttendanceStatus) -> some View {
+    HStack {
+      Text(status.desc)
+        .pretendardCustomFont(textStyle: .body2NormalMedium)
+        .foregroundStyle(status == selectedStatus ? .blue40 : .staticWhite)
+
+      Spacer()
+
+      if status == selectedStatus {
+        Image(systemName: "checkmark")
+          .renderingMode(.template)
+          .font(.system(size: 14, weight: .medium))
+          .foregroundStyle(.blue40)
+      }
+    }
+    .padding(.horizontal, 16)
+    .padding(.vertical, 12)
+    .frame(height: 44)
+    .background(.gray80)
+  }
+
+  private var optionDivider: some View {
+    Rectangle()
+      .fill(.gray70)
+      .frame(height: 1)
+      .padding(.horizontal, 16)
   }
 }
 
