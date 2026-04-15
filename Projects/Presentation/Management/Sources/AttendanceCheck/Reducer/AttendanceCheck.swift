@@ -568,6 +568,9 @@ extension AttendanceCheck {
     switch action {
       case .presented(let attendanceModalAction):
         switch attendanceModalAction {
+          case .binding(_):
+            return .none
+
           case .confirmTapped(let status):
             state.attendanceModal = nil
             // API 호출 예시

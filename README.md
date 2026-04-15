@@ -30,6 +30,16 @@
 > DDD IT 동아리의 출석 관리를 위한 번거로운 과정을 줄이고,
 > 개발자들이 학습과 네트워킹에 더 집중할 수 있는 환경을 만들고자 합니다.
 
+## 🛠 Setup
+
+### AI 도구 연동
+
+프로젝트 규칙은 AGENTS.md에 정의되어 있습니다. Claude Code 사용 시 심볼릭 링크를 연결하세요.
+
+```bash
+ln -s AGENTS.md CLAUDE.md
+```
+
 ### 📱 스크린샷
 
 <div align="center">

@@ -144,3 +144,6 @@ Derived/
 # Claude Code local settings (contains sensitive information)
 .claude/settings.local.json
 
+# Claude Code symbolic link (links to AGENTS.md)
+CLAUDE.md
+

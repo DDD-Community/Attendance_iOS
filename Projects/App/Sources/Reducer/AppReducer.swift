@@ -90,81 +90,30 @@ public struct AppReducer: Sendable {
     case authEffects
     case staffEffects
     case memberEffects
-    case allStaffEffects
-    case allMemberEffects
-    case allAuthEffects
-
-    // 🔥 PFW 패턴: 각 coordinator의 하위 effects
-    case staffProfile
-    case memberProfile
-    case staffRouter
-    case memberRouter
-    case authRouter
   }
 
-  // 🔥 개선: 공통 취소 패턴을 Helper 함수로 추출
   private func cancelAllEffects() -> Effect<Action> {
-    let cancelIDs: [any Hashable & Sendable] = [
-      CancelID.splashRouting,
-      CancelID.authEffects,
-      CancelID.staffEffects,
-      CancelID.memberEffects,
-      CancelID.allStaffEffects,
-      CancelID.allMemberEffects,
-      CancelID.allAuthEffects,
-      StaffCoordinator.CancelID.allEffects,
-      StaffCoordinator.CancelID.profileEffects,
-      MemberCoordinator.CancelID.allEffects,
-      MemberCoordinator.CancelID.profileEffects,
-      ProfileReducer.CancelID.fetchProfile,
-      ProfileReducer.CancelID.deleteUser,
-      ProfileReducer.CancelID.logoutUser
-    ]
-
-    #logDebug("[AppReducer] 🚫 Cancelling all effects: \(cancelIDs.count) effects")
-    return .merge(cancelIDs.map { .cancel(id: $0) })
+    return .merge([
+      .cancel(id: CancelID.splashRouting),
+      .cancel(id: CancelID.authEffects),
+      .cancel(id: CancelID.staffEffects),
+      .cancel(id: CancelID.memberEffects),
+      .cancel(id: StaffCoordinator.CancelID.allEffects),
+      .cancel(id: StaffCoordinator.CancelID.profileEffects),
+      .cancel(id: MemberCoordinator.CancelID.allEffects),
+      .cancel(id: MemberCoordinator.CancelID.profileEffects),
+      .cancel(id: ProfileReducer.CancelID.fetchProfile),
+      .cancel(id: ProfileReducer.CancelID.deleteUser),
+      .cancel(id: ProfileReducer.CancelID.logoutUser)
+    ])
   }
 
-  // 🔥 PFW 패턴: 더 강력한 effect cancellation
-  private func cancelAllCoordinatorEffects(excluding: CancelID) -> Effect<Action> {
-    let coordinatorCancelIDs: [any Hashable & Sendable] = [
-      // AppReducer CancelIDs
-      CancelID.authEffects,
-      CancelID.staffEffects,
-      CancelID.memberEffects,
-      CancelID.allStaffEffects,
-      CancelID.allMemberEffects,
-      CancelID.allAuthEffects,
-      CancelID.staffProfile,
-      CancelID.memberProfile,
-      CancelID.staffRouter,
-      CancelID.memberRouter,
-      CancelID.authRouter,
-
-      // Coordinator CancelIDs (존재할 경우)
-      // StaffCoordinator.CancelID.allEffects,
-      // StaffCoordinator.CancelID.profileEffects,
-      // MemberCoordinator.CancelID.allEffects,
-      // MemberCoordinator.CancelID.profileEffects,
-
-      // Feature CancelIDs (존재할 경우)
-      // ProfileReducer.CancelID.fetchProfile,
-      // ProfileReducer.CancelID.deleteUser,
-      // ProfileReducer.CancelID.logoutUser
-    ].filter { id in
-      // 현재 활성화될 Coordinator는 제외
-      if let cancelID = id as? CancelID, cancelID == excluding {
-        return false
-      }
-      return true
-    }
-
-    #logDebug("[AppReducer] 🚫 Cancelling coordinator effects: \(coordinatorCancelIDs.count) effects, excluding: \(excluding)")
-    return .merge(coordinatorCancelIDs.map { .cancel(id: $0) })
+  private func cancelCoordinatorEffects(excluding: CancelID) -> Effect<Action> {
+    let allEffects = cancelAllEffects()
+    return allEffects
   }
 
   public var body: some ReducerOf<Self> {
-    // 🔥 PFW 베스트 프랙티스: Reduce를 먼저 배치하여 상태 검증
     Reduce { state, action in
       switch action {
       case .view(let viewAction):
@@ -183,8 +132,6 @@ public struct AppReducer: Sendable {
         return handleScopeAction(state: &state, action: scopeAction)
       }
     }
-
-    // 🔥 Child reducers는 상태 검증 후에 결합
     .ifCaseLet(\.splash, action: \.scope.splash) {
       Splash()
     }
@@ -210,24 +157,20 @@ public struct AppReducer: Sendable {
       }
 
     case .presentRoot:
-      // 기본적으로 멤버 화면으로 이동
       state = .member(.init())
-      return cancelAllCoordinatorEffects(excluding: .memberEffects)
+      return cancelCoordinatorEffects(excluding: .memberEffects)
 
     case .presentAuth:
-      #logDebug("[AppReducer] 🔄 Transitioning to AUTH state")
       state = .auth(.init())
-      return cancelAllCoordinatorEffects(excluding: .authEffects)
+      return cancelCoordinatorEffects(excluding: .authEffects)
 
     case .presentStaff:
-      #logDebug("[AppReducer] 🔄 Transitioning to STAFF state")
       state = .staff(.init())
-      return cancelAllCoordinatorEffects(excluding: .staffEffects)
+      return cancelCoordinatorEffects(excluding: .staffEffects)
 
     case .presentMember:
-      #logDebug("[AppReducer] 🔄 Transitioning to MEMBER state")
       state = .member(.init())
-      return cancelAllCoordinatorEffects(excluding: .memberEffects)
+      return cancelCoordinatorEffects(excluding: .memberEffects)
     }
   }
 
@@ -241,10 +184,7 @@ public struct AppReducer: Sendable {
         .cancellable(id: CancelID.refreshTokenExpiredListener, cancelInFlight: true)
 
     case .refreshTokenExpired:
-      // Refresh token이 만료된 경우 로그인 화면으로 이동
-        #logDebug("🚪 [AppReducer] 🔥 REFRESH TOKEN EXPIRED - REDIRECTING TO LOGIN!")
       state = .auth(.init())
-        #logDebug("✅ [AppReducer] 🎯 STATE CHANGED TO LOGIN SCREEN!")
       return cancelAllEffects()
     }
   }
@@ -267,151 +207,49 @@ public struct AppReducer: Sendable {
     state: inout State,
     action: ScopeAction
   ) -> Effect<Action> {
-    // 🔥 PFW 패턴: 상태 전환 액션 체크
-    if isStateTransitionAction(action) {
-      return handleStateTransitionAction(state: &state, action: action)
-    }
-
-    // 🔥 상태-액션 매칭 검증 (비-전환 액션들)
-    switch (state, action) {
-    case (.auth, .staff), (.auth, .member):
-      #logDebug("[AppReducer] 🚫 Ignoring \(action) while in auth state")
-      return .none
-    case (.staff, .auth), (.staff, .member):
-      #logDebug("[AppReducer] 🚫 Ignoring \(action) while in staff state")
-      return .none
-    case (.member, .auth), (.member, .staff):
-      #logDebug("[AppReducer] 🚫 Ignoring \(action) while in member state")
-      return .none
-    case (.splash, _):
-      break // splash에서는 모든 액션 허용
-    default:
-      break // 같은 상태의 액션은 허용
-    }
-
-    // 🔥 일반 scope 액션들은 child reducer가 처리
-    return .none
-  }
-
-  // 🔥 PFW 패턴: 상태 전환 액션 식별
-  private func isStateTransitionAction(_ action: ScopeAction) -> Bool {
-    switch action {
-    case .splash(.navigation(.presentLogin)),
-         .splash(.navigation(.presentStaff)),
-         .splash(.navigation(.presentMember)),
-         .auth(.navigation(.presentStaff)),
-         .auth(.navigation(.presentMember)),
-         .staff(.navigation(.presentLogin)),
-         .staff(.navigation(.presentMember)),
-         .member(.navigation(.presentLogin)),
-         .member(.navigation(.presentStaff)):
-      return true
-    default:
-      return false
-    }
-  }
-
-  // 🔥 PFW 패턴: 원자적 상태 전환 처리
-  private func handleStateTransitionAction(
-    state: inout State,
-    action: ScopeAction
-  ) -> Effect<Action> {
     switch action {
     case .splash(.navigation(.presentLogin)):
       return .run { send in
-        try await self.clock.sleep(for: .seconds(0.5))
+        try await clock.sleep(for: .seconds(0.5))
         await send(.view(.presentAuth))
       }
       .cancellable(id: CancelID.splashRouting, cancelInFlight: true)
 
     case .splash(.navigation(.presentStaff)):
-      #logDebug("[AppReducer] 🔄 Splash → STAFF transition")
-      return .merge(
-        cancelAllCoordinatorEffects(excluding: .staffEffects),
-        .run { send in
-          await send(.view(.presentStaff))
-        }
-      )
+      return .send(.view(.presentStaff))
 
     case .splash(.navigation(.presentMember)):
-      #logDebug("[AppReducer] 🔄 Splash → MEMBER transition")
-      return .merge(
-        cancelAllCoordinatorEffects(excluding: .memberEffects),
-        .run { send in
-          await send(.view(.presentMember))
-        }
-      )
+      return .send(.view(.presentMember))
 
     case .auth(.navigation(.presentStaff)):
-      #logDebug("[AppReducer] 🔄 Auth → STAFF transition")
-      return .merge(
-        cancelAllCoordinatorEffects(excluding: .staffEffects),
-        .run { send in
-          await send(.view(.presentStaff))
-        }
-      )
+      return .send(.view(.presentStaff))
 
     case .auth(.navigation(.presentMember)):
-      #logDebug("[AppReducer] 🔄 Auth → MEMBER transition")
-      return .merge(
-        cancelAllCoordinatorEffects(excluding: .memberEffects),
-        .run { send in
-          await send(.view(.presentMember))
-        }
-      )
+      return .send(.view(.presentMember))
 
     case .staff(.navigation(.presentLogin)):
-      #logDebug("[AppReducer] 🔄 Staff → AUTH transition")
-      return .merge(
-        cancelAllCoordinatorEffects(excluding: .authEffects),
-        .run { send in
-          await send(.view(.presentAuth))
-        }
-      )
+      return .send(.view(.presentAuth))
 
     case .staff(.navigation(.presentMember)):
-      #logDebug("[AppReducer] 🔄 Staff → MEMBER transition")
-      return .merge(
-        cancelAllCoordinatorEffects(excluding: .memberEffects),
-        .run { send in
-          await send(.view(.presentMember))
-        }
-      )
+      return .send(.view(.presentMember))
 
     case .member(.navigation(.presentLogin)):
-      #logDebug("[AppReducer] 🔄 Member → AUTH transition")
-      return .merge(
-        cancelAllCoordinatorEffects(excluding: .authEffects),
-        .run { send in
-          await send(.view(.presentAuth))
-        }
-      )
+      return .send(.view(.presentAuth))
 
     case .member(.navigation(.presentStaff)):
-      #logDebug("[AppReducer] 🔄 Member → STAFF transition")
-      return .merge(
-        cancelAllCoordinatorEffects(excluding: .staffEffects),
-        .run { send in
-          await send(.view(.presentStaff))
-        }
-      )
+      return .send(.view(.presentStaff))
 
     default:
       return .none
     }
   }
 
-  /// Refresh token 만료 감지 리스너 설정
+
   private func setupRefreshTokenExpiredListener() -> Effect<Action> {
-    #logDebug("🔔 [AppReducer] 🚨 SETTING UP REFRESH TOKEN EXPIRED LISTENER...")
     return .publisher {
       NotificationCenter.default
         .publisher(for: NSNotification.Name("RefreshTokenExpired"))
-        .map { notification in
-          #logDebug("🔔 [AppReducer] 🔥 🎯 REFRESH TOKEN EXPIRED NOTIFICATION RECEIVED!")
-          #logDebug("🔔 [AppReducer] Notification details: \(notification)")
-          return Action.async(.refreshTokenExpired)
-        }
+        .map { _ in Action.async(.refreshTokenExpired) }
     }
   }
 }

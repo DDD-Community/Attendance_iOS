@@ -85,9 +85,14 @@ extension ProfileCoordinator {
   ) -> Effect<Action> {
     switch action {
     case .routeAction(id: _, action: .profile(.navigation(.presentLogOut))):
-      return .run { send in
-        await send(.navigation(.presentLogin))
-      }
+      return .concatenate(
+        .cancel(id: ProfileReducer.CancelID.fetchProfile),
+        .cancel(id: ProfileReducer.CancelID.deleteUser),
+        .cancel(id: ProfileReducer.CancelID.logoutUser),
+        .run { send in
+          await send(.navigation(.presentLogin))
+        }
+      )
 
       case .routeAction(id: _, action: .profile(.navigation(.presentPrivacyPolicy))):
         state.routes.push(.web(.init(url: "https://dddset.notion.site/DDD-2d424441b0b08080a518ed42f1315b20?source=copy_link")))

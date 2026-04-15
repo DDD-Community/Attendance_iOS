@@ -34,7 +34,8 @@ public struct AttendanceModalState<Action>: Equatable {
 // MARK: - AttendanceModalAction
 
 @CasePathable
-public enum AttendanceModalAction: Equatable {
+public enum AttendanceModalAction: BindableAction, Equatable {
+  case binding(BindingAction<AttendanceModalState<AttendanceModalAction>>)
   case confirmTapped(AttendanceStatus) // 선택된 AttendanceStatus
   case cancelTapped
 }
@@ -46,7 +47,15 @@ public struct AttendanceModal {
   public init() {}
 
   public var body: some Reducer<AttendanceModalState<AttendanceModalAction>, AttendanceModalAction> {
-    EmptyReducer()
+    BindingReducer()
+    Reduce { state, action in
+      switch action {
+      case .binding(_):
+        return .none
+      case .confirmTapped, .cancelTapped:
+        return .none
+      }
+    }
   }
 }
 
