@@ -90,6 +90,9 @@ public struct AppReducer: Sendable {
     case authEffects
     case staffEffects
     case memberEffects
+    case allStaffEffects
+    case allMemberEffects
+    case allAuthEffects
   }
 
   // 🔥 개선: 공통 취소 패턴을 Helper 함수로 추출
@@ -99,6 +102,9 @@ public struct AppReducer: Sendable {
       CancelID.authEffects,
       CancelID.staffEffects,
       CancelID.memberEffects,
+      CancelID.allStaffEffects,
+      CancelID.allMemberEffects,
+      CancelID.allAuthEffects,
       StaffCoordinator.CancelID.allEffects,
       StaffCoordinator.CancelID.profileEffects,
       MemberCoordinator.CancelID.allEffects,
@@ -108,6 +114,7 @@ public struct AppReducer: Sendable {
       ProfileReducer.CancelID.logoutUser
     ]
 
+    #logDebug("[AppReducer] 🚫 Cancelling all effects: \(cancelIDs.count) effects")
     return .merge(cancelIDs.map { .cancel(id: $0) })
   }
 
@@ -186,16 +193,31 @@ public struct AppReducer: Sendable {
       return cancelCoordinatorEffects(excluding: .memberEffects)
 
     case .presentAuth:
+      #logDebug("[AppReducer] 🔄 Transitioning to AUTH state")
       state = .auth(.init())
-      return cancelCoordinatorEffects(excluding: .authEffects)
+      return .merge(
+        cancelCoordinatorEffects(excluding: .authEffects),
+        .cancel(id: CancelID.allStaffEffects),
+        .cancel(id: CancelID.allMemberEffects)
+      )
 
     case .presentStaff:
+      #logDebug("[AppReducer] 🔄 Transitioning to STAFF state")
       state = .staff(.init())
-      return cancelCoordinatorEffects(excluding: .staffEffects)
+      return .merge(
+        cancelCoordinatorEffects(excluding: .staffEffects),
+        .cancel(id: CancelID.allAuthEffects),
+        .cancel(id: CancelID.allMemberEffects)
+      )
 
     case .presentMember:
+      #logDebug("[AppReducer] 🔄 Transitioning to MEMBER state")
       state = .member(.init())
-      return cancelCoordinatorEffects(excluding: .memberEffects)
+      return .merge(
+        cancelCoordinatorEffects(excluding: .memberEffects),
+        .cancel(id: CancelID.allAuthEffects),
+        .cancel(id: CancelID.allStaffEffects)
+      )
     }
   }
 
@@ -235,6 +257,23 @@ public struct AppReducer: Sendable {
     state: inout State,
     action: ScopeAction
   ) -> Effect<Action> {
+    // 🔥 TCA 해결책: 현재 상태와 맞지 않는 액션은 무시
+    switch (state, action) {
+    case (.auth, .staff), (.auth, .member):
+      #logDebug("[AppReducer] 🚫 Ignoring \(action) while in auth state")
+      return .none
+    case (.staff, .auth), (.staff, .member):
+      #logDebug("[AppReducer] 🚫 Ignoring \(action) while in staff state")
+      return .none
+    case (.member, .auth), (.member, .staff):
+      #logDebug("[AppReducer] 🚫 Ignoring \(action) while in member state")
+      return .none
+    case (.splash, _):
+      break // splash에서는 모든 액션 허용
+    default:
+      break // 같은 상태의 액션은 허용
+    }
+
     switch action {
     case .splash(.navigation(.presentLogin)):
       return .run { send in
@@ -244,36 +283,76 @@ public struct AppReducer: Sendable {
       .cancellable(id: CancelID.splashRouting, cancelInFlight: true)
 
     case .splash(.navigation(.presentStaff)):
+      #logDebug("[AppReducer] 🔄 Splash → STAFF transition")
       state = .staff(.init())
-      return cancelCoordinatorEffects(excluding: .staffEffects)
+      return .merge(
+        cancelCoordinatorEffects(excluding: .staffEffects),
+        .cancel(id: CancelID.allAuthEffects),
+        .cancel(id: CancelID.allMemberEffects)
+      )
 
     case .splash(.navigation(.presentMember)):
+      #logDebug("[AppReducer] 🔄 Splash → MEMBER transition")
       state = .member(.init())
-      return cancelCoordinatorEffects(excluding: .memberEffects)
+      return .merge(
+        cancelCoordinatorEffects(excluding: .memberEffects),
+        .cancel(id: CancelID.allAuthEffects),
+        .cancel(id: CancelID.allStaffEffects)
+      )
 
     case .auth(.navigation(.presentStaff)):
+      #logDebug("[AppReducer] 🔄 Auth → STAFF transition")
       state = .staff(.init())
-      return cancelCoordinatorEffects(excluding: .staffEffects)
+      return .merge(
+        cancelCoordinatorEffects(excluding: .staffEffects),
+        .cancel(id: CancelID.allAuthEffects),
+        .cancel(id: CancelID.allMemberEffects)
+      )
 
     case .auth(.navigation(.presentMember)):
+      #logDebug("[AppReducer] 🔄 Auth → MEMBER transition")
       state = .member(.init())
-      return cancelCoordinatorEffects(excluding: .memberEffects)
+      return .merge(
+        cancelCoordinatorEffects(excluding: .memberEffects),
+        .cancel(id: CancelID.allAuthEffects),
+        .cancel(id: CancelID.allStaffEffects)
+      )
 
     case .staff(.navigation(.presentLogin)):
+      #logDebug("[AppReducer] 🔄 Staff → AUTH transition")
       state = .auth(.init())
-      return cancelCoordinatorEffects(excluding: .authEffects)
+      return .merge(
+        cancelCoordinatorEffects(excluding: .authEffects),
+        .cancel(id: CancelID.allStaffEffects),
+        .cancel(id: CancelID.allMemberEffects)
+      )
 
     case .staff(.navigation(.presentMember)):
+      #logDebug("[AppReducer] 🔄 Staff → MEMBER transition")
       state = .member(.init())
-      return cancelCoordinatorEffects(excluding: .memberEffects)
+      return .merge(
+        cancelCoordinatorEffects(excluding: .memberEffects),
+        .cancel(id: CancelID.allAuthEffects),
+        .cancel(id: CancelID.allStaffEffects)
+      )
 
     case .member(.navigation(.presentLogin)):
+      #logDebug("[AppReducer] 🔄 Member → AUTH transition")
       state = .auth(.init())
-      return cancelCoordinatorEffects(excluding: .authEffects)
+      return .merge(
+        cancelCoordinatorEffects(excluding: .authEffects),
+        .cancel(id: CancelID.allStaffEffects),
+        .cancel(id: CancelID.allMemberEffects)
+      )
 
     case .member(.navigation(.presentStaff)):
+      #logDebug("[AppReducer] 🔄 Member → STAFF transition")
       state = .staff(.init())
-      return cancelCoordinatorEffects(excluding: .staffEffects)
+      return .merge(
+        cancelCoordinatorEffects(excluding: .staffEffects),
+        .cancel(id: CancelID.allAuthEffects),
+        .cancel(id: CancelID.allMemberEffects)
+      )
 
     default:
       return .none
