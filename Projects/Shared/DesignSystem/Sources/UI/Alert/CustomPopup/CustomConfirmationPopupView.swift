@@ -19,6 +19,7 @@ struct CustomConfirmationPopup: View {
   private let onCancel: () -> Void
   private let onPolicyTap: () -> Void
   @State private var isChecked = false
+  @State private var isContentVisible = false
 
   init(
     title: String,
@@ -47,7 +48,7 @@ struct CustomConfirmationPopup: View {
   var body: some View {
     ZStack {
       Color.black
-        .opacity(0.6)
+        .opacity(isContentVisible ? 0.6 : 0)
         .edgesIgnoringSafeArea(.all)
         .onTapGesture {
           if style != .consent {
@@ -55,31 +56,54 @@ struct CustomConfirmationPopup: View {
           }
         }
 
-      if style == .consent {
-        consentContent
-      } else {
-        confirmationContent
+      Group {
+        if style == .consent {
+          consentContent
+        } else {
+          confirmationContent
+        }
+      }
+      .padding(.horizontal, 10)
+      .offset(y: isContentVisible ? 0 : 120)
+      .opacity(isContentVisible ? 1 : 0)
+    }
+    .onAppear {
+      withAnimation(.appModal) {
+        isContentVisible = true
       }
     }
   }
 
   private var confirmationContent: some View {
-    VStack(alignment: .center, spacing: 24) {
-      VStack(alignment: .center, spacing: 8) {
+    VStack(alignment: .center, spacing: 28) {
+      VStack(alignment: .center, spacing: 14) {
         Text(title)
           .pretendardCustomFont(textStyle: .title3NormalBold)
-          .foregroundStyle(.staticWhite)
+          .foregroundStyle(.staticBlack)
           .multilineTextAlignment(.center)
 
         if !message.isEmpty {
           Text(message)
             .pretendardCustomFont(textStyle: .body3NormalRegular)
-            .foregroundStyle(.textSecondary)
+            .foregroundStyle(.gray40)
             .multilineTextAlignment(.center)
         }
       }
 
       HStack(spacing: 12) {
+        Button {
+          onCancel()
+        } label: {
+          Text(cancelTitle)
+            .pretendardFont(family: .Medium, size: 16)
+            .foregroundStyle(.gray80)
+            .frame(maxWidth: .infinity)
+            .frame(height: 62)
+        }
+        .background(.gray20)
+        .clipShape(.rect(cornerRadius: 31))
+        .contentShape(.rect(cornerRadius: 31))
+
         Button {
           onConfirm()
         } label: {
@@ -87,31 +111,20 @@ struct CustomConfirmationPopup: View {
             .pretendardFont(family: .Medium, size: 16)
             .foregroundStyle(.staticWhite)
             .frame(maxWidth: .infinity)
-            .frame(height: 48)
+            .frame(height: 62)
         }
-        .background(.gray80)
-        .clipShape(.rect(cornerRadius: 20))
-        .contentShape(.rect(cornerRadius: 20))
-
-        Button {
-          onCancel()
-        } label: {
-          Text(cancelTitle)
-            .pretendardFont(family: .Medium, size: 16)
-            .foregroundStyle(.staticWhite)
-            .frame(maxWidth: .infinity)
-            .frame(height: 48)
-        }
-        .background(.blue40)
-        .clipShape(.rect(cornerRadius: 20))
-        .contentShape(.rect(cornerRadius: 20))
+        .background(isDestructive ? .red : .blue40)
+        .clipShape(.rect(cornerRadius: 31))
+        .contentShape(.rect(cornerRadius: 31))
       }
+      .padding(.top, 2)
     }
-    .padding(.vertical, 32)
-    .padding(.horizontal, 24)
-    .frame(width: 320)
-    .background(.gray90)
-    .clipShape(.rect(cornerRadius: 20))
+    .padding(.top, 32)
+    .padding(.horizontal, 18)
+    .padding(.bottom, 20)
+    .frame(maxWidth: 355)
+    .background(.staticWhite)
+    .clipShape(.rect(cornerRadius: 28))
     .onTapGesture {}
   }
 
@@ -125,7 +138,7 @@ struct CustomConfirmationPopup: View {
       if !message.isEmpty {
         Text(message)
           .pretendardCustomFont(textStyle: .body3NormalRegular)
-          .foregroundStyle(.textSecondary)
+          .foregroundStyle(.gray60)
           .multilineTextAlignment(.center)
       }
 
@@ -154,7 +167,7 @@ struct CustomConfirmationPopup: View {
         Text(checkboxTitle)
           .pretendardCustomFont(textStyle: .body3NormalRegular)
           .foregroundStyle(.staticWhite)
-          .underline(true, color: .mediumGray)
+          .underline(true, color: .gray60)
           .onTapGesture {
             onPolicyTap()
           }
@@ -164,7 +177,7 @@ struct CustomConfirmationPopup: View {
     .padding(.vertical, 24)
     .padding(.horizontal, 20)
     .frame(width: 300)
-    .background(.gray90)
+    .background(.gray80)
     .clipShape(.rect(cornerRadius: 20))
     .onTapGesture {}
   }

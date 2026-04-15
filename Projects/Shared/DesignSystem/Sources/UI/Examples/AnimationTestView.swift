@@ -54,17 +54,23 @@ public struct AnimationTestView: View {
         // 확인 팝업 적용
         .customConfirmationPopup(
             isPresented: showConfirmation,
-            title: "확인해주세요",
-            message: "정말로 이 작업을 수행하시겠습니까?",
-            confirmTitle: "확인",
+            title: "🎭 TimeSpot 스타일 애니메이션",
+            message: "배경 페이드 인과 콘텐츠 슬라이드 업 애니메이션을 확인해보세요!",
+            confirmTitle: "멋져요!",
             cancelTitle: "취소",
+            isDestructive: false,
             onConfirm: {
                 showConfirmation = false
-                ToastManager.shared.showSuccess("작업이 완료되었습니다!")
+                // 0.5초 뒤에 토스트 표시 (팝업 애니메이션과 겹치지 않게)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    ToastManager.shared.showSuccess("🎉 애니메이션이 완벽하게 적용되었습니다!")
+                }
             },
             onCancel: {
                 showConfirmation = false
-                ToastManager.shared.showInfo("작업이 취소되었습니다.")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    ToastManager.shared.showInfo("애니메이션 테스트가 취소되었습니다.")
+                }
             }
         )
     }
@@ -143,17 +149,41 @@ extension AnimationTestView {
 
     private var alertSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("🚨 확인 팝업")
+            Text("🚨 애니메이션 팝업")
                 .font(.headline)
 
-            Button("확인 팝업 열기") {
-                showConfirmation = true
+            VStack(spacing: 8) {
+                Button("일반 확인 팝업") {
+                    showConfirmation = true
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(Color.red.opacity(0.8))
+                .foregroundColor(.white)
+                .cornerRadius(12)
+
+                Button("성공 토스트 + 팝업 연계") {
+                    showConfirmation = true
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(Color.green.opacity(0.8))
+                .foregroundColor(.white)
+                .cornerRadius(12)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 50)
-            .background(Color.red.opacity(0.8))
-            .foregroundColor(.white)
-            .cornerRadius(12)
+
+            Text("✨ 애니메이션 특징:")
+                .font(.caption)
+                .fontWeight(.semibold)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("• 배경 페이드 인")
+                Text("• 콘텐츠 120pt 슬라이드 업")
+                Text("• 동시 opacity 애니메이션")
+                Text("• AppAnimations.modalTransition 사용")
+            }
+            .font(.caption)
+            .foregroundColor(.secondary)
         }
         .padding()
         .background(Color.red.opacity(0.1))
