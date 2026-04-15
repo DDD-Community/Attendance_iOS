@@ -212,34 +212,22 @@ public struct AppReducer: Sendable {
     case .presentRoot:
       // 기본적으로 멤버 화면으로 이동
       state = .member(.init())
-      return cancelCoordinatorEffects(excluding: .memberEffects)
+      return cancelAllCoordinatorEffects(excluding: .memberEffects)
 
     case .presentAuth:
       #logDebug("[AppReducer] 🔄 Transitioning to AUTH state")
       state = .auth(.init())
-      return .merge(
-        cancelCoordinatorEffects(excluding: .authEffects),
-        .cancel(id: CancelID.allStaffEffects),
-        .cancel(id: CancelID.allMemberEffects)
-      )
+      return cancelAllCoordinatorEffects(excluding: .authEffects)
 
     case .presentStaff:
       #logDebug("[AppReducer] 🔄 Transitioning to STAFF state")
       state = .staff(.init())
-      return .merge(
-        cancelCoordinatorEffects(excluding: .staffEffects),
-        .cancel(id: CancelID.allAuthEffects),
-        .cancel(id: CancelID.allMemberEffects)
-      )
+      return cancelAllCoordinatorEffects(excluding: .staffEffects)
 
     case .presentMember:
       #logDebug("[AppReducer] 🔄 Transitioning to MEMBER state")
       state = .member(.init())
-      return .merge(
-        cancelCoordinatorEffects(excluding: .memberEffects),
-        .cancel(id: CancelID.allAuthEffects),
-        .cancel(id: CancelID.allStaffEffects)
-      )
+      return cancelAllCoordinatorEffects(excluding: .memberEffects)
     }
   }
 
