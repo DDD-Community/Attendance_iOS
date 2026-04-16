@@ -11,10 +11,13 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings:  .settings(),
   dependencies: [
+    .Domain(implements: .Entity),
     .Data(implements: .Model),
     .SPM.weaveDI,
+    .SPM.dependencies,
+    .SPM.composableArchitecture,
   ],
   sources: ["Sources/**"],
   hasTests: false
-  
+
 )

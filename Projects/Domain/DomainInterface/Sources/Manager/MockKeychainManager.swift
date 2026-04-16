@@ -6,8 +6,9 @@
 //
 
 import Foundation
+import WeaveDI
 
-public actor MockKeychainManager: KeychainManaging {
+public final class MockKeychainManager: KeychainManaging, @unchecked Sendable {
     // MARK: - Configuration
     public enum Configuration {
         case success
@@ -70,7 +71,21 @@ public actor MockKeychainManager: KeychainManaging {
         }
     }
 
-    public func getAccessToken() -> String? {
+    public func saveAccessToken(_ token: String) {
+        saveCallCount += 1
+        if case .success = configuration {
+            storedAccessToken = token
+        }
+    }
+
+    public func saveRefreshToken(_ token: String) {
+        saveCallCount += 1
+        if case .success = configuration {
+            storedRefreshToken = token
+        }
+    }
+
+    public func accessToken() -> String? {
         getCallCount += 1
 
         switch configuration {
@@ -83,7 +98,7 @@ public actor MockKeychainManager: KeychainManaging {
         }
     }
 
-    public func getRefreshToken() -> String? {
+    public func refreshToken() -> String? {
         getCallCount += 1
 
         switch configuration {

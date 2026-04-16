@@ -8,7 +8,7 @@
 import Foundation
 import Entity
 
-public actor MockAuthRepository: AuthInterface {
+public final class MockAuthRepository: AuthInterface, @unchecked Sendable {
     // MARK: - Configuration
     public enum Configuration {
         case success
@@ -111,53 +111,41 @@ public actor MockAuthRepository: AuthInterface {
         switch configuration {
         case .success, .fullFlowSuccess, .concurrency:
             return LoginEntity(
-                user: UserEntity(
-                    userID: 1,
-                    name: provider == .google ? "Google User" : "Mock User",
-                    generation: 15,
-                    team: .ios,
-                    part: .developer
-                ),
+                name: provider == .google ? "Google User" : "Mock User",
+                isNewUser: false,
+                provider: provider,
                 token: AuthTokens(
                     accessToken: "mock-access-token",
                     refreshToken: "mock-refresh-token",
                     oauthRefreshToken: "mock-oauth-refresh-token"
                 ),
-                isNewUser: false
+                role: nil
             )
 
         case .appleSuccess:
             return LoginEntity(
-                user: UserEntity(
-                    userID: 2,
-                    name: "Apple User",
-                    generation: 15,
-                    team: .ios,
-                    part: .developer
-                ),
+                name: "Apple User",
+                isNewUser: false,
+                provider: provider,
                 token: AuthTokens(
                     accessToken: "mock-access-token",
                     refreshToken: "mock-refresh-token",
                     oauthRefreshToken: nil // Apple 특화 정책
                 ),
-                isNewUser: false
+                role: nil
             )
 
         case .newUser:
             return LoginEntity(
-                user: UserEntity(
-                    userID: 3,
-                    name: "New User",
-                    generation: 15,
-                    team: .ios,
-                    part: .developer
-                ),
+                name: "New User",
+                isNewUser: true,
+                provider: provider,
                 token: AuthTokens(
                     accessToken: "mock-access-token",
                     refreshToken: "mock-refresh-token",
                     oauthRefreshToken: "mock-oauth-refresh-token"
                 ),
-                isNewUser: true // 신규 사용자
+                role: nil
             )
 
         case .invalidToken:
@@ -199,7 +187,7 @@ public actor MockAuthRepository: AuthInterface {
 
         switch configuration {
         case .success, .logoutSuccess, .fullFlowSuccess:
-            return AuthExitEntity(isSuccess: true)
+            return AuthExitEntity()
 
         case .serverError:
             throw MockAuthError.serverError

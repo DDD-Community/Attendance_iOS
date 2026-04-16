@@ -101,28 +101,26 @@ public actor MockAttendanceRepository: AttendanceInterface {
 
     // MARK: - AttendanceInterface Implementation
 
-    public func fetchAdminAttendanceCount() async throws -> AdminAttendanceCount {
+    public func adminAttendanceCount(scheduleId: Int) async throws -> Entity.AttendanceCount {
         adminCountCallCount += 1
 
         try await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .adminCountSuccess:
-            return AdminAttendanceCount(
-                totalSchedules: 10,
-                totalAttendees: 50,
-                presentCount: 40,
+            return Entity.AttendanceCount(
+                attendanceCount: 40,
                 lateCount: 7,
                 absentCount: 3
             )
         case .networkError:
             throw MockAttendanceError.networkError
         default:
-            return AdminAttendanceCount(totalSchedules: 0, totalAttendees: 0, presentCount: 0, lateCount: 0, absentCount: 0)
+            return Entity.AttendanceCount(attendanceCount: 0, lateCount: 0, absentCount: 0)
         }
     }
 
-    public func fetchAttendanceTeams() async throws -> [AttendanceTeam] {
+    public func fetchAttendanceTeams() async throws -> [SelectTeamEntity] {
         teamsCallCount += 1
 
         try await Task.sleep(for: .milliseconds(10))
@@ -130,9 +128,9 @@ public actor MockAttendanceRepository: AttendanceInterface {
         switch configuration {
         case .teamsSuccess:
             return [
-                AttendanceTeam(id: 1, name: "iOS Team", canManage: true),
-                AttendanceTeam(id: 2, name: "Android Team", canManage: true),
-                AttendanceTeam(id: 3, name: "Web Team", canManage: true)
+                SelectTeamEntity(teamId: 1, teams: .ios1),
+                SelectTeamEntity(teamId: 2, teams: .and1),
+                SelectTeamEntity(teamId: 3, teams: .web1)
             ]
         case .networkError:
             throw MockAttendanceError.networkError
@@ -141,7 +139,7 @@ public actor MockAttendanceRepository: AttendanceInterface {
         }
     }
 
-    public func fetchSessionAttendance(scheduleId: Int, teamId: Int) async throws -> [SessionAttendance] {
+    public func sessionAttendance(scheduleId: Int, teamId: Int) async throws -> [Entity.Attendance] {
         sessionAttendanceCallCount += 1
         lastSessionAttendanceParams = (scheduleId: scheduleId, teamId: teamId)
 
@@ -150,11 +148,11 @@ public actor MockAttendanceRepository: AttendanceInterface {
         switch configuration {
         case .sessionAttendanceSuccess:
             return [
-                SessionAttendance(id: 1, userId: 101, userName: "김개발", status: .present, team: .ios),
-                SessionAttendance(id: 2, userId: 102, userName: "박코딩", status: .present, team: .ios),
-                SessionAttendance(id: 3, userId: 103, userName: "이프로그래머", status: .present, team: .ios),
-                SessionAttendance(id: 4, userId: 104, userName: "최개발자", status: .late, team: .ios),
-                SessionAttendance(id: 5, userId: 105, userName: "정엔지니어", status: .absent, team: .ios)
+                Entity.Attendance(id: 1, userID: "101", userName: "김개발", userInfo: "iOS1팀/개발자", status: .attended),
+                Entity.Attendance(id: 2, userID: "102", userName: "박코딩", userInfo: "iOS1팀/개발자", status: .attended),
+                Entity.Attendance(id: 3, userID: "103", userName: "이프로그래머", userInfo: "iOS1팀/개발자", status: .attended),
+                Entity.Attendance(id: 4, userID: "104", userName: "최개발자", userInfo: "iOS1팀/개발자", status: .late),
+                Entity.Attendance(id: 5, userID: "105", userName: "정엔지니어", userInfo: "iOS1팀/개발자", status: .absent)
             ]
         case .networkError:
             throw MockAttendanceError.networkError
@@ -163,12 +161,12 @@ public actor MockAttendanceRepository: AttendanceInterface {
         }
     }
 
-    public func fetchAttendanceStatuses() async throws -> [AttendanceStatus] {
+    public func fetchStatus() async throws -> [AttendanceStatus] {
         try await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .statusSuccess:
-            return [.present, .late, .absent]
+            return [.attended, .late, .absent]
         case .networkError:
             throw MockAttendanceError.networkError
         default:
@@ -176,22 +174,18 @@ public actor MockAttendanceRepository: AttendanceInterface {
         }
     }
 
-    public func editAttendance(request: AttendanceEditRequest) async throws -> AttendanceEditResult {
+    public func editAttendance(input: Entity.EditAttendanceInput) async throws -> Entity.EditAttendance {
         editCallCount += 1
 
         try await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .editSuccess, .statusChangeFlow, .permissionValidation, .historyTracking:
-            return AttendanceEditResult(
+            return Entity.EditAttendance(
                 isSuccess: true,
-                updatedAttendance: Attendance(
-                    id: request.attendanceId,
-                    userId: request.userId,
-                    scheduleId: request.scheduleId,
-                    status: request.newStatus,
-                    modifiedAt: Date()
-                )
+                code: "SUCCESS",
+                message: "출석 상태가 성공적으로 변경되었습니다.",
+                detail: "attendanceId: \(input.attendanceId), userId: \(input.userId)"
             )
         case .permissionDenied:
             throw MockAttendanceError.permissionDenied
@@ -229,20 +223,26 @@ public actor MockAttendanceRepository: AttendanceInterface {
         }
     }
 
-    public func fetchTeamAttendance(teamType: Team) async throws -> [SessionAttendance] {
+    public func fetchTeamAttendance(teamType: SelectTeams) async throws -> [SessionAttendance] {
         try await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .teamFiltering:
             switch teamType {
-            case .ios:
-                return Array(repeating: SessionAttendance(id: 1, userId: 1, userName: "iOS Member", status: .present, team: .ios), count: 8)
-            case .android:
-                return Array(repeating: SessionAttendance(id: 1, userId: 1, userName: "Android Member", status: .present, team: .android), count: 6)
-            case .web:
-                return Array(repeating: SessionAttendance(id: 1, userId: 1, userName: "Web Member", status: .present, team: .web), count: 4)
-            case .design:
-                return Array(repeating: SessionAttendance(id: 1, userId: 1, userName: "Design Member", status: .present, team: .design), count: 3)
+            case .ios1:
+                return Array(repeating: SessionAttendance(id: 1, userId: 1, userName: "iOS1 Member", status: .attended, team: .ios1), count: 8)
+            case .ios2:
+                return Array(repeating: SessionAttendance(id: 1, userId: 1, userName: "iOS2 Member", status: .attended, team: .ios2), count: 6)
+            case .and1:
+                return Array(repeating: SessionAttendance(id: 1, userId: 1, userName: "Android1 Member", status: .attended, team: .and1), count: 6)
+            case .and2:
+                return Array(repeating: SessionAttendance(id: 1, userId: 1, userName: "Android2 Member", status: .attended, team: .and2), count: 5)
+            case .web1:
+                return Array(repeating: SessionAttendance(id: 1, userId: 1, userName: "Web1 Member", status: .attended, team: .web1), count: 4)
+            case .web2:
+                return Array(repeating: SessionAttendance(id: 1, userId: 1, userName: "Web2 Member", status: .attended, team: .web2), count: 3)
+            case .unknown:
+                return []
             }
         case .networkError:
             throw MockAttendanceError.networkError
@@ -303,7 +303,7 @@ public actor MockAttendanceRepository: AttendanceInterface {
         case .networkError:
             throw MockAttendanceError.networkError
         default:
-            return AttendanceHistory(currentStatus: .present, previousStatus: nil, modificationCount: 0, lastModifiedDate: Date())
+            return AttendanceHistory(currentStatus: .attended, previousStatus: nil, modificationCount: 0, lastModifiedDate: Date())
         }
     }
 }
@@ -343,9 +343,9 @@ public struct SessionAttendance {
     public let userId: Int
     public let userName: String
     public let status: AttendanceStatus
-    public let team: Team
+    public let team: SelectTeams
 
-    public init(id: Int, userId: Int, userName: String, status: AttendanceStatus, team: Team) {
+    public init(id: Int, userId: Int, userName: String, status: AttendanceStatus, team: SelectTeams) {
         self.id = id
         self.userId = userId
         self.userName = userName
@@ -378,27 +378,6 @@ public struct AttendanceEditResult {
     }
 }
 
-public struct Attendance {
-    public let id: Int
-    public let userId: Int
-    public let scheduleId: Int
-    public let status: AttendanceStatus
-    public let modifiedAt: Date
-
-    public init(id: Int, userId: Int, scheduleId: Int, status: AttendanceStatus, modifiedAt: Date) {
-        self.id = id
-        self.userId = userId
-        self.scheduleId = scheduleId
-        self.status = status
-        self.modifiedAt = modifiedAt
-    }
-}
-
-public enum AttendanceStatus {
-    case present
-    case late
-    case absent
-}
 
 public struct AttendanceStatistics {
     public let totalSessions: Int
