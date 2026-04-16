@@ -89,7 +89,7 @@ final class MockAuthRepository: AuthInterface {
     name: String = "Test User",
     isNewUser: Bool = false,
     provider: SocialType = .google,
-    role: Staff? = .member
+    role: Entity.Staff? = Entity.Staff.member
   ) {
     let tokens = AuthTokens(
       accessToken: "mock_access_token",
@@ -114,7 +114,7 @@ final class MockAuthRepository: AuthInterface {
 
   static func success() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureSuccessfulLogin(role: .member)
+    mock.configureSuccessfulLogin(role: Entity.Staff.member)
     return mock
   }
 
@@ -175,11 +175,35 @@ final class MockAuthRepository: AuthInterface {
     return mock
   }
 
+  static func tokenExpired() -> MockAuthRepository {
+    let mock = MockAuthRepository()
+    mock.refreshResponse = .failure(AuthError.tokenExpired)
+    return mock
+  }
+
+  static func serverError() -> MockAuthRepository {
+    let mock = MockAuthRepository()
+    mock.configureLoginFailure(AuthError.serverError)
+    mock.configureRefreshFailure(AuthError.serverError)
+    mock.logoutResponse = .failure(AuthError.serverError)
+    mock.withdrawResponse = .failure(AuthError.serverError)
+    return mock
+  }
+
+  static func fullFlowSuccess() -> MockAuthRepository {
+    let mock = MockAuthRepository.success()
+    mock.configureSuccessfulRefresh()
+    mock.logoutResponse = .success(AuthExitEntity(code: "200", message: "logout", detail: "success"))
+    mock.withdrawResponse = .success(WithdrawEntity(isSuccess: true, code: "200", message: "withdraw", detail: "success"))
+    return mock
+  }
+
   func getLoginCallCount() -> Int { loginCallCount }
   func getRefreshCallCount() -> Int { refreshCallCount }
   func getLogoutCallCount() -> Int { logoutCallCount }
   func getWithdrawCallCount() -> Int { withDrawCallCount }
   func getUpdateCredentialCallCount() -> Int { updateSessionCredentialCallCount }
+  func getLastUpdatedTokens() -> AuthTokens? { lastUpdateTokens }
 }
 
 enum AuthError: Error, Equatable {

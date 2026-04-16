@@ -1,484 +1,349 @@
-//
-//  QRCodeUseCaseTest.swift
-//  UseCaseTests
-//
-//  Created by TDD AI Automation on 2026-04-16
-//
-
 import Testing
-import Foundation
 import SwiftUI
-import ComposableArchitecture
+import DomainInterface
+import Entity
+import Dependencies
 @testable import UseCase
-@testable import Entity
-@testable import DomainInterface
 
-@Suite("QRCode UseCase Tests - Complete TDD Implementation", .tags(.unit, .qrcode))
 @MainActor
-struct QRCodeUseCaseTest {
+@Suite("QRCode UseCase Tests - Complete TDD Implementation")
+final class QRCodeUseCaseTest {
+  private var mockQRCodeRepository: MockQRCodeRepository!
 
-    // MARK: - Test Dependencies
-    private var mockQRCodeRepository: MockQRCodeRepository!
+  init() async {
+    mockQRCodeRepository = MockQRCodeRepository()
+  }
 
-    init() async {
-        mockQRCodeRepository = MockQRCodeRepository()
+  deinit {
+    // reset은 @MainActor 메서드이므로 deinit에서 호출 제거
+  }
+
+  // MARK: - QR 코드 생성 테스트
+
+  @Test("TC-001: QR 코드 생성 성공")
+  func test_create_qr_code_success() async throws {
+    // Given: QR 코드 생성 성공 설정
+    mockQRCodeRepository.configureCreateSuccess(qrCode: "user_123_qrcode")
+
+    // When: QR 코드 생성
+    let qrCode = try await withDependencies {
+      $0.qrCodeRepository = mockQRCodeRepository
+    } operation: {
+      let useCase = QRCodeUseCaseImpl()
+      return try await useCase.createQRCode(userID: 123)
     }
 
-    // MARK: - Core QRCode Tests (13 Test Cases)
+    // Then: 결과 검증
+    #expect(qrCode == "user_123_qrcode", "QR 코드가 생성되어야 함")
+    #expect(mockQRCodeRepository.createQRCodeCallCount == 1, "createQRCode 1회 호출")
+    #expect(mockQRCodeRepository.lastCreateUserID == 123, "올바른 사용자 ID 전달")
+  }
 
-    @Test("TC-001: QR 코드 생성 성공")
-    func test_create_qr_code_success() async throws {
-        // Given: 사용자 ID로 QR 코드 생성 설정
-        let userID = 123
-        let expectedQRString = "qr_code_data_for_user_123"
-        mockQRCodeRepository.configureCreateQRSuccess(expectedQRString)
+  @Test("TC-002: QR 코드 생성 실패 (네트워크 오류)")
+  func test_create_qr_code_network_failure() async throws {
+    // Given: 네트워크 오류 설정
+    mockQRCodeRepository.configureCreateFailure(QRCodeError.networkError)
 
-        // When: QR 코드 생성 실행
-        let result = try await withDependencies {
-            $0.qrCodeRepository = mockQRCodeRepository
-        } operation: {
-            let useCase = QRCodeUseCaseImpl()
-            return try await useCase.createQRCode(userID: userID)
-        }
-
-        // Then: QR 코드 생성 검증
-        #expect(result == expectedQRString, "올바른 QR 코드 문자열이 생성되어야 함")
-        #expect(mockQRCodeRepository.lastCreateQRUserID == userID, "올바른 사용자 ID가 전달되어야 함")
-        #expect(mockQRCodeRepository.createQRCallCount == 1, "Repository가 한 번 호출되어야 함")
+    // When & Then: QR 코드 생성 실패
+    await #expect(throws: QRCodeError.networkError) {
+      try await withDependencies {
+        $0.qrCodeRepository = mockQRCodeRepository
+      } operation: {
+        let useCase = QRCodeUseCaseImpl()
+        return try await useCase.createQRCode(userID: 123)
+      }
     }
 
-    @Test("TC-002: QR 코드 생성 실패 (잘못된 사용자 ID)")
-    func test_create_qr_code_invalid_user_id() async throws {
-        // Given: 잘못된 사용자 ID 에러 설정
-        mockQRCodeRepository.configureCreateQRFailure(QRCodeError.invalidUserID)
+    #expect(mockQRCodeRepository.createQRCodeCallCount == 1, "createQRCode 1회 호출")
+  }
 
-        // When & Then: 잘못된 사용자 ID 에러 검증
-        await #expect(throws: QRCodeError.self) {
-            try await withDependencies {
-                $0.qrCodeRepository = mockQRCodeRepository
-            } operation: {
-                let useCase = QRCodeUseCaseImpl()
-                _ = try await useCase.createQRCode(userID: -1) // 잘못된 ID
+  @Test("TC-003: QR 코드 생성 실패 (사용자 없음)")
+  func test_create_qr_code_user_not_found() async throws {
+    // Given: 사용자 없음 오류 설정
+    mockQRCodeRepository.configureCreateFailure(QRCodeError.userNotFound)
+
+    // When & Then: QR 코드 생성 실패
+    await #expect(throws: QRCodeError.userNotFound) {
+      try await withDependencies {
+        $0.qrCodeRepository = mockQRCodeRepository
+      } operation: {
+        let useCase = QRCodeUseCaseImpl()
+        return try await useCase.createQRCode(userID: 999)
+      }
+    }
+  }
+
+  // MARK: - QR 코드 이미지 생성 테스트
+
+  @Test("TC-004: QR 코드 이미지 생성 성공")
+  func test_generate_qr_code_image_success() async throws {
+    // Given: QR 코드 이미지 생성 성공 설정
+    let mockImage = Image(systemName: "qrcode")
+    mockQRCodeRepository.configureGenerateSuccess(image: mockImage)
+
+    // When: QR 코드 이미지 생성
+    let image = await withDependencies {
+      $0.qrCodeRepository = mockQRCodeRepository
+    } operation: {
+      let useCase = QRCodeUseCaseImpl()
+      return await useCase.generateQRCode(from: "test_string")
+    }
+
+    // Then: 결과 검증
+    #expect(image != nil, "QR 코드 이미지가 생성되어야 함")
+    #expect(mockQRCodeRepository.generateQRCodeCallCount == 1, "generateQRCode 1회 호출")
+    #expect(mockQRCodeRepository.lastGenerateString == "test_string", "올바른 문자열 전달")
+  }
+
+  @Test("TC-005: QR 코드 이미지 생성 실패")
+  func test_generate_qr_code_image_failure() async throws {
+    // Given: QR 코드 이미지 생성 실패 설정 (nil 반환)
+    mockQRCodeRepository.generateQRCodeResponse = nil
+
+    // When: QR 코드 이미지 생성
+    let image = await withDependencies {
+      $0.qrCodeRepository = mockQRCodeRepository
+    } operation: {
+      let useCase = QRCodeUseCaseImpl()
+      return await useCase.generateQRCode(from: "invalid_string")
+    }
+
+    // Then: 결과 검증
+    #expect(image == nil, "QR 코드 이미지 생성에 실패해야 함")
+    #expect(mockQRCodeRepository.generateQRCodeCallCount == 1, "generateQRCode 1회 호출")
+  }
+
+  @Test("TC-006: 빈 문자열로 QR 코드 이미지 생성")
+  func test_generate_qr_code_empty_string() async throws {
+    // Given: 빈 문자열로 QR 코드 생성
+    mockQRCodeRepository.generateQRCodeResponse = nil
+
+    // When: 빈 문자열로 QR 코드 이미지 생성
+    let image = await withDependencies {
+      $0.qrCodeRepository = mockQRCodeRepository
+    } operation: {
+      let useCase = QRCodeUseCaseImpl()
+      return await useCase.generateQRCode(from: "")
+    }
+
+    // Then: 결과 검증
+    #expect(image == nil, "빈 문자열로는 QR 코드 생성 실패")
+    #expect(mockQRCodeRepository.lastGenerateString == "", "빈 문자열 전달 확인")
+  }
+
+  // MARK: - QR 코드 검증 테스트
+
+  @Test("TC-007: QR 코드 검증 성공 (출석)")
+  func test_qr_validate_success_attended() async throws {
+    // Given: QR 코드 검증 성공 설정
+    mockQRCodeRepository.configureValidateSuccess(
+      status: Entity.AttendanceStatus.attended,
+      message: "출석 완료"
+    )
+
+    // When: QR 코드 검증
+    let result = try await withDependencies {
+      $0.qrCodeRepository = mockQRCodeRepository
+    } operation: {
+      let useCase = QRCodeUseCaseImpl()
+      return try await useCase.qrValidateCheck(from: "valid_qr_code")
+    }
+
+    // Then: 결과 검증
+    #expect(result.isSuccess == true, "QR 검증 성공")
+    #expect(result.status == Entity.AttendanceStatus.attended, "출석 상태 확인")
+    #expect(result.message == "출석 완료", "성공 메시지 확인")
+    #expect(mockQRCodeRepository.qrValidateCheckCallCount == 1, "qrValidateCheck 1회 호출")
+    #expect(mockQRCodeRepository.lastValidateCode == "valid_qr_code", "올바른 QR 코드 전달")
+  }
+
+  @Test("TC-008: QR 코드 검증 성공 (지각)")
+  func test_qr_validate_success_late() async throws {
+    // Given: 지각 상태 QR 코드 검증 성공 설정
+    mockQRCodeRepository.configureValidateSuccess(
+      status: Entity.AttendanceStatus.late,
+      message: "지각 처리됨"
+    )
+
+    // When: QR 코드 검증
+    let result = try await withDependencies {
+      $0.qrCodeRepository = mockQRCodeRepository
+    } operation: {
+      let useCase = QRCodeUseCaseImpl()
+      return try await useCase.qrValidateCheck(from: "late_qr_code")
+    }
+
+    // Then: 결과 검증
+    #expect(result.isSuccess == true, "QR 검증 성공")
+    #expect(result.status == Entity.AttendanceStatus.late, "지각 상태 확인")
+    #expect(result.message == "지각 처리됨", "지각 메시지 확인")
+  }
+
+  @Test("TC-009: QR 코드 검증 실패 (잘못된 코드)")
+  func test_qr_validate_invalid_code() async throws {
+    // Given: 잘못된 QR 코드 설정
+    mockQRCodeRepository.configureValidateFailure(QRCodeError.invalidCode)
+
+    // When & Then: QR 코드 검증 실패
+    await #expect(throws: QRCodeError.invalidCode) {
+      try await withDependencies {
+        $0.qrCodeRepository = mockQRCodeRepository
+      } operation: {
+        let useCase = QRCodeUseCaseImpl()
+        return try await useCase.qrValidateCheck(from: "invalid_code")
+      }
+    }
+
+    #expect(mockQRCodeRepository.qrValidateCheckCallCount == 1, "qrValidateCheck 1회 호출")
+  }
+
+  @Test("TC-010: QR 코드 검증 실패 (네트워크 오류)")
+  func test_qr_validate_network_error() async throws {
+    // Given: 네트워크 오류 설정
+    mockQRCodeRepository.configureValidateFailure(QRCodeError.networkError)
+
+    // When & Then: QR 코드 검증 실패
+    await #expect(throws: QRCodeError.networkError) {
+      try await withDependencies {
+        $0.qrCodeRepository = mockQRCodeRepository
+      } operation: {
+        let useCase = QRCodeUseCaseImpl()
+        return try await useCase.qrValidateCheck(from: "network_fail_code")
+      }
+    }
+  }
+
+  @Test("TC-011: QR 코드 검증 실패 (권한 없음)")
+  func test_qr_validate_unauthorized() async throws {
+    // Given: 권한 없음 오류 설정
+    mockQRCodeRepository.configureValidateFailure(QRCodeError.unauthorized)
+
+    // When & Then: QR 코드 검증 실패
+    await #expect(throws: QRCodeError.unauthorized) {
+      try await withDependencies {
+        $0.qrCodeRepository = mockQRCodeRepository
+      } operation: {
+        let useCase = QRCodeUseCaseImpl()
+        return try await useCase.qrValidateCheck(from: "unauthorized_code")
+      }
+    }
+  }
+
+  // MARK: - 통합 플로우 테스트
+
+  @Test("TC-012: 완전한 QR 코드 플로우 (생성 → 이미지 생성 → 검증)")
+  func test_complete_qr_flow() async throws {
+    // Given: 전체 플로우 성공 설정
+    mockQRCodeRepository = MockQRCodeRepository.fullSuccess()
+
+    // When: 전체 플로우 실행
+    let (qrCode, image, validationResult) = try await withDependencies {
+      $0.qrCodeRepository = mockQRCodeRepository
+    } operation: {
+      let useCase = QRCodeUseCaseImpl()
+
+      // 1. QR 코드 생성
+      let qrCode = try await useCase.createQRCode(userID: 123)
+
+      // 2. QR 코드 이미지 생성
+      let image = await useCase.generateQRCode(from: qrCode)
+
+      // 3. QR 코드 검증
+      let validation = try await useCase.qrValidateCheck(from: qrCode)
+
+      return (qrCode, image, validation)
+    }
+
+    // Then: 전체 플로우 검증
+    #expect(qrCode == "mock_qr_code_123", "QR 코드 생성 성공")
+    #expect(image != nil, "QR 이미지 생성 성공")
+    #expect(validationResult.isSuccess == true, "QR 검증 성공")
+    #expect(validationResult.status == Entity.AttendanceStatus.attended, "출석 상태 확인")
+
+    // 호출 횟수 검증
+    #expect(mockQRCodeRepository.createQRCodeCallCount == 1, "createQRCode 1회 호출")
+    #expect(mockQRCodeRepository.generateQRCodeCallCount == 1, "generateQRCode 1회 호출")
+    #expect(mockQRCodeRepository.qrValidateCheckCallCount == 1, "qrValidateCheck 1회 호출")
+  }
+
+  @Test("TC-013: 동시 QR 코드 요청 처리")
+  func test_concurrent_qr_operations() async throws {
+    // Given: 동시성 테스트를 위한 설정
+    mockQRCodeRepository = MockQRCodeRepository.concurrency()
+
+    // When: 동시 QR 코드 요청
+    await withDependencies {
+      $0.qrCodeRepository = mockQRCodeRepository
+    } operation: {
+      let useCase = QRCodeUseCaseImpl()
+
+      await withTaskGroup(of: Void.self) { group in
+        // 동시에 5개의 QR 코드 생성 요청
+        for i in 1...5 {
+          group.addTask {
+            do {
+              _ = try await useCase.createQRCode(userID: i)
+            } catch {
+              // 동시성 테스트에서는 에러 무시
             }
+          }
         }
-
-        #expect(mockQRCodeRepository.createQRCallCount == 1, "실패해도 Repository는 호출되어야 함")
+      }
     }
 
-    @Test("TC-003: QR 이미지 생성 성공")
-    func test_generate_qr_image_success() async {
-        // Given: QR 문자열로 이미지 생성 설정
-        let qrString = "test_qr_data_123"
-        let expectedImage = Image(systemName: "qrcode")
-        mockQRCodeRepository.configureGenerateQRSuccess(expectedImage)
+    // Then: 모든 요청이 처리되었는지 확인
+    #expect(mockQRCodeRepository.createQRCodeCallCount == 5, "5개의 동시 요청 모두 처리")
+  }
 
-        // When: QR 이미지 생성 실행
-        let result = await withDependencies {
-            $0.qrCodeRepository = mockQRCodeRepository
-        } operation: {
-            let useCase = QRCodeUseCaseImpl()
-            return await useCase.generateQRCode(from: qrString)
-        }
+  @Test("TC-014: QR 코드 경계값 테스트")
+  func test_qr_code_boundary_values() async throws {
+    // Given: 다양한 경계값 테스트
+    mockQRCodeRepository.configureCreateSuccess()
 
-        // Then: QR 이미지 생성 검증
-        #expect(result != nil, "QR 이미지가 생성되어야 함")
-        #expect(mockQRCodeRepository.lastGenerateQRString == qrString, "올바른 QR 문자열이 전달되어야 함")
-        #expect(mockQRCodeRepository.generateQRCallCount == 1, "Repository가 한 번 호출되어야 함")
+    let testCases = [
+      (userID: 1, description: "최소 사용자 ID"),
+      (userID: Int.max, description: "최대 사용자 ID"),
+      (userID: 0, description: "0 사용자 ID"),
+      (userID: -1, description: "음수 사용자 ID")
+    ]
+
+    // When & Then: 각 경계값 테스트
+    for testCase in testCases {
+      let qrCode = try await withDependencies {
+        $0.qrCodeRepository = mockQRCodeRepository
+      } operation: {
+        let useCase = QRCodeUseCaseImpl()
+        return try await useCase.createQRCode(userID: testCase.userID)
+      }
+
+      #expect(!qrCode.isEmpty, "\(testCase.description): QR 코드가 생성되어야 함")
+      #expect(mockQRCodeRepository.lastCreateUserID == testCase.userID, "\(testCase.description): 올바른 사용자 ID 전달")
+    }
+  }
+
+  @Test("TC-015: QR 코드 성능 테스트 시뮬레이션")
+  func test_qr_performance_simulation() async throws {
+    // Given: 성능 테스트를 위한 대량 요청 시뮬레이션
+    mockQRCodeRepository.configureCreateSuccess()
+
+    // When: 100개의 QR 코드 생성 요청
+    let startTime = ContinuousClock().now
+
+    try await withDependencies {
+      $0.qrCodeRepository = mockQRCodeRepository
+    } operation: {
+      let useCase = QRCodeUseCaseImpl()
+
+      for i in 1...100 {
+        _ = try await useCase.createQRCode(userID: i)
+      }
     }
 
-    @Test("TC-004: QR 이미지 생성 실패 (빈 문자열)")
-    func test_generate_qr_image_empty_string() async {
-        // Given: 빈 문자열로 이미지 생성 설정 (nil 반환)
-        mockQRCodeRepository.configureGenerateQRSuccess(nil)
+    let endTime = ContinuousClock().now
+    let duration = endTime - startTime
 
-        // When: 빈 문자열로 QR 이미지 생성 실행
-        let result = await withDependencies {
-            $0.qrCodeRepository = mockQRCodeRepository
-        } operation: {
-            let useCase = QRCodeUseCaseImpl()
-            return await useCase.generateQRCode(from: "")
-        }
-
-        // Then: QR 이미지 생성 실패 검증
-        #expect(result == nil, "빈 문자열로는 QR 이미지가 생성되지 않아야 함")
-        #expect(mockQRCodeRepository.lastGenerateQRString == "", "빈 문자열이 전달되어야 함")
-    }
-
-    @Test("TC-005: QR 검증 성공 (출석 체크)")
-    func test_qr_validate_success_attendance() async throws {
-        // Given: 성공적인 QR 검증 설정
-        let qrCode = "valid_qr_code_123"
-        let expectedValidation = QRValidateEntity(
-            isSuccess: true,
-            code: "200",
-            message: "출석 체크가 완료되었습니다",
-            detail: "정상적으로 출석 처리되었습니다",
-            status: .attendance
-        )
-        mockQRCodeRepository.configureValidateSuccess(expectedValidation)
-
-        // When: QR 검증 실행
-        let result = try await withDependencies {
-            $0.qrCodeRepository = mockQRCodeRepository
-        } operation: {
-            let useCase = QRCodeUseCaseImpl()
-            return try await useCase.qrValidateCheck(from: qrCode)
-        }
-
-        // Then: QR 검증 성공 검증
-        #expect(result.isSuccess, "QR 검증이 성공해야 함")
-        #expect(result.message == "출석 체크가 완료되었습니다", "성공 메시지가 올바르게 반환되어야 함")
-        #expect(result.status == .attendance, "출석 상태가 올바르게 설정되어야 함")
-        #expect(mockQRCodeRepository.lastValidateQRCode == qrCode, "올바른 QR 코드가 전달되어야 함")
-        #expect(mockQRCodeRepository.validateCallCount == 1, "Repository가 한 번 호출되어야 함")
-    }
-
-    @Test("TC-006: QR 검증 성공 (지각 체크)")
-    func test_qr_validate_success_late() async throws {
-        // Given: 지각 상태 QR 검증 설정
-        let qrCode = "valid_qr_code_late"
-        let expectedValidation = QRValidateEntity(
-            isSuccess: true,
-            code: "201",
-            message: "지각 체크가 완료되었습니다",
-            detail: "지각으로 처리되었습니다",
-            status: .late
-        )
-        mockQRCodeRepository.configureValidateSuccess(expectedValidation)
-
-        // When: QR 검증 실행
-        let result = try await withDependencies {
-            $0.qrCodeRepository = mockQRCodeRepository
-        } operation: {
-            let useCase = QRCodeUseCaseImpl()
-            return try await useCase.qrValidateCheck(from: qrCode)
-        }
-
-        // Then: QR 검증 지각 검증
-        #expect(result.isSuccess, "QR 검증이 성공해야 함")
-        #expect(result.status == .late, "지각 상태가 올바르게 설정되어야 함")
-        #expect(result.message?.contains("지각") == true, "지각 관련 메시지가 포함되어야 함")
-    }
-
-    @Test("TC-007: QR 검증 실패 (잘못된 QR 코드)")
-    func test_qr_validate_failure_invalid_code() async throws {
-        // Given: 잘못된 QR 코드 검증 설정
-        let invalidQRCode = "invalid_qr_code"
-        let expectedValidation = QRValidateEntity(
-            isSuccess: false,
-            code: "400",
-            message: "잘못된 QR 코드입니다",
-            detail: "QR 코드를 다시 확인해주세요",
-            status: nil
-        )
-        mockQRCodeRepository.configureValidateSuccess(expectedValidation)
-
-        // When: 잘못된 QR 검증 실행
-        let result = try await withDependencies {
-            $0.qrCodeRepository = mockQRCodeRepository
-        } operation: {
-            let useCase = QRCodeUseCaseImpl()
-            return try await useCase.qrValidateCheck(from: invalidQRCode)
-        }
-
-        // Then: QR 검증 실패 검증
-        #expect(!result.isSuccess, "QR 검증이 실패해야 함")
-        #expect(result.message == "잘못된 QR 코드입니다", "실패 메시지가 올바르게 반환되어야 함")
-        #expect(result.status == nil, "실패 시 상태는 nil이어야 함")
-        #expect(result.code == "400", "오류 코드가 올바르게 설정되어야 함")
-    }
-
-    @Test("TC-008: QR 검증 실패 (만료된 QR 코드)")
-    func test_qr_validate_failure_expired_code() async throws {
-        // Given: 만료된 QR 코드 에러 설정
-        mockQRCodeRepository.configureValidateFailure(QRCodeError.expiredQRCode)
-
-        // When & Then: 만료된 QR 코드 에러 검증
-        await #expect(throws: QRCodeError.self) {
-            try await withDependencies {
-                $0.qrCodeRepository = mockQRCodeRepository
-            } operation: {
-                let useCase = QRCodeUseCaseImpl()
-                _ = try await useCase.qrValidateCheck(from: "expired_qr_code")
-            }
-        }
-    }
-
-    @Test("TC-009: QR 검증 실패 (중복 체크)")
-    func test_qr_validate_failure_duplicate_check() async throws {
-        // Given: 중복 체크 실패 설정
-        let duplicateQRCode = "already_checked_qr"
-        let expectedValidation = QRValidateEntity(
-            isSuccess: false,
-            code: "409",
-            message: "이미 출석 체크가 완료되었습니다",
-            detail: "중복 출석 체크는 불가능합니다",
-            status: .attendance // 이미 체크된 상태
-        )
-        mockQRCodeRepository.configureValidateSuccess(expectedValidation)
-
-        // When: 중복 QR 검증 실행
-        let result = try await withDependencies {
-            $0.qrCodeRepository = mockQRCodeRepository
-        } operation: {
-            let useCase = QRCodeUseCaseImpl()
-            return try await useCase.qrValidateCheck(from: duplicateQRCode)
-        }
-
-        // Then: 중복 체크 실패 검증
-        #expect(!result.isSuccess, "중복 체크는 실패해야 함")
-        #expect(result.code == "409", "중복 에러 코드가 반환되어야 함")
-        #expect(result.message?.contains("중복") == true, "중복 관련 메시지가 포함되어야 함")
-    }
-
-    @Test("TC-010: 복잡한 QR 데이터 처리")
-    func test_complex_qr_data_handling() async throws {
-        // Given: 복잡한 QR 데이터 설정
-        let complexUserID = 999999
-        let expectedComplexQR = "user:999999;timestamp:1713194400;event:attendance;signature:abc123def456"
-        mockQRCodeRepository.configureCreateQRSuccess(expectedComplexQR)
-
-        // When: 복잡한 QR 코드 생성 실행
-        let result = try await withDependencies {
-            $0.qrCodeRepository = mockQRCodeRepository
-        } operation: {
-            let useCase = QRCodeUseCaseImpl()
-            return try await useCase.createQRCode(userID: complexUserID)
-        }
-
-        // Then: 복잡한 QR 데이터 검증
-        #expect(result.contains("user:999999"), "사용자 ID가 포함되어야 함")
-        #expect(result.contains("timestamp:"), "타임스탬프가 포함되어야 함")
-        #expect(result.contains("event:attendance"), "이벤트 타입이 포함되어야 함")
-        #expect(result.contains("signature:"), "서명이 포함되어야 함")
-        #expect(result == expectedComplexQR, "전체 QR 데이터가 일치해야 함")
-    }
-
-    @Test("TC-011: QR 코드 전체 플로우 테스트")
-    func test_qr_code_full_flow() async throws {
-        // Given: QR 전체 플로우 설정 (생성 → 이미지 생성 → 검증)
-        let userID = 456
-        let qrString = "flow_test_qr_456"
-        let qrImage = Image(systemName: "checkmark.circle")
-        let validation = QRValidateEntity(
-            isSuccess: true,
-            code: "200",
-            message: "플로우 테스트 성공",
-            detail: "전체 플로우가 정상적으로 동작했습니다",
-            status: .attendance
-        )
-
-        mockQRCodeRepository.configureCreateQRSuccess(qrString)
-        mockQRCodeRepository.configureGenerateQRSuccess(qrImage)
-        mockQRCodeRepository.configureValidateSuccess(validation)
-
-        // When: QR 전체 플로우 실행
-        let createdQR = try await withDependencies {
-            $0.qrCodeRepository = mockQRCodeRepository
-        } operation: {
-            let useCase = QRCodeUseCaseImpl()
-            return try await useCase.createQRCode(userID: userID)
-        }
-
-        let generatedImage = await withDependencies {
-            $0.qrCodeRepository = mockQRCodeRepository
-        } operation: {
-            let useCase = QRCodeUseCaseImpl()
-            return await useCase.generateQRCode(from: createdQR)
-        }
-
-        let validationResult = try await withDependencies {
-            $0.qrCodeRepository = mockQRCodeRepository
-        } operation: {
-            let useCase = QRCodeUseCaseImpl()
-            return try await useCase.qrValidateCheck(from: createdQR)
-        }
-
-        // Then: 전체 플로우 검증
-        #expect(createdQR == qrString, "QR 코드가 정상 생성되어야 함")
-        #expect(generatedImage != nil, "QR 이미지가 정상 생성되어야 함")
-        #expect(validationResult.isSuccess, "QR 검증이 성공해야 함")
-        #expect(validationResult.status == .attendance, "출석 상태가 정상 설정되어야 함")
-
-        // Repository 호출 횟수 검증
-        #expect(mockQRCodeRepository.createQRCallCount == 1, "QR 생성이 1번 호출되어야 함")
-        #expect(mockQRCodeRepository.generateQRCallCount == 1, "이미지 생성이 1번 호출되어야 함")
-        #expect(mockQRCodeRepository.validateCallCount == 1, "검증이 1번 호출되어야 함")
-    }
-
-    @Test("TC-012: 동시 QR 검증 요청 처리")
-    func test_concurrent_qr_validation_requests() async throws {
-        // Given: 동시 검증 요청을 위한 설정
-        let concurrentQRCodes = [
-            "concurrent_qr_1",
-            "concurrent_qr_2",
-            "concurrent_qr_3",
-            "concurrent_qr_4",
-            "concurrent_qr_5"
-        ]
-
-        let validationResults = concurrentQRCodes.map { qr in
-            QRValidateEntity(
-                isSuccess: true,
-                code: "200",
-                message: "\(qr) 검증 성공",
-                detail: "동시 요청 테스트 성공",
-                status: .attendance
-            )
-        }
-
-        mockQRCodeRepository.configureConcurrentValidateSuccess(validationResults)
-
-        // When: 5개의 동시 QR 검증 요청 실행
-        let results = try await withTaskGroup(of: QRValidateEntity.self, returning: [QRValidateEntity].self) { group in
-            for qrCode in concurrentQRCodes {
-                group.addTask {
-                    try await withDependencies {
-                        $0.qrCodeRepository = mockQRCodeRepository
-                    } operation: {
-                        let useCase = QRCodeUseCaseImpl()
-                        return try await useCase.qrValidateCheck(from: qrCode)
-                    }
-                }
-            }
-
-            var results: [QRValidateEntity] = []
-            for try await result in group {
-                results.append(result)
-            }
-            return results
-        }
-
-        // Then: 동시 요청 결과 검증
-        #expect(results.count == 5, "모든 동시 요청이 처리되어야 함")
-        #expect(results.allSatisfy(\.isSuccess), "모든 요청이 성공해야 함")
-        #expect(results.allSatisfy { $0.status == .attendance }, "모든 결과가 출석 상태여야 함")
-        #expect(mockQRCodeRepository.validateCallCount == 5, "Repository가 5번 호출되어야 함")
-    }
-
-    @Test("TC-013: QR 데이터 경계값 테스트")
-    func test_qr_data_boundary_values() async throws {
-        // Given: 경계값 테스트 데이터
-        let boundaryUserIDs = [0, 1, Int.max, -1]
-        let expectedResults = [
-            "qr_user_0",
-            "qr_user_1",
-            "qr_user_max",
-            "qr_user_negative"
-        ]
-
-        // When & Then: 각 경계값에 대해 테스트
-        for (index, userID) in boundaryUserIDs.enumerated() {
-            mockQRCodeRepository.configureCreateQRSuccess(expectedResults[index])
-
-            let result = try await withDependencies {
-                $0.qrCodeRepository = mockQRCodeRepository
-            } operation: {
-                let useCase = QRCodeUseCaseImpl()
-                return try await useCase.createQRCode(userID: userID)
-            }
-
-            #expect(result == expectedResults[index], "경계값 \(userID)에 대한 QR이 올바르게 생성되어야 함")
-        }
-
-        #expect(mockQRCodeRepository.createQRCallCount == 4, "모든 경계값 테스트가 실행되어야 함")
-    }
-}
-
-// MARK: - Mock Repository
-class MockQRCodeRepository: QRCodeInterface {
-
-    // MARK: - Call Tracking
-    var createQRCallCount = 0
-    var generateQRCallCount = 0
-    var validateCallCount = 0
-
-    // MARK: - Last Parameters
-    var lastCreateQRUserID: Int?
-    var lastGenerateQRString: String?
-    var lastValidateQRCode: String?
-
-    // MARK: - Configured Responses
-    private var createQRResponse: Result<String, Error>?
-    private var generateQRResponse: Image?
-    private var validateResponse: Result<QRValidateEntity, Error>?
-    private var concurrentValidateIndex = 0
-    private var concurrentValidateResults: [QRValidateEntity] = []
-
-    // MARK: - Implementation
-    func createQRCode(userID: Int) async throws -> String {
-        createQRCallCount += 1
-        lastCreateQRUserID = userID
-
-        if let response = createQRResponse {
-            return try response.get()
-        }
-
-        throw QRCodeError.notConfigured
-    }
-
-    func generateQRCode(from string: String) async -> Image? {
-        generateQRCallCount += 1
-        lastGenerateQRString = string
-
-        return generateQRResponse
-    }
-
-    func qrValidateCheck(from code: String) async throws -> QRValidateEntity {
-        validateCallCount += 1
-        lastValidateQRCode = code
-
-        // 동시 요청 처리
-        if !concurrentValidateResults.isEmpty && concurrentValidateIndex < concurrentValidateResults.count {
-            let result = concurrentValidateResults[concurrentValidateIndex]
-            concurrentValidateIndex += 1
-            return result
-        }
-
-        if let response = validateResponse {
-            return try response.get()
-        }
-
-        throw QRCodeError.notConfigured
-    }
-
-    // MARK: - Configuration Methods
-    func configureCreateQRSuccess(_ qrString: String) {
-        createQRResponse = .success(qrString)
-    }
-
-    func configureCreateQRFailure(_ error: Error) {
-        createQRResponse = .failure(error)
-    }
-
-    func configureGenerateQRSuccess(_ image: Image?) {
-        generateQRResponse = image
-    }
-
-    func configureValidateSuccess(_ validation: QRValidateEntity) {
-        validateResponse = .success(validation)
-    }
-
-    func configureValidateFailure(_ error: Error) {
-        validateResponse = .failure(error)
-    }
-
-    func configureConcurrentValidateSuccess(_ validations: [QRValidateEntity]) {
-        concurrentValidateResults = validations
-        concurrentValidateIndex = 0
-    }
-}
-
-// MARK: - Test Errors
-enum QRCodeError: Error, Equatable {
-    case invalidUserID
-    case expiredQRCode
-    case duplicateCheck
-    case networkError
-    case notConfigured
-}
-
-// MARK: - Test Tags
-extension Tag {
-    @Tag static var qrcode: Self
+    // Then: 성능 기대치 확인
+    #expect(mockQRCodeRepository.createQRCodeCallCount == 100, "100개 요청 모두 처리")
+    #expect(duration < .seconds(1), "1초 내에 100개 요청 처리 완료")
+  }
 }

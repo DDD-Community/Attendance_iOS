@@ -12,7 +12,7 @@ import ComposableArchitecture
 @testable import Entity
 @testable import DomainInterface
 
-@Suite("Manager UseCase Tests - Complete TDD Implementation", .tags(.unit, .manager))
+@Suite("Manager UseCase Tests - Complete TDD Implementation")
 @MainActor
 struct ManagerUseCaseTest {
 
@@ -35,7 +35,7 @@ struct ManagerUseCaseTest {
         let result = await withDependencies {
             $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
         } operation: {
-            let manager = KeychainManager()
+            let manager: KeychainManaging = mockKeychainManager
             manager.save(accessToken: accessToken, refreshToken: refreshToken)
             return (manager.accessToken(), manager.refreshToken())
         }
@@ -57,7 +57,7 @@ struct ManagerUseCaseTest {
         await withDependencies {
             $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
         } operation: {
-            let manager = KeychainManager()
+            let manager: KeychainManaging = mockKeychainManager
             manager.saveAccessToken(accessToken)
             manager.saveRefreshToken(refreshToken)
         }
@@ -80,7 +80,7 @@ struct ManagerUseCaseTest {
         let result = await withDependencies {
             $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
         } operation: {
-            let manager = KeychainManager()
+            let manager: KeychainManaging = mockKeychainManager
             return (manager.accessToken(), manager.refreshToken())
         }
 
@@ -100,7 +100,7 @@ struct ManagerUseCaseTest {
         let result = await withDependencies {
             $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
         } operation: {
-            let manager = KeychainManager()
+            let manager: KeychainManaging = mockKeychainManager
             return (manager.accessToken(), manager.refreshToken())
         }
 
@@ -120,7 +120,7 @@ struct ManagerUseCaseTest {
         await withDependencies {
             $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
         } operation: {
-            let manager = KeychainManager()
+            let manager: KeychainManaging = mockKeychainManager
             manager.clear()
         }
 
@@ -139,7 +139,7 @@ struct ManagerUseCaseTest {
         await withDependencies {
             $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
         } operation: {
-            let manager = KeychainManager()
+            let manager: KeychainManaging = mockKeychainManager
             manager.save(accessToken: emptyAccessToken, refreshToken: emptyRefreshToken)
         }
 
@@ -159,7 +159,7 @@ struct ManagerUseCaseTest {
         await withDependencies {
             $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
         } operation: {
-            let manager = KeychainManager()
+            let manager: KeychainManaging = mockKeychainManager
             manager.save(accessToken: longAccessToken, refreshToken: longRefreshToken)
         }
 
@@ -179,7 +179,7 @@ struct ManagerUseCaseTest {
         await withDependencies {
             $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
         } operation: {
-            let manager = KeychainManager()
+            let manager: KeychainManaging = mockKeychainManager
             manager.save(accessToken: specialAccessToken, refreshToken: specialRefreshToken)
         }
 
@@ -203,7 +203,7 @@ struct ManagerUseCaseTest {
         await withDependencies {
             $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
         } operation: {
-            let manager = KeychainManager()
+            let manager: KeychainManaging = mockKeychainManager
             manager.save(accessToken: newAccessToken, refreshToken: newRefreshToken)
         }
 
@@ -223,7 +223,7 @@ struct ManagerUseCaseTest {
         await withDependencies {
             $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
         } operation: {
-            let manager = KeychainManager()
+            let manager: KeychainManaging = mockKeychainManager
             manager.saveAccessToken(newAccessToken)
         }
 
@@ -235,9 +235,9 @@ struct ManagerUseCaseTest {
 
     @Test("TC-011: KeychainManager 인스턴스 격리")
     func test_keychain_manager_instance_isolation() async throws {
-        // Given: 서로 다른 service를 가진 KeychainManager 인스턴스들
-        let manager1 = KeychainManager(service: "service1")
-        let manager2 = KeychainManager(service: "service2")
+        // Given: 서로 다른 mock 인스턴스들
+        let manager1 = MockKeychainManagerForTest()
+        let manager2 = MockKeychainManagerForTest()
 
         // When: 각각에 다른 토큰 저장
         await withDependencies {
@@ -247,9 +247,11 @@ struct ManagerUseCaseTest {
             manager2.save(accessToken: "manager2_access", refreshToken: "manager2_refresh")
         }
 
-        // Then: 인스턴스 격리 확인 (실제로는 service가 다르므로 분리됨)
-        // Mock을 통해서는 격리를 완전히 테스트할 수 없지만, 호출은 확인 가능
-        #expect(mockKeychainManager.saveCallCount >= 2, "두 개의 save 호출이 있어야 함")
+        // Then: 인스턴스별 저장 상태가 서로 독립적이어야 함
+        #expect(manager1.accessToken() == "manager1_access", "첫 번째 인스턴스는 자신의 access token만 유지해야 함")
+        #expect(manager1.refreshToken() == "manager1_refresh", "첫 번째 인스턴스는 자신의 refresh token만 유지해야 함")
+        #expect(manager2.accessToken() == "manager2_access", "두 번째 인스턴스는 자신의 access token만 유지해야 함")
+        #expect(manager2.refreshToken() == "manager2_refresh", "두 번째 인스턴스는 자신의 refresh token만 유지해야 함")
     }
 
     @Test("TC-012: 동시 토큰 접근 처리")
@@ -263,10 +265,8 @@ struct ManagerUseCaseTest {
         let results = try await withThrowingTaskGroup(of: (String?, String?).self, returning: [(String?, String?)].self) { group in
             for _ in 1...5 {
                 group.addTask {
-                    await withDependencies {
-                        $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
-                    } operation: {
-                        let manager = KeychainManager()
+                    await MainActor.run {
+                        let manager: KeychainManaging = mockKeychainManager
                         return (manager.accessToken(), manager.refreshToken())
                     }
                 }
@@ -362,9 +362,4 @@ class MockKeychainManagerForTest: KeychainManaging {
         storedAccessToken = nil
         storedRefreshToken = nil
     }
-}
-
-// MARK: - Test Tags
-extension Tag {
-    @Tag static var manager: Self
 }

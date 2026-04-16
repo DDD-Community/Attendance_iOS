@@ -12,7 +12,7 @@ import ComposableArchitecture
 @testable import Entity
 @testable import DomainInterface
 
-@Suite("MyPage UseCase Tests - Complete TDD Implementation", .tags(.unit, .mypage))
+@Suite("MyPage UseCase Tests - Complete TDD Implementation")
 @MainActor
 struct MyPageUseCaseTest {
 
@@ -352,7 +352,3 @@ enum MyPageError: Error, Equatable {
     case notConfigured
 }
 
-// MARK: - Test Tags
-extension Tag {
-    @Tag static var mypage: Self
-}

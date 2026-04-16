@@ -12,7 +12,7 @@ import ComposableArchitecture
 @testable import Entity
 @testable import DomainInterface
 
-@Suite("Profile UseCase Tests - Complete TDD Implementation", .tags(.unit, .profile))
+@Suite("Profile UseCase Tests - Complete TDD Implementation")
 @MainActor
 struct ProfileUseCaseTest {
 
@@ -32,10 +32,10 @@ struct ProfileUseCaseTest {
             userID: 123,
             name: "관리자 김철수",
             generation: "15기",
-            team: .ios1,
-            jobRole: .ios,
-            role: .manager,
-            manger: [.teamManaging, .attendanceCheck]
+            team: Entity.SelectTeams.ios1,
+            jobRole: Entity.SelectParts.ios,
+            role: Entity.Staff.manager,
+            manger: [Entity.StaffManaging.teamManaging, Entity.StaffManaging.attendanceCheck]
         )
         mockProfileRepository.configureGetProfileSuccess(expectedProfile)
 
@@ -51,9 +51,9 @@ struct ProfileUseCaseTest {
         #expect(result.userID == 123, "사용자 ID가 올바르게 조회되어야 함")
         #expect(result.name == "관리자 김철수", "이름이 올바르게 조회되어야 함")
         #expect(result.generation == "15기", "기수가 올바르게 조회되어야 함")
-        #expect(result.team == .ios1, "팀이 올바르게 조회되어야 함")
-        #expect(result.jobRole == .ios, "직무가 올바르게 조회되어야 함")
-        #expect(result.role == .manager, "Manager 권한이 올바르게 설정되어야 함")
+        #expect(result.team == Entity.SelectTeams.ios1, "팀이 올바르게 조회되어야 함")
+        #expect(result.jobRole == Entity.SelectParts.ios, "직무가 올바르게 조회되어야 함")
+        #expect(result.role == Entity.Staff.manager, "Manager 권한이 올바르게 설정되어야 함")
         #expect(result.manger?.count == 2, "관리 팀이 2개여야 함")
         #expect(mockProfileRepository.getProfileCallCount == 1, "Repository가 한 번 호출되어야 함")
     }
@@ -65,9 +65,9 @@ struct ProfileUseCaseTest {
             userID: 456,
             name: "멤버 박영희",
             generation: "16기",
-            team: .and1,
-            jobRole: .designer,
-            role: .member,
+            team: Entity.SelectTeams.and1,
+            jobRole: Entity.SelectParts.designer,
+            role: Entity.Staff.member,
             manger: nil
         )
         mockProfileRepository.configureGetProfileSuccess(expectedProfile)
@@ -111,24 +111,24 @@ struct ProfileUseCaseTest {
         let userSession = UserSession(
             userID: 789,
             name: "승급자 이민수",
-            generationId: 17,
-            generation: "17기",
+            selectPart: Entity.SelectParts.ios,
+            userRole: Entity.Staff.manager, // 승급됨
+            managing: [Entity.StaffManaging.teamManaging, Entity.StaffManaging.attendanceCheck],
+            selectTeam: Entity.SelectTeams.ios2,
             selectTeamId: 1,
-            selectTeam: .ios2,
-            selectPart: .ios,
-            userRole: .manager, // 승급됨
-            managing: [.teamManaging, .attendanceCheck],
-            inviteCode: "PROMOTE123"
+            generationId: 17,
+            inviteCode: "PROMOTE123",
+            generation: "17기"
         )
 
         let expectedUpdatedProfile = ProfileEntity(
             userID: 789,
             name: "승급자 이민수",
             generation: "17기",
-            team: .ios2,
-            jobRole: .ios,
-            role: .manager, // 승급된 권한
-            manger: [.teamManaging, .attendanceCheck]
+            team: Entity.SelectTeams.ios2,
+            jobRole: Entity.SelectParts.ios,
+            role: Entity.Staff.manager, // 승급된 권한
+            manger: [Entity.StaffManaging.teamManaging, Entity.StaffManaging.attendanceCheck]
         )
         mockProfileRepository.configureEditProfileSuccess(expectedUpdatedProfile)
 
@@ -141,7 +141,7 @@ struct ProfileUseCaseTest {
         }
 
         // Then: 승급된 프로필 검증
-        #expect(result.role == .manager, "Manager로 승급되어야 함")
+        #expect(result.role == Entity.Staff.manager, "Manager로 승급되어야 함")
         #expect(result.manger?.count == 2, "관리 팀이 설정되어야 함")
         #expect(result.name == "승급자 이민수", "이름이 올바르게 업데이트되어야 함")
         #expect(mockProfileRepository.lastEditInput?.managerRoles?.count == 2, "관리 역할이 전달되어야 함")
@@ -154,23 +154,23 @@ struct ProfileUseCaseTest {
         let userSession = UserSession(
             userID: 101,
             name: "업데이트 최지혜",
-            generationId: 18,
-            generation: "18기",
-            selectTeamId: 2,
-            selectTeam: .and2,
-            selectPart: .designer,
-            userRole: .member,
+            selectPart: Entity.SelectParts.designer,
+            userRole: Entity.Staff.member,
             managing: [],
-            inviteCode: "UPDATE456"
+            selectTeam: Entity.SelectTeams.and2,
+            selectTeamId: 2,
+            generationId: 18,
+            inviteCode: "UPDATE456",
+            generation: "18기"
         )
 
         let expectedUpdatedProfile = ProfileEntity(
             userID: 101,
             name: "업데이트 최지혜",
             generation: "18기",
-            team: .and2,
-            jobRole: .designer,
-            role: .member,
+            team: Entity.SelectTeams.and2,
+            jobRole: Entity.SelectParts.designer,
+            role: Entity.Staff.member,
             manger: nil
         )
         mockProfileRepository.configureEditProfileSuccess(expectedUpdatedProfile)
@@ -184,10 +184,10 @@ struct ProfileUseCaseTest {
         }
 
         // Then: 업데이트된 Member 프로필 검증
-        #expect(result.role == .member, "Member 권한이 유지되어야 함")
+        #expect(result.role == Entity.Staff.member, "Member 권한이 유지되어야 함")
         #expect(result.manger == nil, "Member는 관리 권한이 없어야 함")
-        #expect(result.team == .and2, "팀이 올바르게 업데이트되어야 함")
-        #expect(result.jobRole == .designer, "직무가 올바르게 업데이트되어야 함")
+        #expect(result.team == Entity.SelectTeams.and2, "팀이 올바르게 업데이트되어야 함")
+        #expect(result.jobRole == Entity.SelectParts.designer, "직무가 올바르게 업데이트되어야 함")
         #expect(mockProfileRepository.lastEditInput?.managerRoles == nil, "Manager 역할이 전달되지 않아야 함")
     }
 
@@ -197,14 +197,14 @@ struct ProfileUseCaseTest {
         let userSession = UserSession(
             userID: 999,
             name: "권한없음",
-            generationId: 1,
-            generation: "1기",
-            selectTeamId: 1,
-            selectTeam: .ios1,
-            selectPart: .ios,
-            userRole: .member,
+            selectPart: Entity.SelectParts.ios,
+            userRole: Entity.Staff.member,
             managing: [],
-            inviteCode: "INVALID"
+            selectTeam: Entity.SelectTeams.ios1,
+            selectTeamId: 1,
+            generationId: 1,
+            inviteCode: "INVALID",
+            generation: "1기"
         )
         mockProfileRepository.configureEditProfileFailure(ProfileError.unauthorized)
 
@@ -226,10 +226,10 @@ struct ProfileUseCaseTest {
             userID: 555,
             name: "동기화 테스트",
             generation: "19기",
-            team: .ios1,
-            jobRole: .pm,
-            role: .manager,
-            manger: [.teamManaging]
+            team: Entity.SelectTeams.ios1,
+            jobRole: Entity.SelectParts.pm,
+            role: Entity.Staff.manager,
+            manger: [Entity.StaffManaging.teamManaging]
         )
         mockProfileRepository.configureGetProfileSuccess(profile)
 
@@ -254,9 +254,9 @@ struct ProfileUseCaseTest {
             userID: 333,
             name: "승급대상자",
             generation: "20기",
-            team: .and1,
-            jobRole: .ios,
-            role: .member,
+            team: Entity.SelectTeams.and1,
+            jobRole: Entity.SelectParts.ios,
+            role: Entity.Staff.member,
             manger: nil
         )
         mockProfileRepository.configureGetProfileSuccess(memberProfile)
@@ -266,10 +266,10 @@ struct ProfileUseCaseTest {
             userID: 333,
             name: "승급대상자",
             generation: "20기",
-            team: .and1,
-            jobRole: .ios,
-            role: .manager,
-            manger: [.teamManaging]
+            team: Entity.SelectTeams.and1,
+            jobRole: Entity.SelectParts.ios,
+            role: Entity.Staff.manager,
+            manger: [Entity.StaffManaging.teamManaging]
         )
         mockProfileRepository.configureEditProfileSuccess(managerProfile)
 
@@ -284,14 +284,14 @@ struct ProfileUseCaseTest {
         let promotedUserSession = UserSession(
             userID: 333,
             name: "승급대상자",
-            generationId: 20,
-            generation: "20기",
+            selectPart: Entity.SelectParts.ios,
+            userRole: Entity.Staff.manager, // 승급
+            managing: [Entity.StaffManaging.teamManaging],
+            selectTeam: Entity.SelectTeams.and1,
             selectTeamId: 1,
-            selectTeam: .and1,
-            selectPart: .ios,
-            userRole: .manager, // 승급
-            managing: [.teamManaging],
-            inviteCode: "PROMOTION"
+            generationId: 20,
+            inviteCode: "PROMOTION",
+            generation: "20기"
         )
 
         let updatedProfile = try await withDependencies {
@@ -302,9 +302,9 @@ struct ProfileUseCaseTest {
         }
 
         // Then: 승급 프로세스 검증
-        #expect(initialProfile.role == .member, "초기에는 Member여야 함")
+        #expect(initialProfile.role == Entity.Staff.member, "초기에는 Member여야 함")
         #expect(initialProfile.manger == nil, "초기에는 관리 권한이 없어야 함")
-        #expect(updatedProfile.role == .manager, "승급 후 Manager여야 함")
+        #expect(updatedProfile.role == Entity.Staff.manager, "승급 후 Manager여야 함")
         #expect(updatedProfile.manger?.count == 1, "승급 후 관리 권한이 있어야 함")
     }
 
@@ -314,23 +314,23 @@ struct ProfileUseCaseTest {
         let userSession = UserSession(
             userID: 777,
             name: "팀변경자",
-            generationId: 21,
-            generation: "21기",
-            selectTeamId: 3,
-            selectTeam: .web1,
-            selectPart: .designer,
-            userRole: .member,
+            selectPart: Entity.SelectParts.designer,
+            userRole: Entity.Staff.member,
             managing: [],
-            inviteCode: "TEAMCHANGE"
+            selectTeam: Entity.SelectTeams.web1,
+            selectTeamId: 3,
+            generationId: 21,
+            inviteCode: "TEAMCHANGE",
+            generation: "21기"
         )
 
         let expectedProfile = ProfileEntity(
             userID: 777,
             name: "팀변경자",
             generation: "21기",
-            team: .web1,
-            jobRole: .designer,
-            role: .member,
+            team: Entity.SelectTeams.web1,
+            jobRole: Entity.SelectParts.designer,
+            role: Entity.Staff.member,
             manger: nil
         )
         mockProfileRepository.configureEditProfileSuccess(expectedProfile)
@@ -344,8 +344,8 @@ struct ProfileUseCaseTest {
         }
 
         // Then: 팀 변경 검증
-        #expect(result.team == .web1, "팀이 WEB 1으로 변경되어야 함")
-        #expect(result.jobRole == .designer, "직무가 Designer로 설정되어야 함")
+        #expect(result.team == Entity.SelectTeams.web1, "팀이 WEB 1으로 변경되어야 함")
+        #expect(result.jobRole == Entity.SelectParts.designer, "직무가 Designer로 설정되어야 함")
         #expect(mockProfileRepository.lastEditInput?.teamId == 3, "올바른 팀 ID가 전달되어야 함")
     }
 
@@ -355,9 +355,9 @@ struct ProfileUseCaseTest {
         let directInput = EditProfileInput(
             name: "직접수정",
             generationId: 22,
-            jobRole: .pm,
+            jobRole: Entity.SelectParts.pm,
             teamId: 4,
-            managerRoles: [.teamManaging, .photo, .attendanceCheck],
+            managerRoles: [Entity.StaffManaging.teamManaging, Entity.StaffManaging.photo, Entity.StaffManaging.attendanceCheck],
             inviteCode: "DIRECT123"
         )
 
@@ -365,10 +365,10 @@ struct ProfileUseCaseTest {
             userID: 888,
             name: "직접수정",
             generation: "22기",
-            team: .ios2,
-            jobRole: .pm,
-            role: .manager,
-            manger: [.teamManaging, .photo, .attendanceCheck]
+            team: Entity.SelectTeams.ios2,
+            jobRole: Entity.SelectParts.pm,
+            role: Entity.Staff.manager,
+            manger: [Entity.StaffManaging.teamManaging, Entity.StaffManaging.photo, Entity.StaffManaging.attendanceCheck]
         )
         mockProfileRepository.configureEditProfileSuccess(expectedProfile)
 
@@ -382,7 +382,7 @@ struct ProfileUseCaseTest {
 
         // Then: 직접 수정 검증
         #expect(result.name == "직접수정", "이름이 올바르게 수정되어야 함")
-        #expect(result.jobRole == .pm, "직무가 올바르게 수정되어야 함")
+        #expect(result.jobRole == Entity.SelectParts.pm, "직무가 올바르게 수정되어야 함")
         #expect(result.manger?.count == 3, "3개 팀 관리 권한이 있어야 함")
         #expect(mockProfileRepository.lastEditInput?.name == "직접수정", "올바른 입력이 전달되어야 함")
     }
@@ -390,27 +390,27 @@ struct ProfileUseCaseTest {
     @Test("TC-011: 대량 관리 팀 처리")
     func test_large_management_teams() async throws {
         // Given: 대량 관리 팀을 가진 Manager
-        let largeManagingTeams: [StaffManaging] = [.teamManaging, .scheduleReminder, .photo, .locationRental, .attendanceCheck]
+        let largeManagingTeams: [Entity.StaffManaging] = [Entity.StaffManaging.teamManaging, Entity.StaffManaging.scheduleReminder, Entity.StaffManaging.photo, Entity.StaffManaging.locationRental, Entity.StaffManaging.attendanceCheck]
         let userSession = UserSession(
             userID: 111,
             name: "수퍼매니저",
-            generationId: 23,
-            generation: "23기",
-            selectTeamId: 1,
-            selectTeam: .ios1,
-            selectPart: .ios,
-            userRole: .manager,
+            selectPart: Entity.SelectParts.ios,
+            userRole: Entity.Staff.manager,
             managing: largeManagingTeams,
-            inviteCode: "SUPER123"
+            selectTeam: Entity.SelectTeams.ios1,
+            selectTeamId: 1,
+            generationId: 23,
+            inviteCode: "SUPER123",
+            generation: "23기"
         )
 
         let expectedProfile = ProfileEntity(
             userID: 111,
             name: "수퍼매니저",
             generation: "23기",
-            team: .ios1,
-            jobRole: .ios,
-            role: .manager,
+            team: Entity.SelectTeams.ios1,
+            jobRole: Entity.SelectParts.ios,
+            role: Entity.Staff.manager,
             manger: largeManagingTeams
         )
         mockProfileRepository.configureEditProfileSuccess(expectedProfile)
@@ -425,9 +425,9 @@ struct ProfileUseCaseTest {
 
         // Then: 대량 관리 팀 검증
         #expect(result.manger?.count == 5, "5개 팀을 관리해야 함")
-        #expect(result.manger?.contains(.teamManaging) == true, "팀매니징 권한이 있어야 함")
-        #expect(result.manger?.contains(.scheduleReminder) == true, "일정 리마인드 권한이 있어야 함")
-        #expect(result.manger?.contains(.photo) == true, "사진 촬영 권한이 있어야 함")
+        #expect(result.manger?.contains(Entity.StaffManaging.teamManaging) == true, "팀매니징 권한이 있어야 함")
+        #expect(result.manger?.contains(Entity.StaffManaging.scheduleReminder) == true, "일정 리마인드 권한이 있어야 함")
+        #expect(result.manger?.contains(Entity.StaffManaging.photo) == true, "사진 촬영 권한이 있어야 함")
         #expect(mockProfileRepository.lastEditInput?.managerRoles?.count == 5, "5개 관리 역할이 전달되어야 함")
     }
 
@@ -438,15 +438,15 @@ struct ProfileUseCaseTest {
             userID: 999,
             name: "동시성 테스트",
             generation: "24기",
-            team: .and1,
-            jobRole: .ios,
-            role: .member,
+            team: Entity.SelectTeams.and1,
+            jobRole: Entity.SelectParts.ios,
+            role: Entity.Staff.member,
             manger: nil
         )
         mockProfileRepository.configureGetProfileSuccess(testProfile)
 
         // When: 5개의 동시 프로필 조회 요청
-        let results = try await withTaskGroup(of: ProfileEntity.self, returning: [ProfileEntity].self) { group in
+        let results = try await withThrowingTaskGroup(of: ProfileEntity.self, returning: [ProfileEntity].self) { group in
             for _ in 1...5 {
                 group.addTask {
                     try await withDependencies {
@@ -469,7 +469,7 @@ struct ProfileUseCaseTest {
         #expect(results.count == 5, "모든 동시 요청이 완료되어야 함")
         #expect(results.allSatisfy { $0.userID == 999 }, "모든 결과가 동일한 사용자 ID를 가져야 함")
         #expect(results.allSatisfy { $0.name == "동시성 테스트" }, "모든 결과가 동일한 이름을 가져야 함")
-        #expect(results.allSatisfy { $0.role == .member }, "모든 결과가 동일한 권한을 가져야 함")
+        #expect(results.allSatisfy { $0.role == Entity.Staff.member }, "모든 결과가 동일한 권한을 가져야 함")
         #expect(mockProfileRepository.getProfileCallCount == 5, "Repository가 5번 호출되어야 함")
     }
 }
@@ -536,7 +536,3 @@ enum ProfileError: Error, Equatable {
     case notConfigured
 }
 
-// MARK: - Test Tags
-extension Tag {
-    @Tag static var profile: Self
-}

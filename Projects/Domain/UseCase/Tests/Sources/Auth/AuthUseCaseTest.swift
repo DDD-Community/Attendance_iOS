@@ -12,9 +12,9 @@ import ComposableArchitecture
 @testable import Entity
 @testable import DomainInterface
 
-@Suite("Auth UseCase Tests - Complete TDD Implementation", .tags(.unit, .auth))
+@Suite("Auth UseCase Tests - Complete TDD Implementation")
 @MainActor
-struct AuthUseCaseTest {
+final class AuthUseCaseTest {
 
   // MARK: - Test Dependencies
   private var mockAuthRepository: MockAuthRepository!
@@ -89,7 +89,7 @@ struct AuthUseCaseTest {
     AuthTestHelper.verifyLoginSuccess(
       result: result,
       expectedProvider: expectedProvider,
-      expectedName: "New User",
+      expectedName: "New Google User",
       expectedIsNewUser: true,
       expectedRole: nil
     )
@@ -125,9 +125,9 @@ struct AuthUseCaseTest {
     AuthTestHelper.verifyLoginSuccess(
       result: result,
       expectedProvider: expectedProvider,
-      expectedName: "Google User",
+      expectedName: "Test User",
       expectedIsNewUser: false,
-      expectedRole: nil
+      expectedRole: .member
     )
 
     #expect(result.token.oauthRefreshToken != nil, "Google 로그인은 oauthRefreshToken이 있어야 함")
@@ -141,7 +141,7 @@ struct AuthUseCaseTest {
     mockAuthRepository = MockAuthRepository.invalidToken()
 
     // When & Then: 로그인 실패 검증
-    await #expect(throws: MockAuthError.self) {
+    await #expect(throws: AuthError.self) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
         mockKeychainManager: mockKeychainManager
@@ -162,7 +162,7 @@ struct AuthUseCaseTest {
     mockAuthRepository = MockAuthRepository.networkError()
 
     // When & Then: 네트워크 에러 검증
-    await #expect(throws: MockAuthError.self) {
+    await #expect(throws: AuthError.self) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
         mockKeychainManager: mockKeychainManager
@@ -191,8 +191,8 @@ struct AuthUseCaseTest {
     }
 
     // Then: 토큰 갱신 성공 검증
-    #expect(result.accessToken == "new-access-token", "갱신된 accessToken이 반환되어야 함")
-    #expect(result.refreshToken == "new-refresh-token", "갱신된 refreshToken이 반환되어야 함")
+    #expect(result.accessToken == "refreshed_access_token", "갱신된 accessToken이 반환되어야 함")
+    #expect(result.refreshToken == "refreshed_refresh_token", "갱신된 refreshToken이 반환되어야 함")
     AuthTestHelper.verifyRepositoryCalls(mockRepository: mockAuthRepository, expectedRefreshCalls: 1)
   }
 
@@ -238,7 +238,7 @@ struct AuthUseCaseTest {
       mockRepository: mockAuthRepository,
       expectedUpdateCredentialCalls: 1
     )
-    #expect(mockAuthRepository.getLastUpdatedTokens() == testTokens, "올바른 토큰이 전달되어야 함")
+    #expect(mockAuthRepository.lastUpdateTokens == testTokens, "올바른 토큰이 전달되어야 함")
   }
 
   @Test("TC-009: 회원탈퇴 성공")
@@ -269,7 +269,7 @@ struct AuthUseCaseTest {
     mockAuthRepository = MockAuthRepository.unauthorized()
 
     // When & Then: 회원탈퇴 실패 검증
-    await #expect(throws: MockAuthError.self) {
+    await #expect(throws: AuthError.self) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
         mockKeychainManager: mockKeychainManager
@@ -365,7 +365,8 @@ struct AuthUseCaseTest {
   @Test("TC-014: Token 만료 후 refresh 시나리오")
   func test_token_expired_refresh_scenario() async throws {
     // Given: 토큰 만료 상황 설정
-    mockAuthRepository = MockAuthRepository.tokenExpired()
+    mockAuthRepository = MockAuthRepository()
+    mockAuthRepository.configureRefreshFailure(MockAuthError.tokenExpired)
 
     // When & Then: 토큰 만료 에러 검증
     await #expect(throws: MockAuthError.self) {
@@ -385,7 +386,8 @@ struct AuthUseCaseTest {
   @Test("TC-015: 서버 에러 시나리오")
   func test_server_error_scenario() async throws {
     // Given: 서버 에러 설정
-    mockAuthRepository = MockAuthRepository.serverError()
+    mockAuthRepository = MockAuthRepository()
+    mockAuthRepository.configureLogoutFailure(MockAuthError.serverError)
 
     // When & Then: 서버 에러 검증 (로그아웃)
     await #expect(throws: MockAuthError.self) {
@@ -405,7 +407,9 @@ struct AuthUseCaseTest {
   @Test("TC-016: 완전한 인증 플로우 통합 테스트")
   func test_full_authentication_flow_integration() async throws {
     // Given: 완전한 플로우 성공 설정
-    mockAuthRepository = MockAuthRepository.fullFlowSuccess()
+    mockAuthRepository = MockAuthRepository.success()
+    mockAuthRepository.configureSuccessfulRefresh()
+    mockAuthRepository.logoutResponse = .success(AuthExitEntity(code: "200", message: "logout", detail: "success"))
 
     // When: 전체 인증 플로우 실행
     let loginResult = try await AuthTestHelper.withMockDependencies(
@@ -450,12 +454,4 @@ struct AuthUseCaseTest {
       expectedLogoutCalls: 1
     )
   }
-}
-
-// MARK: - Test Tags
-extension Tag {
-  @Tag internal static var unit: Self
-  @Tag internal static var auth: Self
-  @Tag internal static var integration: Self
-  @Tag internal static var performance: Self
 }

@@ -12,7 +12,7 @@ import ComposableArchitecture
 @testable import Entity
 @testable import DomainInterface
 
-@Suite("Attendance UseCase Tests - Complete TDD Implementation", .tags(.unit, .attendance))
+@Suite("Attendance UseCase Tests - Complete TDD Implementation")
 @MainActor
 struct AttendanceUseCaseTest {
 
@@ -73,9 +73,9 @@ struct AttendanceUseCaseTest {
     func test_fetch_attendance_teams_success() async throws {
         // Given: 출석 가능 팀 목록 설정
         let expectedTeams = [
-            SelectTeamEntity(id: 1, name: "iOS1팀", description: "iOS 1팀"),
-            SelectTeamEntity(id: 2, name: "iOS2팀", description: "iOS 2팀"),
-            SelectTeamEntity(id: 3, name: "Android1팀", description: "Android 1팀")
+            SelectTeamEntity(id: 1, name: "IOS 1팀", description: "iOS 1"),
+            SelectTeamEntity(id: 2, name: "IOS 2팀", description: "iOS 2"),
+            SelectTeamEntity(id: 3, name: "AND 1팀", description: "Android 1")
         ]
         mockAttendanceRepository.configureTeamsSuccess(expectedTeams)
 
@@ -89,9 +89,9 @@ struct AttendanceUseCaseTest {
 
         // Then: 팀 목록 검증
         #expect(result.count == expectedTeams.count, "팀 개수가 일치해야 함")
-        #expect(result[0].name == "iOS1팀", "첫 번째 팀명이 올바르게 조회되어야 함")
-        #expect(result[1].name == "iOS2팀", "두 번째 팀명이 올바르게 조회되어야 함")
-        #expect(result[2].name == "Android1팀", "세 번째 팀명이 올바르게 조회되어야 함")
+        #expect(result[0].name == "IOS 1팀", "첫 번째 팀명이 올바르게 조회되어야 함")
+        #expect(result[1].name == "IOS 2팀", "두 번째 팀명이 올바르게 조회되어야 함")
+        #expect(result[2].name == "AND 1팀", "세 번째 팀명이 올바르게 조회되어야 함")
     }
 
     @Test("TC-004: 빈 팀 목록 조회 처리")
@@ -347,7 +347,16 @@ struct AttendanceUseCaseTest {
         let expectedCount = AttendanceCount(totalCount: 25, attendanceCount: 20, lateCount: 3, absentCount: 2)
         mockAttendanceRepository.configureRetryScenario(firstFailure: AttendanceError.networkError, thenSuccess: expectedCount)
 
-        // When: 재시도 포함 호출 (실제로는 Repository에서 처리)
+        // When: 첫 호출은 실패하고 동일 요청 재호출 시 성공
+        await #expect(throws: AttendanceError.self) {
+            try await withDependencies {
+                $0.attendanceRepository = mockAttendanceRepository
+            } operation: {
+                let useCase = AttendanceUseCaseImpl()
+                _ = try await useCase.adminAttendanceCount(scheduleId: 789)
+            }
+        }
+
         let result = try await withDependencies {
             $0.attendanceRepository = mockAttendanceRepository
         } operation: {
@@ -355,9 +364,9 @@ struct AttendanceUseCaseTest {
             return try await useCase.adminAttendanceCount(scheduleId: 789)
         }
 
-        // Then: 재시도 후 성공 검증
+        // Then: 두 번째 시도 성공 검증
         #expect(result.totalCount == expectedCount.totalCount, "재시도 후 올바른 데이터가 반환되어야 함")
-        #expect(mockAttendanceRepository.retryCallCount == 2, "재시도가 한 번 발생해야 함")
+        #expect(mockAttendanceRepository.retryCallCount == 2, "실패 후 성공까지 두 번의 시도가 기록되어야 함")
     }
 
     @Test("TC-014: 출석 통계 집계 성능 테스트")
@@ -390,7 +399,7 @@ struct AttendanceUseCaseTest {
     func test_cross_team_attendance_analysis() async throws {
         // Given: 다중 팀 출석 상태 확인 설정
         let scheduleId = 555
-        let teamId = 777
+        let teamId = 1
         let expectedAttendances = [
             Attendance(attendanceId: 1, userId: "user1", teamId: teamId, status: .attendance),
             Attendance(attendanceId: 2, userId: "user2", teamId: teamId, status: .late),
@@ -656,9 +665,4 @@ extension AttendanceStatus: CaseIterable {
     public static var allCases: [AttendanceStatus] {
         return [.attendance, .late, .absent]
     }
-}
-
-// MARK: - Test Tags
-extension Tag {
-    @Tag static var attendance: Self
 }

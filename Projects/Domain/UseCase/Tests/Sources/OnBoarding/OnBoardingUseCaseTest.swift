@@ -12,7 +12,7 @@ import ComposableArchitecture
 @testable import Entity
 @testable import DomainInterface
 
-@Suite("OnBoarding UseCase Tests - Complete TDD Implementation", .tags(.unit, .onboarding))
+@Suite("OnBoarding UseCase Tests - Complete TDD Implementation")
 @MainActor
 struct OnBoardingUseCaseTest {
 
@@ -31,7 +31,7 @@ struct OnBoardingUseCaseTest {
         let inviteCode = "MANAGER2026"
         let expectedVerification = VerifyCodeEntity(
             generationID: 25,
-            type: .manager
+            type: Entity.Staff.manager
         )
         mockOnBoardingRepository.configureVerifyCodeSuccess(expectedVerification)
 
@@ -45,7 +45,7 @@ struct OnBoardingUseCaseTest {
 
         // Then: Manager 초대 코드 검증
         #expect(result.generationID == 25, "올바른 기수 ID가 반환되어야 함")
-        #expect(result.type == .manager, "Manager 권한이 설정되어야 함")
+        #expect(result.type == Entity.Staff.manager, "Manager 권한이 설정되어야 함")
         #expect(mockOnBoardingRepository.lastVerifyCode == inviteCode, "올바른 코드가 전달되어야 함")
         #expect(mockOnBoardingRepository.verifyCodeCallCount == 1, "Repository가 한 번 호출되어야 함")
     }
@@ -70,7 +70,7 @@ struct OnBoardingUseCaseTest {
 
         // Then: Member 초대 코드 검증
         #expect(result.generationID == 26, "올바른 기수 ID가 반환되어야 함")
-        #expect(result.type == .member, "Member 권한이 설정되어야 함")
+        #expect(result.type == Entity.Staff.member, "Member 권한이 설정되어야 함")
         #expect(mockOnBoardingRepository.lastVerifyCode == inviteCode, "올바른 코드가 전달되어야 함")
     }
 
@@ -113,7 +113,7 @@ struct OnBoardingUseCaseTest {
         // Given: 성공적인 직무 목록 설정
         let expectedJobs = [
             SelectJob(jobKeys: "developer", job: .developer),
-            SelectJob(jobKeys: "designer", job: .designer),
+            SelectJob(jobKeys: "designer", job: Entity.SelectParts.designer),
             SelectJob(jobKeys: "planner", job: .planner),
             SelectJob(jobKeys: "backend", job: .backend)
         ]
@@ -157,10 +157,10 @@ struct OnBoardingUseCaseTest {
         // Given: 성공적인 팀 목록 설정
         let generationId = 25
         let expectedTeams = [
-            SelectTeamEntity(id: 1, name: "iOS1팀", description: "iOS 1팀"),
-            SelectTeamEntity(id: 2, name: "iOS2팀", description: "iOS 2팀"),
-            SelectTeamEntity(id: 3, name: "Android1팀", description: "Android 1팀"),
-            SelectTeamEntity(id: 4, name: "Design팀", description: "디자인팀")
+            SelectTeamEntity(teamId: 1, teams: Entity.SelectTeams.ios1),
+            SelectTeamEntity(teamId: 2, teams: Entity.SelectTeams.ios2),
+            SelectTeamEntity(teamId: 3, teams: Entity.SelectTeams.and1),
+            SelectTeamEntity(teamId: 4, teams: Entity.SelectTeams.web1)
         ]
         mockOnBoardingRepository.configureTeamsSuccess(expectedTeams)
 
@@ -174,10 +174,10 @@ struct OnBoardingUseCaseTest {
 
         // Then: 팀 목록 검증
         #expect(result.count == 4, "4개의 팀이 조회되어야 함")
-        #expect(result[0].name == "iOS1팀", "iOS1팀이 포함되어야 함")
-        #expect(result[1].name == "iOS2팀", "iOS2팀이 포함되어야 함")
-        #expect(result[2].name == "Android1팀", "Android1팀이 포함되어야 함")
-        #expect(result[3].name == "Design팀", "Design팀이 포함되어야 함")
+        #expect(result[0].name == "IOS 1팀", "IOS 1팀이 포함되어야 함")
+        #expect(result[1].name == "IOS 2팀", "IOS 2팀이 포함되어야 함")
+        #expect(result[2].name == "AND 1팀", "AND 1팀이 포함되어야 함")
+        #expect(result[3].name == "WEB 1팀", "WEB 1팀이 포함되어야 함")
         #expect(mockOnBoardingRepository.lastFetchTeamsGenerationId == generationId, "올바른 기수 ID가 전달되어야 함")
         #expect(mockOnBoardingRepository.fetchTeamsCallCount == 1, "Repository가 한 번 호출되어야 함")
     }
@@ -202,10 +202,10 @@ struct OnBoardingUseCaseTest {
     func test_fetch_managing_success() async throws {
         // Given: 성공적인 관리 권한 목록 설정
         let expectedManaging = [
-            SelectManaging(id: "ios", name: "iOS", description: "iOS 팀 관리"),
-            SelectManaging(id: "android", name: "Android", description: "Android 팀 관리"),
-            SelectManaging(id: "design", name: "Design", description: "디자인 팀 관리"),
-            SelectManaging(id: "planning", name: "Planning", description: "기획 팀 관리")
+            SelectManaging(id: "TEAM_MANAGING", name: "팀매니징", description: "팀매니징"),
+            SelectManaging(id: "SCHEDULE_REMINDER", name: "일정 리마인드", description: "일정 리마인드"),
+            SelectManaging(id: "PHOTO", name: "사진 촬영", description: "사진 촬영"),
+            SelectManaging(id: "LOCATION_RENTAL", name: "장소 대관", description: "장소 대관")
         ]
         mockOnBoardingRepository.configureManagingSuccess(expectedManaging)
 
@@ -219,10 +219,10 @@ struct OnBoardingUseCaseTest {
 
         // Then: 관리 권한 목록 검증
         #expect(result.count == 4, "4개의 관리 권한이 조회되어야 함")
-        #expect(result[0].name == "iOS", "iOS 관리 권한이 포함되어야 함")
-        #expect(result[1].name == "Android", "Android 관리 권한이 포함되어야 함")
-        #expect(result[2].name == "Design", "Design 관리 권한이 포함되어야 함")
-        #expect(result[3].name == "Planning", "Planning 관리 권한이 포함되어야 함")
+        #expect(result[0].name == "팀매니징", "팀매니징 권한이 포함되어야 함")
+        #expect(result[1].name == "일정 리마인드", "일정 리마인드 권한이 포함되어야 함")
+        #expect(result[2].name == "사진 촬영", "사진 촬영 권한이 포함되어야 함")
+        #expect(result[3].name == "장소 대관", "장소 대관 권한이 포함되어야 함")
         #expect(mockOnBoardingRepository.fetchManagingCallCount == 1, "Repository가 한 번 호출되어야 함")
     }
 
@@ -249,27 +249,27 @@ struct OnBoardingUseCaseTest {
         let generationId = 27
 
         // 1. 초대 코드 검증
-        let verifyResult = VerifyCodeEntity(generationID: generationId, type: .manager)
+        let verifyResult = VerifyCodeEntity(generationID: generationId, type: Entity.Staff.manager)
         mockOnBoardingRepository.configureVerifyCodeSuccess(verifyResult)
 
         // 2. 직무 목록
         let jobs = [
             SelectJob(jobKeys: "developer", job: .developer),
-            SelectJob(jobKeys: "designer", job: .designer)
+            SelectJob(jobKeys: "designer", job: Entity.SelectParts.designer)
         ]
         mockOnBoardingRepository.configureJobsSuccess(jobs)
 
         // 3. 팀 목록
         let teams = [
-            SelectTeamEntity(id: 1, name: "iOS1팀", description: "iOS 1팀"),
-            SelectTeamEntity(id: 2, name: "Design팀", description: "디자인팀")
+            SelectTeamEntity(teamId: 1, teams: Entity.SelectTeams.ios1),
+            SelectTeamEntity(teamId: 2, teams: Entity.SelectTeams.web1)
         ]
         mockOnBoardingRepository.configureTeamsSuccess(teams)
 
         // 4. 관리 권한 목록 (Manager인 경우)
         let managing = [
-            SelectManaging(id: "ios", name: "iOS", description: "iOS 팀 관리"),
-            SelectManaging(id: "design", name: "Design", description: "디자인 팀 관리")
+            SelectManaging(id: "TEAM_MANAGING", name: "팀매니징", description: "팀매니징"),
+            SelectManaging(id: "PHOTO", name: "사진 촬영", description: "사진 촬영")
         ]
         mockOnBoardingRepository.configureManagingSuccess(managing)
 
@@ -289,7 +289,7 @@ struct OnBoardingUseCaseTest {
 
         // Then: 완전한 플로우 검증
         #expect(verifyCodeResult.generationID == generationId, "올바른 기수가 검증되어야 함")
-        #expect(verifyCodeResult.type == .manager, "Manager 권한이 검증되어야 함")
+        #expect(verifyCodeResult.type == Entity.Staff.manager, "Manager 권한이 검증되어야 함")
         #expect(jobsResult.count == 2, "직무 목록이 조회되어야 함")
         #expect(teamsResult.count == 2, "팀 목록이 조회되어야 함")
         #expect(managingResult.count == 2, "관리 권한 목록이 조회되어야 함")
@@ -335,9 +335,9 @@ struct OnBoardingUseCaseTest {
             SelectJob(jobKeys: "backend", job: .backend)
         ]
         let techTeams = [
-            SelectTeamEntity(id: 1, name: "iOS1팀", description: "iOS 개발팀"),
-            SelectTeamEntity(id: 2, name: "Android1팀", description: "Android 개발팀"),
-            SelectTeamEntity(id: 3, name: "Backend팀", description: "백엔드 개발팀")
+            SelectTeamEntity(teamId: 1, teams: Entity.SelectTeams.ios1),
+            SelectTeamEntity(teamId: 2, teams: Entity.SelectTeams.and1),
+            SelectTeamEntity(teamId: 3, teams: Entity.SelectTeams.web2)
         ]
 
         mockOnBoardingRepository.configureJobsSuccess(developerJobs)
@@ -358,25 +358,25 @@ struct OnBoardingUseCaseTest {
         // Then: 직무/팀 조합 검증
         let developerJob = jobs.first { $0.job == .developer }
         let backendJob = jobs.first { $0.job == .backend }
-        let iosTeam = teams.first { $0.name.contains("iOS") }
-        let androidTeam = teams.first { $0.name.contains("Android") }
-        let backendTeam = teams.first { $0.name.contains("Backend") }
+        let iosTeam = teams.first { $0.name.contains("IOS") }  // "IOS"로 수정
+        let androidTeam = teams.first { $0.name.contains("AND") }  // "AND"로 수정
+        let webTeam = teams.first { $0.name.contains("WEB") }
 
         #expect(developerJob != nil, "개발자 직무가 있어야 함")
         #expect(backendJob != nil, "백엔드 직무가 있어야 함")
         #expect(iosTeam != nil, "iOS 팀이 있어야 함")
         #expect(androidTeam != nil, "Android 팀이 있어야 함")
-        #expect(backendTeam != nil, "Backend 팀이 있어야 함")
+        #expect(webTeam != nil, "WEB 팀이 있어야 함")
     }
 
     @Test("TC-014: 대량 데이터 처리")
     func test_large_data_handling() async throws {
         // Given: 대량 팀 데이터 설정 (50개 팀)
-        let largeTeams = (1...50).map { index in
-            SelectTeamEntity(
-                id: index,
-                name: "팀\(index)",
-                description: "팀 \(index) 설명"
+        let largeTeams: [SelectTeamEntity] = (1...50).map { index in
+            let validTeams: [Entity.SelectTeams] = [Entity.SelectTeams.ios1, Entity.SelectTeams.ios2, Entity.SelectTeams.and1, Entity.SelectTeams.and2, Entity.SelectTeams.web1, Entity.SelectTeams.web2]
+            return SelectTeamEntity(
+                teamId: index,
+                teams: validTeams[(index - 1) % validTeams.count]
             )
         }
         mockOnBoardingRepository.configureTeamsSuccess(largeTeams)
@@ -393,20 +393,23 @@ struct OnBoardingUseCaseTest {
         #expect(result.count == 50, "50개 팀이 모두 조회되어야 함")
         #expect(result.first?.id == 1, "첫 번째 팀 ID가 1이어야 함")
         #expect(result.last?.id == 50, "마지막 팀 ID가 50이어야 함")
-        #expect(result.allSatisfy { $0.name.hasPrefix("팀") }, "모든 팀 이름이 '팀'으로 시작해야 함")
+        #expect(
+            result.allSatisfy { [Entity.SelectTeams.ios1, Entity.SelectTeams.ios2, Entity.SelectTeams.and1, Entity.SelectTeams.and2, Entity.SelectTeams.web1, Entity.SelectTeams.web2].contains($0.teams) },
+            "모든 팀이 현재 Entity가 인식하는 팀이어야 함"
+        )
     }
 
     @Test("TC-015: 동시 온보딩 요청 처리")
     func test_concurrent_onboarding_requests() async throws {
         // Given: 동시 요청을 위한 데이터 설정
         let testJobs = [SelectJob(jobKeys: "developer", job: .developer)]
-        let testTeams = [SelectTeamEntity(id: 1, name: "동시성팀", description: "동시성 테스트")]
+        let testTeams = [SelectTeamEntity(teamId: 1, teams: Entity.SelectTeams.ios1)]
 
         mockOnBoardingRepository.configureJobsSuccess(testJobs)
         mockOnBoardingRepository.configureTeamsSuccess(testTeams)
 
         // When: 직무와 팀 목록을 동시에 요청
-        let results = try await withTaskGroup(of: Any.self, returning: ([SelectJob], [SelectTeamEntity]).self) { group in
+        let results = try await withThrowingTaskGroup(of: Any.self, returning: ([SelectJob], [SelectTeamEntity]).self) { group in
 
             group.addTask {
                 try await withDependencies {
@@ -444,7 +447,7 @@ struct OnBoardingUseCaseTest {
         #expect(results.0.count == 1, "직무 목록이 올바르게 반환되어야 함")
         #expect(results.1.count == 1, "팀 목록이 올바르게 반환되어야 함")
         #expect(results.0.first?.jobKeys == "developer", "개발자 직무가 반환되어야 함")
-        #expect(results.1.first?.name == "동시성팀", "동시성팀이 반환되어야 함")
+        #expect(results.1.first?.name == "IOS 1팀", "IOS 1팀이 반환되어야 함")
 
         #expect(mockOnBoardingRepository.fetchJobsCallCount == 1, "직무 Repository가 호출되어야 함")
         #expect(mockOnBoardingRepository.fetchTeamsCallCount == 1, "팀 Repository가 호출되어야 함")
@@ -556,9 +559,4 @@ enum OnBoardingError: Error, Equatable {
     case unauthorized
     case invalidGeneration
     case notConfigured
-}
-
-// MARK: - Test Tags
-extension Tag {
-    @Tag static var onboarding: Self
 }
