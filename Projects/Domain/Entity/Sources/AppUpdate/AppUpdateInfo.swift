@@ -5,6 +5,8 @@
 //  Created by Wonji Suh on 3/9/26.
 //
 
+
+
 import Foundation
 
 public struct AppUpdateInfo: Codable, Equatable, Sendable {

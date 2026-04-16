@@ -40,7 +40,7 @@ public extension SelectTeamEntity {
 }
 
 extension Array where Element == SelectTeamEntity {
-  public func orderedSelectTeams() -> [SelectTeams] {
+  func orderedSelectTeams() -> [SelectTeams] {
     return self
       .sorted { $0.teamId < $1.teamId }
       .compactMap { $0.toSelectTeam }

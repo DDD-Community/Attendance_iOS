@@ -9,48 +9,7 @@ import ProjectDescription
 
 // MARK: - Suppress Warnings Setting
 private let suppressWarningsSettings: ProjectDescription.Settings = .settings(
-  base: [
-    // Swift 컴파일러 경고 억제
-    "OTHER_SWIFT_FLAGS": SettingValue(stringLiteral: "$(inherited) -suppress-warnings -Xfrontend -warn-concurrency"),
-
-    // 링커 플래그 - "has no symbols" 경고 억제 (호환성 개선)
-    "OTHER_LDFLAGS": SettingValue(stringLiteral: [
-      "$(inherited)",
-      "-w",
-      "-Wl,-no_warn_unused_dylibs",
-      "-dead_strip"
-    ].joined(separator: " ")),
-
-    // 링커 경고 설정
-    "LD_NO_WARN_UNUSED_DYLIBS": SettingValue(stringLiteral: "YES"),
-    "LD_WARN_UNUSED_DYLIBS": SettingValue(stringLiteral: "NO"),
-    "LINKER_DISPLAYS_MANGLED_NAMES": SettingValue(stringLiteral: "NO"),
-
-    // 컴파일러 경고 설정
-    "WARNING_CFLAGS": SettingValue(stringLiteral: "-w"),
-    "GCC_WARN_INHIBIT_ALL_WARNINGS": SettingValue(stringLiteral: "YES"),
-    "CLANG_WARN_EVERYTHING": SettingValue(stringLiteral: "NO"),
-    "CLANG_WARN_EMPTY_BODY": SettingValue(stringLiteral: "NO"),
-
-    // Swift 6 관련 설정
-    "SWIFT_STRICT_CONCURRENCY": SettingValue(stringLiteral: "minimal"),
-    "SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE": SettingValue(stringLiteral: "YES"),
-    "SWIFT_SUPPRESS_WARNINGS": SettingValue(stringLiteral: "YES"),
-
-    // 빌드 최적화
-    "DEAD_CODE_STRIPPING": SettingValue(stringLiteral: "YES"),
-    "PRESERVE_DEAD_CODE_INITS_AND_TERMS": SettingValue(stringLiteral: "NO"),
-
-    // 아키텍처 관련
-    "ONLY_ACTIVE_ARCH": SettingValue(stringLiteral: "NO"),
-
-    // 디버그 정보 최적화
-    "DEBUG_INFORMATION_FORMAT": SettingValue(stringLiteral: "dwarf"),
-
-    // 모듈 관련 설정
-    "DEFINES_MODULE": SettingValue(stringLiteral: "YES"),
-    "CLANG_ENABLE_MODULES": SettingValue(stringLiteral: "YES")
-  ]
+  base: ["OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"]
 )
 
 public extension Project {
@@ -72,7 +31,6 @@ public extension Project {
     schemes: [ProjectDescription.Scheme] = [],
     hasTests: Bool = false
   ) -> Project {
-
     let appTarget: Target = .target(
       name: name,
       destinations: destinations,
@@ -183,7 +141,6 @@ public extension Project {
     schemes: [ProjectDescription.Scheme] = [],
     hasTests: Bool = false
   ) -> Project {
-
     let appTarget: Target = .target(
       name: name,
       destinations: destinations,
