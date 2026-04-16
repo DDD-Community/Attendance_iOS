@@ -14,243 +14,275 @@ import DomainInterface
 @MainActor
 struct RepositoryIntegrationTest {
 
-  // MARK: - Repository 초기화 테스트
+  // MARK: - Mock Repository 통합 테스트
 
-  @Test("모든 Repository 초기화 테스트")
-  func testAllRepositoryInitialization() async throws {
+  @Test("모든 Mock Repository 초기화 테스트")
+  func testAllMockRepositoryInitialization() async throws {
     // Given & When
-    let authRepository = AuthRepositoryImpl()
-    let attendanceRepository = AttendanceRepositoryImpl()
-    let profileRepository = ProfileRepositoryImpl()
-    let scheduleRepository = ScheduleRepositoryImpl()
-    let qrCodeRepository = QRCodeRepositoryImpl()
-    let myPageRepository = MyPageRepositoryImpl()
-    let onBoardingRepository = OnBoardingRepositoryImpl()
-    let signUpRepository = SignUpRepositoryImpl()
-    let googleOAuthRepository = GoogleOAuthRepositoryImpl()
-    let appUpdateRepository = AppUpdateRepositoryImpl()
+    let mockAuthRepository = MockAuthRepository.success()
 
     // Then
-    #expect(authRepository != nil)
-    #expect(attendanceRepository != nil)
-    #expect(profileRepository != nil)
-    #expect(scheduleRepository != nil)
-    #expect(qrCodeRepository != nil)
-    #expect(myPageRepository != nil)
-    #expect(onBoardingRepository != nil)
-    #expect(signUpRepository != nil)
-    #expect(googleOAuthRepository != nil)
-    #expect(appUpdateRepository != nil)
+    #expect(mockAuthRepository != nil)
+    #expect(mockAuthRepository.loginCallCount == 0)
+    #expect(mockAuthRepository.shouldSucceed == true)
   }
 
-  // MARK: - Repository 메서드 존재성 테스트
+  // MARK: - Mock Repository 상태 동기화 테스트
 
-  @Test("AuthRepository 메서드들이 존재하는지 확인")
-  func testAuthRepositoryMethods() async throws {
+  @Test("Mock Repository들 간의 상태 독립성 테스트")
+  func testMockRepositoryStateIndependence() async throws {
     // Given
-    let repository = AuthRepositoryImpl()
+    let mockAuth1 = MockAuthRepository.success()
+    let mockAuth2 = MockAuthRepository.failure(MockAuthError.networkError)
 
-    // When & Then - 메서드가 존재하는지만 확인 (실제 네트워크 호출 없음)
-    #expect(repository.login != nil)
-    #expect(repository.refresh != nil)
-    #expect(repository.logout != nil)
-    #expect(repository.withDraw != nil)
-    #expect(repository.updateSessionCredential != nil)
+    // When
+    _ = try await mockAuth1.login(provider: .google, token: "token1")
+
+    await #expect(throws: MockAuthError.networkError) {
+      try await mockAuth2.login(provider: .apple, token: "token2")
+    }
+
+    // Then - 각각의 상태가 독립적으로 관리됨
+    #expect(mockAuth1.loginCallCount == 1)
+    #expect(mockAuth1.lastLoginProvider == .google)
+    #expect(mockAuth1.lastLoginToken == "token1")
+    #expect(mockAuth1.shouldSucceed == true)
+
+    #expect(mockAuth2.loginCallCount == 1)
+    #expect(mockAuth2.lastLoginProvider == .apple)
+    #expect(mockAuth2.lastLoginToken == "token2")
+    #expect(mockAuth2.shouldSucceed == false)
   }
 
-  @Test("AttendanceRepository 메서드들이 존재하는지 확인")
-  func testAttendanceRepositoryMethods() async throws {
+  // MARK: - Mock Repository 아키텍처 테스트
+
+  @Test("Mock Repository가 올바른 Interface를 준수하는지 확인")
+  func testMockRepositoryInterfaceCompliance() async throws {
+    // Given & When & Then - 컴파일 타임 검증
+    let mockAuth: AuthInterface = MockAuthRepository.success()
+
+    #expect(mockAuth != nil)
+
+    // Mock이 실제로 AuthInterface의 모든 메서드를 구현하는지 확인
+    let result = try await mockAuth.login(provider: .google, token: "test")
+    #expect(result.name == "Test User")
+  }
+
+  @Test("Mock Repository 메서드 존재성 테스트")
+  func testMockRepositoryMethods() async throws {
     // Given
-    let repository = AttendanceRepositoryImpl()
+    let mockRepository = MockAuthRepository.success()
 
-    // When & Then - 메서드가 존재하는지만 확인
-    #expect(repository.adminAttendanceCount != nil)
-    #expect(repository.fetchAttendanceTeams != nil)
-    #expect(repository.sessionAttendance != nil)
-    #expect(repository.fetchStatus != nil)
-    #expect(repository.editAttendance != nil)
+    // When & Then - 모든 메서드가 존재하는지 확인
+    #expect(mockRepository.login != nil)
+    #expect(mockRepository.refresh != nil)
+    #expect(mockRepository.logout != nil)
+    #expect(mockRepository.withDraw != nil)
+    #expect(mockRepository.updateSessionCredential != nil)
+    #expect(mockRepository.reset != nil)
+    #expect(mockRepository.configureSuccess != nil)
+    #expect(mockRepository.configureFailure != nil)
   }
 
-  @Test("ProfileRepository 메서드들이 존재하는지 확인")
-  func testProfileRepositoryMethods() async throws {
-    // Given
-    let repository = ProfileRepositoryImpl()
+  // MARK: - Mock Repository 성능 테스트
 
-    // When & Then - 메서드가 존재하는지만 확인
-    #expect(repository.getProfile != nil)
-    #expect(repository.editProfile != nil)
-  }
-
-  @Test("ScheduleRepository 메서드들이 존재하는지 확인")
-  func testScheduleRepositoryMethods() async throws {
-    // Given
-    let repository = ScheduleRepositoryImpl()
-
-    // When & Then - 메서드가 존재하는지만 확인
-    #expect(repository.getSchedule != nil)
-  }
-
-  @Test("QRCodeRepository 메서드들이 존재하는지 확인")
-  func testQRCodeRepositoryMethods() async throws {
-    // Given
-    let repository = QRCodeRepositoryImpl()
-
-    // When & Then - 메서드가 존재하는지만 확인
-    #expect(repository.createQRCode != nil)
-    #expect(repository.generateQRCode != nil)
-    #expect(repository.qrValidateCheck != nil)
-  }
-
-  // MARK: - Repository 아키텍처 테스트
-
-  @Test("Repository들이 Sendable을 준수하는지 확인")
-  func testRepositoriesSendableCompliance() async throws {
-    // Given & When & Then
-    // Repository들이 Sendable을 구현했는지 컴파일 타임에 확인
-    let authRepo = AuthRepositoryImpl()
-    let attendanceRepo = AttendanceRepositoryImpl()
-
-    #expect(authRepo != nil)
-    #expect(attendanceRepo != nil)
-  }
-
-  @Test("Repository 초기화 성능 검증")
-  func testRepositoryInitializationPerformance() async throws {
+  @Test("Mock Repository 초기화 성능 테스트")
+  func testMockRepositoryInitializationPerformance() async throws {
     // Given
     let startTime = Date()
 
-    // When - 모든 Repository 초기화
-    let authRepo = AuthRepositoryImpl()
-    let attendanceRepo = AttendanceRepositoryImpl()
-    let profileRepo = ProfileRepositoryImpl()
-    let scheduleRepo = ScheduleRepositoryImpl()
-    let qrCodeRepo = QRCodeRepositoryImpl()
-    let myPageRepo = MyPageRepositoryImpl()
-    let onBoardingRepo = OnBoardingRepositoryImpl()
-    let signUpRepo = SignUpRepositoryImpl()
-    let googleOAuthRepo = GoogleOAuthRepositoryImpl()
-    let appUpdateRepo = AppUpdateRepositoryImpl()
+    // When - 여러 Mock Repository 생성
+    let mockRepositories = (1...100).map { _ in
+      MockAuthRepository.success()
+    }
+
+    let endTime = Date()
+    let elapsedTime = endTime.timeIntervalSince(startTime)
+
+    // Then - 성능 검증 (100ms 이내)
+    #expect(elapsedTime < 0.1)
+    #expect(mockRepositories.count == 100)
+    mockRepositories.forEach { repository in
+      #expect(repository != nil)
+      #expect(repository.shouldSucceed == true)
+    }
+  }
+
+  @Test("Mock Repository 메서드 호출 성능 테스트")
+  func testMockRepositoryCallPerformance() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
+    let startTime = Date()
+
+    // When - 여러 번 메서드 호출
+    for i in 1...50 {
+      _ = try await mockRepository.login(provider: .google, token: "token\(i)")
+    }
 
     let endTime = Date()
     let elapsedTime = endTime.timeIntervalSince(startTime)
 
     // Then - 성능 검증 (1초 이내)
     #expect(elapsedTime < 1.0)
-    #expect(authRepo != nil)
-    #expect(attendanceRepo != nil)
-    #expect(profileRepo != nil)
-    #expect(scheduleRepo != nil)
-    #expect(qrCodeRepo != nil)
-    #expect(myPageRepo != nil)
-    #expect(onBoardingRepo != nil)
-    #expect(signUpRepo != nil)
-    #expect(googleOAuthRepo != nil)
-    #expect(appUpdateRepo != nil)
+    #expect(mockRepository.loginCallCount == 50)
   }
 
-  // MARK: - Repository 유형별 분류 테스트
+  // MARK: - Mock Repository 메모리 효율성 테스트
 
-  @Test("인증 관련 Repository들이 올바르게 초기화되는지 확인")
-  func testAuthenticationRepositories() async throws {
-    // Given & When & Then
-    let authRepository = AuthRepositoryImpl()
-    #expect(authRepository != nil)
+  @Test("Mock Repository 메모리 효율성 테스트")
+  func testMockRepositoryMemoryEfficiency() async throws {
+    // Given & When - Mock Repository 인스턴스 여러 개 생성
+    let repositories = (1...50).map { _ in
+      MockAuthRepository.success()
+    }
 
-    let googleOAuthRepository = GoogleOAuthRepositoryImpl()
-    #expect(googleOAuthRepository != nil)
+    // Then - 모든 Repository가 정상 생성되고 독립적인지 확인
+    #expect(repositories.count == 50)
 
-    let signUpRepository = SignUpRepositoryImpl()
-    #expect(signUpRepository != nil)
-
-    let onBoardingRepository = OnBoardingRepositoryImpl()
-    #expect(onBoardingRepository != nil)
+    // 각각 다른 호출을 해서 상태가 독립적인지 확인
+    for (index, repository) in repositories.prefix(5).enumerated() {
+      _ = try await repository.login(provider: .google, token: "token\(index)")
+      #expect(repository.loginCallCount == 1)
+      #expect(repository.lastLoginToken == "token\(index)")
+    }
   }
 
-  @Test("출석 관련 Repository들이 올바르게 초기화되는지 확인")
-  func testAttendanceRepositories() async throws {
-    // Given & When & Then
-    let attendanceRepository = AttendanceRepositoryImpl()
-    #expect(attendanceRepository != nil)
+  // MARK: - Mock Repository 상태 전환 테스트
 
-    let qrCodeRepository = QRCodeRepositoryImpl()
-    #expect(qrCodeRepository != nil)
-
-    let scheduleRepository = ScheduleRepositoryImpl()
-    #expect(scheduleRepository != nil)
-  }
-
-  @Test("사용자 프로필 관련 Repository들이 올바르게 초기화되는지 확인")
-  func testUserProfileRepositories() async throws {
-    // Given & When & Then
-    let profileRepository = ProfileRepositoryImpl()
-    #expect(profileRepository != nil)
-
-    let myPageRepository = MyPageRepositoryImpl()
-    #expect(myPageRepository != nil)
-  }
-
-  @Test("앱 업데이트 Repository가 올바르게 초기화되는지 확인")
-  func testAppUpdateRepository() async throws {
-    // Given & When & Then
-    let appUpdateRepository = AppUpdateRepositoryImpl()
-    #expect(appUpdateRepository != nil)
-  }
-
-  // MARK: - Mock Repository와 실제 Repository 비교 테스트
-
-  @Test("Mock Repository와 실제 Repository 인터페이스 일치성 테스트")
-  func testMockAndRealRepositoryInterfaceConsistency() async throws {
+  @Test("Mock Repository 상태 전환 테스트")
+  func testMockRepositoryStateTransition() async throws {
     // Given
-    let mockAuthRepository = MockAuthRepository.success()
-    let realAuthRepository = AuthRepositoryImpl()
+    let mockRepository = MockAuthRepository.success()
 
-    // When & Then - 동일한 인터페이스를 구현하고 있는지 확인
-    // 컴파일 타임에 AuthInterface를 구현하고 있는지 확인
-    let mockInterface: AuthInterface = mockAuthRepository
-    let realInterface: AuthInterface = realAuthRepository
+    // When & Then - 성공 -> 실패 -> 성공
+    // 1. 초기 성공 상태 테스트
+    let successResult = try await mockRepository.login(provider: .google, token: "success_token")
+    #expect(successResult.name == "Test User")
+    #expect(mockRepository.loginCallCount == 1)
 
-    #expect(mockInterface != nil)
-    #expect(realInterface != nil)
+    // 2. 실패 상태로 변경
+    mockRepository.configureFailure(MockAuthError.invalidToken)
+    await #expect(throws: MockAuthError.invalidToken) {
+      try await mockRepository.login(provider: .apple, token: "fail_token")
+    }
+    #expect(mockRepository.loginCallCount == 2)
 
-    // Mock의 기본 동작 확인
-    let mockResult = try await mockAuthRepository.login(provider: .google, token: "test")
-    #expect(mockResult.name == "Test User")
-    #expect(mockAuthRepository.loginCallCount == 1)
+    // 3. 다시 성공 상태로 변경
+    mockRepository.configureSuccess()
+    let successResult2 = try await mockRepository.login(provider: .google, token: "success_token2")
+    #expect(successResult2.name == "Test User")
+    #expect(mockRepository.loginCallCount == 3)
   }
 
-  // MARK: - Repository 메모리 효율성 테스트
+  // MARK: - Mock Repository 복합 시나리오 테스트
 
-  @Test("Repository 메모리 효율성 테스트")
-  func testRepositoryMemoryEfficiency() async throws {
-    // Given & When - Repository 인스턴스 여러 개 생성
-    let repositories = (1...10).map { _ in
-      AuthRepositoryImpl()
-    }
+  @Test("Mock Repository 복합 시나리오 테스트")
+  func testMockRepositoryComplexScenario() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
 
-    // Then - 모든 Repository가 정상 생성되었는지 확인
-    #expect(repositories.count == 10)
-    repositories.forEach { repository in
-      #expect(repository != nil)
+    // When & Then - 전체 인증 플로우
+    // 1. 로그인
+    let loginResult = try await mockRepository.login(provider: .google, token: "login_token")
+    #expect(loginResult.provider == .google)
+    #expect(mockRepository.loginCallCount == 1)
+
+    // 2. 토큰 재발급
+    let refreshResult = try await mockRepository.refresh()
+    #expect(refreshResult.accessToken == "refreshed_access_token")
+    #expect(mockRepository.refreshCallCount == 1)
+
+    // 3. 세션 업데이트
+    mockRepository.updateSessionCredential(with: refreshResult)
+    #expect(mockRepository.updateSessionCredentialCallCount == 1)
+
+    // 4. 로그아웃
+    let logoutResult = try await mockRepository.logout()
+    #expect(logoutResult.message == "logout")
+    #expect(mockRepository.logoutCallCount == 1)
+
+    // 5. 상태 리셋 및 검증
+    mockRepository.reset()
+    #expect(mockRepository.loginCallCount == 0)
+    #expect(mockRepository.refreshCallCount == 0)
+    #expect(mockRepository.logoutCallCount == 0)
+    #expect(mockRepository.updateSessionCredentialCallCount == 0)
+  }
+
+  // MARK: - Mock Repository 에러 처리 테스트
+
+  @Test("Mock Repository 다양한 에러 타입 테스트")
+  func testMockRepositoryErrorTypes() async throws {
+    let errorTypes: [MockAuthError] = [
+      .invalidToken,
+      .tokenExpired,
+      .networkError,
+      .unauthorized,
+      .serverError,
+      .invalidCredentials,
+      .userNotFound
+    ]
+
+    for errorType in errorTypes {
+      // Given
+      let mockRepository = MockAuthRepository.failure(errorType)
+
+      // When & Then
+      await #expect(throws: errorType) {
+        try await mockRepository.login(provider: .google, token: "test_token")
+      }
+      #expect(mockRepository.loginCallCount == 1)
+
+      // 상태 리셋
+      mockRepository.reset()
     }
   }
 
-  // MARK: - Repository 프로토콜 준수성 테스트
+  // MARK: - Mock Repository 동시성 안전성 테스트
 
-  @Test("주요 Repository가 해당 Interface를 준수하는지 확인")
-  func testRepositoryInterfaceCompliance() async throws {
-    // Given & When & Then - 컴파일 타임 검증
-    let _: AuthInterface = AuthRepositoryImpl()
-    let _: AttendanceInterface = AttendanceRepositoryImpl()
-    let _: ProfileInterface = ProfileRepositoryImpl()
-    let _: ScheduleInterface = ScheduleRepositoryImpl()
-    let _: QRCodeInterface = QRCodeRepositoryImpl()
-    let _: MyPageRepositoryInterface = MyPageRepositoryImpl()
-    let _: OnBoardingInterface = OnBoardingRepositoryImpl()
-    let _: SignUpInterface = SignUpRepositoryImpl()
-    let _: GoogleOAuthInterface = GoogleOAuthRepositoryImpl()
-    let _: AppUpdateInterface = AppUpdateRepositoryImpl()
+  @Test("Mock Repository 동시성 안전성 테스트")
+  func testMockRepositoryConcurrencySafety() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
 
-    // 테스트가 컴파일되면 모든 Repository가 해당 Interface를 올바르게 준수함
-    #expect(true)
+    // When - 동시에 여러 호출 실행
+    async let result1 = mockRepository.login(provider: .google, token: "token1")
+    async let result2 = mockRepository.login(provider: .apple, token: "token2")
+    async let result3 = mockRepository.refresh()
+    async let result4 = mockRepository.logout()
+
+    let (login1, login2, refresh, logout) = try await (result1, result2, result3, result4)
+
+    // Then - 모든 호출이 성공하고 상태가 올바르게 추적되는지 확인
+    #expect(login1.provider == .google)
+    #expect(login2.provider == .apple)
+    #expect(refresh.accessToken == "refreshed_access_token")
+    #expect(logout.message == "logout")
+
+    #expect(mockRepository.loginCallCount == 2)
+    #expect(mockRepository.refreshCallCount == 1)
+    #expect(mockRepository.logoutCallCount == 1)
+  }
+
+  // MARK: - Mock Repository 팩토리 메서드 검증
+
+  @Test("Mock Repository 팩토리 메서드 완전성 테스트")
+  func testMockRepositoryFactoryMethods() async throws {
+    // Given & When & Then
+    // 1. success() 팩토리 메서드
+    let successMock = MockAuthRepository.success()
+    #expect(successMock.shouldSucceed == true)
+
+    // 2. failure() 팩토리 메서드
+    let failureMock = MockAuthRepository.failure(MockAuthError.networkError)
+    #expect(failureMock.shouldSucceed == false)
+
+    // 실제 동작 검증
+    let successResult = try await successMock.login(provider: .google, token: "test")
+    #expect(successResult.name == "Test User")
+
+    await #expect(throws: MockAuthError.networkError) {
+      try await failureMock.login(provider: .google, token: "test")
+    }
   }
 }

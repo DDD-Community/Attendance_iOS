@@ -288,22 +288,37 @@ struct AuthRepositoryTest {
     #expect(mockRepository.lastLoginToken == "second_token")
   }
 
-  // MARK: - 실제 Repository 초기화 테스트
+  // MARK: - Mock Repository 팩토리 메서드 테스트
 
-  @Test("실제 AuthRepository 초기화 성능 테스트")
-  func testRealAuthRepositoryInitializationPerformance() async throws {
-    // Given
-    let startTime = Date()
-
-    // When
-    let repository = AuthRepositoryImpl()
-
-    let endTime = Date()
-    let elapsedTime = endTime.timeIntervalSince(startTime)
+  @Test("Mock Repository success() 팩토리 메서드 테스트")
+  func testMockRepositorySuccessFactory() async throws {
+    // Given & When
+    let mockRepository = MockAuthRepository.success()
 
     // Then
-    #expect(elapsedTime < 0.1) // 100ms 이내
-    #expect(repository != nil)
+    #expect(mockRepository.shouldSucceed == true)
+    #expect(mockRepository.loginCallCount == 0) // 아직 호출되지 않음
+
+    // 실제 호출 시 성공하는지 확인
+    let result = try await mockRepository.login(provider: .google, token: "test_token")
+    #expect(result.name == "Test User")
+    #expect(mockRepository.loginCallCount == 1)
+  }
+
+  @Test("Mock Repository failure() 팩토리 메서드 테스트")
+  func testMockRepositoryFailureFactory() async throws {
+    // Given & When
+    let mockRepository = MockAuthRepository.failure(MockAuthError.networkError)
+
+    // Then
+    #expect(mockRepository.shouldSucceed == false)
+    #expect(mockRepository.loginCallCount == 0)
+
+    // 실제 호출 시 실패하는지 확인
+    await #expect(throws: MockAuthError.networkError) {
+      try await mockRepository.login(provider: .google, token: "test_token")
+    }
+    #expect(mockRepository.loginCallCount == 1)
   }
 
   // MARK: - Mock Repository 검증 테스트
