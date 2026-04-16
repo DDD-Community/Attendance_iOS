@@ -10,7 +10,7 @@ import Model
 import Entity
 import Service
 
-import ThirdPartys
+@preconcurrency import AsyncMoya
 
 @Observable
 final public class ScheduleRepositoryImpl: ScheduleInterface {

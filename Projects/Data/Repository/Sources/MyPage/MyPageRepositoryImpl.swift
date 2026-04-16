@@ -12,7 +12,7 @@ import DomainInterface
 import Entity
 import Service
 
-import ThirdPartys
+@preconcurrency import AsyncMoya
 
 final public class MyPageRepositoryImpl: MyPageRepositoryInterface {
   private let provider: MoyaProvider<MyPageService>

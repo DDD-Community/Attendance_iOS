@@ -12,7 +12,7 @@ import DomainInterface
 @preconcurrency import Entity
 
 import LogMacro
-import ThirdPartys
+import WeaveDI
 import ComposableArchitecture
 
 #if canImport(UIKit)

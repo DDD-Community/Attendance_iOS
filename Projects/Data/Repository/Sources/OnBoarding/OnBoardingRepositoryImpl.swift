@@ -11,7 +11,7 @@ import DomainInterface
 import Service
 import Entity
 
-import ThirdPartys
+@preconcurrency  import AsyncMoya
 
 final public class OnBoardingRepositoryImpl: OnBoardingInterface {
 

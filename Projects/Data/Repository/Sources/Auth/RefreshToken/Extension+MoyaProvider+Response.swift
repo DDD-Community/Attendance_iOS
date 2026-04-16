@@ -6,7 +6,8 @@
 //
 
 import Foundation
-import ThirdPartys
+
+import AsyncMoya
 import Moya
 
 public extension MoyaProvider {
