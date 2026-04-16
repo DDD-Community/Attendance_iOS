@@ -250,7 +250,7 @@ struct MyPageUseCaseTest {
         mockMyPageRepository.configureSchedulesSuccess(testSchedules)
 
         // When: 출석 통계와 일정 목록을 동시에 요청
-        let (summaryResult, schedulesResult) = try await withTaskGroup(of: Any.self, returning: (AttendanceSummaryResponse, [AttendanceMyScheduleResponse]).self) { group in
+        let (summaryResult, schedulesResult) = try await withThrowingTaskGroup(of: Any.self, returning: (AttendanceSummaryResponse, [AttendanceMyScheduleResponse]).self) { group in
 
             group.addTask {
                 try await withDependencies {
@@ -291,19 +291,6 @@ struct MyPageUseCaseTest {
 
         #expect(mockMyPageRepository.fetchAttendancesCallCount == 1, "출석 통계 Repository가 호출되어야 함")
         #expect(mockMyPageRepository.fetchSchedulesCallCount == 1, "일정 Repository가 호출되어야 함")
-    }
-}
-
-// MARK: - Test Data Structures
-struct AttendanceSummaryResponse: Equatable {
-    let totalAttended: Int
-    let totalLate: Int
-    let totalAbsent: Int
-
-    init(totalAttended: Int, totalLate: Int, totalAbsent: Int) {
-        self.totalAttended = totalAttended
-        self.totalLate = totalLate
-        self.totalAbsent = totalAbsent
     }
 }
 
@@ -357,12 +344,6 @@ class MockMyPageRepository: MyPageRepositoryInterface {
     }
 }
 
-// MARK: - Mock Protocol
-protocol MyPageRepositoryInterface {
-    func fetchAttendances() async throws -> AttendanceSummaryResponse
-    func fetchSchedules() async throws -> [AttendanceMyScheduleResponse]
-}
-
 // MARK: - Test Errors
 enum MyPageError: Error, Equatable {
     case networkError
@@ -373,6 +354,5 @@ enum MyPageError: Error, Equatable {
 
 // MARK: - Test Tags
 extension Tag {
-    @Tag static var unit: Self
     @Tag static var mypage: Self
 }

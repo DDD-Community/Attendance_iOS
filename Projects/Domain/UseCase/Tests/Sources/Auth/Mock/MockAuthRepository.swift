@@ -1,210 +1,193 @@
-//
-//  MockAuthRepository.swift
-//  UseCaseTests
-//
-//  Created by TDD AI Automation on 2026-01-31
-//
-
 import Foundation
 import DomainInterface
 import Entity
 
 @MainActor
-public final class MockAuthRepository: AuthInterface {
+final class MockAuthRepository: AuthInterface {
+  private(set) var loginCallCount = 0
+  private(set) var refreshCallCount = 0
+  private(set) var logoutCallCount = 0
+  private(set) var withDrawCallCount = 0
+  private(set) var updateSessionCredentialCallCount = 0
 
-    // MARK: - Call Tracking
-    private(set) var loginCallCount = 0
-    private(set) var refreshCallCount = 0
-    private(set) var logoutCallCount = 0
-    private(set) var withDrawCallCount = 0
-    private(set) var updateSessionCredentialCallCount = 0
+  private(set) var lastLoginProvider: SocialType?
+  private(set) var lastLoginToken: String?
+  private(set) var lastWithdrawToken: String?
+  private(set) var lastUpdateTokens: AuthTokens?
 
-    private(set) var lastLoginProvider: SocialType?
-    private(set) var lastLoginToken: String?
-    private(set) var lastWithdrawToken: String?
-    private(set) var lastUpdateTokens: AuthTokens?
+  var loginResponse: Result<LoginEntity, Error> = .failure(AuthError.invalidToken)
+  var refreshResponse: Result<AuthTokens, Error> = .failure(AuthError.tokenExpired)
+  var logoutResponse: Result<AuthExitEntity, Error> = .success(AuthExitEntity())
+  var withdrawResponse: Result<WithdrawEntity, Error> = .success(WithdrawEntity(isSuccess: true))
 
-    // MARK: - Response Configuration
-    public var loginResponse: Result<LoginEntity, Error> = .failure(AuthError.invalidToken)
-    public var refreshResponse: Result<AuthTokens, Error> = .failure(AuthError.tokenExpired)
-    public var logoutResponse: Result<AuthExitEntity, Error> = .success(AuthExitEntity())
-    public var withdrawResponse: Result<WithdrawEntity, Error> = .success(WithdrawEntity(isSuccess: true))
+  var loginDelay: TimeInterval = 0
+  var refreshDelay: TimeInterval = 0
+  var logoutDelay: TimeInterval = 0
+  var withdrawDelay: TimeInterval = 0
 
-    // MARK: - Async Delays for Testing
-    public var loginDelay: TimeInterval = 0
-    public var refreshDelay: TimeInterval = 0
-    public var logoutDelay: TimeInterval = 0
-    public var withdrawDelay: TimeInterval = 0
-
-    public init() {}
-
-    // MARK: - AuthInterface Implementation
-    public func login(provider: SocialType, token: String) async throws -> LoginEntity {
-        if loginDelay > 0 {
-            try await Task.sleep(nanoseconds: UInt64(loginDelay * 1_000_000_000))
-        }
-
-        loginCallCount += 1
-        lastLoginProvider = provider
-        lastLoginToken = token
-
-        switch loginResponse {
-        case .success(let entity):
-            return entity
-        case .failure(let error):
-            throw error
-        }
+  func login(provider: SocialType, token: String) async throws -> LoginEntity {
+    if loginDelay > 0 {
+      try await Task.sleep(nanoseconds: UInt64(loginDelay * 1_000_000_000))
     }
+    loginCallCount += 1
+    lastLoginProvider = provider
+    lastLoginToken = token
+    return try loginResponse.get()
+  }
 
-    public func refresh() async throws -> AuthTokens {
-        if refreshDelay > 0 {
-            try await Task.sleep(nanoseconds: UInt64(refreshDelay * 1_000_000_000))
-        }
-
-        refreshCallCount += 1
-
-        switch refreshResponse {
-        case .success(let tokens):
-            return tokens
-        case .failure(let error):
-            throw error
-        }
+  func refresh() async throws -> AuthTokens {
+    if refreshDelay > 0 {
+      try await Task.sleep(nanoseconds: UInt64(refreshDelay * 1_000_000_000))
     }
+    refreshCallCount += 1
+    return try refreshResponse.get()
+  }
 
-    public func logout() async throws -> AuthExitEntity {
-        if logoutDelay > 0 {
-            try await Task.sleep(nanoseconds: UInt64(logoutDelay * 1_000_000_000))
-        }
-
-        logoutCallCount += 1
-
-        switch logoutResponse {
-        case .success(let entity):
-            return entity
-        case .failure(let error):
-            throw error
-        }
+  func logout() async throws -> AuthExitEntity {
+    if logoutDelay > 0 {
+      try await Task.sleep(nanoseconds: UInt64(logoutDelay * 1_000_000_000))
     }
+    logoutCallCount += 1
+    return try logoutResponse.get()
+  }
 
-    public func withDraw(token: String) async throws -> WithdrawEntity {
-        if withdrawDelay > 0 {
-            try await Task.sleep(nanoseconds: UInt64(withdrawDelay * 1_000_000_000))
-        }
-
-        withDrawCallCount += 1
-        lastWithdrawToken = token
-
-        switch withdrawResponse {
-        case .success(let entity):
-            return entity
-        case .failure(let error):
-            throw error
-        }
+  func withDraw(token: String) async throws -> WithdrawEntity {
+    if withdrawDelay > 0 {
+      try await Task.sleep(nanoseconds: UInt64(withdrawDelay * 1_000_000_000))
     }
+    withDrawCallCount += 1
+    lastWithdrawToken = token
+    return try withdrawResponse.get()
+  }
 
-    public func updateSessionCredential(with tokens: AuthTokens) {
-        updateSessionCredentialCallCount += 1
-        lastUpdateTokens = tokens
-    }
+  func updateSessionCredential(with tokens: AuthTokens) {
+    updateSessionCredentialCallCount += 1
+    lastUpdateTokens = tokens
+  }
 
-    // MARK: - Test Helpers
-    public func reset() {
-        loginCallCount = 0
-        refreshCallCount = 0
-        logoutCallCount = 0
-        withDrawCallCount = 0
-        updateSessionCredentialCallCount = 0
+  func reset() {
+    loginCallCount = 0
+    refreshCallCount = 0
+    logoutCallCount = 0
+    withDrawCallCount = 0
+    updateSessionCredentialCallCount = 0
+    lastLoginProvider = nil
+    lastLoginToken = nil
+    lastWithdrawToken = nil
+    lastUpdateTokens = nil
+    loginResponse = .failure(AuthError.invalidToken)
+    refreshResponse = .failure(AuthError.tokenExpired)
+    logoutResponse = .success(AuthExitEntity())
+    withdrawResponse = .success(WithdrawEntity(isSuccess: true))
+    loginDelay = 0
+    refreshDelay = 0
+    logoutDelay = 0
+    withdrawDelay = 0
+  }
 
-        lastLoginProvider = nil
-        lastLoginToken = nil
-        lastWithdrawToken = nil
-        lastUpdateTokens = nil
+  func configureSuccessfulLogin(
+    name: String = "Test User",
+    isNewUser: Bool = false,
+    provider: SocialType = .google,
+    role: Staff? = .member
+  ) {
+    let tokens = AuthTokens(
+      accessToken: "mock_access_token",
+      refreshToken: "mock_refresh_token",
+      oauthRefreshToken: provider == .apple ? nil : "mock_oauth_refresh_token"
+    )
+    loginResponse = .success(
+      LoginEntity(name: name, isNewUser: isNewUser, provider: provider, token: tokens, role: role)
+    )
+  }
 
-        loginResponse = .failure(AuthError.invalidToken)
-        refreshResponse = .failure(AuthError.tokenExpired)
-        logoutResponse = .success(AuthExitEntity())
-        withdrawResponse = .success(WithdrawEntity(isSuccess: true))
+  func configureSuccessfulRefresh() {
+    refreshResponse = .success(
+      AuthTokens(accessToken: "refreshed_access_token", refreshToken: "refreshed_refresh_token")
+    )
+  }
 
-        loginDelay = 0
-        refreshDelay = 0
-        logoutDelay = 0
-        withdrawDelay = 0
-    }
+  func configureLoginFailure(_ error: Error) { loginResponse = .failure(error) }
+  func configureRefreshFailure(_ error: Error) { refreshResponse = .failure(error) }
+  func configureLogoutFailure(_ error: Error) { logoutResponse = .failure(error) }
+  func configureWithdrawFailure(_ error: Error) { withdrawResponse = .failure(error) }
 
-    public func configureSuccessfulLogin(
-        name: String = "Test User",
-        isNewUser: Bool = false,
-        provider: SocialType = .google,
-        role: Staff? = .member
-    ) {
-        let tokens = AuthTokens(
-            accessToken: "mock_access_token",
-            refreshToken: "mock_refresh_token",
-            oauthRefreshToken: provider == .apple ? nil : "mock_oauth_refresh_token"
-        )
+  static func success() -> MockAuthRepository {
+    let mock = MockAuthRepository()
+    mock.configureSuccessfulLogin(role: .member)
+    return mock
+  }
 
-        let entity = LoginEntity(
-            name: name,
-            isNewUser: isNewUser,
-            provider: provider,
-            token: tokens,
-            role: role
-        )
+  static func appleSuccess() -> MockAuthRepository {
+    let mock = MockAuthRepository()
+    mock.configureSuccessfulLogin(name: "Apple User", provider: .apple, role: nil)
+    return mock
+  }
 
-        loginResponse = .success(entity)
-    }
+  static func newUser() -> MockAuthRepository {
+    let mock = MockAuthRepository()
+    mock.configureSuccessfulLogin(name: "New Google User", isNewUser: true, provider: .google, role: nil)
+    return mock
+  }
 
-    public func configureSuccessfulRefresh() {
-        let tokens = AuthTokens(
-            accessToken: "refreshed_access_token",
-            refreshToken: "refreshed_refresh_token"
-        )
-        refreshResponse = .success(tokens)
-    }
+  static func invalidToken() -> MockAuthRepository {
+    let mock = MockAuthRepository()
+    mock.configureLoginFailure(AuthError.invalidToken)
+    return mock
+  }
 
-    public func configureLoginFailure(_ error: Error) {
-        loginResponse = .failure(error)
-    }
+  static func networkError() -> MockAuthRepository {
+    let mock = MockAuthRepository()
+    mock.configureLoginFailure(AuthError.networkError)
+    return mock
+  }
 
-    public func configureRefreshFailure(_ error: Error) {
-        refreshResponse = .failure(error)
-    }
+  static func refreshSuccess() -> MockAuthRepository {
+    let mock = MockAuthRepository()
+    mock.configureSuccessfulRefresh()
+    return mock
+  }
 
-    public func configureLogoutFailure(_ error: Error) {
-        logoutResponse = .failure(error)
-    }
+  static func logoutSuccess() -> MockAuthRepository {
+    let mock = MockAuthRepository()
+    mock.logoutResponse = .success(AuthExitEntity(code: "200", message: "logout", detail: "success"))
+    return mock
+  }
 
-    public func configureWithdrawFailure(_ error: Error) {
-        withdrawResponse = .failure(error)
-    }
+  static func withdrawSuccess() -> MockAuthRepository {
+    let mock = MockAuthRepository()
+    mock.withdrawResponse = .success(WithdrawEntity(isSuccess: true, code: "200", message: "withdraw", detail: "success"))
+    return mock
+  }
+
+  static func unauthorized() -> MockAuthRepository {
+    let mock = MockAuthRepository()
+    mock.configureWithdrawFailure(AuthError.unauthorized)
+    mock.configureLoginFailure(AuthError.unauthorized)
+    mock.refreshResponse = .failure(AuthError.unauthorized)
+    mock.logoutResponse = .failure(AuthError.unauthorized)
+    return mock
+  }
+
+  static func concurrency() -> MockAuthRepository {
+    let mock = MockAuthRepository.success()
+    mock.loginDelay = 0.01
+    return mock
+  }
+
+  func getLoginCallCount() -> Int { loginCallCount }
+  func getRefreshCallCount() -> Int { refreshCallCount }
+  func getLogoutCallCount() -> Int { logoutCallCount }
+  func getWithdrawCallCount() -> Int { withDrawCallCount }
+  func getUpdateCredentialCallCount() -> Int { updateSessionCredentialCallCount }
 }
 
-// MARK: - Auth Test Errors
-public enum AuthError: Error, Equatable {
-    case invalidToken
-    case tokenExpired
-    case networkError
-    case unauthorized
-    case serverError
-    case invalidCredentials
-    case userNotFound
-
-    public var localizedDescription: String {
-        switch self {
-        case .invalidToken:
-            return "Invalid authentication token"
-        case .tokenExpired:
-            return "Authentication token expired"
-        case .networkError:
-            return "Network connection error"
-        case .unauthorized:
-            return "Unauthorized access"
-        case .serverError:
-            return "Server error occurred"
-        case .invalidCredentials:
-            return "Invalid credentials provided"
-        case .userNotFound:
-            return "User not found"
-        }
-    }
+enum AuthError: Error, Equatable {
+  case invalidToken
+  case tokenExpired
+  case networkError
+  case unauthorized
+  case serverError
+  case invalidCredentials
+  case userNotFound
 }

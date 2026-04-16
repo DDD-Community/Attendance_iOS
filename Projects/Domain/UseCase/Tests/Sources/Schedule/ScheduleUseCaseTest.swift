@@ -260,7 +260,7 @@ struct ScheduleUseCaseTest {
         mockScheduleRepository.configureScheduleSuccess(testSchedules)
 
         // When: 5개의 동시 요청 실행
-        let results = try await withTaskGroup(of: [Schedule].self, returning: [[Schedule]].self) { group in
+        let results = try await withThrowingTaskGroup(of: [Schedule].self, returning: [[Schedule]].self) { group in
             for _ in 1...5 {
                 group.addTask {
                     try await withDependencies {
@@ -327,6 +327,5 @@ enum ScheduleError: Error, Equatable {
 
 // MARK: - Test Tags
 extension Tag {
-    @Tag static var unit: Self
     @Tag static var schedule: Self
 }

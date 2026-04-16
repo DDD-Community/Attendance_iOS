@@ -8,40 +8,41 @@
 import Foundation
 import Testing
 import Entity
+import DomainInterface
 import ComposableArchitecture
 @testable import UseCase
 
 // MARK: - Auth Test Helper
 @MainActor
-public struct AuthTestHelper {
+struct AuthTestHelper {
 
     // MARK: - Dependency Setup
-    public static func withMockDependencies<T>(
-        mockAuthRepository: MockAuthRepository = MockAuthRepository(),
-        mockKeychainManager: MockKeychainManager = MockKeychainManager(),
-        mockUserSession: MockUserSession = MockUserSession(),
+    static func withMockDependencies<T>(
+        mockAuthRepository: MockAuthRepository = MockAuthRepository.success(),
+        mockKeychainManager: MockKeychainManager = MockKeychainManager.success(),
+        mockUserSession: MockUserSession = MockUserSession.success(),
         operation: @MainActor () async throws -> T
     ) async rethrows -> T {
 
         return try await withDependencies {
             $0.authRepository = mockAuthRepository
-            $0.keychainManager = mockKeychainManager
+            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
         } operation: {
             try await operation()
         }
     }
 
     // MARK: - Test State Management
-    public static func createTestAuthUseCase(
+    static func createTestAuthUseCase(
         with mockRepository: MockAuthRepository,
         and mockKeychain: MockKeychainManager,
-        initialStaffRole: Staff? = nil,
-        initialUserSession: UserSession = .empty
+        initialStaffRole: Entity.Staff? = nil,
+        initialUserSession: Entity.UserSession = .empty
     ) -> (AuthUseCaseImpl, MockAuthRepository, MockKeychainManager) {
 
         return withDependencies {
             $0.authRepository = mockRepository
-            $0.keychainManager = mockKeychain
+            $0[UseCase.KeychainManagerDependency.self] = mockKeychain
         } operation: {
             let useCase = AuthUseCaseImpl()
             return (useCase, mockRepository, mockKeychain)
@@ -49,12 +50,12 @@ public struct AuthTestHelper {
     }
 
     // MARK: - Assertion Helpers
-    public static func verifyLoginSuccess(
+    static func verifyLoginSuccess(
         result: LoginEntity,
-        expectedProvider: SocialType,
+        expectedProvider: Entity.SocialType,
         expectedName: String,
         expectedIsNewUser: Bool,
-        expectedRole: Staff?,
+        expectedRole: Entity.Staff?,
         sourceLocation: SourceLocation = #_sourceLocation
     ) {
         #expect(result.provider == expectedProvider,
@@ -74,7 +75,7 @@ public struct AuthTestHelper {
                sourceLocation: sourceLocation)
     }
 
-    public static func verifyTokenStorage(
+    static func verifyTokenStorage(
         mockKeychain: MockKeychainManager,
         expectedAccessToken: String,
         expectedRefreshToken: String,
@@ -82,36 +83,44 @@ public struct AuthTestHelper {
         sourceLocation: SourceLocation = #_sourceLocation
     ) {
         if shouldBeCalled {
-            #expect(mockKeychain.saveCallCount > 0,
+            #expect(mockKeychain.getSaveCallCount() > 0,
                    "Keychain save should have been called",
                    sourceLocation: sourceLocation)
 
-            #expect(mockKeychain.verifyTokensSaved(
-                accessToken: expectedAccessToken,
-                refreshToken: expectedRefreshToken
-            ), "Tokens should match expected values", sourceLocation: sourceLocation)
+            // Verify stored tokens match expected values
+            #expect(mockKeychain.getStoredAccessToken() == expectedAccessToken ||
+                   mockKeychain.accessToken() == expectedAccessToken,
+                   "Access token should match expected value", sourceLocation: sourceLocation)
+
+            #expect(mockKeychain.getStoredRefreshToken() == expectedRefreshToken ||
+                   mockKeychain.refreshToken() == expectedRefreshToken,
+                   "Refresh token should match expected value", sourceLocation: sourceLocation)
         } else {
-            #expect(mockKeychain.saveCallCount == 0,
+            #expect(mockKeychain.getSaveCallCount() == 0,
                    "Keychain save should not have been called",
                    sourceLocation: sourceLocation)
         }
     }
 
-    public static func verifyKeychainCleared(
+    static func verifyKeychainCleared(
         mockKeychain: MockKeychainManager,
         sourceLocation: SourceLocation = #_sourceLocation
     ) {
-        #expect(mockKeychain.clearCallCount > 0,
+        #expect(mockKeychain.getClearCallCount() > 0,
                "Keychain clear should have been called",
                sourceLocation: sourceLocation)
 
-        #expect(mockKeychain.isCleared,
-               "Keychain should be cleared",
+        #expect(mockKeychain.getStoredAccessToken() == nil,
+               "Access token should be cleared",
+               sourceLocation: sourceLocation)
+
+        #expect(mockKeychain.getStoredRefreshToken() == nil,
+               "Refresh token should be cleared",
                sourceLocation: sourceLocation)
     }
 
     // MARK: - UserSession Verification
-    public static func verifyUserSessionUpdated(
+    static func verifyUserSessionUpdated(
         mockSession: MockUserSession,
         expectedOAuthToken: String?,
         sourceLocation: SourceLocation = #_sourceLocation
@@ -125,7 +134,7 @@ public struct AuthTestHelper {
                sourceLocation: sourceLocation)
     }
 
-    public static func verifyStaffRoleCleared(
+    static func verifyStaffRoleCleared(
         mockSession: MockUserSession,
         sourceLocation: SourceLocation = #_sourceLocation
     ) {
@@ -133,13 +142,13 @@ public struct AuthTestHelper {
                "Staff role should have been updated",
                sourceLocation: sourceLocation)
 
-        #expect(mockSession.staffRole == nil,
+        #expect(mockSession.getCurrentStaffRole() == nil,
                "Staff role should be nil after logout",
                sourceLocation: sourceLocation)
     }
 
     // MARK: - Error Verification
-    public static func verifyError<T: Error & Equatable>(
+    static func verifyError<T: Error & Equatable>(
         _ error: Error,
         expectedError: T,
         sourceLocation: SourceLocation = #_sourceLocation
@@ -156,7 +165,7 @@ public struct AuthTestHelper {
     }
 
     // MARK: - Repository Call Verification
-    public static func verifyRepositoryCalls(
+    static func verifyRepositoryCalls(
         mockRepository: MockAuthRepository,
         expectedLoginCalls: Int = 0,
         expectedRefreshCalls: Int = 0,
@@ -165,33 +174,33 @@ public struct AuthTestHelper {
         expectedUpdateCredentialCalls: Int = 0,
         sourceLocation: SourceLocation = #_sourceLocation
     ) {
-        #expect(mockRepository.loginCallCount == expectedLoginCalls,
-               "Login call count should be \(expectedLoginCalls), got \(mockRepository.loginCallCount)",
+        #expect(mockRepository.getLoginCallCount() == expectedLoginCalls,
+               "Login call count should be \(expectedLoginCalls), got \(mockRepository.getLoginCallCount())",
                sourceLocation: sourceLocation)
 
-        #expect(mockRepository.refreshCallCount == expectedRefreshCalls,
-               "Refresh call count should be \(expectedRefreshCalls), got \(mockRepository.refreshCallCount)",
+        #expect(mockRepository.getRefreshCallCount() == expectedRefreshCalls,
+               "Refresh call count should be \(expectedRefreshCalls), got \(mockRepository.getRefreshCallCount())",
                sourceLocation: sourceLocation)
 
-        #expect(mockRepository.logoutCallCount == expectedLogoutCalls,
-               "Logout call count should be \(expectedLogoutCalls), got \(mockRepository.logoutCallCount)",
+        #expect(mockRepository.getLogoutCallCount() == expectedLogoutCalls,
+               "Logout call count should be \(expectedLogoutCalls), got \(mockRepository.getLogoutCallCount())",
                sourceLocation: sourceLocation)
 
-        #expect(mockRepository.withDrawCallCount == expectedWithdrawCalls,
-               "Withdraw call count should be \(expectedWithdrawCalls), got \(mockRepository.withDrawCallCount)",
+        #expect(mockRepository.getWithdrawCallCount() == expectedWithdrawCalls,
+               "Withdraw call count should be \(expectedWithdrawCalls), got \(mockRepository.getWithdrawCallCount())",
                sourceLocation: sourceLocation)
 
-        #expect(mockRepository.updateSessionCredentialCallCount == expectedUpdateCredentialCalls,
-               "Update credential call count should be \(expectedUpdateCredentialCalls), got \(mockRepository.updateSessionCredentialCallCount)",
+        #expect(mockRepository.getUpdateCredentialCallCount() == expectedUpdateCredentialCalls,
+               "Update credential call count should be \(expectedUpdateCredentialCalls), got \(mockRepository.getUpdateCredentialCallCount())",
                sourceLocation: sourceLocation)
     }
 
     // MARK: - Concurrent Testing Helpers
-    public static func performConcurrentOperations<T>(
+    static func performConcurrentOperations<T>(
         operations: [() async throws -> T],
         timeout: TimeInterval = 5.0
     ) async throws -> [Result<T, Error>] {
-        return await withThrowingTaskGroup(of: Result<T, Error>.self) { group in
+        return try await withThrowingTaskGroup(of: Result<T, Error>.self) { group in
             var results: [Result<T, Error>] = []
 
             for operation in operations {
@@ -205,7 +214,7 @@ public struct AuthTestHelper {
                 }
             }
 
-            for await result in group {
+            for try await result in group {
                 results.append(result)
             }
 
@@ -214,7 +223,7 @@ public struct AuthTestHelper {
     }
 
     // MARK: - Test Data Validation
-    public static func validateAuthTokens(
+    static func validateAuthTokens(
         _ tokens: AuthTokens,
         shouldHaveOAuthToken: Bool,
         sourceLocation: SourceLocation = #_sourceLocation
@@ -239,7 +248,7 @@ public struct AuthTestHelper {
     }
 
     // MARK: - Time-based Testing
-    public static func measureExecutionTime<T>(
+    static func measureExecutionTime<T>(
         of operation: () async throws -> T
     ) async rethrows -> (result: T, duration: TimeInterval) {
         let startTime = CFAbsoluteTimeGetCurrent()
@@ -249,7 +258,7 @@ public struct AuthTestHelper {
     }
 
     // MARK: - Mock Reset Utilities
-    public static func resetAllMocks(
+    static func resetAllMocks(
         repository: MockAuthRepository,
         keychain: MockKeychainManager,
         userSession: MockUserSession

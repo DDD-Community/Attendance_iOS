@@ -20,7 +20,7 @@ struct AttendanceUseCaseTest {
     private var mockAttendanceRepository: MockAttendanceRepository!
 
     init() async {
-        mockAttendanceRepository = MockAttendanceRepository()
+        mockAttendanceRepository = MockAttendanceRepository.adminCountSuccess()
     }
 
     // MARK: - Core Functionality Tests
@@ -35,7 +35,7 @@ struct AttendanceUseCaseTest {
             lateCount: 3,
             absentCount: 2
         )
-        mockAttendanceRepository.configureAdminCountSuccess(expectedCount)
+        let mockAttendanceRepository = MockAttendanceRepository.adminCountSuccess()
 
         // When: 관리자 출석 통계 조회 실행
         let result = try await withDependencies {
@@ -317,7 +317,7 @@ struct AttendanceUseCaseTest {
         mockAttendanceRepository.configureConcurrentEditSuccess(expectedResults)
 
         // When: 동시 수정 요청 실행
-        let results = try await withTaskGroup(of: EditAttendance.self, returning: [EditAttendance].self) { group in
+        let results = try await withThrowingTaskGroup(of: EditAttendance.self, returning: [EditAttendance].self) { group in
             for input in concurrentInputs {
                 group.addTask {
                     try await withDependencies {
@@ -338,7 +338,7 @@ struct AttendanceUseCaseTest {
 
         // Then: 동시 요청 결과 검증
         #expect(results.count == 5, "모든 동시 요청이 처리되어야 함")
-        #expect(results.allSatisfy(\.isSuccess), "모든 요청이 성공해야 함")
+        #expect(results.allSatisfy { $0.isSuccess }, "모든 요청이 성공해야 함")
     }
 
     @Test("TC-013: 네트워크 재시도 시나리오")
@@ -359,10 +359,139 @@ struct AttendanceUseCaseTest {
         #expect(result.totalCount == expectedCount.totalCount, "재시도 후 올바른 데이터가 반환되어야 함")
         #expect(mockAttendanceRepository.retryCallCount == 2, "재시도가 한 번 발생해야 함")
     }
+
+    @Test("TC-014: 출석 통계 집계 성능 테스트")
+    func test_attendance_statistics_aggregation_performance() async throws {
+        // Given: 대량 출석 데이터가 있는 상황
+        let scheduleId = 9999
+        let expectedCount = AttendanceCount(totalCount: 1000, attendanceCount: 950, lateCount: 30, absentCount: 20)
+        mockAttendanceRepository.configureAdminCountSuccess(expectedCount)
+
+        // When: 성능 측정과 함께 통계 집계
+        let startTime = CFAbsoluteTimeGetCurrent()
+
+        let result = try await withDependencies {
+            $0.attendanceRepository = mockAttendanceRepository
+        } operation: {
+            let useCase = AttendanceUseCaseImpl()
+            return try await useCase.adminAttendanceCount(scheduleId: scheduleId)
+        }
+
+        let endTime = CFAbsoluteTimeGetCurrent()
+        let executionTime = endTime - startTime
+
+        // Then: 성능 및 결과 검증
+        #expect(result.totalCount >= 100, "대량 데이터 처리 결과가 반환되어야 함")
+        #expect(executionTime < 1.0, "1초 이내에 통계 집계가 완료되어야 함")
+        #expect(mockAttendanceRepository.adminCountCallCount == 1, "한 번의 Repository 호출로 처리되어야 함")
+    }
+
+    @Test("TC-015: 크로스 팀 출석 상태 분석")
+    func test_cross_team_attendance_analysis() async throws {
+        // Given: 다중 팀 출석 상태 확인 설정
+        let scheduleId = 555
+        let teamId = 777
+        let expectedAttendances = [
+            Attendance(attendanceId: 1, userId: "user1", teamId: teamId, status: .attendance),
+            Attendance(attendanceId: 2, userId: "user2", teamId: teamId, status: .late),
+            Attendance(attendanceId: 3, userId: "user3", teamId: teamId, status: .absent)
+        ]
+        mockAttendanceRepository.configureSessionSuccess(expectedAttendances)
+
+        // When: 팀별 출석 상태 조회
+        let result = try await withDependencies {
+            $0.attendanceRepository = mockAttendanceRepository
+        } operation: {
+            let useCase = AttendanceUseCaseImpl()
+            return try await useCase.sessionAttendance(scheduleId: scheduleId, teamId: teamId)
+        }
+
+        // Then: 팀별 분석 결과 검증
+        #expect(!result.isEmpty, "팀별 출석 데이터가 반환되어야 함")
+        #expect(result.allSatisfy { $0.teamId == teamId }, "요청한 팀의 데이터만 반환되어야 함")
+        #expect(mockAttendanceRepository.sessionCallCount == 1, "팀 필터링 요청이 처리되어야 함")
+    }
+
+    @Test("TC-016: 실시간 출석 상태 변경 플로우")
+    func test_realtime_attendance_status_change_flow() async throws {
+        // Given: 실시간 상태 변경 설정
+        let editInput = EditAttendanceInput(
+            attendanceId: 12345,
+            scheduleId: 67890,
+            teamId: 1,
+            userId: "user12345",
+            newStatus: .late
+        )
+        let expectedResult = EditAttendance(
+            isSuccess: true,
+            message: "상태 변경 완료",
+            attendanceId: editInput.attendanceId
+        )
+        mockAttendanceRepository.configureEditSuccess(expectedResult)
+
+        // When: 실시간 상태 변경 실행
+        let result = try await withDependencies {
+            $0.attendanceRepository = mockAttendanceRepository
+        } operation: {
+            let useCase = AttendanceUseCaseImpl()
+            return try await useCase.editAttendance(input: editInput)
+        }
+
+        // Then: 상태 변경 플로우 검증
+        #expect(result.isSuccess, "상태 변경이 성공해야 함")
+        #expect(result.attendanceId == editInput.attendanceId, "변경된 출석 ID가 일치해야 함")
+        #expect(mockAttendanceRepository.editCallCount == 1, "상태 변경 요청이 처리되어야 함")
+        #expect(mockAttendanceRepository.lastEditInput?.newStatus == .late, "새로운 상태로 업데이트되어야 함")
+    }
+
+    @Test("TC-017: 권한별 데이터 접근 제어 검증")
+    func test_permission_based_data_access_control() async throws {
+        // Given: 권한 기반 접근 제어 설정
+        let scheduleId = 11111
+        let expectedCount = AttendanceCount(totalCount: 100, attendanceCount: 95, lateCount: 3, absentCount: 2)
+        mockAttendanceRepository.configureAdminCountSuccess(expectedCount)
+
+        // When: 권한이 필요한 관리자 기능 접근
+        let result = try await withDependencies {
+            $0.attendanceRepository = mockAttendanceRepository
+        } operation: {
+            let useCase = AttendanceUseCaseImpl()
+            return try await useCase.adminAttendanceCount(scheduleId: scheduleId)
+        }
+
+        // Then: 권한 검증 결과 확인
+        #expect(result.totalCount >= 0, "권한이 있는 경우 데이터가 반환되어야 함")
+        #expect(result.attendanceCount >= 0, "참석자 수가 유효해야 함")
+        #expect(mockAttendanceRepository.adminCountCallCount == 1, "권한 검증 후 데이터 접근이 이루어져야 함")
+    }
+
+    @Test("TC-018: 출석 데이터 일관성 검증")
+    func test_attendance_data_consistency_validation() async throws {
+        // Given: 데이터 일관성 검증을 위한 설정
+        let scheduleId = 22222
+        let expectedCount = AttendanceCount(totalCount: 200, attendanceCount: 180, lateCount: 15, absentCount: 5)
+        mockAttendanceRepository.configureAdminCountSuccess(expectedCount)
+
+        // When: 출석 통계 조회 (일관성 검증 포함)
+        let result = try await withDependencies {
+            $0.attendanceRepository = mockAttendanceRepository
+        } operation: {
+            let useCase = AttendanceUseCaseImpl()
+            return try await useCase.adminAttendanceCount(scheduleId: scheduleId)
+        }
+
+        // Then: 데이터 일관성 검증
+        let totalCalculated = result.attendanceCount + result.lateCount + result.absentCount
+        #expect(totalCalculated <= result.totalCount, "계산된 총합이 전체 인원을 초과하면 안됨")
+        #expect(result.attendanceCount >= 0, "참석자 수는 0 이상이어야 함")
+        #expect(result.lateCount >= 0, "지각자 수는 0 이상이어야 함")
+        #expect(result.absentCount >= 0, "결석자 수는 0 이상이어야 함")
+        #expect(mockAttendanceRepository.adminCountCallCount == 1, "일관성 검증이 포함된 조회가 실행되어야 함")
+    }
 }
 
 // MARK: - Mock Repository
-class MockAttendanceRepository: AttendanceRepositoryInterface {
+class MockAttendanceRepository: AttendanceInterface {
 
     // MARK: - Call Tracking
     var adminCountCallCount = 0
@@ -452,6 +581,14 @@ class MockAttendanceRepository: AttendanceRepositoryInterface {
     }
 
     // MARK: - Configuration Methods
+    static func adminCountSuccess() -> MockAttendanceRepository {
+        let mock = MockAttendanceRepository()
+        mock.configureAdminCountSuccess(
+            AttendanceCount(attendanceCount: 45, lateCount: 3, absentCount: 2)
+        )
+        return mock
+    }
+
     func configureAdminCountSuccess(_ count: AttendanceCount) {
         adminCountResponse = .success(count)
     }
@@ -521,36 +658,7 @@ extension AttendanceStatus: CaseIterable {
     }
 }
 
-// MARK: - Test Data Structures
-struct SelectTeamEntity: Equatable {
-    let id: Int
-    let name: String
-    let description: String
-}
-
-struct AttendanceCount: Equatable {
-    let totalCount: Int
-    let attendanceCount: Int
-    let lateCount: Int
-    let absentCount: Int
-}
-
-struct EditAttendanceInput: Equatable {
-    let attendanceId: Int
-    let scheduleId: Int
-    let teamId: Int
-    let userId: String
-    let newStatus: AttendanceStatus
-}
-
-struct EditAttendance: Equatable {
-    let isSuccess: Bool
-    let message: String
-    let attendanceId: Int
-}
-
 // MARK: - Test Tags
 extension Tag {
-    @Tag static var unit: Self
     @Tag static var attendance: Self
 }

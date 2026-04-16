@@ -33,9 +33,9 @@ struct ProfileUseCaseTest {
             name: "관리자 김철수",
             generation: "15기",
             team: .ios1,
-            jobRole: .developer,
+            jobRole: .ios,
             role: .manager,
-            manger: [.android, .ios]
+            manger: [.teamManaging, .attendanceCheck]
         )
         mockProfileRepository.configureGetProfileSuccess(expectedProfile)
 
@@ -52,7 +52,7 @@ struct ProfileUseCaseTest {
         #expect(result.name == "관리자 김철수", "이름이 올바르게 조회되어야 함")
         #expect(result.generation == "15기", "기수가 올바르게 조회되어야 함")
         #expect(result.team == .ios1, "팀이 올바르게 조회되어야 함")
-        #expect(result.jobRole == .developer, "직무가 올바르게 조회되어야 함")
+        #expect(result.jobRole == .ios, "직무가 올바르게 조회되어야 함")
         #expect(result.role == .manager, "Manager 권한이 올바르게 설정되어야 함")
         #expect(result.manger?.count == 2, "관리 팀이 2개여야 함")
         #expect(mockProfileRepository.getProfileCallCount == 1, "Repository가 한 번 호출되어야 함")
@@ -65,7 +65,7 @@ struct ProfileUseCaseTest {
             userID: 456,
             name: "멤버 박영희",
             generation: "16기",
-            team: .android1,
+            team: .and1,
             jobRole: .designer,
             role: .member,
             manger: nil
@@ -115,9 +115,9 @@ struct ProfileUseCaseTest {
             generation: "17기",
             selectTeamId: 1,
             selectTeam: .ios2,
-            selectPart: .developer,
+            selectPart: .ios,
             userRole: .manager, // 승급됨
-            managing: [.ios, .android],
+            managing: [.teamManaging, .attendanceCheck],
             inviteCode: "PROMOTE123"
         )
 
@@ -126,9 +126,9 @@ struct ProfileUseCaseTest {
             name: "승급자 이민수",
             generation: "17기",
             team: .ios2,
-            jobRole: .developer,
+            jobRole: .ios,
             role: .manager, // 승급된 권한
-            manger: [.ios, .android]
+            manger: [.teamManaging, .attendanceCheck]
         )
         mockProfileRepository.configureEditProfileSuccess(expectedUpdatedProfile)
 
@@ -157,7 +157,7 @@ struct ProfileUseCaseTest {
             generationId: 18,
             generation: "18기",
             selectTeamId: 2,
-            selectTeam: .android2,
+            selectTeam: .and2,
             selectPart: .designer,
             userRole: .member,
             managing: [],
@@ -168,7 +168,7 @@ struct ProfileUseCaseTest {
             userID: 101,
             name: "업데이트 최지혜",
             generation: "18기",
-            team: .android2,
+            team: .and2,
             jobRole: .designer,
             role: .member,
             manger: nil
@@ -186,7 +186,7 @@ struct ProfileUseCaseTest {
         // Then: 업데이트된 Member 프로필 검증
         #expect(result.role == .member, "Member 권한이 유지되어야 함")
         #expect(result.manger == nil, "Member는 관리 권한이 없어야 함")
-        #expect(result.team == .android2, "팀이 올바르게 업데이트되어야 함")
+        #expect(result.team == .and2, "팀이 올바르게 업데이트되어야 함")
         #expect(result.jobRole == .designer, "직무가 올바르게 업데이트되어야 함")
         #expect(mockProfileRepository.lastEditInput?.managerRoles == nil, "Manager 역할이 전달되지 않아야 함")
     }
@@ -201,7 +201,7 @@ struct ProfileUseCaseTest {
             generation: "1기",
             selectTeamId: 1,
             selectTeam: .ios1,
-            selectPart: .developer,
+            selectPart: .ios,
             userRole: .member,
             managing: [],
             inviteCode: "INVALID"
@@ -227,9 +227,9 @@ struct ProfileUseCaseTest {
             name: "동기화 테스트",
             generation: "19기",
             team: .ios1,
-            jobRole: .planner,
+            jobRole: .pm,
             role: .manager,
-            manger: [.ios]
+            manger: [.teamManaging]
         )
         mockProfileRepository.configureGetProfileSuccess(profile)
 
@@ -254,8 +254,8 @@ struct ProfileUseCaseTest {
             userID: 333,
             name: "승급대상자",
             generation: "20기",
-            team: .android1,
-            jobRole: .developer,
+            team: .and1,
+            jobRole: .ios,
             role: .member,
             manger: nil
         )
@@ -266,10 +266,10 @@ struct ProfileUseCaseTest {
             userID: 333,
             name: "승급대상자",
             generation: "20기",
-            team: .android1,
-            jobRole: .developer,
+            team: .and1,
+            jobRole: .ios,
             role: .manager,
-            manger: [.android]
+            manger: [.teamManaging]
         )
         mockProfileRepository.configureEditProfileSuccess(managerProfile)
 
@@ -287,10 +287,10 @@ struct ProfileUseCaseTest {
             generationId: 20,
             generation: "20기",
             selectTeamId: 1,
-            selectTeam: .android1,
-            selectPart: .developer,
+            selectTeam: .and1,
+            selectPart: .ios,
             userRole: .manager, // 승급
-            managing: [.android],
+            managing: [.teamManaging],
             inviteCode: "PROMOTION"
         )
 
@@ -317,7 +317,7 @@ struct ProfileUseCaseTest {
             generationId: 21,
             generation: "21기",
             selectTeamId: 3,
-            selectTeam: .design, // 새로운 팀
+            selectTeam: .web1,
             selectPart: .designer,
             userRole: .member,
             managing: [],
@@ -328,7 +328,7 @@ struct ProfileUseCaseTest {
             userID: 777,
             name: "팀변경자",
             generation: "21기",
-            team: .design,
+            team: .web1,
             jobRole: .designer,
             role: .member,
             manger: nil
@@ -344,7 +344,7 @@ struct ProfileUseCaseTest {
         }
 
         // Then: 팀 변경 검증
-        #expect(result.team == .design, "팀이 Design으로 변경되어야 함")
+        #expect(result.team == .web1, "팀이 WEB 1으로 변경되어야 함")
         #expect(result.jobRole == .designer, "직무가 Designer로 설정되어야 함")
         #expect(mockProfileRepository.lastEditInput?.teamId == 3, "올바른 팀 ID가 전달되어야 함")
     }
@@ -355,9 +355,9 @@ struct ProfileUseCaseTest {
         let directInput = EditProfileInput(
             name: "직접수정",
             generationId: 22,
-            jobRole: .planner,
+            jobRole: .pm,
             teamId: 4,
-            managerRoles: [.ios, .android, .design],
+            managerRoles: [.teamManaging, .photo, .attendanceCheck],
             inviteCode: "DIRECT123"
         )
 
@@ -366,9 +366,9 @@ struct ProfileUseCaseTest {
             name: "직접수정",
             generation: "22기",
             team: .ios2,
-            jobRole: .planner,
+            jobRole: .pm,
             role: .manager,
-            manger: [.ios, .android, .design]
+            manger: [.teamManaging, .photo, .attendanceCheck]
         )
         mockProfileRepository.configureEditProfileSuccess(expectedProfile)
 
@@ -382,7 +382,7 @@ struct ProfileUseCaseTest {
 
         // Then: 직접 수정 검증
         #expect(result.name == "직접수정", "이름이 올바르게 수정되어야 함")
-        #expect(result.jobRole == .planner, "직무가 올바르게 수정되어야 함")
+        #expect(result.jobRole == .pm, "직무가 올바르게 수정되어야 함")
         #expect(result.manger?.count == 3, "3개 팀 관리 권한이 있어야 함")
         #expect(mockProfileRepository.lastEditInput?.name == "직접수정", "올바른 입력이 전달되어야 함")
     }
@@ -390,7 +390,7 @@ struct ProfileUseCaseTest {
     @Test("TC-011: 대량 관리 팀 처리")
     func test_large_management_teams() async throws {
         // Given: 대량 관리 팀을 가진 Manager
-        let largeManagingTeams: [StaffManaging] = [.ios, .android, .design, .planning, .backend]
+        let largeManagingTeams: [StaffManaging] = [.teamManaging, .scheduleReminder, .photo, .locationRental, .attendanceCheck]
         let userSession = UserSession(
             userID: 111,
             name: "수퍼매니저",
@@ -398,7 +398,7 @@ struct ProfileUseCaseTest {
             generation: "23기",
             selectTeamId: 1,
             selectTeam: .ios1,
-            selectPart: .developer,
+            selectPart: .ios,
             userRole: .manager,
             managing: largeManagingTeams,
             inviteCode: "SUPER123"
@@ -409,7 +409,7 @@ struct ProfileUseCaseTest {
             name: "수퍼매니저",
             generation: "23기",
             team: .ios1,
-            jobRole: .developer,
+            jobRole: .ios,
             role: .manager,
             manger: largeManagingTeams
         )
@@ -425,9 +425,9 @@ struct ProfileUseCaseTest {
 
         // Then: 대량 관리 팀 검증
         #expect(result.manger?.count == 5, "5개 팀을 관리해야 함")
-        #expect(result.manger?.contains(.ios) == true, "iOS 팀 관리 권한이 있어야 함")
-        #expect(result.manger?.contains(.android) == true, "Android 팀 관리 권한이 있어야 함")
-        #expect(result.manger?.contains(.design) == true, "Design 팀 관리 권한이 있어야 함")
+        #expect(result.manger?.contains(.teamManaging) == true, "팀매니징 권한이 있어야 함")
+        #expect(result.manger?.contains(.scheduleReminder) == true, "일정 리마인드 권한이 있어야 함")
+        #expect(result.manger?.contains(.photo) == true, "사진 촬영 권한이 있어야 함")
         #expect(mockProfileRepository.lastEditInput?.managerRoles?.count == 5, "5개 관리 역할이 전달되어야 함")
     }
 
@@ -438,8 +438,8 @@ struct ProfileUseCaseTest {
             userID: 999,
             name: "동시성 테스트",
             generation: "24기",
-            team: .android1,
-            jobRole: .developer,
+            team: .and1,
+            jobRole: .ios,
             role: .member,
             manger: nil
         )
@@ -474,35 +474,8 @@ struct ProfileUseCaseTest {
     }
 }
 
-// MARK: - Test Data Structures
-struct UserSession: Equatable {
-    let userID: Int
-    let name: String
-    let generationId: Int
-    let generation: String
-    let selectTeamId: Int
-    let selectTeam: SelectTeams
-    let selectPart: SelectParts
-    let userRole: Staff
-    let managing: [StaffManaging]
-    let inviteCode: String
-
-    static let empty = UserSession(
-        userID: 0,
-        name: "",
-        generationId: 0,
-        generation: "",
-        selectTeamId: 0,
-        selectTeam: .unknown,
-        selectPart: .developer,
-        userRole: .member,
-        managing: [],
-        inviteCode: ""
-    )
-}
-
 // MARK: - Mock Repository
-class MockProfileRepository: ProfileRepositoryInterface {
+final class MockProfileRepository: ProfileInterface {
 
     // MARK: - Call Tracking
     var getProfileCallCount = 0
@@ -555,29 +528,6 @@ class MockProfileRepository: ProfileRepositoryInterface {
     }
 }
 
-// MARK: - Mock Protocol
-protocol ProfileRepositoryInterface {
-    func getProfile() async throws -> ProfileEntity
-    func editProfile(input: EditProfileInput) async throws -> ProfileEntity
-}
-
-// MARK: - Test Enums (assumed from entity usage)
-enum SelectTeams: Equatable {
-    case ios1, ios2, android1, android2, design, planning, backend, unknown
-}
-
-enum SelectParts: Equatable {
-    case developer, designer, planner, backend
-}
-
-enum Staff: Equatable {
-    case manager, member
-}
-
-enum StaffManaging: Equatable {
-    case ios, android, design, planning, backend
-}
-
 // MARK: - Test Errors
 enum ProfileError: Error, Equatable {
     case networkError
@@ -588,6 +538,5 @@ enum ProfileError: Error, Equatable {
 
 // MARK: - Test Tags
 extension Tag {
-    @Tag static var unit: Self
     @Tag static var profile: Self
 }

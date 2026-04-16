@@ -452,20 +452,8 @@ struct OnBoardingUseCaseTest {
 }
 
 // MARK: - Test Data Structures
-struct SelectTeamEntity: Equatable {
-    let id: Int
-    let name: String
-    let description: String
-}
-
-struct SelectManaging: Equatable {
-    let id: String
-    let name: String
-    let description: String
-}
-
 // MARK: - Mock Repository
-class MockOnBoardingRepository: OnBoardingRepositoryInterface {
+class MockOnBoardingRepository: OnBoardingInterface {
 
     // MARK: - Call Tracking
     var verifyCodeCallCount = 0
@@ -560,23 +548,6 @@ class MockOnBoardingRepository: OnBoardingRepositoryInterface {
     }
 }
 
-// MARK: - Mock Protocol
-protocol OnBoardingRepositoryInterface {
-    func verifyCode(code: String) async throws -> VerifyCodeEntity
-    func fetchJobs() async throws -> [SelectJob]
-    func fetchTeams(generationId: Int) async throws -> [SelectTeamEntity]
-    func fetchManaging() async throws -> [SelectManaging]
-}
-
-// MARK: - Test Enums (assumed from entity usage)
-enum Staff: Equatable {
-    case manager, member
-}
-
-enum SelectParts: Equatable {
-    case developer, designer, planner, backend
-}
-
 // MARK: - Test Errors
 enum OnBoardingError: Error, Equatable {
     case invalidCode
@@ -589,6 +560,5 @@ enum OnBoardingError: Error, Equatable {
 
 // MARK: - Test Tags
 extension Tag {
-    @Tag static var unit: Self
     @Tag static var onboarding: Self
 }
