@@ -12,9 +12,11 @@ let project = Project.makeModule(
   settings:  .settings(),
   dependencies: [
     .Data(implements: .Service),
+    .Data(implements: .Model),
     .Domain(implements: .DomainInterface),
-
-      .SPM.googleSignIn
+    .Domain(implements: .Entity),
+    .SPM.asyncMoya,
+    .SPM.googleSignIn
   ],
   sources: ["Sources/**"],
   hasTests: true
