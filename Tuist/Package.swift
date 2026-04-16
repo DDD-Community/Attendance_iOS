@@ -40,7 +40,15 @@ let packageSettings = PackageSettings(
     "GoogleSignIn": .staticFramework,
     "GoogleSignInSwift": .staticFramework,
     "GTMSessionFetcher": .staticFramework
-  ]
+  ],
+  baseSettings: .settings(
+    configurations: [
+      .debug(name: "Debug"),
+      .debug(name: "Stage"),
+      .release(name: "Release"),
+      .release(name: "Prod")
+    ]
+  )
 )
 #endif
 let package = Package(

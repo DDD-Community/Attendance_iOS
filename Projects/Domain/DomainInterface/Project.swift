@@ -13,6 +13,7 @@ let project = Project.makeModule(
   dependencies: [
     .Data(implements: .Model),
     .SPM.weaveDI,
+    .SPM.composableArchitecture,
   ],
   sources: ["Sources/**"],
   hasTests: false

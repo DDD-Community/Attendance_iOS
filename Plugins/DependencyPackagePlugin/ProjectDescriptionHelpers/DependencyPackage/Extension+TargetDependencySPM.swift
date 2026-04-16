@@ -9,7 +9,7 @@ import ProjectDescription
 
 public extension TargetDependency.SPM {
   static let asyncMoya = TargetDependency.external(name: "AsyncMoya", condition: .none)
-  static let logMarco = TargetDependency.external(name: "LogMarco", condition: .none)
+  static let logMarco = TargetDependency.external(name: "LogMacro", condition: .none)
 
   static let composableArchitecture = TargetDependency.external(name: "ComposableArchitecture", condition: .none)
   static let tcaFlow = TargetDependency.external(name: "TCAFlow", condition: .none)
