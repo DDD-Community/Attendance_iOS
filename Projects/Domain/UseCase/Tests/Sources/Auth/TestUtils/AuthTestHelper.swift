@@ -18,9 +18,9 @@ struct AuthTestHelper {
 
     // MARK: - Dependency Setup
     static func withMockDependencies<T>(
-        mockAuthRepository: MockAuthRepository = MockAuthRepository.success(),
-        mockKeychainManager: MockKeychainManager = MockKeychainManager.success(),
-        mockUserSession: MockUserSession = MockUserSession.success(),
+        mockAuthRepository: MockAuthRepository,
+        mockKeychainManager: MockKeychainManager,
+        mockUserSession: MockUserSession? = nil,
         operation: @MainActor () async throws -> T
     ) async rethrows -> T {
 
@@ -33,6 +33,7 @@ struct AuthTestHelper {
     }
 
     // MARK: - Test State Management
+    @MainActor
     static func createTestAuthUseCase(
         with mockRepository: MockAuthRepository,
         and mockKeychain: MockKeychainManager,

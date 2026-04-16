@@ -475,6 +475,7 @@ struct ProfileUseCaseTest {
 }
 
 // MARK: - Mock Repository
+@MainActor
 final class MockProfileRepository: ProfileInterface {
 
     // MARK: - Call Tracking

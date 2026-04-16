@@ -4,6 +4,8 @@ import Entity
 
 @MainActor
 final class MockAuthRepository: AuthInterface {
+
+  init() {}
   private(set) var loginCallCount = 0
   private(set) var refreshCallCount = 0
   private(set) var logoutCallCount = 0
@@ -112,54 +114,63 @@ final class MockAuthRepository: AuthInterface {
   func configureLogoutFailure(_ error: Error) { logoutResponse = .failure(error) }
   func configureWithdrawFailure(_ error: Error) { withdrawResponse = .failure(error) }
 
+  @MainActor
   static func success() -> MockAuthRepository {
     let mock = MockAuthRepository()
     mock.configureSuccessfulLogin(role: Entity.Staff.member)
     return mock
   }
 
+  @MainActor
   static func appleSuccess() -> MockAuthRepository {
     let mock = MockAuthRepository()
     mock.configureSuccessfulLogin(name: "Apple User", provider: .apple, role: nil)
     return mock
   }
 
+  @MainActor
   static func newUser() -> MockAuthRepository {
     let mock = MockAuthRepository()
     mock.configureSuccessfulLogin(name: "New Google User", isNewUser: true, provider: .google, role: nil)
     return mock
   }
 
+  @MainActor
   static func invalidToken() -> MockAuthRepository {
     let mock = MockAuthRepository()
     mock.configureLoginFailure(AuthError.invalidToken)
     return mock
   }
 
+  @MainActor
   static func networkError() -> MockAuthRepository {
     let mock = MockAuthRepository()
     mock.configureLoginFailure(AuthError.networkError)
     return mock
   }
 
+  @MainActor
   static func refreshSuccess() -> MockAuthRepository {
     let mock = MockAuthRepository()
     mock.configureSuccessfulRefresh()
     return mock
   }
 
+  @MainActor
   static func logoutSuccess() -> MockAuthRepository {
     let mock = MockAuthRepository()
     mock.logoutResponse = .success(AuthExitEntity(code: "200", message: "logout", detail: "success"))
     return mock
   }
 
+  @MainActor
   static func withdrawSuccess() -> MockAuthRepository {
     let mock = MockAuthRepository()
     mock.withdrawResponse = .success(WithdrawEntity(isSuccess: true, code: "200", message: "withdraw", detail: "success"))
     return mock
   }
 
+  @MainActor
   static func unauthorized() -> MockAuthRepository {
     let mock = MockAuthRepository()
     mock.configureWithdrawFailure(AuthError.unauthorized)
@@ -169,18 +180,21 @@ final class MockAuthRepository: AuthInterface {
     return mock
   }
 
+  @MainActor
   static func concurrency() -> MockAuthRepository {
     let mock = MockAuthRepository.success()
     mock.loginDelay = 0.01
     return mock
   }
 
+  @MainActor
   static func tokenExpired() -> MockAuthRepository {
     let mock = MockAuthRepository()
     mock.refreshResponse = .failure(AuthError.tokenExpired)
     return mock
   }
 
+  @MainActor
   static func serverError() -> MockAuthRepository {
     let mock = MockAuthRepository()
     mock.configureLoginFailure(AuthError.serverError)
@@ -190,6 +204,7 @@ final class MockAuthRepository: AuthInterface {
     return mock
   }
 
+  @MainActor
   static func fullFlowSuccess() -> MockAuthRepository {
     let mock = MockAuthRepository.success()
     mock.configureSuccessfulRefresh()
@@ -212,6 +227,16 @@ enum AuthError: Error, Equatable {
   case networkError
   case unauthorized
   case serverError
+  case invalidCredentials
+  case userNotFound
+}
+
+enum MockAuthError: Error, Equatable {
+  case tokenExpired
+  case serverError
+  case networkError
+  case unauthorized
+  case invalidToken
   case invalidCredentials
   case userNotFound
 }

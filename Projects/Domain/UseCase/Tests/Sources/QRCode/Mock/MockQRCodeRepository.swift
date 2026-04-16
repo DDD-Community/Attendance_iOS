@@ -94,24 +94,28 @@ final class MockQRCodeRepository: QRCodeInterface {
   }
 
   // Static factory methods
+  @MainActor
   static func createSuccess() -> MockQRCodeRepository {
     let mock = MockQRCodeRepository()
     mock.configureCreateSuccess()
     return mock
   }
 
+  @MainActor
   static func generateSuccess() -> MockQRCodeRepository {
     let mock = MockQRCodeRepository()
     mock.configureGenerateSuccess()
     return mock
   }
 
+  @MainActor
   static func validateSuccess() -> MockQRCodeRepository {
     let mock = MockQRCodeRepository()
     mock.configureValidateSuccess()
     return mock
   }
 
+  @MainActor
   static func fullSuccess() -> MockQRCodeRepository {
     let mock = MockQRCodeRepository()
     mock.configureCreateSuccess()
@@ -120,6 +124,7 @@ final class MockQRCodeRepository: QRCodeInterface {
     return mock
   }
 
+  @MainActor
   static func networkError() -> MockQRCodeRepository {
     let mock = MockQRCodeRepository()
     mock.configureCreateFailure(QRCodeError.networkError)
@@ -127,12 +132,14 @@ final class MockQRCodeRepository: QRCodeInterface {
     return mock
   }
 
+  @MainActor
   static func invalidCode() -> MockQRCodeRepository {
     let mock = MockQRCodeRepository()
     mock.configureValidateFailure(QRCodeError.invalidCode)
     return mock
   }
 
+  @MainActor
   static func concurrency() -> MockQRCodeRepository {
     let mock = MockQRCodeRepository.fullSuccess()
     mock.createQRCodeDelay = 0.01

@@ -22,9 +22,9 @@ final class AuthUseCaseTest {
   private var mockUserSession: MockUserSession!
 
   init() async {
-    mockAuthRepository = MockAuthRepository.success()
-    mockKeychainManager = MockKeychainManager.success()
-    mockUserSession = MockUserSession.success()
+    mockAuthRepository = await MockAuthRepository.success()
+    mockKeychainManager = await MockKeychainManager.success()
+    mockUserSession = await MockUserSession.success()
   }
 
   // MARK: - Tier 1: Core Login Flow (6 Test Cases)
@@ -36,7 +36,7 @@ final class AuthUseCaseTest {
     let expectedToken = AuthTestFixture.TestTokens.validAppleToken
 
     // Configure AppleSuccess repository with new user
-    mockAuthRepository = MockAuthRepository.appleSuccess()
+    mockAuthRepository = await MockAuthRepository.appleSuccess()
 
     // When: Apple 로그인 실행
     let result = try await AuthTestHelper.withMockDependencies(
@@ -73,7 +73,7 @@ final class AuthUseCaseTest {
     let expectedProvider = SocialType.google
     let expectedToken = AuthTestFixture.TestTokens.validGoogleToken
 
-    mockAuthRepository = MockAuthRepository.newUser()
+    mockAuthRepository = await MockAuthRepository.newUser()
 
     // When: Google 로그인 실행
     let result = try await AuthTestHelper.withMockDependencies(
@@ -109,7 +109,7 @@ final class AuthUseCaseTest {
     let expectedProvider = SocialType.google
     let expectedToken = AuthTestFixture.TestTokens.validGoogleToken
 
-    mockAuthRepository = MockAuthRepository.success()
+    mockAuthRepository = await MockAuthRepository.success()
 
     // When: Google 로그인 실행
     let result = try await AuthTestHelper.withMockDependencies(
@@ -138,7 +138,7 @@ final class AuthUseCaseTest {
   func test_login_failure_invalid_credentials() async throws {
     // Given: 잘못된 credential 에러 설정
     let invalidToken = AuthTestFixture.TestTokens.invalidToken
-    mockAuthRepository = MockAuthRepository.invalidToken()
+    mockAuthRepository = await MockAuthRepository.invalidToken()
 
     // When & Then: 로그인 실패 검증
     await #expect(throws: AuthError.self) {
@@ -159,7 +159,7 @@ final class AuthUseCaseTest {
   @Test("TC-005: 로그인 실패 (네트워크 오류)")
   func test_login_failure_network_error() async throws {
     // Given: 네트워크 에러 설정
-    mockAuthRepository = MockAuthRepository.networkError()
+    mockAuthRepository = await MockAuthRepository.networkError()
 
     // When & Then: 네트워크 에러 검증
     await #expect(throws: AuthError.self) {
@@ -179,7 +179,7 @@ final class AuthUseCaseTest {
   @Test("TC-006: Token refresh 성공")
   func test_token_refresh_success() async throws {
     // Given: 토큰 갱신 성공 설정
-    mockAuthRepository = MockAuthRepository.refreshSuccess()
+    mockAuthRepository = await MockAuthRepository.refreshSuccess()
 
     // When: 토큰 갱신 실행
     let result = try await AuthTestHelper.withMockDependencies(
@@ -199,7 +199,7 @@ final class AuthUseCaseTest {
   @Test("TC-007: Logout 및 상태 초기화")
   func test_logout_and_state_reset() async throws {
     // Given: 로그아웃 성공 설정
-    mockAuthRepository = MockAuthRepository.logoutSuccess()
+    mockAuthRepository = await MockAuthRepository.logoutSuccess()
 
     // When: 로그아웃 실행
     let result = try await AuthTestHelper.withMockDependencies(
@@ -245,7 +245,7 @@ final class AuthUseCaseTest {
   func test_withdraw_success() async throws {
     // Given: 회원탈퇴 성공 설정
     let withdrawToken = AuthTestFixture.TestTokens.withdrawToken
-    mockAuthRepository = MockAuthRepository.withdrawSuccess()
+    mockAuthRepository = await MockAuthRepository.withdrawSuccess()
 
     // When: 회원탈퇴 실행
     let result = try await AuthTestHelper.withMockDependencies(
@@ -266,7 +266,7 @@ final class AuthUseCaseTest {
   @Test("TC-010: 회원탈퇴 실패")
   func test_withdraw_failure() async throws {
     // Given: 회원탈퇴 실패 설정
-    mockAuthRepository = MockAuthRepository.unauthorized()
+    mockAuthRepository = await MockAuthRepository.unauthorized()
 
     // When & Then: 회원탈퇴 실패 검증
     await #expect(throws: AuthError.self) {
@@ -308,7 +308,7 @@ final class AuthUseCaseTest {
   func test_concurrent_login_requests_handling() async throws {
     // Given: 동시 로그인 요청 설정
     let concurrentCount = AuthTestFixture.ConcurrentTestData.simultaneousLoginCount
-    mockAuthRepository = MockAuthRepository.concurrency()
+    mockAuthRepository = await MockAuthRepository.concurrency()
 
     let concurrentOperations: [() async throws -> LoginEntity] = (0..<concurrentCount).map { index in
       {
@@ -407,7 +407,7 @@ final class AuthUseCaseTest {
   @Test("TC-016: 완전한 인증 플로우 통합 테스트")
   func test_full_authentication_flow_integration() async throws {
     // Given: 완전한 플로우 성공 설정
-    mockAuthRepository = MockAuthRepository.success()
+    mockAuthRepository = await MockAuthRepository.success()
     mockAuthRepository.configureSuccessfulRefresh()
     mockAuthRepository.logoutResponse = .success(AuthExitEntity(code: "200", message: "logout", detail: "success"))
 

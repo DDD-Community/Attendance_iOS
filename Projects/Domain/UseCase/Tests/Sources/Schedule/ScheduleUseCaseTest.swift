@@ -288,6 +288,7 @@ struct ScheduleUseCaseTest {
 }
 
 // MARK: - Mock Repository
+@MainActor
 class MockScheduleRepository: ScheduleInterface {
 
     // MARK: - Call Tracking

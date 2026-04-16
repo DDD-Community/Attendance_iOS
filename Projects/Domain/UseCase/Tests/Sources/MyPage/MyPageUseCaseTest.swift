@@ -295,6 +295,7 @@ struct MyPageUseCaseTest {
 }
 
 // MARK: - Mock Repository
+@MainActor
 class MockMyPageRepository: MyPageRepositoryInterface {
 
     // MARK: - Call Tracking

@@ -114,6 +114,7 @@ final class MockUserSession {
     currentSession.oauthRefreshToken == expectedToken
   }
 
+  @MainActor
   static func success() -> MockUserSession {
     let mock = MockUserSession()
     mock.setupExistingUser()

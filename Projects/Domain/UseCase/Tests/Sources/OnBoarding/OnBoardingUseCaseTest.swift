@@ -456,6 +456,7 @@ struct OnBoardingUseCaseTest {
 
 // MARK: - Test Data Structures
 // MARK: - Mock Repository
+@MainActor
 class MockOnBoardingRepository: OnBoardingInterface {
 
     // MARK: - Call Tracking

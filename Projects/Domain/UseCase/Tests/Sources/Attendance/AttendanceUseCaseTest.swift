@@ -20,7 +20,7 @@ struct AttendanceUseCaseTest {
     private var mockAttendanceRepository: MockAttendanceRepository!
 
     init() async {
-        mockAttendanceRepository = MockAttendanceRepository.adminCountSuccess()
+        mockAttendanceRepository = await MockAttendanceRepository.adminCountSuccess()
     }
 
     // MARK: - Core Functionality Tests
@@ -35,7 +35,7 @@ struct AttendanceUseCaseTest {
             lateCount: 3,
             absentCount: 2
         )
-        let mockAttendanceRepository = MockAttendanceRepository.adminCountSuccess()
+        let mockAttendanceRepository = await MockAttendanceRepository.adminCountSuccess()
 
         // When: 관리자 출석 통계 조회 실행
         let result = try await withDependencies {
@@ -500,6 +500,7 @@ struct AttendanceUseCaseTest {
 }
 
 // MARK: - Mock Repository
+@MainActor
 class MockAttendanceRepository: AttendanceInterface {
 
     // MARK: - Call Tracking
@@ -590,6 +591,7 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     // MARK: - Configuration Methods
+    @MainActor
     static func adminCountSuccess() -> MockAttendanceRepository {
         let mock = MockAttendanceRepository()
         mock.configureAdminCountSuccess(

@@ -289,6 +289,7 @@ struct ManagerUseCaseTest {
 }
 
 // MARK: - Mock KeychainManager for Test
+@MainActor
 class MockKeychainManagerForTest: KeychainManaging {
 
     // MARK: - Call Tracking

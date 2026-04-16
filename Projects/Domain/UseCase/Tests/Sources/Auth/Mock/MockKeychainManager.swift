@@ -87,6 +87,7 @@ final class MockKeychainManager: KeychainManaging {
     lastSavedAccessToken == accessToken && lastSavedRefreshToken == refreshToken
   }
 
+  @MainActor
   static func success() -> MockKeychainManager {
     MockKeychainManager()
   }
