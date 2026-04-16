@@ -22,7 +22,19 @@
       "Bash(xcodebuild -workspace DDDAttendance.xcworkspace -scheme Repository -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.6' test)",
       "Bash(xcodebuild -workspace DDDAttendance.xcworkspace -scheme Repository -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.6' build)",
       "Bash(xcodebuild -workspace DDDAttendance.xcworkspace -list)",
-      "Bash(tuist generate *)"
+      "Bash(tuist generate *)",
+      "Bash(xcodebuild -list -workspace DDDAttendance.xcworkspace)",
+      "Bash(xcodebuild build *)",
+      "Bash(xcodebuild -workspace DDDAttendance.xcworkspace -scheme Repository clean)",
+      "Bash(rm -rf DDDAttendance.xcworkspace Derived)",
+      "Bash(tuist clean *)",
+      "Bash(tuist install *)",
+      "Skill(update-config)",
+      "Write(Projects/Data/Repository/Tests/**)",
+      "Edit(Projects/Data/Repository/Tests/**)",
+      "Read(Projects/Data/Repository/Tests/**)",
+      "Bash(xcodebuild *)",
+      "Bash(xcode-select *)"
     ]
   }
 }
