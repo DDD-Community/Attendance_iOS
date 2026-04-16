@@ -10,7 +10,8 @@ import Foundation
 import Entity
 import Model
 import DomainInterface
-import Service
+import Moya
+@testable import Repository
 
 @Suite("Auth Repository API Tests")
 @MainActor

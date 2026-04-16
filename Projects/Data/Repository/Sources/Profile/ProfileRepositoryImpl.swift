@@ -13,7 +13,7 @@ import Entity
 import ComposableArchitecture
 import Moya
 
-@preconcurrency import AsyncMoya
+import ThirdPartys
 
 final public class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable {
     @Shared(.appStorage("staffRole")) var staffRole: Staff?

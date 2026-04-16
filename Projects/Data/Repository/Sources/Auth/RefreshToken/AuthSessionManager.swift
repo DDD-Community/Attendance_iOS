@@ -9,7 +9,7 @@ import Foundation
 import Alamofire
 import DomainInterface
 import Entity
-import WeaveDI
+import ThirdPartys
 
 final class AuthSessionManager {
     static let shared = AuthSessionManager()

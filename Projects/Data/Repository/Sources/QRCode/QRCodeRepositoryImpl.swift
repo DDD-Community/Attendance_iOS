@@ -14,7 +14,7 @@ import Model
 import Service
 import Entity
 
-@preconcurrency import AsyncMoya
+import ThirdPartys
 
 @Observable
 final public class QRCodeRepositoryImpl: QRCodeInterface {

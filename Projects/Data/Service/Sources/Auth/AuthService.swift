@@ -10,7 +10,6 @@ import Entity
 
 import API
 import Foundations
-
 import AsyncMoya
 
 public enum AuthService {

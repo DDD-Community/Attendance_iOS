@@ -11,6 +11,8 @@ import Entity
 import Model
 import DomainInterface
 import Service
+import Moya
+@testable import Repository
 
 @Suite("Attendance Repository API Tests")
 @MainActor

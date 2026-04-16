@@ -3,9 +3,7 @@
 //  Repository
 //
 //  Created by Wonji Suh  on 1/2/26.
-//
-
-import AsyncMoya
+import ThirdPartys
 
 public extension MoyaProvider {
   static var authorized: MoyaProvider<Target> {

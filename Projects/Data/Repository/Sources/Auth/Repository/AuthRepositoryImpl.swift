@@ -10,12 +10,12 @@ import Model
 import Entity
 
 import Service
-import WeaveDI
+import ThirdPartys
 import Dependencies
 import Moya
 import LogMacro
 
-@preconcurrency import AsyncMoya
+import ThirdPartys
 
 
 final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
