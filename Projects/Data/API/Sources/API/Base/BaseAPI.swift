@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import AsyncMoya
 
 public enum BaseAPI : String {
   case base

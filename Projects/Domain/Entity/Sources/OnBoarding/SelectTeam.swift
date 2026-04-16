@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import ComposableArchitecture
 
 // MARK: - 나중에
 //SelectTeam 으로 이름 변경 예정
@@ -40,7 +39,7 @@ public extension SelectTeamEntity {
   
 }
 
-extension IdentifiedArrayOf where Element == SelectTeamEntity {
+extension Array where Element == SelectTeamEntity {
   func orderedSelectTeams() -> [SelectTeams] {
     return self
       .sorted { $0.teamId < $1.teamId }
