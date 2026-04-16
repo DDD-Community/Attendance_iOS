@@ -16,5 +16,6 @@ let project = Project.makeModule(
     .Domain(implements: .UseCase)
 
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: true
 )

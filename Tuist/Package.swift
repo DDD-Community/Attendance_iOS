@@ -50,7 +50,7 @@ let package = Package(
     .package(url: "https://github.com/google/GoogleSignIn-iOS", from: "9.1.0"),
     .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", from: "3.1.4"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.25.5"),
-    .package(url: "https://github.com/Roy-wonji/TCAFlow.git", exact: "1.1.1"),
+    .package(url: "https://github.com/Roy-wonji/TCAFlow.git", exact: "1.1.2"),
     .package(url: "https://github.com/Roy-wonji/AsyncMoya",  from: "1.1.8"),
     .package(url: "https://github.com/SwiftUIX/SwiftUIX.git", from: "0.2.3"),
     .package(url: "https://github.com/openid/AppAuth-iOS.git", from: "2.0.0"),

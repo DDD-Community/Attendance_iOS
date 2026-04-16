@@ -128,6 +128,15 @@ Mixpanel: 5.1.3                    // 사용자 행동 분석
 
 ## 📊 지원 스킬 목록
 
+### TDD 자동화 스킬
+- `@test-auto-pr-agent` - **Swift Testing 기반 완전 자동 테스트 생성**
+  - **8개 전체 도메인** 테스트 코드 자동 생성 (Attendance, Auth, Profile, Schedule, MyPage, QRCode, OnBoarding, Manager)
+  - **106개 테스트 케이스** 자동 구현 및 검증
+  - **docs/tdd/** 폴더 기반 도메인 분석 → 테스트 생성 → PR 자동 생성
+  - **Swift Testing** 프레임워크 사용 (XCTest 대신)
+  - **TCA Mock Store**, **WeaveDI Mock** 자동 설정
+  - 테스트 실행 → 실패 시 자동 수정 → 성공까지 반복
+
 ### 성능 최적화 스킬
 - `@ios-performance-optimizer` - PFW 철학 통합 자동화 시스템 (v4.0)
 - `@ios-performance-pfw` - Point-Free Workshop 전문

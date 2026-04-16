@@ -357,13 +357,61 @@ Projects/Data/Repository/RepositoryTests/Sources/
 ### Phase 1: Core 도메인 (현재)
 - Auth, Attendance, Profile
 
-### Phase 2: 확장 도메인
-- MyPage, Schedule, OnBoarding
+### Phase 2: 확장 도메인 (추가 도메인 테스트 계획)
+
+#### 4. **ScheduleUseCaseTest** - 일정 관리
+| TC 번호 | 테스트 케이스 | 검증 항목 |
+|---------|-------------|-----------|
+| TC-150 | 일정 생성 성공 | createSchedule 정상 플로우 |
+| TC-151 | 일정 생성 실패 (권한 없음) | Member의 일정 생성 시도 |
+| TC-152 | 일정 생성 실패 (잘못된 날짜) | 과거 날짜, 시간 충돌 검증 |
+| TC-153 | 팀별 일정 목록 조회 | fetchSchedules 팀 필터링 |
+| TC-154 | 일정 수정/삭제 권한 검증 | Manager vs Member 권한 |
+| TC-155 | 일정 상태 변경 플로우 | 예정→진행→완료 |
+
+#### 5. **MyPageUseCaseTest** - 마이페이지
+| TC 번호 | 테스트 케이스 | 검증 항목 |
+|---------|-------------|-----------|
+| TC-160 | 내 출석 기록 조회 | fetchMyAttendances 개인 데이터 |
+| TC-161 | 내 일정 목록 조회 | fetchMySchedules 개인별 필터링 |
+| TC-162 | 출석 통계 계산 | 개인 출석률, 지각 횟수 |
+| TC-163 | 알림 설정 관리 | notification preferences |
+| TC-164 | 개인정보 수정 | profile update |
+
+#### 6. **QRCodeUseCaseTest** - QR 코드 스캔
+| TC 번호 | 테스트 케이스 | 검증 항목 |
+|---------|-------------|-----------|
+| TC-170 | QR 코드 스캔 성공 | 유효한 QR 코드 처리 |
+| TC-171 | QR 코드 스캔 실패 | 잘못된/만료된 QR 코드 |
+| TC-172 | 출석 체크 연동 | QR → 출석 등록 플로우 |
+| TC-173 | 중복 스캔 방지 | 동일 세션 중복 처리 |
+
+#### 7. **OnBoardingUseCaseTest** - 온보딩
+| TC 번호 | 테스트 케이스 | 검증 항목 |
+|---------|-------------|-----------|
+| TC-180 | 온보딩 단계 진행 | step-by-step navigation |
+| TC-181 | 권한 요청 처리 | camera, notification 권한 |
+| TC-182 | 팀 선택 및 등록 | team assignment |
+| TC-183 | 온보딩 완료 처리 | user setup completion |
+
+#### 8. **ManagerUseCaseTest** - 관리자 기능
+| TC 번호 | 테스트 케이스 | 검증 항목 |
+|---------|-------------|-----------|
+| TC-190 | 전체 출석 통계 관리 | 관리자 대시보드 데이터 |
+| TC-191 | 팀원 관리 | 팀원 추가/제거/권한 변경 |
+| TC-192 | 일정 일괄 관리 | 다중 일정 생성/수정/삭제 |
+| TC-193 | 시스템 설정 관리 | 앱 전역 설정 변경 |
+
+**Mock 의존성 (확장 도메인):**
+- `MockScheduleRepository`, `MockMyPageRepository`
+- `MockQRCodeService`, `MockOnBoardingRepository`
+- `MockManagerRepository`, `@Shared managerPermissions`
 
 ### Phase 3: 고급 테스트
-- Integration 테스트
-- Performance 테스트
-- UI 테스트
+- Integration 테스트 (도메인 간 연동)
+- Performance 테스트 (대용량 데이터 처리)
+- UI 테스트 (TCA Feature 통합)
+- End-to-End 테스트 (전체 사용자 플로우)
 
 ---
 
