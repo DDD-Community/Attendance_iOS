@@ -148,3 +148,27 @@ extension Settings {
     
   }
 }
+
+
+// MARK: - Settings Extensions
+extension Settings {
+  public static func repositoryBaseSettings() -> Settings {
+    .settings(
+      base: [
+        "IPHONEOS_DEPLOYMENT_TARGET": "18.0",
+        "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
+      ]
+    )
+  }
+  
+  public static func repositoryTestSettings() -> Settings {
+    .settings(
+      base: [
+        "IPHONEOS_DEPLOYMENT_TARGET": "18.0",
+        "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings",
+        "ENABLE_TESTING_SEARCH_PATHS": "YES",
+        "SWIFT_TESTING": "YES"
+      ]
+    )
+  }
+}
