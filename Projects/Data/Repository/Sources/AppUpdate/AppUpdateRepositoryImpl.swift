@@ -63,45 +63,24 @@ public final class AppUpdateRepositoryImpl: AppUpdateInterface {
     }
 
     private func fetchAppStoreInfo() async throws -> AppStoreInfoDTO {
-        // 한국과 미국 앱스토어 정보를 동시에 가져오기
-        async let koTask = fetchAppStoreInfo(country: "kr")
-        async let usTask = fetchAppStoreInfo(country: "us")
+        let currentLanguage = getCurrentAppLanguage()
+        #logDebug("[AppUpdate] Current app language", currentLanguage)
 
-        do {
-            let koResult = try await koTask
-            #logDebug("[AppUpdate] Korean store result", koResult)
+        // 언어에 따른 우선순위 결정
+        let primaryCountry = currentLanguage == "ko" ? "kr" : "us"
+        let fallbackCountry = currentLanguage == "ko" ? "us" : "kr"
 
-            do {
-                let usResult = try await usTask
-                #logDebug("[AppUpdate] US store result", usResult)
-
-                // 앱 언어 설정에 따라 적절한 버전 선택
-                let currentLanguage = getCurrentAppLanguage()
-                #logDebug("[AppUpdate] Current app language", currentLanguage)
-
-                if currentLanguage == "ko" {
-                    #logDebug("[AppUpdate] Using Korean version (app language: ko)")
-                    return koResult
-                } else {
-                    #logDebug("[AppUpdate] Using US version (app language: \(currentLanguage))")
-                    return usResult
-                }
-            } catch {
-                #logDebug("[AppUpdate] US store failed, using Korean result")
-                return koResult
-            }
-        } catch {
-            #logDebug("[AppUpdate] Korean store failed, trying US only")
-
-            do {
-                let usResult = try await usTask
-                #logDebug("[AppUpdate] Using US store as fallback")
-                return usResult
-            } catch {
-                #logError("[AppUpdate] Both stores failed", error.localizedDescription)
-                throw error
-            }
+        // 우선 스토어 시도
+        if let result = try? await fetchAppStoreInfo(country: primaryCountry) {
+            #logDebug("[AppUpdate] Using \(primaryCountry) store result")
+            return result
         }
+
+        // 폴백 스토어 시도
+        #logDebug("[AppUpdate] \(primaryCountry) store failed, trying \(fallbackCountry)")
+        let fallbackResult = try await fetchAppStoreInfo(country: fallbackCountry)
+        #logDebug("[AppUpdate] Using \(fallbackCountry) store as fallback")
+        return fallbackResult
     }
 
     private func fetchAppStoreInfo(country: String) async throws -> AppStoreInfoDTO {
