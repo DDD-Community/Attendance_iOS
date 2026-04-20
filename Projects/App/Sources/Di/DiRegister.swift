@@ -16,15 +16,16 @@ import ComposableArchitecture
 import WeaveDI
 import Auth
 
-/// 🚀 **PFW + WeaveDI 3.4.1 통합 DI 관리자**
+/// 기본 WeaveDI 관리자 (단순하고 안정적)
 @MainActor
-public final class AppDIManager {
+public final class AppDIManager: Sendable {
   public static let shared = AppDIManager()
 
   private init() {}
 
-  /// 🎯 PFW 철학 + WeaveDI 3.4.1 패턴으로 의존성 등록
-  public func registerDefaultDependencies() async {
+  /// 기본 WeaveDI 의존성 등록 (Repository만)
+  public func registerDefaultDependencies() {
+    // Repository 구현체들만 등록
     WeaveDI.builder
       // 🔧 인프라 계층 (PFW 단순성 원칙)
       .register { KeychainManager() as KeychainManaging }
@@ -55,5 +56,4 @@ public final class AppDIManager {
 
       .configure()
   }
-
 }

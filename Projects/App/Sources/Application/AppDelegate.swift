@@ -1,6 +1,5 @@
 import UIKit
 import WeaveDI
-
 import Firebase
 
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -10,6 +9,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   ) -> Bool {
     FirebaseApp.configure()
 
+    // 🧠 메모리 관리 시스템 초기화 (우선) - 모듈 분리 완료시 활성화
+    // Task { @MainActor in
+    //   _ = MemoryPressureManager.shared
+    //   #if DEBUG
+    //   _ = MemoryLeakDetector.shared
+    //   print("🚀 [AppDelegate] Memory management systems initialized")
+    //   #endif
+    // }
+
+    // DI 관리자 초기화
     WeaveDI.Container.bootstrapInTask { @DIContainerActor _ in
       await AppDIManager.shared.registerDefaultDependencies()
     }

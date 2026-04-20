@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Alamofire
 import LogMacro
 
 struct AccessTokenCredential: Sendable {
@@ -20,16 +19,24 @@ struct AccessTokenCredential: Sendable {
     Date().addingTimeInterval(refreshLeadTime) >= expiration
   }
 
+  /// 토큰이 완전히 만료되었는지 확인
+  var isExpired: Bool {
+    Date() >= expiration
+  }
+
   static func make(
     accessToken: String,
     refreshToken: String
   ) -> AccessTokenCredential {
     // JWT 디코딩을 시도하되, 실패하면 기본 만료시간 사용 (24시간 후)
     let fallbackExpiration = Date().addingTimeInterval(24 * 60 * 60) // 24시간
-    let expiration = decodeExpiration(from: accessToken) ?? {
+    let expiration: Date
+    if let decodedExpiration = decodeExpiration(from: accessToken) {
+      expiration = decodedExpiration
+    } else {
       #logDebug("⚠️ JWT decoding failed, using fallback expiration: 24 hours from now")
-      return fallbackExpiration
-    }()
+      expiration = fallbackExpiration
+    }
 
     return AccessTokenCredential(
       accessToken: accessToken,
@@ -74,8 +81,10 @@ private extension AccessTokenCredential {
     }
 
     let expirationDate = Date(timeIntervalSince1970: exp)
-    #logDebug("✅ JWT expiration decoded successfully: \(expirationDate)")
-    #logDebug("🕐 Time until expiration: \(expirationDate.timeIntervalSinceNow / 3600) hours")
+    // #logDebug
+      #logDebug("✅ JWT expiration decoded successfully: \(expirationDate)")
+    // #logDebug
+      #logDebug("🕐 Time until expiration: \(expirationDate.timeIntervalSinceNow / 3600) hours")
 
     return expirationDate
   }

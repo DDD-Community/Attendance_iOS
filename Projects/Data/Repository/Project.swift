@@ -15,7 +15,9 @@ let project = Project.makeModule(
     .Data(implements: .Model),
     .Domain(implements: .DomainInterface),
     .Domain(implements: .Entity),
+    .Network(implements: .Foundations),
     .SPM.asyncMoya,
+    .SPM.composableArchitecture,
     .SPM.googleSignIn
   ],
   sources: ["Sources/**"],

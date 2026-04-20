@@ -16,11 +16,23 @@ import Service
 @Observable
 final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
   private let provider: MoyaProvider<AttendanceService>
-  
+
   public init(
-    provider: MoyaProvider<AttendanceService> = MoyaProvider<AttendanceService>.authorized
+    provider: MoyaProvider<AttendanceService>? = nil
   ) {
-    self.provider = provider
+    // 🚀 MoyaProviderPool 사용으로 메모리 최적화
+    self.provider = provider ?? MoyaProviderPool.shared.authorizedProvider(for: AttendanceService.self)
+
+    #if DEBUG
+    // 메모리 누수 감지를 위한 추적 시작
+    MemoryLeakDetector.shared.trackObject(self, name: "AttendanceRepositoryImpl")
+    #endif
+  }
+
+  deinit {
+    #if DEBUG
+    #logDebug("🗑️ [AttendanceRepositoryImpl] Repository deallocated")
+    #endif
   }
 
   // MARK: - 운영진  출석 데이터 api

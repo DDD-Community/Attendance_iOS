@@ -24,11 +24,23 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
   private let authProvider: MoyaProvider<AuthService>
 
   public init(
-    provider: MoyaProvider<AuthService> = MoyaProvider<AuthService>.default,
-    authProvider: MoyaProvider<AuthService> = MoyaProvider<AuthService>.authorized
+    provider: MoyaProvider<AuthService>? = nil,
+    authProvider: MoyaProvider<AuthService>? = nil
   ) {
-    self.provider = provider
-    self.authProvider = authProvider
+    // 🚀 MoyaProviderPool 사용으로 메모리 최적화
+    self.provider = provider ?? MoyaProviderPool.shared.defaultProvider(for: AuthService.self)
+    self.authProvider = authProvider ?? MoyaProviderPool.shared.authorizedProvider(for: AuthService.self)
+
+    #if DEBUG
+    // 메모리 누수 감지를 위한 추적 시작
+    MemoryLeakDetector.shared.trackObject(self, name: "AuthRepositoryImpl")
+    #endif
+  }
+
+  deinit {
+    #if DEBUG
+    #logDebug("🗑️ [AuthRepositoryImpl] Repository deallocated")
+    #endif
   }
 
   // MARK: - 로그인 API

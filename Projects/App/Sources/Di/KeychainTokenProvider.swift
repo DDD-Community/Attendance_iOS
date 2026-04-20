@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+// 필요 모듈만 사용
 import DomainInterface
 import Foundations
 
