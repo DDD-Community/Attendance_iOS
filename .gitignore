@@ -149,3 +149,6 @@ Derived/
 
 # Claude Code symbolic link (links to AGENTS.md)
 CLAUDE.md
+
+# OMC (oh-my-claudecode) state files
+.omc/state/hud-stdin-cache.json
