@@ -13,6 +13,7 @@ jobs:
   codex_review:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       contents: read
     outputs:
@@ -35,6 +36,7 @@ jobs:
 
       - name: Run Codex review
         id: run_codex
+        continue-on-error: true
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -70,9 +72,21 @@ jobs:
             Pull request body:
             ${{ github.event.pull_request.body }}
 
+      - name: Add workflow summary on Codex failure
+        if: steps.run_codex.outcome == 'failure'
+        run: |
+          {
+            echo "## Codex PR Review"
+            echo
+            echo "Codex 리뷰 실행에 실패했습니다."
+            echo
+            echo "- 원인 후보: OPENAI_API_KEY 미설정, API quota 초과, billing 제한"
+            echo "- 현재 실행은 PR 테스트/검증과 분리되어 있으며, Codex 리뷰 실패만으로 전체 품질 검증을 막지 않도록 설정되었습니다."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   post_feedback:
     needs: codex_review
-    if: needs.codex_review.outputs.final_message != ''
+    if: always() && needs.codex_review.outputs.final_message != ''
     runs-on: ubuntu-latest
     permissions:
       issues: write
