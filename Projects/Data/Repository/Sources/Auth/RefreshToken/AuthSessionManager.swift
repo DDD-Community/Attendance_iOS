@@ -11,7 +11,6 @@ import DomainInterface
 import Entity
 import WeaveDI
 import Alamofire
-import LogMacro
 
 final class AuthSessionManager {
   static let shared = AuthSessionManager()
@@ -19,16 +18,7 @@ final class AuthSessionManager {
   @Dependency(\.keychainManager) var keychainManager
   
   // 인터셉터가 직접 크리덴셜을 관리하지 않으므로, SessionManager가 크리덴셜을 소유하고 관리합니다.
-  var credential: AccessTokenCredential? {
-    didSet {
-      // 🚀 메모리 최적화: 이전 credential 즉시 정리
-      if oldValue != nil && credential == nil {
-#if DEBUG
-        #logDebug("🧹 [AuthSessionManager] Credential cleared from memory")
-#endif
-      }
-    }
-  }
+  var credential: AccessTokenCredential?
   
   let session: Session
   
@@ -41,16 +31,10 @@ final class AuthSessionManager {
     setupInitialCredential()
     setupMemoryOptimization()
     
-#if DEBUG
-    MemoryLeakDetector.shared.trackObject(self, name: "AuthSessionManager")
-#endif
   }
   
   deinit {
     memoryCleanupTimer?.invalidate()
-#if DEBUG
-    #logDebug("🗑️ [AuthSessionManager] SessionManager deallocated")
-#endif
   }
   
   func updateCredential(with tokens: AuthTokens) {
@@ -86,9 +70,6 @@ final class AuthSessionManager {
   
   /// 주기적 메모리 정리
   private func performPeriodicCleanup() {
-#if DEBUG
-    #logDebug("🧹 [AuthSessionManager] Performing periodic memory cleanup")
-#endif
     
     // 만료된 credential 정리
     if let credential = credential, credential.isExpired {
@@ -98,9 +79,6 @@ final class AuthSessionManager {
   
   /// 강제 메모리 정리
   private func forceMemoryCleanup() {
-#if DEBUG
-    #logDebug("🚨 [AuthSessionManager] Force memory cleanup triggered")
-#endif
     
     // 모든 credential 정리 (메모리 압박 상황)
     credential = nil

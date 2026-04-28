@@ -14,7 +14,6 @@ import Entity
 import ComposableArchitecture
 // 외부 의존성
 import Moya
-import LogMacro
 
 final public class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable {
     @Shared(.appStorage("staffRole")) var staffRole: Staff?
@@ -27,16 +26,6 @@ final public class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable 
         // 🚀 MoyaProviderPool 사용으로 메모리 최적화
         self.provider = provider ?? MoyaProviderPool.shared.authorizedProvider(for: ProfileService.self)
 
-        #if DEBUG
-        // 메모리 누수 감지를 위한 추적 시작
-        MemoryLeakDetector.shared.trackObject(self, name: "ProfileRepositoryImpl")
-        #endif
-    }
-
-    deinit {
-        #if DEBUG
-        #logDebug("🗑️ [ProfileRepositoryImpl] Repository deallocated")
-        #endif
     }
 
     // MARK: - 프로필 조회

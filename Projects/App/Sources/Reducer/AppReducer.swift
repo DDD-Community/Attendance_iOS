@@ -59,7 +59,9 @@ public struct AppReducer: Sendable {
 
   //MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
-
+    case completeAuthTransition
+    case completeStaffTransition
+    case completeMemberTransition
   }
 
   //MARK: - 비동기 처리 액션
@@ -105,6 +107,12 @@ public struct AppReducer: Sendable {
       .cancel(id: CancelID.coordinator(.member)),
       .cancel(id: CancelID.coordinator(.auth)),
 
+      // Coordinator 내부 장기 effect 취소
+      .cancel(id: StaffCoordinator.CancelID.allEffects),
+      .cancel(id: StaffCoordinator.CancelID.profileEffects),
+      .cancel(id: MemberCoordinator.CancelID.allEffects),
+      .cancel(id: MemberCoordinator.CancelID.profileEffects),
+
       // ProfileReducer 핵심 Effect만
       .cancel(id: ProfileReducer.CancelID.fetchProfile),
       .cancel(id: ProfileReducer.CancelID.deleteUser),
@@ -112,11 +120,12 @@ public struct AppReducer: Sendable {
     ])
   }
 
-  // 🎯 PFW 패턴: 단순한 상태 전환
-  private func transitionToState() -> Effect<Action> {
-    return .concatenate(
+  // 🎯 PFW 패턴: 상태 변경 전에 effect 취소를 먼저 완료
+  private func startTransition(_ action: InnerAction) -> Effect<Action> {
+    .concatenate(
       cancelAllCoordinatorEffects(),
-      .run { _ in await Task.yield() } // 메모리 정리
+      .run { _ in await Task.yield() },
+      .send(.inner(action))
     )
     .cancellable(id: CancelID.transition, cancelInFlight: true)
   }
@@ -170,24 +179,16 @@ public struct AppReducer: Sendable {
       }
 
     case .presentRoot:
-      // 🎯 PFW 패턴: 간단한 루트 전환
-      state = .member(.init())
-      return transitionToState()
+      return startTransition(.completeMemberTransition)
 
     case .presentAuth:
-      // 🔥 TCA 해결책 3: Auth 전환 원자성 보장
-      state = .auth(.init())
-      return transitionToState()
+      return startTransition(.completeAuthTransition)
 
     case .presentStaff:
-      // 🔥 TCA 해결책 4: Staff 전환 원자성 보장
-      state = .staff(.init())
-      return transitionToState()
+      return startTransition(.completeStaffTransition)
 
     case .presentMember:
-      // 🔥 TCA 해결책 5: Member 전환 원자성 보장
-      state = .member(.init())
-      return transitionToState()
+      return startTransition(.completeMemberTransition)
     }
   }
 
@@ -201,9 +202,7 @@ public struct AppReducer: Sendable {
         .cancellable(id: CancelID.refreshTokenListener, cancelInFlight: true)
 
     case .refreshTokenExpired:
-      // 🔥 TCA 해결책: 토큰 만료시 완전한 Effect 정리
-      state = .auth(.init())
-      return transitionToState()
+      return startTransition(.completeAuthTransition)
     }
   }
 
@@ -211,7 +210,19 @@ public struct AppReducer: Sendable {
     state: inout State,
     action: InnerAction
   ) -> Effect<Action> {
-    return .none
+    switch action {
+    case .completeAuthTransition:
+      state = .auth(.init())
+      return .none
+
+    case .completeStaffTransition:
+      state = .staff(.init())
+      return .none
+
+    case .completeMemberTransition:
+      state = .member(.init())
+      return .none
+    }
   }
 
   private func handleNavigationAction(

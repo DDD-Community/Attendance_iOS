@@ -31,16 +31,6 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
     self.provider = provider ?? MoyaProviderPool.shared.defaultProvider(for: AuthService.self)
     self.authProvider = authProvider ?? MoyaProviderPool.shared.authorizedProvider(for: AuthService.self)
 
-    #if DEBUG
-    // 메모리 누수 감지를 위한 추적 시작
-    MemoryLeakDetector.shared.trackObject(self, name: "AuthRepositoryImpl")
-    #endif
-  }
-
-  deinit {
-    #if DEBUG
-    #logDebug("🗑️ [AuthRepositoryImpl] Repository deallocated")
-    #endif
   }
 
   // MARK: - 로그인 API

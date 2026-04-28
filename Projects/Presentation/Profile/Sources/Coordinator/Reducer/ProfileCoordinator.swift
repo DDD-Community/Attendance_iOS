@@ -85,11 +85,13 @@ extension ProfileCoordinator {
   ) -> Effect<Action> {
     switch action {
     case .routeAction(id: _, action: .profile(.navigation(.presentLogOut))):
+      state.routes.goBackToRoot()
       return .concatenate(
         .cancel(id: ProfileReducer.CancelID.fetchProfile),
         .cancel(id: ProfileReducer.CancelID.deleteUser),
         .cancel(id: ProfileReducer.CancelID.logoutUser),
         .run { send in
+          await Task.yield()
           await send(.navigation(.presentLogin))
         }
       )

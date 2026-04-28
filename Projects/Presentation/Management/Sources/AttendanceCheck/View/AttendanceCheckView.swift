@@ -126,9 +126,7 @@ extension AttendanceCheckView {
                   }
                 }
                 .onPreferenceChange(TeamTextWidthPreferenceKey.self) { newWidths in
-                  for (key, width) in newWidths {
-                    store.dividerWidths[key] = width
-                  }
+                  store.send(.view(.updateDividerWidths(newWidths)))
                 }
                 .onTapGesture {
                   store.send(.view(.selectPartButton(selectPart: item)))

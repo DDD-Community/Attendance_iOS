@@ -12,7 +12,6 @@ import Entity
 import Service
 // 외부 의존성
 import Moya
-import LogMacro
 
 final public class MyPageRepositoryImpl: MyPageRepositoryInterface {
   private let provider: MoyaProvider<MyPageService>
@@ -23,16 +22,6 @@ final public class MyPageRepositoryImpl: MyPageRepositoryInterface {
     // 🚀 MoyaProviderPool 사용으로 메모리 최적화
     self.provider = provider ?? MoyaProviderPool.shared.authorizedProvider(for: MyPageService.self)
 
-    #if DEBUG
-    // 메모리 누수 감지를 위한 추적 시작
-    MemoryLeakDetector.shared.trackObject(self, name: "MyPageRepositoryImpl")
-    #endif
-  }
-
-  deinit {
-    #if DEBUG
-    #logDebug("🗑️ [MyPageRepositoryImpl] Repository deallocated")
-    #endif
   }
   
   /// 출석 현황 요약 조회

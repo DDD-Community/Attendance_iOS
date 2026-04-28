@@ -152,3 +152,9 @@ CLAUDE.md
 
 # OMC (oh-my-claudecode) state files
 .omc/
+
+# OMX local state
+.omx/
+
+# Codex / OMX
+.omx/

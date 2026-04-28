@@ -85,6 +85,7 @@ public struct AttendanceCheck {
     case tapSelectDate
     case showEditAttendanceModal(id: Int?, userId: String)
     case refreshData // 수동 새로고침
+    case updateDividerWidths([Int: CGFloat])
   }
   
   // MARK: - AsyncAction 비동기 처리 액션
@@ -210,6 +211,12 @@ extension AttendanceCheck {
         .run { await $0(.async(.fetchTeams)) },
         .run { await $0(.async(.fetchStatus)) }
       )
+
+    case .updateDividerWidths(let widths):
+      for (key, width) in widths {
+        state.dividerWidths[key] = width
+      }
+      return .none
       
     case .selectPartButton(let selectPart):
       state.selectPart = selectPart.teams

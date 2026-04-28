@@ -6,7 +6,7 @@
 //
 
 import Foundations
-import Moya
+import AsyncMoya
 
 public extension MoyaProvider {
   static var authorized: MoyaProvider<Target> {
@@ -15,19 +15,15 @@ public extension MoyaProvider {
     return MoyaProvider(
       session: manager.session,
       plugins: [
-        OptimizedMoyaPlugin()  // 🚀 최적화된 플러그인 사용
+        MoyaLoggingPlugin()  // 🚀 최적화된 플러그인 사용
         // MoyaLoggingPlugin 제거 - 사용 불가
       ]
     )
   }
 
-  /// 중복 요청 제거가 적용된 request 메서드
+  /// 중복 제거 로직 없이 일반 요청을 수행하는 메서드
   func requestWithDeduplication(_ target: Target) async throws -> Moya.Response {
-    return try await RequestDeduplicator.shared.executeRequest(
-      provider: self,
-      target: target,
-      enableDeduplication: true
-    )
+    try await requestResponse(target)
   }
 
   /// 배치 요청을 위한 메서드 (동시 실행) - 간소화
