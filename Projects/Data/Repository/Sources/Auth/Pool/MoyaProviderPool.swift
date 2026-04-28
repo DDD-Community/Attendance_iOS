@@ -23,7 +23,7 @@ public final class MoyaProviderPool: @unchecked Sendable {
   public func defaultProvider<T: TargetType>(for targetType: T.Type) -> MoyaProvider<T> {
     let key = String(describing: targetType)
     
-    return queue.sync {
+    return queue.sync(flags: .barrier) {
       if let existingProvider = defaultProviders[key] as? MoyaProvider<T> {
         return existingProvider
       }
@@ -38,7 +38,7 @@ public final class MoyaProviderPool: @unchecked Sendable {
   public func authorizedProvider<T: TargetType>(for targetType: T.Type) -> MoyaProvider<T> {
     let key = String(describing: targetType)
     
-    return queue.sync {
+    return queue.sync(flags: .barrier) {
       if let existingProvider = authorizedProviders[key] as? MoyaProvider<T> {
         return existingProvider
       }
