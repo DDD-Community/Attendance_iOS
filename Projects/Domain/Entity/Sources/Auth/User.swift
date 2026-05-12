@@ -1,23 +1,20 @@
 //
-//  UserEntity.swift
-//  Model
+//  User.swift
+//  Entity
 //
-//  Created by Wonji Suh  on 5/7/25.
+//  Created by Wonji Suh on 5/12/26.
 //
 
 import Foundation
-import Entity
 
-public enum UserRole: String {
-  case member    = "member"
-  case moderator = "moderator"
+public enum UserRole: String, Equatable {
+  case member
+  case moderator
 }
 
+public struct User: Equatable {
+  public static let shared = User()
 
-public struct UserEntity: Equatable{
-  
-  public static let shared = UserEntity()
-  
   public var userEmail: String
   public var userName: String
   public var signUpName: String
@@ -26,14 +23,11 @@ public struct UserEntity: Equatable{
   public var refreshToken: String
   public var inviteCodeId: String?
   public var userRole: UserRole?
-  public var managing: Managing?
-  public var role: SelectPart?
-  public var memberTeam: SelectTeam?
-
-  // 프로필에서 가져온 역할 정보 (Staff enum)
+  public var managing: StaffManaging?
+  public var role: SelectParts?
+  public var memberTeam: SelectTeams?
   public var staffRole: Staff?
-  
-  
+
   public init(
     userEmail: String = "",
     userName: String = "",
@@ -42,24 +36,23 @@ public struct UserEntity: Equatable{
     accessToken: String = "",
     refreshToken: String = "",
     inviteCodeId: String? = nil,
-    userRole: UserRole = .moderator,
-    managing: Managing? = nil,
-    role: SelectPart? = nil,
-    memberTeam: SelectTeam? = nil,
+    userRole: UserRole? = .moderator,
+    managing: StaffManaging? = nil,
+    role: SelectParts? = nil,
+    memberTeam: SelectTeams? = nil,
     staffRole: Staff? = nil
   ) {
     self.userEmail = userEmail
-    self.userUid = userUid
+    self.userName = userName
     self.signUpName = signUpName
+    self.userUid = userUid
     self.accessToken = accessToken
     self.refreshToken = refreshToken
     self.inviteCodeId = inviteCodeId
-    self.userName = userName
     self.userRole = userRole
-    self.role = role
     self.managing = managing
+    self.role = role
     self.memberTeam = memberTeam
     self.staffRole = staffRole
   }
-  
 }
