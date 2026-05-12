@@ -1,0 +1,10 @@
+--indent 2
+--maxwidth 120
+--ifdef no-indent
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--commas inline
+--trimwhitespace always
+--semicolons never
+--header ignore

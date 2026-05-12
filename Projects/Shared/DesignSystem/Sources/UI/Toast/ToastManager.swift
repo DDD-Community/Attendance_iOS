@@ -18,6 +18,11 @@ public class ToastManager: ObservableObject {
   private var dismissTask: Task<Void, Never>?
   private var hideAnimationTask: Task<Void, Never>?
 
+  // 🎯 PFW + 메모리 최적화: WeakSingleton 패턴 고려
+  // TODO: SmartSingleton 프로토콜로 마이그레이션 예정
+  // public class ToastManager: ObservableObject, SmartSingleton {
+  //   required public init() {}
+
   private init() {}
 
   public func showToast(

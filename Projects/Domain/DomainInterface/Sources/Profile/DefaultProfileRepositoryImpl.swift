@@ -8,12 +8,19 @@
 import Entity
 
 /// Mock 구현체 - 테스트/프리뷰용 ProfileRepository
-final public class DefaultProfileRepositoryImpl: ProfileInterface {
-
+public final class DefaultProfileRepositoryImpl: ProfileInterface {
   private let mockUserType: MockUserType
 
   public init(mockUserType: MockUserType = .member) {
     self.mockUserType = mockUserType
+  }
+
+  public func getCachedProfile() async -> ProfileEntity? {
+    nil
+  }
+
+  public func refreshProfile() async throws -> ProfileEntity {
+    try await getProfile()
   }
 
   public func getProfile() async throws -> ProfileEntity {
@@ -77,7 +84,6 @@ public enum MockUserType {
 }
 
 private extension DefaultProfileRepositoryImpl {
-
   func createMemberProfile() -> ProfileEntity {
     return ProfileEntity(
       userID: 0,
@@ -114,4 +120,3 @@ private extension DefaultProfileRepositoryImpl {
     )
   }
 }
-

@@ -91,7 +91,7 @@ public extension UnifiedOAuthUseCase {
     )
 
     // AuthSessionManager의 credential도 업데이트
-    authRepository.updateSessionCredential(with: loginEntity.token)
+    await authRepository.updateSessionCredential(with: loginEntity.token)
 
     // UserSession에 oauthRefreshToken 설정 (Apple 로그인의 경우)
     self.$userSession.withLock {
@@ -127,7 +127,7 @@ public extension UnifiedOAuthUseCase {
     )
 
     // AuthSessionManager의 credential도 업데이트
-    authRepository.updateSessionCredential(with: loginEntity.token)
+    await authRepository.updateSessionCredential(with: loginEntity.token)
 
     if loginEntity.isNewUser == true {
 

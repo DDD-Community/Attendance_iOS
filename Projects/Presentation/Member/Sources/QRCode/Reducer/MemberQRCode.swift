@@ -8,8 +8,8 @@
 import Foundation
 import SwiftUI
 
-import Shareds
 import Entity
+import Shareds
 
 import ComposableArchitecture
 import LogMacro
@@ -24,7 +24,7 @@ public struct MemberQRCode {
     var didAppear: Bool = false
 
     var qrCodeImage: SwiftUI.Image? = nil
-    
+
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   }
 
@@ -47,8 +47,8 @@ public struct MemberQRCode {
   }
 
   public enum InnerAction: Equatable {
-    case onCreateQRCodeResponse(Result<String, CustomError>)
-    case onGenerateQRCodeImage(Result<SwiftUI.Image?, CustomError>)
+    case onCreateQRCodeResponse(Result<String, QRCodeError>)
+    case onGenerateQRCodeImage(Result<SwiftUI.Image?, QRCodeError>)
   }
 
   public enum NavigationAction: Equatable {
@@ -65,16 +65,16 @@ public struct MemberQRCode {
       case .binding:
         return .none
 
-      case .view(let action):
+      case let .view(action):
         return handleViewAction(state: &state, action: action)
 
-      case .inner(let action):
+      case let .inner(action):
         return handleInnerAction(state: &state, action: action)
 
-      case .async(let action):
+      case let .async(action):
         return handleAsyncAction(state: &state, action: action)
 
-      case .navigation(let action):
+      case let .navigation(action):
         return handleNavigationAction(state: &state, action: action)
       }
     }
@@ -105,27 +105,27 @@ extension MemberQRCode {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-    case .onCreateQRCodeResponse(let result):
+    case let .onCreateQRCodeResponse(result):
       switch result {
-      case .success(let qrCodeString):
+      case let .success(qrCodeString):
         #logDebug("succeed create QRCode:", qrCodeString)
         return .run { send in
           await send(.async(.generateQRCodeImage(qrCodeString)))
         }
 
-      case .failure(let error):
+      case let .failure(error):
         #logDebug("failed create QRCode:", error)
         return .none
       }
 
-    case .onGenerateQRCodeImage(let result):
+    case let .onGenerateQRCodeImage(result):
       switch result {
-      case .success(let image):
+      case let .success(image):
         #logDebug("succeed generate QRCodeImage")
         state.qrCodeImage = image
         return .none
 
-      case .failure(let error):
+      case let .failure(error):
         #logDebug("failed generate QRCodeImage:", error)
         return .none
       }
@@ -145,25 +145,25 @@ extension MemberQRCode {
         }
 
         switch result {
-          case .success(let qrCodeString):
+        case let .success(qrCodeString):
           await send(.inner(.onCreateQRCodeResponse(.success(qrCodeString))))
 
-        case .failure(let error):
-          let error = CustomError.map(error)
+        case let .failure(error):
+          let error = QRCodeError.from(error)
           await send(.inner(.onCreateQRCodeResponse(.failure(error))))
         }
       }
 
-    case .generateQRCodeImage(let qrCodeString):
+    case let .generateQRCodeImage(qrCodeString):
       return .run { send in
         let result = await Result { await qrCodeUseCase.generateQRCode(from: qrCodeString) }
 
         switch result {
-          case .success(let image):
+        case let .success(image):
           await send(.inner(.onGenerateQRCodeImage(.success(image))))
 
-        case .failure(let error):
-          let error = CustomError.map(error)
+        case let .failure(error):
+          let error = QRCodeError.from(error)
           await send(.inner(.onGenerateQRCodeImage(.failure(error))))
         }
       }
@@ -171,7 +171,7 @@ extension MemberQRCode {
   }
 
   private func handleNavigationAction(
-    state: inout State,
+    state _: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {

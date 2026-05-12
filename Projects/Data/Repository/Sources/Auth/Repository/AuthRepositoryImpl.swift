@@ -6,46 +6,50 @@
 //
 
 import DomainInterface
-import Model
 import Entity
+import Model
 
+import Dependencies
+import LogMacro
+import Moya
 import Service
 import WeaveDI
-import Dependencies
-import Moya
-import LogMacro
 
 @preconcurrency import AsyncMoya
 
-
-final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
+public final class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
   @Dependency(\.keychainManager) private var keychainManager
+  @Dependency(\.profileLocalDataSource) private var profileLocalDataSource
+  @Dependency(\.scheduleLocalDataSource) private var scheduleLocalDataSource
+
   private let provider: MoyaProvider<AuthService>
   private let authProvider: MoyaProvider<AuthService>
 
   public init(
-    provider: MoyaProvider<AuthService> = MoyaProvider<AuthService>.default,
-    authProvider: MoyaProvider<AuthService> = MoyaProvider<AuthService>.authorized
+    provider: MoyaProvider<AuthService>? = nil,
+    authProvider: MoyaProvider<AuthService>? = nil
   ) {
-    self.provider = provider
-    self.authProvider = authProvider
+    // 🚀 MoyaProviderPool 사용으로 메모리 최적화
+    self.provider = provider ?? MoyaProviderPool.shared.defaultProvider(for: AuthService.self)
+    self.authProvider = authProvider ?? MoyaProviderPool.shared.authorizedProvider(for: AuthService.self)
   }
 
   // MARK: - 로그인 API
+
   public func login(
     provider socialProvider: SocialType,
     token: String
   ) async throws -> LoginEntity {
     let dto: LoginResponseDTO = try await provider.request(
       .login(body: OAuthLoginRequest(provider: socialProvider.description, token: token))
-     )
+    )
     return dto.toDomain()
   }
 
-
   // MARK: - 토큰 재발급
+
   public func refresh() async throws -> AuthTokens {
-    let refreshToken  = keychainManager.refreshToken() ?? ""
+    let refreshToken = keychainManager.refreshToken() ?? ""
 
     do {
       // Use non-authorized provider to avoid interceptor recursion on refresh.
@@ -68,10 +72,10 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
       // MoyaError 401 체크
       if let moyaError = error as? MoyaError {
         switch moyaError {
-        case .statusCode(let response) where response.statusCode == 401:
+        case let .statusCode(response) where response.statusCode == 401:
           #logDebug("🚪 [AuthRepositoryImpl] MoyaError statusCode 401 detected - AuthInterceptor will handle logout")
           throw AuthError.refreshTokenExpired
-        case .underlying(_, let response) where response?.statusCode == 401:
+        case let .underlying(_, response) where response?.statusCode == 401:
           #logDebug("🚪 [AuthRepositoryImpl] MoyaError underlying 401 detected - AuthInterceptor will handle logout")
           throw AuthError.refreshTokenExpired
         default:
@@ -82,7 +86,9 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
       // 에러 메시지에서 401 키워드 체크
       let errorDesc = error.localizedDescription.lowercased()
       if errorDesc.contains("401") || errorDesc.contains("유효하지 않은 토큰") {
-        #logDebug("🚪 [AuthRepositoryImpl] Error description contains 401/invalid token - AuthInterceptor will handle logout")
+        #logDebug(
+          "🚪 [AuthRepositoryImpl] Error description contains 401/invalid token - AuthInterceptor will handle logout"
+        )
         throw AuthError.refreshTokenExpired
       }
 
@@ -91,12 +97,15 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
   }
 
   // MARK: - 로그아웃
+
   public func logout() async throws -> AuthExitEntity {
     let response = try await authProvider.requestResponse(.logout)
     let decoder = JSONDecoder()
 
-    if (200...299).contains(response.statusCode) {
+    if (200 ... 299).contains(response.statusCode) {
       keychainManager.clear()
+      try? await profileLocalDataSource.clear()
+      try? await scheduleLocalDataSource.clear()
       if response.data.isEmpty {
         return AuthExitEntity()
       }
@@ -109,17 +118,20 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
     if let errorDTO = try? decoder.decode(LogOutDTO.self, from: response.data) {
       return errorDTO.toDomain()
     }
-    
+
     let errorMessage = String(data: response.data, encoding: .utf8)
     return AuthExitEntity(message: errorMessage)
   }
 
   // MARK: - 계정 삭제
+
   public func withDraw(token: String) async throws -> WithdrawEntity {
     let response = try await provider.requestResponse(.withdraw(token: token))
     let decoder = JSONDecoder()
 
-    if (200...299).contains(response.statusCode) {
+    if (200 ... 299).contains(response.statusCode) {
+      try? await profileLocalDataSource.clear()
+      try? await scheduleLocalDataSource.clear()
       if response.data.isEmpty {
         return WithdrawEntity(isSuccess: true)
       }
@@ -139,8 +151,8 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
   }
 
   // MARK: - 세션 Credential 업데이트
+
   public func updateSessionCredential(with tokens: AuthTokens) {
     AuthSessionManager.shared.updateCredential(with: tokens)
   }
-
 }

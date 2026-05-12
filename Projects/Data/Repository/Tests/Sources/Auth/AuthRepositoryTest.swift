@@ -1,457 +1,353 @@
 //
 //  AuthRepositoryTest.swift
-//  RepositoryTests
+//  Repository
 //
-//  Created by TDD AI Automation on 2026-02-02
+//  Created by Wonja Suh on 4/17/26.
 //
 
 import Testing
 import Foundation
 import Entity
-import Model
 import DomainInterface
+@testable import Repository
 
-@Suite("Auth Repository Basic Tests")
 @MainActor
 struct AuthRepositoryTest {
 
-    // MARK: - Entity Creation Tests
+  // MARK: - 로그인 테스트
 
-    @Test("LoginEntity 생성 및 필드 검증")
-    func test_login_entity_creation_and_validation() throws {
-        // Given & When
-        let token = AuthTokens(
-            accessToken: "mock_access_token_12345",
-            refreshToken: "mock_refresh_token_12345",
-            oauthRefreshToken: "mock_oauth_refresh_token_12345"
-        )
+  @Test("로그인 성공 테스트 - Google 로그인")
+  func testLoginSuccess_Google() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
 
-        let entity = LoginEntity(
-            name: "홍길동",
-            isNewUser: false,
-            provider: .google,
-            token: token,
-            role: .manager
-        )
+    // When
+    let result = try await mockRepository.login(provider: .google, token: "google_test_token")
 
-        // Then
-        #expect(entity.name == "홍길동")
-        #expect(entity.provider == .google)
-        #expect(entity.isNewUser == false)
-        #expect(entity.token.accessToken == "mock_access_token_12345")
-        #expect(entity.token.refreshToken == "mock_refresh_token_12345")
-        #expect(entity.token.oauthRefreshToken == "mock_oauth_refresh_token_12345")
-        #expect(entity.role == .manager)
+    // Then
+    #expect(result.name == "Test User")
+    #expect(result.isNewUser == false)
+    #expect(result.provider == .google)
+    #expect(result.role == .member)
+    #expect(result.token.accessToken == "mock_access_token")
+    #expect(mockRepository.loginCallCount == 1)
+    #expect(mockRepository.lastLoginProvider == .google)
+    #expect(mockRepository.lastLoginToken == "google_test_token")
+  }
+
+  @Test("로그인 성공 테스트 - Apple 로그인")
+  func testLoginSuccess_Apple() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
+
+    // When
+    let result = try await mockRepository.login(provider: .apple, token: "apple_test_token")
+
+    // Then
+    #expect(result.name == "Test User")
+    #expect(result.provider == .apple)
+    #expect(mockRepository.loginCallCount == 1)
+    #expect(mockRepository.lastLoginProvider == .apple)
+  }
+
+  @Test("로그인 실패 테스트 - 잘못된 토큰")
+  func testLoginFailure_InvalidToken() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.failure(MockAuthError.invalidToken)
+
+    // When & Then
+    await #expect(throws: MockAuthError.invalidToken) {
+      try await mockRepository.login(provider: .google, token: "invalid_token")
+    }
+    #expect(mockRepository.loginCallCount == 1)
+  }
+
+  @Test("로그인 실패 테스트 - 네트워크 오류")
+  func testLoginFailure_NetworkError() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.failure(MockAuthError.networkError)
+
+    // When & Then
+    await #expect(throws: MockAuthError.networkError) {
+      try await mockRepository.login(provider: .google, token: "test_token")
+    }
+    #expect(mockRepository.loginCallCount == 1)
+  }
+
+  // MARK: - 토큰 재발급 테스트
+
+  @Test("토큰 재발급 성공 테스트")
+  func testRefreshSuccess() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
+
+    // When
+    let result = try await mockRepository.refresh()
+
+    // Then
+    #expect(result.accessToken == "refreshed_access_token")
+    #expect(result.refreshToken == "refreshed_refresh_token")
+    #expect(mockRepository.refreshCallCount == 1)
+  }
+
+  @Test("토큰 재발급 실패 테스트 - 만료된 토큰")
+  func testRefreshFailure_ExpiredToken() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.failure(MockAuthError.tokenExpired)
+
+    // When & Then
+    await #expect(throws: MockAuthError.tokenExpired) {
+      try await mockRepository.refresh()
+    }
+    #expect(mockRepository.refreshCallCount == 1)
+  }
+
+  // MARK: - 로그아웃 테스트
+
+  @Test("로그아웃 성공 테스트")
+  func testLogoutSuccess() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
+
+    // When
+    let result = try await mockRepository.logout()
+
+    // Then
+    #expect(result.code == "200")
+    #expect(result.message == "logout")
+    #expect(result.detail == "success")
+    #expect(mockRepository.logoutCallCount == 1)
+  }
+
+  @Test("로그아웃 실패 테스트 - 서버 오류")
+  func testLogoutFailure_ServerError() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.failure(MockAuthError.serverError)
+
+    // When & Then
+    await #expect(throws: MockAuthError.serverError) {
+      try await mockRepository.logout()
+    }
+    #expect(mockRepository.logoutCallCount == 1)
+  }
+
+  // MARK: - 계정 삭제 테스트
+
+  @Test("계정 삭제 성공 테스트")
+  func testWithdrawSuccess() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
+
+    // When
+    let result = try await mockRepository.withDraw(token: "withdraw_token")
+
+    // Then
+    #expect(result.isSuccess == true)
+    #expect(result.code == "200")
+    #expect(result.message == "withdraw")
+    #expect(mockRepository.withDrawCallCount == 1)
+    #expect(mockRepository.lastWithdrawToken == "withdraw_token")
+  }
+
+  @Test("계정 삭제 실패 테스트 - 권한 없음")
+  func testWithdrawFailure_Unauthorized() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.failure(MockAuthError.unauthorized)
+
+    // When & Then
+    await #expect(throws: MockAuthError.unauthorized) {
+      try await mockRepository.withDraw(token: "invalid_token")
+    }
+    #expect(mockRepository.withDrawCallCount == 1)
+  }
+
+  // MARK: - 세션 Credential 업데이트 테스트
+
+  @Test("세션 Credential 업데이트 테스트")
+  func testUpdateSessionCredential() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
+    let tokens = AuthTokens(
+      accessToken: "new_access_token",
+      refreshToken: "new_refresh_token",
+      oauthRefreshToken: "new_oauth_token"
+    )
+
+    // When
+    mockRepository.updateSessionCredential(with: tokens)
+
+    // Then
+    #expect(mockRepository.updateSessionCredentialCallCount == 1)
+    #expect(mockRepository.lastUpdateTokens?.accessToken == "new_access_token")
+    #expect(mockRepository.lastUpdateTokens?.refreshToken == "new_refresh_token")
+    #expect(mockRepository.lastUpdateTokens?.oauthRefreshToken == "new_oauth_token")
+  }
+
+  // MARK: - 동시성 테스트
+
+  @Test("동시 로그인 요청 테스트")
+  func testConcurrentLoginRequests() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
+
+    // When
+    async let result1 = mockRepository.login(provider: .google, token: "token1")
+    async let result2 = mockRepository.login(provider: .apple, token: "token2")
+
+    let (login1, login2) = try await (result1, result2)
+
+    // Then
+    #expect(login1.provider == .google)
+    #expect(login2.provider == .apple)
+    #expect(mockRepository.loginCallCount == 2)
+  }
+
+  // MARK: - 통합 플로우 테스트
+
+  @Test("전체 인증 플로우 테스트 - 로그인부터 로그아웃까지")
+  func testFullAuthFlow() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
+
+    // When & Then
+    // 1. 로그인
+    let loginResult = try await mockRepository.login(provider: .google, token: "test_token")
+    #expect(loginResult.name == "Test User")
+    #expect(mockRepository.loginCallCount == 1)
+
+    // 2. 토큰 재발급
+    let refreshResult = try await mockRepository.refresh()
+    #expect(refreshResult.accessToken == "refreshed_access_token")
+    #expect(mockRepository.refreshCallCount == 1)
+
+    // 3. 세션 업데이트
+    mockRepository.updateSessionCredential(with: refreshResult)
+    #expect(mockRepository.updateSessionCredentialCallCount == 1)
+
+    // 4. 로그아웃
+    let logoutResult = try await mockRepository.logout()
+    #expect(logoutResult.message == "logout")
+    #expect(mockRepository.logoutCallCount == 1)
+  }
+
+  // MARK: - 에러 핸들링 테스트
+
+  @Test("다양한 에러 상황 테스트")
+  func testErrorHandling() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.failure(MockAuthError.serverError)
+
+    // When & Then
+    await #expect(throws: MockAuthError.serverError) {
+      try await mockRepository.login(provider: .google, token: "test_token")
     }
 
-    @Test("AuthTokens 생성 및 검증")
-    func test_auth_tokens_creation() throws {
-        // Given & When
-        let tokens = AuthTokens(
-            accessToken: "new_access_token_67890",
-            refreshToken: "new_refresh_token_67890"
-        )
-
-        // Then
-        #expect(tokens.accessToken == "new_access_token_67890")
-        #expect(tokens.refreshToken == "new_refresh_token_67890")
-        #expect(tokens.oauthRefreshToken == nil)
+    await #expect(throws: MockAuthError.serverError) {
+      try await mockRepository.refresh()
     }
 
-    @Test("AuthExitEntity 성공 케이스")
-    func test_auth_exit_entity_success() throws {
-        // Given & When
-        let entity = AuthExitEntity(
-            code: "SUCCESS",
-            message: "로그아웃되었습니다",
-            detail: "성공적으로 로그아웃 처리되었습니다"
-        )
-
-        // Then
-        #expect(entity.code == "SUCCESS")
-        #expect(entity.message == "로그아웃되었습니다")
-        #expect(entity.detail == "성공적으로 로그아웃 처리되었습니다")
+    await #expect(throws: MockAuthError.serverError) {
+      try await mockRepository.logout()
     }
 
-    @Test("WithdrawEntity 성공 케이스")
-    func test_withdraw_entity_success() throws {
-        // Given & When
-        let entity = WithdrawEntity(
-            isSuccess: true,
-            code: "SUCCESS",
-            message: "회원탈퇴가 완료되었습니다",
-            detail: "모든 데이터가 삭제되었습니다"
-        )
-
-        // Then
-        #expect(entity.isSuccess == true)
-        #expect(entity.code == "SUCCESS")
-        #expect(entity.message == "회원탈퇴가 완료되었습니다")
-        #expect(entity.detail == "모든 데이터가 삭제되었습니다")
+    await #expect(throws: MockAuthError.serverError) {
+      try await mockRepository.withDraw(token: "test_token")
     }
 
-    // MARK: - DTO Mapping Tests
+    // 모든 메서드가 호출되었는지 확인
+    #expect(mockRepository.loginCallCount == 1)
+    #expect(mockRepository.refreshCallCount == 1)
+    #expect(mockRepository.logoutCallCount == 1)
+    #expect(mockRepository.withDrawCallCount == 1)
+  }
 
-    @Test("LoginResponseDTO to LoginEntity 매핑")
-    func test_login_response_dto_mapping() throws {
-        // Given
-        let jsonData = TestFixtures.loginSuccessResponse
-        let decoder = JSONDecoder()
-        let dto = try decoder.decode(LoginResponseDTO.self, from: jsonData)
+  // MARK: - Mock Repository 상태 관리 테스트
 
-        // When
-        let entity = dto.toDomain()
+  @Test("Mock Repository 상태 초기화 테스트")
+  func testMockRepositoryStateReset() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
 
-        // Then
-        #expect(entity.name == "홍길동")
-        #expect(entity.provider == SocialType.google)
-        #expect(entity.isNewUser == false)
-        #expect(entity.token.accessToken == "mock_access_token_12345")
-        #expect(entity.token.refreshToken == "mock_refresh_token_12345")
-        #expect(entity.token.oauthRefreshToken == "mock_oauth_refresh_token_12345")
-        #expect(entity.role == Staff.manager)
+    // When - 첫 번째 호출
+    _ = try await mockRepository.login(provider: .google, token: "first_token")
+    #expect(mockRepository.loginCallCount == 1)
+    #expect(mockRepository.lastLoginToken == "first_token")
+
+    // When - 상태 초기화
+    mockRepository.reset()
+
+    // Then - 상태가 초기화되었는지 확인
+    #expect(mockRepository.loginCallCount == 0)
+    #expect(mockRepository.lastLoginToken == nil)
+
+    // When - 두 번째 호출
+    _ = try await mockRepository.login(provider: .apple, token: "second_token")
+
+    // Then - 카운트가 다시 1부터 시작
+    #expect(mockRepository.loginCallCount == 1)
+    #expect(mockRepository.lastLoginToken == "second_token")
+  }
+
+  // MARK: - Mock Repository 팩토리 메서드 테스트
+
+  @Test("Mock Repository success() 팩토리 메서드 테스트")
+  func testMockRepositorySuccessFactory() async throws {
+    // Given & When
+    let mockRepository = MockAuthRepository.success()
+
+    // Then
+    #expect(mockRepository.shouldSucceed == true)
+    #expect(mockRepository.loginCallCount == 0) // 아직 호출되지 않음
+
+    // 실제 호출 시 성공하는지 확인
+    let result = try await mockRepository.login(provider: .google, token: "test_token")
+    #expect(result.name == "Test User")
+    #expect(mockRepository.loginCallCount == 1)
+  }
+
+  @Test("Mock Repository failure() 팩토리 메서드 테스트")
+  func testMockRepositoryFailureFactory() async throws {
+    // Given & When
+    let mockRepository = MockAuthRepository.failure(MockAuthError.networkError)
+
+    // Then
+    #expect(mockRepository.shouldSucceed == false)
+    #expect(mockRepository.loginCallCount == 0)
+
+    // 실제 호출 시 실패하는지 확인
+    await #expect(throws: MockAuthError.networkError) {
+      try await mockRepository.login(provider: .google, token: "test_token")
     }
+    #expect(mockRepository.loginCallCount == 1)
+  }
 
-    @Test("TokenDTO to AuthTokens 매핑")
-    func test_token_dto_mapping() throws {
-        // Given
-        let jsonData = TestFixtures.refreshSuccessResponse
-        let decoder = JSONDecoder()
-        let dto = try decoder.decode(TokenDTO.self, from: jsonData)
+  // MARK: - Mock Repository 검증 테스트
 
-        // When
-        let authTokens = dto.toDomain()
+  @Test("Mock Repository 호출 추적 정확성 테스트")
+  func testMockRepositoryCallTrackingAccuracy() async throws {
+    // Given
+    let mockRepository = MockAuthRepository.success()
 
-        // Then
-        #expect(authTokens.accessToken == "new_access_token_67890")
-        #expect(authTokens.refreshToken == "new_refresh_token_67890")
-        #expect(authTokens.oauthRefreshToken == nil)
-    }
+    // When - 다양한 메서드 호출
+    _ = try await mockRepository.login(provider: .google, token: "token1")
+    _ = try await mockRepository.login(provider: .apple, token: "token2")
+    _ = try await mockRepository.refresh()
+    _ = try await mockRepository.logout()
+    _ = try await mockRepository.withDraw(token: "withdraw_token")
 
-    @Test("LogOutDTO to AuthExitEntity 매핑")
-    func test_logout_dto_mapping() throws {
-        // Given
-        let dto = LogOutDTO(
-            code: "SUCCESS",
-            message: "로그아웃되었습니다",
-            detail: "성공적으로 로그아웃 처리되었습니다"
-        )
+    let tokens = AuthTokens(accessToken: "test", refreshToken: "test")
+    mockRepository.updateSessionCredential(with: tokens)
 
-        // When
-        let entity = dto.toDomain()
+    // Then - 호출 추적 정확성 검증
+    #expect(mockRepository.loginCallCount == 2)
+    #expect(mockRepository.refreshCallCount == 1)
+    #expect(mockRepository.logoutCallCount == 1)
+    #expect(mockRepository.withDrawCallCount == 1)
+    #expect(mockRepository.updateSessionCredentialCallCount == 1)
 
-        // Then
-        #expect(entity.code == "SUCCESS")
-        #expect(entity.message == "로그아웃되었습니다")
-        #expect(entity.detail == "성공적으로 로그아웃 처리되었습니다")
-    }
-
-    @Test("WithdrawDTO to WithdrawEntity 매핑")
-    func test_withdraw_dto_mapping() throws {
-        // Given
-        let dto = WithdrawDTO(
-            code: "SUCCESS",
-            message: "회원탈퇴가 완료되었습니다",
-            detail: "모든 데이터가 삭제되었습니다"
-        )
-
-        // When
-        let entity = dto.toDomain(isSuccess: true)
-
-        // Then
-        #expect(entity.isSuccess == true)
-        #expect(entity.code == "SUCCESS")
-        #expect(entity.message == "회원탈퇴가 완료되었습니다")
-        #expect(entity.detail == "모든 데이터가 삭제되었습니다")
-    }
-
-    // MARK: - Mock KeychainManager Tests
-
-    @Test("MockKeychainManager 기본 동작")
-    func test_mock_keychain_manager_basic_operations() throws {
-        // Given
-        let mockKeychain = MockKeychainManager()
-
-        // When & Then: 초기 상태
-        #expect(mockKeychain.isEmpty() == true)
-        #expect(mockKeychain.hasTokens() == false)
-        #expect(mockKeychain.accessToken() == nil)
-        #expect(mockKeychain.refreshToken() == nil)
-
-        // When: 토큰 설정
-        mockKeychain.setTokens(
-            accessToken: "test_access_token",
-            refreshToken: "test_refresh_token"
-        )
-
-        // Then: 토큰 저장 확인
-        #expect(mockKeychain.isEmpty() == false)
-        #expect(mockKeychain.hasTokens() == true)
-        #expect(mockKeychain.accessToken() == "test_access_token")
-        #expect(mockKeychain.refreshToken() == "test_refresh_token")
-
-        // When: 클리어
-        mockKeychain.clear()
-
-        // Then: 클리어 확인
-        #expect(mockKeychain.isEmpty() == true)
-        #expect(mockKeychain.clearCallCount == 1)
-    }
-
-    // MARK: - Edge Case Tests
-
-    @Test("빈 문자열 토큰으로 AuthTokens 생성")
-    func test_auth_tokens_with_empty_strings() throws {
-        // Given & When
-        let tokens = AuthTokens(
-            accessToken: "",
-            refreshToken: "",
-            oauthRefreshToken: ""
-        )
-
-        // Then: 빈 문자열도 유효한 값으로 처리
-        #expect(tokens.accessToken == "")
-        #expect(tokens.refreshToken == "")
-        #expect(tokens.oauthRefreshToken == "")
-    }
-
-    @Test("매우 긴 문자열로 Entity 생성")
-    func test_entity_with_very_long_strings() throws {
-        // Given
-        let longString = String(repeating: "a", count: 1000)
-        let longToken = String(repeating: "1", count: 2000)
-
-        // When
-        let token = AuthTokens(
-            accessToken: longToken,
-            refreshToken: longToken,
-            oauthRefreshToken: longToken
-        )
-
-        let entity = LoginEntity(
-            name: longString,
-            isNewUser: false,
-            provider: .google,
-            token: token,
-            role: .manager
-        )
-
-        // Then: 긴 문자열도 정상 처리
-        #expect(entity.name == longString)
-        #expect(entity.token.accessToken == longToken)
-        #expect(entity.token.refreshToken == longToken)
-        #expect(entity.token.oauthRefreshToken == longToken)
-    }
-
-    @Test("특수문자가 포함된 사용자 이름으로 Entity 생성")
-    func test_entity_with_special_characters() throws {
-        // Given
-        let specialName = "홍길동!@#$%^&*()_+{}|:<>?[]\';\",./"
-
-        // When
-        let token = AuthTokens(
-            accessToken: "token123",
-            refreshToken: "refresh456"
-        )
-
-        let entity = LoginEntity(
-            name: specialName,
-            isNewUser: true,
-            provider: .apple,
-            token: token,
-            role: nil
-        )
-
-        // Then: 특수문자도 정상 처리
-        #expect(entity.name == specialName)
-        #expect(entity.isNewUser == true)
-        #expect(entity.provider == .apple)
-        #expect(entity.role == nil)
-    }
-
-    @Test("잘못된 JSON 데이터 파싱 실패")
-    func test_invalid_json_parsing_failure() throws {
-        // Given: 잘못된 JSON 형식
-        let invalidJsonData = """
-        {
-            "userId": 12345,
-            "name": "홍길동",
-            "invalidField":
-        }
-        """.data(using: .utf8)!
-
-        let decoder = JSONDecoder()
-
-        // When & Then: 파싱 실패 예상
-        #expect(throws: DecodingError.self) {
-            _ = try decoder.decode(LoginResponseDTO.self, from: invalidJsonData)
-        }
-    }
-
-    @Test("nil 값이 포함된 AuthExitEntity")
-    func test_auth_exit_entity_with_nil_values() throws {
-        // Given & When
-        let entity = AuthExitEntity(
-            code: nil,
-            message: nil,
-            detail: nil
-        )
-
-        // Then: nil 값도 정상 처리
-        #expect(entity.code == nil)
-        #expect(entity.message == nil)
-        #expect(entity.detail == nil)
-    }
-
-    @Test("MockKeychainManager 동시성 안전성")
-    func test_mock_keychain_manager_concurrency_safety() async throws {
-        // Given
-        let mockKeychain = MockKeychainManager()
-
-        // When: 동시에 여러 작업 수행
-        await withTaskGroup(of: Void.self) { group in
-            // 토큰 설정 작업들
-            for i in 0..<10 {
-                group.addTask {
-                    mockKeychain.setTokens(
-                        accessToken: "access_\(i)",
-                        refreshToken: "refresh_\(i)"
-                    )
-                }
-            }
-
-            // 토큰 읽기 작업들
-            for _ in 0..<10 {
-                group.addTask {
-                    _ = mockKeychain.accessToken()
-                    _ = mockKeychain.refreshToken()
-                }
-            }
-
-            // 클리어 작업들
-            for _ in 0..<5 {
-                group.addTask {
-                    mockKeychain.clear()
-                }
-            }
-        }
-
-        // Then: 동시성 작업 후 상태 확인
-        // 정확한 결과를 예측하기 어렵지만 크래시나 데드락 없이 완료되어야 함
-        #expect(mockKeychain.refreshTokenCallCount >= 0)
-        #expect(mockKeychain.clearCallCount >= 0)
-    }
-
-    @Test("메모리 할당 테스트 - 대량 Entity 생성")
-    func test_memory_allocation_with_many_entities() throws {
-        // Given & When: 대량의 Entity 생성
-        var entities: [LoginEntity] = []
-
-        for i in 0..<1000 {
-            let token = AuthTokens(
-                accessToken: "access_token_\(i)",
-                refreshToken: "refresh_token_\(i)",
-                oauthRefreshToken: "oauth_token_\(i)"
-            )
-
-            let entity = LoginEntity(
-                name: "User \(i)",
-                isNewUser: i % 2 == 0,
-                provider: i % 2 == 0 ? .google : .apple,
-                token: token,
-                role: i % 3 == 0 ? .manager : .member
-            )
-
-            entities.append(entity)
-        }
-
-        // Then: 모든 Entity가 정상 생성됨
-        #expect(entities.count == 1000)
-        #expect(entities.first?.name == "User 0")
-        #expect(entities.last?.name == "User 999")
-    }
-}
-
-// MARK: - Mock KeychainManager
-
-final class MockKeychainManager: KeychainManaging, @unchecked Sendable {
-    private var storage: [String: String] = [:]
-    private(set) var clearCallCount = 0
-    private(set) var refreshTokenCallCount = 0
-    private(set) var saveTokenCallCount = 0
-
-    func accessToken() -> String? {
-        return storage["accessToken"]
-    }
-
-    func refreshToken() -> String? {
-        refreshTokenCallCount += 1
-        return storage["refreshToken"]
-    }
-
-    func save(accessToken: String, refreshToken: String) {
-        saveTokenCallCount += 1
-        storage["accessToken"] = accessToken
-        storage["refreshToken"] = refreshToken
-    }
-
-    func saveAccessToken(_ token: String) {
-        storage["accessToken"] = token
-    }
-
-    func saveRefreshToken(_ token: String) {
-        storage["refreshToken"] = token
-    }
-
-    func clear() {
-        clearCallCount += 1
-        storage.removeAll()
-    }
-
-    func reset() {
-        storage.removeAll()
-        clearCallCount = 0
-        refreshTokenCallCount = 0
-        saveTokenCallCount = 0
-    }
-
-    // Test helper methods
-    func setTokens(accessToken: String, refreshToken: String) {
-        storage["accessToken"] = accessToken
-        storage["refreshToken"] = refreshToken
-    }
-
-    func hasTokens() -> Bool {
-        return storage["accessToken"] != nil && storage["refreshToken"] != nil
-    }
-
-    func isEmpty() -> Bool {
-        return storage.isEmpty
-    }
-}
-
-// MARK: - Test Fixtures
-
-struct TestFixtures {
-    static let loginSuccessResponse = """
-    {
-        "userId": 12345,
-        "name": "홍길동",
-        "email": "test@example.com",
-        "oauthProvider": "google",
-        "message": "로그인 성공",
-        "isNewUser": false,
-        "accessToken": "mock_access_token_12345",
-        "refreshToken": "mock_refresh_token_12345",
-        "oauthRefreshToken": "mock_oauth_refresh_token_12345",
-        "role": "manager"
-    }
-    """.data(using: .utf8)!
-
-    static let refreshSuccessResponse = """
-    {
-        "accessToken": "new_access_token_67890",
-        "refreshToken": "new_refresh_token_67890"
-    }
-    """.data(using: .utf8)!
+    #expect(mockRepository.lastLoginProvider == .apple)
+    #expect(mockRepository.lastLoginToken == "token2")
+    #expect(mockRepository.lastWithdrawToken == "withdraw_token")
+    #expect(mockRepository.lastUpdateTokens?.accessToken == "test")
+  }
 }

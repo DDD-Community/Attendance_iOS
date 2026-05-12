@@ -36,7 +36,7 @@ public extension SelectTeamEntity {
     case .unknown: return nil
     }
   }
-  
+
 }
 
 extension Array where Element == SelectTeamEntity {

@@ -2,12 +2,39 @@
   "permissions": {
     "allow": [
       "Bash(gh pr list:*)",
-      "Bash(gh pr close:*)"
+      "Bash(gh pr close:*)",
       "WebFetch(domain:github.com)",
       "Bash(./TuistTool.swift:*)",
       "Bash(swiftc:*)",
-      "Bash(./make:*)"
-
+      "Bash(./make:*)",
+      "Bash(ls *)",
+      "Bash(xcodebuild test *)",
+      "Bash(tuist test *)",
+      "Bash(swift package *)",
+      "Bash(xcodebuild -project DDDAttendance.xcodeproj -scheme UseCase -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' test)",
+      "Bash(swift -version)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(gh pr *)",
+      "Bash(find *)",
+      "Bash(swift test *)",
+      "Bash(xcodebuild -workspace DDDAttendance.xcworkspace -scheme Repository -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.6' test)",
+      "Bash(xcodebuild -workspace DDDAttendance.xcworkspace -scheme Repository -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.6' build)",
+      "Bash(xcodebuild -workspace DDDAttendance.xcworkspace -list)",
+      "Bash(tuist generate *)",
+      "Bash(xcodebuild -list -workspace DDDAttendance.xcworkspace)",
+      "Bash(xcodebuild build *)",
+      "Bash(xcodebuild -workspace DDDAttendance.xcworkspace -scheme Repository clean)",
+      "Bash(rm -rf DDDAttendance.xcworkspace Derived)",
+      "Bash(tuist clean *)",
+      "Bash(tuist install *)",
+      "Skill(update-config)",
+      "Write(Projects/Data/Repository/Tests/**)",
+      "Edit(Projects/Data/Repository/Tests/**)",
+      "Read(Projects/Data/Repository/Tests/**)",
+      "Bash(xcodebuild *)",
+      "Bash(xcode-select *)"
     ]
   }
 }

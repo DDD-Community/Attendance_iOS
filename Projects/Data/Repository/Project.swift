@@ -9,12 +9,16 @@ let project = Project.makeModule(
   name: "Repository",
   bundleId: .appBundleID(name: ".Repository"),
   product: .staticFramework,
-  settings:  .settings(),
+  settings: .repositoryBaseSettings(),
   dependencies: [
     .Data(implements: .Service),
+    .Data(implements: .Model),
     .Domain(implements: .DomainInterface),
-
-      .SPM.googleSignIn
+    .Domain(implements: .Entity),
+    .Network(implements: .Foundations),
+    .SPM.asyncMoya,
+    .SPM.composableArchitecture,
+    .SPM.googleSignIn
   ],
   sources: ["Sources/**"],
   hasTests: true

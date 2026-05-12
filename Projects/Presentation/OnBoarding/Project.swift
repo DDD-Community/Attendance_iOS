@@ -14,5 +14,6 @@ let project = Project.makeModule(
     .Domain(implements: .UseCase),
     .Shared(implements: .Shareds)  
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: true
 )

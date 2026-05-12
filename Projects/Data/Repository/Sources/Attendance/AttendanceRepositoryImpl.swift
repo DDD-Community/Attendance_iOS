@@ -16,11 +16,13 @@ import Service
 @Observable
 final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
   private let provider: MoyaProvider<AttendanceService>
-  
+
   public init(
-    provider: MoyaProvider<AttendanceService> = MoyaProvider<AttendanceService>.authorized
+    provider: MoyaProvider<AttendanceService>? = nil
   ) {
-    self.provider = provider
+    // 🚀 MoyaProviderPool 사용으로 메모리 최적화
+    self.provider = provider ?? MoyaProviderPool.shared.authorizedProvider(for: AttendanceService.self)
+
   }
 
   // MARK: - 운영진  출석 데이터 api

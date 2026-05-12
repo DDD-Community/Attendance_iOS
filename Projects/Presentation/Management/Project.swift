@@ -15,5 +15,6 @@ let project = Project.makeModule(
     .Presentation(implements: .Profile),
     .Domain(implements: .UseCase)
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: true
 )

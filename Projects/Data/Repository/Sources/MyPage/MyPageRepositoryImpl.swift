@@ -6,21 +6,22 @@
 //
 
 import Foundation
-
+// 프로젝트 모듈
 import DomainInterface
-
 import Entity
 import Service
-
-@preconcurrency import AsyncMoya
+// 외부 의존성
+import Moya
 
 final public class MyPageRepositoryImpl: MyPageRepositoryInterface {
   private let provider: MoyaProvider<MyPageService>
-  
+
   public init(
-    provider: MoyaProvider<MyPageService> = .authorized
+    provider: MoyaProvider<MyPageService>? = nil
   ) {
-    self.provider = provider
+    // 🚀 MoyaProviderPool 사용으로 메모리 최적화
+    self.provider = provider ?? MoyaProviderPool.shared.authorizedProvider(for: MyPageService.self)
+
   }
   
   /// 출석 현황 요약 조회

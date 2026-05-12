@@ -7,33 +7,59 @@
 import DomainInterface
 import Model
 
-import WeaveDI
-import Entity
 import ComposableArchitecture
+import Entity
+import WeaveDI
 
 public protocol ProfileUseCaseInterface: Sendable {
   func getProfile() async throws -> ProfileEntity
+  func getCachedProfile() async -> ProfileEntity?
+  func refreshProfile() async throws -> ProfileEntity
   func editUser(
     userSession: UserSession
   ) async throws -> ProfileEntity
 }
-
 
 public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
   @Dependency(\.profileRepository) var repository
   @Shared(.appStorage("staffRole")) var staffRole: Staff?
   @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
 
-  public init() { }
+  public init() {}
+
   // MARK: - 프로필  수정
 
+  // MARK: - 캐시 즉시 조회 (만료 시 nil)
+
+  public func getCachedProfile() async -> ProfileEntity? {
+    await repository.getCachedProfile()
+  }
+
+  // MARK: - 강제 새로고침 (캐시 무시, 네트워크)
+
+  public func refreshProfile() async throws -> ProfileEntity {
+    let profile = try await repository.refreshProfile()
+    $staffRole.withLock { $0 = profile.role }
+    $userSession.withLock {
+      $0.userID = profile.userID
+      $0.name = profile.name
+      $0.generation = profile.generation
+      $0.selectTeam = profile.team ?? .unknown
+      $0.selectPart = profile.jobRole
+      $0.userRole = profile.role
+      $0.managing = profile.manger ?? []
+    }
+    return profile
+  }
+
   // MARK: - 프로필 조회
+
   public func getProfile() async throws -> ProfileEntity {
     let profileResult = try await repository.getProfile()
-    self.$staffRole.withLock {
+    $staffRole.withLock {
       $0 = profileResult.role
     }
-    self.$userSession.withLock {
+    $userSession.withLock {
       $0.userID = profileResult.userID
       $0.name = profileResult.name
       $0.generation = profileResult.generation
@@ -43,7 +69,6 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
       $0.managing = profileResult.manger ?? []
     }
     return profileResult
-
   }
 
   public func editUser(
@@ -63,18 +88,17 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
 
   public func editProfile(input: EditProfileInput) async throws -> ProfileEntity {
     let editProfile = try await repository.editProfile(input: input)
-    self.$staffRole.withLock {
+    $staffRole.withLock {
       $0 = editProfile.role
     }
     return editProfile
   }
-
 }
 
 extension ProfileUseCaseImpl: DependencyKey {
-  static public var liveValue: ProfileUseCaseInterface = ProfileUseCaseImpl()
-  static public var testValue: ProfileUseCaseInterface = ProfileUseCaseImpl()
-  static public var previewValue: ProfileUseCaseInterface = liveValue
+  public static var liveValue: ProfileUseCaseInterface = ProfileUseCaseImpl()
+  public static var testValue: ProfileUseCaseInterface = ProfileUseCaseImpl()
+  public static var previewValue: ProfileUseCaseInterface = liveValue
 }
 
 public extension DependencyValues {
@@ -83,4 +107,3 @@ public extension DependencyValues {
     set { self[ProfileUseCaseImpl.self] = newValue }
   }
 }
-

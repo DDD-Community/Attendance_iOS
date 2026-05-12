@@ -16,5 +16,6 @@ let project = Project.makeModule(
     .Presentation(implements: .OnBoarding),
     .Presentation(implements: .Web)
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: true
 )

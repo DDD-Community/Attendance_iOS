@@ -20,7 +20,7 @@ public struct MemberMain {
 
   @ObservableState
   public struct State: Equatable {
-    var member: ProfileEntity? = nil
+    var member: ProfileEntity?
 
     @ObservationStateIgnored
     var didAppear: Bool = false
@@ -62,9 +62,9 @@ public struct MemberMain {
   }
 
   public enum InnerAction: Equatable {
-    case onFetchUserResponse(Result<ProfileEntity, CustomError>)
-    case onFetchAttendanceSummaryResponse(Result<AttendanceSummaryResponse, CustomError>)
-    case onFetchSchedulesResponse(Result<[ScheduleModel], CustomError>)
+    case onFetchUserResponse(Result<ProfileEntity, ProfileError>)
+    case onFetchAttendanceSummaryResponse(Result<AttendanceSummaryResponse, AttendanceError>)
+    case onFetchSchedulesResponse(Result<[ScheduleModel], ScheduleError>)
     case onResume
   }
 
@@ -91,16 +91,16 @@ public struct MemberMain {
       case .binding:
         return .none
 
-      case .view(let action):
+      case let .view(action):
         return handleViewAction(state: &state, action: action)
 
-      case .inner(let action):
+      case let .inner(action):
         return handleInnerAction(state: &state, action: action)
 
-      case .async(let action):
+      case let .async(action):
         return handleAsyncAction(state: &state, action: action)
 
-      case .navigation(let action):
+      case let .navigation(action):
         return handleNavigationAction(state: &state, action: action)
       }
     }
@@ -144,22 +144,22 @@ extension MemberMain {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-    case .onFetchUserResponse(let result):
+    case let .onFetchUserResponse(result):
       switch result {
-      case .success(let member):
+      case let .success(member):
         state.member = member
         #logDebug("Succeed Fetch User Profile", member)
         return .none
 
-      case .failure(let error):
+      case let .failure(error):
         state.member = nil
         #logError("Failed Fetch User Profile", error)
         return .none
       }
 
-    case .onFetchAttendanceSummaryResponse(let result):
+    case let .onFetchAttendanceSummaryResponse(result):
       switch result {
-      case .success(let counts):
+      case let .success(counts):
         state.presentCount = counts.totalAttended
         state.lateCount = counts.totalLate
         state.absentCount = counts.totalAbsent
@@ -167,26 +167,26 @@ extension MemberMain {
         #logDebug("Succeed Fetch Attendance Counts", counts)
         return .none
 
-      case .failure(let error):
+      case let .failure(error):
         #logError("Failed Fetch Count: ", error)
         return .none
       }
 
-    case .onFetchSchedulesResponse(let result):
+    case let .onFetchSchedulesResponse(result):
       switch result {
-      case .success(let schedules):
+      case let .success(schedules):
         state.schedules = .init(uniqueElements: schedules)
-        
+
         // TODO: - 추후 기수 활동 기간 API 필요
         if let start = schedules.first, let end = schedules.last {
           state.startDate = "2026.\(start.month).\(start.day)"
           state.endDate = "2026.\(end.month).\(end.day)"
         }
-        
+
         #logDebug("Succeed Fetch Schedules: ", schedules)
         return .none
 
-      case .failure(let error):
+      case let .failure(error):
         #logError("Failed Fetch Schedules", error)
         return .none
       }
@@ -200,7 +200,7 @@ extension MemberMain {
   }
 
   private func handleAsyncAction(
-    state: inout State,
+    state _: inout State,
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
@@ -211,12 +211,12 @@ extension MemberMain {
         }
 
         switch result {
-        case .success(let member):
+        case let .success(member):
           await send(.inner(.onFetchUserResponse(.success(member))))
           await send(.async(.fetchAttendances))
 
-        case .failure(let error):
-          let error = CustomError.map(error)
+        case let .failure(error):
+          let error = ProfileError.from(error)
           await send(.inner(.onFetchUserResponse(.failure(error))))
         }
       }
@@ -228,11 +228,11 @@ extension MemberMain {
         }
 
         switch result {
-        case .success(let counts):
+        case let .success(counts):
           await send(.inner(.onFetchAttendanceSummaryResponse(.success(counts))))
 
-        case .failure(let error):
-          let error = CustomError.map(error)
+        case let .failure(error):
+          let error = AttendanceError.from(error)
           await send(.inner(.onFetchAttendanceSummaryResponse(.failure(error))))
         }
       }
@@ -244,12 +244,12 @@ extension MemberMain {
         }
 
         switch result {
-        case .success(let schedules):
+        case let .success(schedules):
           let schedules = schedules.map { $0.toPresentation() }
           await send(.inner(.onFetchSchedulesResponse(.success(schedules))))
 
-        case .failure(let error):
-          let error = CustomError.map(error)
+        case let .failure(error):
+          let error = ScheduleError.from(error)
           await send(.inner(.onFetchSchedulesResponse(.failure(error))))
         }
       }
@@ -257,7 +257,7 @@ extension MemberMain {
   }
 
   private func handleNavigationAction(
-    state: inout State,
+    state _: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
@@ -270,7 +270,7 @@ extension MemberMain {
   }
 }
 
-fileprivate extension AttendanceMyScheduleResponse {
+private extension AttendanceMyScheduleResponse {
   func toPresentation() -> ScheduleModel {
     return .init(
       id: id,

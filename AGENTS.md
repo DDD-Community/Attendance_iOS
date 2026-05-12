@@ -114,6 +114,12 @@ Mixpanel: 5.1.3                    // 사용자 행동 분석
 - Pull Request 규칙
 - 코드 리뷰 가이드라인
 
+### ✅ 커밋 메시지 언어 규칙
+- 에이전트가 작성하는 **모든 git commit 메시지는 한국어로 작성**
+- 커밋 제목/본문 모두 한글 기준으로 작성
+- 영문 타입 prefix(`feat`, `fix`, `refactor`, `test`, `chore`)는 사용 가능하지만, **설명 문구는 반드시 한국어**
+- 별도 요청이 없는 한 영어 커밋 메시지는 사용하지 않음
+
 ### 🧭 [TCAFlow 네비게이션](./docs/tcaflow-navigation.md)
 - @FlowCoordinator 패턴
 - 기본 네비게이션 동작 (Push, Present, Dismiss)
@@ -127,6 +133,15 @@ Mixpanel: 5.1.3                    // 사용자 행동 분석
 - 테스트 패턴
 
 ## 📊 지원 스킬 목록
+
+### TDD 자동화 스킬
+- `@test-auto-pr-agent` - **Swift Testing 기반 완전 자동 테스트 생성**
+  - **8개 전체 도메인** 테스트 코드 자동 생성 (Attendance, Auth, Profile, Schedule, MyPage, QRCode, OnBoarding, Manager)
+  - **106개 테스트 케이스** 자동 구현 및 검증
+  - **docs/tdd/** 폴더 기반 도메인 분석 → 테스트 생성 → PR 자동 생성
+  - **Swift Testing** 프레임워크 사용 (XCTest 대신)
+  - **TCA Mock Store**, **WeaveDI Mock** 자동 설정
+  - 테스트 실행 → 실패 시 자동 수정 → 성공까지 반복
 
 ### 성능 최적화 스킬
 - `@ios-performance-optimizer` - PFW 철학 통합 자동화 시스템 (v4.0)
