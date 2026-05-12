@@ -1,5 +1,5 @@
 //
-//  ScheduleModal.swift
+//  ScheduleMoadal.swift
 //  Management
 //
 //  Created by Wonji Suh  on 12/27/25.
@@ -23,7 +23,7 @@ public struct ScheduleModal {
     var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
     var loading: Bool = false
     var enableButton: Bool = false
-    var selectedSchedule: Schedule? = nil
+    var selectedSchedule: Schedule?
 
     public init() {}
   }
@@ -34,28 +34,30 @@ public struct ScheduleModal {
     case async(AsyncAction)
     case inner(InnerAction)
     case navigation(NavigationAction)
-
   }
 
-  //MARK: - ViewAction
+  // MARK: - ViewAction
+
   @CasePathable
   public enum View {
     case selectSchedule(item: Schedule)
     case confirmSelection
   }
 
-  //MARK: - AsyncAction 비동기 처리 액션
+  // MARK: - AsyncAction 비동기 처리 액션
+
   public enum AsyncAction: Equatable {
     case fetchSchedule
-
   }
 
-  //MARK: - 앱내에서 사용하는 액션
+  // MARK: - 앱내에서 사용하는 액션
+
   public enum InnerAction: Equatable {
     case scheduleResponse(Result<[Schedule], ScheduleError>)
   }
 
-  //MARK: - NavigationAction
+  // MARK: - NavigationAction
+
   public enum NavigationAction: Equatable {
     case selectScheduleCompleted(selectedSchedule: Schedule)
   }
@@ -67,25 +69,24 @@ public struct ScheduleModal {
   @Dependency(\.scheduleUseCase) var scheduleUseCase
   @Dependency(\.continuousClock) var clock
 
-
   public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
       switch action {
-        case .binding(_):
-          return .none
+      case .binding:
+        return .none
 
-        case .view(let viewAction):
-          return handleViewAction(state: &state, action: viewAction)
+      case let .view(viewAction):
+        return handleViewAction(state: &state, action: viewAction)
 
-        case .async(let asyncAction):
-          return handleAsyncAction(state: &state, action: asyncAction)
+      case let .async(asyncAction):
+        return handleAsyncAction(state: &state, action: asyncAction)
 
-        case .inner(let innerAction):
-          return handleInnerAction(state: &state, action: innerAction)
+      case let .inner(innerAction):
+        return handleInnerAction(state: &state, action: innerAction)
 
-        case .navigation(let navigationAction):
-          return handleNavigationAction(state: &state, action: navigationAction)
+      case let .navigation(navigationAction):
+        return handleNavigationAction(state: &state, action: navigationAction)
       }
     }
   }
@@ -97,7 +98,7 @@ extension ScheduleModal {
     action: View
   ) -> Effect<Action> {
     switch action {
-    case .selectSchedule(let item):
+    case let .selectSchedule(item):
       if state.selectedSchedule?.id == item.id {
         state.selectedSchedule = nil
       } else {
@@ -119,26 +120,31 @@ extension ScheduleModal {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-      case .fetchSchedule:
-        state.loading = true
-        return .run { send in
-          let result = await Result {
-            try await scheduleUseCase.getSchedule()
-          }
-            .mapError(ScheduleError.from)
-          try await clock.sleep(for: .seconds(0.6))
-
-          return await send(.inner(.scheduleResponse(result)))
+    case .fetchSchedule:
+      // 캐시 있으면 로딩 표시 X (SWR로 백그라운드 갱신)
+      state.loading = state.scheduleModel.isEmpty
+      return .run { send in
+        if let cached = await scheduleUseCase.getCachedSchedule(), !cached.isEmpty {
+          await send(.inner(.scheduleResponse(.success(cached))))
+          _ = try? await scheduleUseCase.getSchedule()
+          return
         }
+        let result = await Result {
+          try await scheduleUseCase.getSchedule()
+        }
+        .mapError(ScheduleError.from)
+        try await clock.sleep(for: .seconds(0.6))
+        await send(.inner(.scheduleResponse(result)))
+      }
     }
   }
 
   private func handleNavigationAction(
-    state: inout State,
+    state _: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
-      case .selectScheduleCompleted(_):
+    case .selectScheduleCompleted:
       return .none
     }
   }
@@ -148,16 +154,16 @@ extension ScheduleModal {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-      case .scheduleResponse(let result):
-        #logDebug("스케줄 응답 처리", "로딩 완료")
-        state.loading = false  
-        switch result {
-          case .success(let data):
-            state.scheduleModel = .init(uniqueElements: data)
-          case .failure(let error):
-            #logNetwork("네트워크 에러", error.localizedDescription)
-        }
-        return .none
+    case let .scheduleResponse(result):
+      #logDebug("스케줄 응답 처리", "로딩 완료")
+      state.loading = false
+      switch result {
+      case let .success(data):
+        state.scheduleModel = .init(uniqueElements: data)
+      case let .failure(error):
+        #logNetwork("네트워크 에러", error.localizedDescription)
+      }
+      return .none
     }
   }
 }

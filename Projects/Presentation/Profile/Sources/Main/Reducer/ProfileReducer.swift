@@ -10,11 +10,10 @@ import Foundation
 import Shareds
 import UseCase
 
-
 import AsyncMoya
 import ComposableArchitecture
-import Entity
 import DesignSystem
+import Entity
 
 @Reducer
 public struct ProfileReducer: Sendable {
@@ -61,10 +60,10 @@ public struct ProfileReducer: Sendable {
     case inner(InnerAction)
     case scope(ScopeAction)
     case navigation(NavigationAction)
-
   }
 
   // MARK: - View action
+
   @CasePathable
   public enum View {
     case appearModal
@@ -74,6 +73,7 @@ public struct ProfileReducer: Sendable {
   }
 
   // MARK: - 비동기 처리 액션
+
   @CasePathable
   public enum AsyncAction: Equatable {
     case fetchUser
@@ -82,14 +82,17 @@ public struct ProfileReducer: Sendable {
   }
 
   // MARK: - 앱내에서 사용하는 액션
+
   @CasePathable
   public enum InnerAction: Equatable {
+    case setLoading(Bool)
     case fetchUserResponse(Result<ProfileEntity, ProfileError>)
     case deleteUserResponse(Result<WithdrawEntity, AuthError>)
     case logoutResponses(Result<AuthExitEntity, AuthError>)
   }
 
   // MARK: - 네비게이션 연결 액션
+
   @CasePathable
   public enum NavigationAction: Equatable {
     case presentLogOut
@@ -125,37 +128,38 @@ public struct ProfileReducer: Sendable {
     BindingReducer()
     Reduce { state, action in
       switch action {
-      case .binding(_):
+      case .binding:
         return .none
 
-      case .destination(let destinationAction):
+      case let .destination(destinationAction):
         return handleDestinationAction(state: &state, action: destinationAction)
 
       // MARK: - ViewAction
 
-      case .view(let viewAction):
+      case let .view(viewAction):
         return handleViewAction(state: &state, action: viewAction)
 
       // MARK: - AsyncAction
 
-      case .async(let asyncAction):
+      case let .async(asyncAction):
         return handleAsyncAction(state: &state, action: asyncAction)
 
       // MARK: - InnerAction
 
-      case .inner(let innerAction):
+      case let .inner(innerAction):
         return handleInnerAction(state: &state, action: innerAction)
 
       // MARK: - NavigationAction
-      case .navigation(let navigationAction):
+
+      case let .navigation(navigationAction):
         return handleNavigationAction(state: &state, action: navigationAction)
 
-      case .scope(let scopeAction):
+      case let .scope(scopeAction):
         switch scopeAction {
         case .alert:
           return .none
 
-        case .customAlert(let customAlertAction):
+        case let .customAlert(customAlertAction):
           return handleCustomAlertAction(state: &state, action: customAlertAction)
         }
       }
@@ -189,7 +193,6 @@ extension ProfileReducer {
     case .showLogoutAlert:
       state.customAlert = .logout()
       return .none
-
     }
   }
 
@@ -198,50 +201,57 @@ extension ProfileReducer {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-
     case .fetchUser:
-      state.isLoading = true
-
       return .run { send in
         do {
+          // 캐시 hit → 즉시 표시 (로딩 X), 그 후 강제 refresh로 화면 자동 갱신
+          if let cached = await profileUseCase.getCachedProfile() {
+            await send(.inner(.fetchUserResponse(.success(cached))))
+            let refreshed = await Result {
+              try await profileUseCase.refreshProfile()
+            }
+            .mapError(ProfileError.from)
+            await send(.inner(.fetchUserResponse(refreshed)))
+            return
+          }
+
+          // 캐시 miss → 로딩 ON + 네트워크 + 인위 지연
+          await send(.inner(.setLoading(true)))
           let fetchUserResult = await Result {
             try await profileUseCase.getProfile()
           }
-            .mapError(ProfileError.from)
+          .mapError(ProfileError.from)
           try await clock.sleep(for: .seconds(1))
 
-          // 🔥 TCA 해결책 3: Effect 완료 전 상태 재검증
           await send(.inner(.fetchUserResponse(fetchUserResult)))
         } catch is CancellationError {
-          // 🔥 취소된 경우 조용히 종료 (로깅만)
           #logInfo("ProfileReducer.fetchUser Effect가 취소됨")
         }
       }
       .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
 
-      case .deleteUser:
-        return .run {
-          [
+    case .deleteUser:
+      return .run {
+        [
           userSession = state.userSession
         ] send in
-          let deleteUserResult = await Result {
-            try await authUseCase.withDraw(token: userSession.accessToken)
-          }
-            .mapError(AuthError.from)
-          return await send(.inner(.deleteUserResponse(deleteUserResult)))
-
+        let deleteUserResult = await Result {
+          try await authUseCase.withDraw(token: userSession.accessToken)
         }
-        .cancellable(id: CancelID.deleteUser, cancelInFlight: true)
+        .mapError(AuthError.from)
+        return await send(.inner(.deleteUserResponse(deleteUserResult)))
+      }
+      .cancellable(id: CancelID.deleteUser, cancelInFlight: true)
 
-      case .logout:
-        return .run { send in
-          let logoutResult = await Result {
-            try await authUseCase.logout()
-          }
-            .mapError(AuthError.from)
-          return await send(.inner(.logoutResponses(logoutResult)))
+    case .logout:
+      return .run { send in
+        let logoutResult = await Result {
+          try await authUseCase.logout()
         }
-        .cancellable(id: CancelID.logoutUser, cancelInFlight: true)
+        .mapError(AuthError.from)
+        return await send(.inner(.logoutResponses(logoutResult)))
+      }
+      .cancellable(id: CancelID.logoutUser, cancelInFlight: true)
     }
   }
 
@@ -250,61 +260,63 @@ extension ProfileReducer {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-    case .fetchUserResponse(let result):
+    case let .setLoading(value):
+      state.isLoading = value
+      return .none
+
+    case let .fetchUserResponse(result):
       state.isLoading = false
       switch result {
-      case .success(let profileDTOData):
+      case let .success(profileDTOData):
         state.profileModel = profileDTOData
 
-      case .failure(let error):
+      case let .failure(error):
         #logError("유저 정보 가져오기", error.localizedDescription)
       }
       return .none
 
-
-      case .deleteUserResponse(let result):
-        switch result {
-          case .success(let data):
-            state.deleteUser = data
-            if data.isSuccess {
-              // 탈퇴 성공 시 UserSession의 이름 제거
-              state.$userSession.withLock { $0.name = "" }
-              return .send(.navigation(.presentLogOut))
-            }
-            return .none
-
-          case .failure(let error):
-            state.alert = AlertState {
-              TextState("탈퇴실패")
-            } actions: {
-              ButtonState(action: .confirmTapped) {
-                TextState("확인")
-              }
-            } message: {
-              TextState("회원 탈퇴 실패: \(String(describing: error.errorDescription ?? error.localizedDescription))")
-            }
-            return .none
-
+    case let .deleteUserResponse(result):
+      switch result {
+      case let .success(data):
+        state.deleteUser = data
+        if data.isSuccess {
+          // 탈퇴 성공 시 UserSession의 이름 제거
+          state.$userSession.withLock { $0.name = "" }
+          return .send(.navigation(.presentLogOut))
         }
+        return .none
 
-      case .logoutResponses(let result):
-        switch result {
-          case .success(let data):
-            state.authExit = data
-            return .send(.navigation(.presentLogOut))
-
-          case .failure(let error):
-            state.alert = AlertState {
-              TextState("로그 아웃 실패")
-            } actions: {
-              ButtonState(action: .confirmTapped) {
-                TextState("확인")
-              }
-            } message: {
-              TextState("로그 아웃 실패: \(String(describing: AuthError.unknownError(error.errorDescription ?? "")))")
-            }
-            return .none
+      case let .failure(error):
+        state.alert = AlertState {
+          TextState("탈퇴실패")
+        } actions: {
+          ButtonState(action: .confirmTapped) {
+            TextState("확인")
+          }
+        } message: {
+          TextState("회원 탈퇴 실패: \(String(describing: error.errorDescription ?? error.localizedDescription))")
         }
+        return .none
+      }
+
+    case let .logoutResponses(result):
+      switch result {
+      case let .success(data):
+        state.authExit = data
+        return .send(.navigation(.presentLogOut))
+
+      case let .failure(error):
+        state.alert = AlertState {
+          TextState("로그 아웃 실패")
+        } actions: {
+          ButtonState(action: .confirmTapped) {
+            TextState("확인")
+          }
+        } message: {
+          TextState("로그 아웃 실패: \(String(describing: AuthError.unknownError(error.errorDescription ?? "")))")
+        }
+        return .none
+      }
     }
   }
 
@@ -319,15 +331,15 @@ extension ProfileReducer {
     case .presentCreateByApp:
       return .none
 
-      case .presentPrivacyPolicy:
-        return .none
+    case .presentPrivacyPolicy:
+      return .none
 
-      case .presentEditGeneration:
-        state.$editGeneration.withLock { $0 = true }
-        return .none
+    case .presentEditGeneration:
+      state.$editGeneration.withLock { $0 = true }
+      return .none
 
-      case .presentAppPeedBackWeb:
-        return .none
+    case .presentAppPeedBackWeb:
+      return .none
     }
   }
 
@@ -336,7 +348,7 @@ extension ProfileReducer {
     action: PresentationAction<CustomAlertAction>
   ) -> Effect<Action> {
     switch action {
-    case .presented(let customAlertAction):
+    case let .presented(customAlertAction):
       switch customAlertAction {
       case .confirmTapped:
         // customAlert의 title로 구분하여 적절한 액션 실행
@@ -356,8 +368,8 @@ extension ProfileReducer {
         state.customAlert = nil
         return .none
 
-        case .policyTapped:
-          return .none
+      case .policyTapped:
+        return .none
       }
 
     case .dismiss:
@@ -370,15 +382,15 @@ extension ProfileReducer {
     action: PresentationAction<Destination.Action>
   ) -> Effect<Action> {
     switch action {
-      case .presented(.createApp(.navigation(.presentWeb))):
-        state.destination = nil
-        return .run { send in
-          try await clock.sleep(for: .seconds(0.05))
-          await send(.navigation(.presentAppPeedBackWeb))
-        }
+    case .presented(.createApp(.navigation(.presentWeb))):
+      state.destination = nil
+      return .run { send in
+        try await clock.sleep(for: .seconds(0.05))
+        await send(.navigation(.presentAppPeedBackWeb))
+      }
 
-      default:
-        return .none
+    default:
+      return .none
     }
   }
 }
