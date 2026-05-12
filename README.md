@@ -159,6 +159,18 @@ graph TD
 
 *프로젝트 모듈 간 의존성 관계도 (자동 생성)*
 
+#### 🕸️ TuistSpider 확장 뷰
+
+레이어별로 묶어 보거나(Grouped) 모든 모듈을 펼쳐 본(Expanded) 시각화입니다. (TuistSpider 결과)
+
+<div align="center">
+
+| Grouped | Expanded |
+|:---:|:---:|
+| <img src="docs/graphs/DDDAttendance-grouped-DDDAttendance.png" width="420"> | <img src="docs/graphs/DDDAttendance-expanded-DDDAttendance.png" width="420"> |
+
+</div>
+
 ### 🔄 의존성 방향 원칙
 
 ```
