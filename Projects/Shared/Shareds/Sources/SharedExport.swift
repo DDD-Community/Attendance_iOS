@@ -6,5 +6,4 @@
 //
 
 @_exported import DesignSystem
-@_exported import Model
 @_exported import Utill
