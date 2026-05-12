@@ -7,16 +7,17 @@
 
 import SwiftUI
 
-import Shareds
 import DesignSystem
 import Entity
+import Shareds
 
 import ComposableArchitecture
 
 struct AttendanceCheckView: View {
   @Bindable var store: StoreOf<AttendanceCheck>
+  @Namespace private var teamTabNamespace
   
-  var body: some View{
+  var body: some View {
     VStack {
       selectAttendanceDate()
       
@@ -40,11 +41,9 @@ struct AttendanceCheckView: View {
   }
 }
 
-
-extension AttendanceCheckView {
-  
+private extension AttendanceCheckView {
   @ViewBuilder
-  fileprivate func selectAttendanceDate() -> some View {
+  func selectAttendanceDate() -> some View {
     LazyVStack {
       Spacer()
         .frame(height: 24)
@@ -70,14 +69,14 @@ extension AttendanceCheckView {
   }
   
   @ViewBuilder
-  fileprivate func attendanceStatusView() -> some View {
+  func attendanceStatusView() -> some View {
     LazyVStack {
       Spacer()
         .frame(height: 14)
       
       DesignSystem.AttendanceCard(
         attendanceCount: store.attendanceCount,
-        lateCount:  store.lateCount,
+        lateCount: store.lateCount,
         absentCount: store.absentCount,
         showWarning: false
       )
@@ -86,101 +85,132 @@ extension AttendanceCheckView {
   }
   
   @ViewBuilder
-  fileprivate func selectPartType() -> some View {
+  func selectPartType() -> some View {
     LazyVStack {
       Spacer()
         .frame(height: 28)
       
       ScrollViewReader { proxy in
-        VStack {
-          ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-              ForEach(store.attendanceTeam) { item in
-                let mappedTeam = item.teams
-                VStack(spacing: .zero) {
-                  HStack {
-                    Spacer()
-                      .frame(width: 16)
-                    
-                    Text("\(item.teams.attendanceListDescription)")
-                      .pretendardFont(family: .Bold, size: 16)
-                      .foregroundColor(store.selectPart == mappedTeam ? .staticWhite : .gray600)
-                      .background(
-                        GeometryReader { geometry in
-                          Color.clear
-                            .preference(key: TeamTextWidthPreferenceKey.self, value: [item.id: geometry.size.width])
-                        }
-                      )
-                    
-                    Spacer()
-                      .frame(width: 16)
-                  }
-                  
-                  Spacer()
-                    .frame(height: 12)
-                  
-                  if store.selectPart == mappedTeam {
-                    Divider()
-                      .frame(width: store.dividerWidths[item.id] ?? 0, height: 2)
-                      .background(.blue40)
-                  }
-                }
-                .onPreferenceChange(TeamTextWidthPreferenceKey.self) { newWidths in
-                  store.send(.view(.updateDividerWidths(newWidths)))
-                }
-                .onTapGesture {
-                  store.send(.view(.selectPartButton(selectPart: item)))
-                }
-                .id(item.id)
-              }
-            }
-            .padding(.horizontal, 24)
-          }
-          .scrollDisabled(true)
-          
-          Spacer()
-            .frame(height: 12)
-          
-          Divider()
-            .frame(height: 1)
-            .background(.borderInactive.opacity(0.12))
-            .offset(y: -12)
-        }
-        .onChange(of: store.selectPart) { _, newValue in
-          guard let newValue,
-                let target = store.attendanceTeam.first(where: {
-                  $0.teams == newValue
-                }) else { return }
-          proxy.scrollTo(target.id, anchor: .center)
-        }
+        teamTabScroller(proxy: proxy)
       }
     }
     .simultaneousGesture(
       DragGesture(minimumDistance: 20)
         .onEnded { value in
           let swipeThreshold: CGFloat = 50
-          if value.translation.width > swipeThreshold {
-            store.send(.view(.swipeNext))
-          } else if value.translation.width < -swipeThreshold {
-            store.send(.view(.swipePrevious))
+          withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            if value.translation.width > swipeThreshold {
+              _ = store.send(.view(.swipeNext))
+            } else if value.translation.width < -swipeThreshold {
+              _ = store.send(.view(.swipePrevious))
+            }
           }
         }
     )
   }
   
   @ViewBuilder
-  fileprivate func selectPartAttendanceStatus() -> some View {
+  func teamTabScroller(proxy: ScrollViewProxy) -> some View {
+    VStack {
+      ScrollView(.horizontal, showsIndicators: false) {
+        HStack {
+          ForEach(store.attendanceTeam) { item in
+            teamTabItem(item: item)
+          }
+        }
+        .padding(.horizontal, 24)
+      }
+      .scrollDisabled(true)
+      
+      Spacer()
+        .frame(height: 12)
+      
+      Divider()
+        .frame(height: 1)
+        .background(.borderInactive.opacity(0.12))
+        .offset(y: -12)
+    }
+    .onChange(of: store.selectPart) { _, newValue in
+      guard let newValue,
+            let target = store.attendanceTeam.first(where: { $0.teams == newValue })
+      else { return }
+      withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+        proxy.scrollTo(target.id, anchor: .center)
+      }
+    }
+  }
+  
+  @ViewBuilder
+  func teamTabItem(item: SelectTeamEntity) -> some View {
+    let mappedTeam = item.teams
+    let isSelected = store.selectPart == mappedTeam
+    
+    VStack(spacing: .zero) {
+      HStack {
+        Spacer().frame(width: 16)
+        
+        Text(item.teams.attendanceListDescription)
+          .pretendardFont(family: .Bold, size: 16)
+          .foregroundColor(isSelected ? .staticWhite : .gray600)
+          .animation(.easeInOut(duration: 0.25), value: store.selectPart)
+          .background(teamTabWidthProbe(itemID: item.id))
+        
+        Spacer().frame(width: 16)
+      }
+      
+      Spacer().frame(height: 12)
+      
+      teamTabUnderline(itemID: item.id, isSelected: isSelected)
+    }
+    .onPreferenceChange(TeamTextWidthPreferenceKey.self) { newWidths in
+      store.send(.view(.updateDividerWidths(newWidths)))
+    }
+    .onTapGesture {
+      withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+        _ = store.send(.view(.selectPartButton(selectPart: item)))
+      }
+    }
+    .id(item.id)
+  }
+  
+  @ViewBuilder
+  func teamTabWidthProbe(itemID: Int) -> some View {
+    GeometryReader { geometry in
+      Color.clear
+        .preference(key: TeamTextWidthPreferenceKey.self, value: [itemID: geometry.size.width])
+    }
+  }
+  
+  @ViewBuilder
+  func teamTabUnderline(itemID: Int, isSelected: Bool) -> some View {
+    ZStack {
+      if isSelected {
+        Rectangle()
+          .fill(Color.blue40)
+          .frame(width: store.dividerWidths[itemID] ?? 0, height: 2)
+          .matchedGeometryEffect(id: "teamTabUnderline", in: teamTabNamespace)
+      } else {
+        Color.clear.frame(height: 2)
+      }
+    }
+  }
+  
+  @ViewBuilder
+  func selectPartAttendanceStatus() -> some View {
     if let selectPart = store.selectPart,
-       [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart) {
+       [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart)
+    {
       selectPartAttendanceStatusCard()
         .simultaneousGesture(
           DragGesture(minimumDistance: 20)
             .onEnded { value in
               let swipeThreshold: CGFloat = 50
-              if value.translation.width > swipeThreshold {
-                store.send(.view(.swipePrevious))
-              } else if value.translation.width < -swipeThreshold {
-                store.send(.view(.swipeNext))
+              withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                if value.translation.width > swipeThreshold {
+                  _ = store.send(.view(.swipePrevious))
+                } else if value.translation.width < -swipeThreshold {
+                  _ = store.send(.view(.swipeNext))
+                }
               }
             }
         )
@@ -193,10 +223,12 @@ extension AttendanceCheckView {
           DragGesture(minimumDistance: 20)
             .onEnded { value in
               let swipeThreshold: CGFloat = 50
-              if value.translation.width > swipeThreshold {
-                store.send(.view(.swipePrevious))
-              } else if value.translation.width < -swipeThreshold {
-                store.send(.view(.swipeNext))
+              withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                if value.translation.width > swipeThreshold {
+                  _ = store.send(.view(.swipePrevious))
+                } else if value.translation.width < -swipeThreshold {
+                  _ = store.send(.view(.swipeNext))
+                }
               }
             }
         )
@@ -204,7 +236,7 @@ extension AttendanceCheckView {
   }
   
   @ViewBuilder
-  fileprivate func selectPartAttendanceStatusCard() -> some View {
+  func selectPartAttendanceStatusCard() -> some View {
     let attendanceModel = getAttendanceModel()
     
     if attendanceModel.isEmpty {
@@ -230,6 +262,7 @@ extension AttendanceCheckView {
       .padding(.bottom, 10)
     }
     .scrollIndicators(.hidden)
+    .transaction(value: store.selectPart) { $0.animation = nil }
     .onAppear {
       UIScrollView.appearance().bounces = false
     }
@@ -256,9 +289,8 @@ extension AttendanceCheckView {
   }
   
   @ViewBuilder
-  fileprivate func noMemberAttendanceView() -> some View {
+  func noMemberAttendanceView() -> some View {
     LazyVStack {
-      
       Spacer()
         .frame(height: UIScreen.screenHeight * 0.08)
       
@@ -279,7 +311,6 @@ extension AttendanceCheckView {
         
         Spacer()
       }
-      
     }
   }
 }
