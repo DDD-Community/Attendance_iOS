@@ -1,5 +1,4 @@
-
-[v 1.0.6]
+[v 1.0.7]
 - Bug fixes and performance improvements
 - UI Improvements
 

@@ -9,7 +9,7 @@ import Foundation
 import ProjectDescription
 
 extension String {
-  public static func appVersion(version: String = "1.0.6") -> String {
+  public static func appVersion(version: String = "1.0.7") -> String {
     return version
   }
   
@@ -17,7 +17,7 @@ extension String {
     return Project.Environment.bundlePrefix
   }
   
-  public static func appBuildVersion(buildVersion: String = "77") -> String {
+  public static func appBuildVersion(buildVersion: String = "78") -> String {
     return buildVersion
   }
   
