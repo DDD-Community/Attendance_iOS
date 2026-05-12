@@ -8,13 +8,13 @@
 import Foundation
 
 import DomainInterface
-import Repository
 import Foundations
+import Repository
 import UseCase
 
+import Auth
 import ComposableArchitecture
 import WeaveDI
-import Auth
 
 /// 기본 WeaveDI 관리자 (단순하고 안정적)
 @MainActor
@@ -34,18 +34,19 @@ public final class AppDIManager: Sendable {
         return KeychainTokenProvider(keychainManager: keychainManager) as TokenProviding
       }
 
+      // 💾 LocalDataSource 계층 (SwiftData 캐시 싱글톤)
+      .register { ProfileLocalDataSource() as ProfileLocalDataSourceProtocol }
+      .register { ScheduleLocalDataSource() as ScheduleLocalDataSourceProtocol }
       // 🏗️ Repository 계층 (Clean Architecture + PFW)
       .register { AuthRepositoryImpl() as AuthInterface }
       .register { ProfileRepositoryImpl() as ProfileInterface }
       .register { AppUpdateRepositoryImpl() as AppUpdateInterface }
-
       // 🔐 OAuth Provider 계층 (PFW 조합 패턴)
       .register { GoogleOAuthRepositoryImpl() as GoogleOAuthInterface }
       .register { AppleLoginRepositoryImpl() as AppleAuthRequestInterface }
       .register { AppleOAuthRepositoryImpl() as AppleOAuthInterface }
       .register { AppleOAuthProvider() as AppleOAuthProviderInterface }
       .register { GoogleOAuthProvider() as GoogleOAuthProviderInterface }
-
       // 📝 비즈니스 로직 계층 (PFW 단일 책임)
       .register { OnBoardingRepositoryImpl() as OnBoardingInterface }
       .register { SignUpRepositoryImpl() as SignUpInterface }
@@ -53,7 +54,6 @@ public final class AppDIManager: Sendable {
       .register { MyPageRepositoryImpl() as MyPageRepositoryInterface }
       .register { ScheduleRepositoryImpl() as ScheduleInterface }
       .register { QRCodeRepositoryImpl() as QRCodeInterface }
-
       .configure()
   }
 }

@@ -6,13 +6,14 @@
 //  Updated for WeaveDI v4.0 - Protocol-based DI Registration
 //
 
-import Foundation
 import Entity
+import Foundation
 import WeaveDI
 
 /// Schedule 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol ScheduleInterface: Sendable {
-  func getSchedule()  async throws -> [Schedule]
+  func getSchedule() async throws -> [Schedule]
+  func getCachedSchedule() async -> [Schedule]?
 }
 
 /// Schedule Repository의 DependencyKey 구조체

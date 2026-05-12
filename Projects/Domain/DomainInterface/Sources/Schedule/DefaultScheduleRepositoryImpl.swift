@@ -5,12 +5,15 @@
 //  Created by Wonji Suh  on 7/23/25.
 //
 
-import Model
 import Entity
+import Model
 
-final public class DefaultScheduleRepositoryImpl: ScheduleInterface  {
-
+public final class DefaultScheduleRepositoryImpl: ScheduleInterface {
   public init() {}
+
+  public func getCachedSchedule() async -> [Schedule]? {
+    nil
+  }
 
   public func getSchedule() async throws -> [Schedule] {
     return [
@@ -21,9 +24,7 @@ final public class DefaultScheduleRepositoryImpl: ScheduleInterface  {
         month: 1,
         day: 15,
         year: 2026
-      ),
+      )
     ]
   }
-
 }
-

@@ -16,21 +16,24 @@ import ComposableArchitecture
 struct AttendanceCheckView: View {
   @Bindable var store: StoreOf<AttendanceCheck>
   @Namespace private var teamTabNamespace
-  
+
   var body: some View {
     VStack {
       selectAttendanceDate()
-      
+
       attendanceStatusView()
-      
+
       selectPartType()
-      
+
       selectPartAttendanceStatus()
     }
     .onAppear {
       store.send(.view(.onAppear))
     }
-    .sheet(item: $store.scope(state: \.destination?.scheduleModal, action: \.destination.scheduleModal)) { scheduleModalStore in
+    .sheet(item: $store.scope(
+      state: \.destination?.scheduleModal,
+      action: \.destination.scheduleModal
+    )) { scheduleModalStore in
       ScheduleModalView(store: scheduleModalStore)
         .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
         .presentationCornerRadius(20)
@@ -47,18 +50,18 @@ private extension AttendanceCheckView {
     LazyVStack {
       Spacer()
         .frame(height: 24)
-      
+
       HStack {
         Text("🗓️")
           .pretendardCustomFont(textStyle: .body1NormalMedium)
-        
+
         Spacer()
           .frame(width: 4)
-        
+
         Text(store.selectAttendanceDate.formattedDateTimeText(date: store.selectAttendanceDate))
           .pretendardCustomFont(textStyle: .body1NormalMedium)
           .foregroundStyle(.staticWhite)
-        
+
         Spacer()
       }
       .onTapGesture {
@@ -67,13 +70,13 @@ private extension AttendanceCheckView {
     }
     .padding(.horizontal, 24)
   }
-  
+
   @ViewBuilder
   func attendanceStatusView() -> some View {
     LazyVStack {
       Spacer()
         .frame(height: 14)
-      
+
       DesignSystem.AttendanceCard(
         attendanceCount: store.attendanceCount,
         lateCount: store.lateCount,
@@ -83,13 +86,13 @@ private extension AttendanceCheckView {
     }
     .padding(.horizontal, 24)
   }
-  
+
   @ViewBuilder
   func selectPartType() -> some View {
     LazyVStack {
       Spacer()
         .frame(height: 28)
-      
+
       ScrollViewReader { proxy in
         teamTabScroller(proxy: proxy)
       }
@@ -108,7 +111,7 @@ private extension AttendanceCheckView {
         }
     )
   }
-  
+
   @ViewBuilder
   func teamTabScroller(proxy: ScrollViewProxy) -> some View {
     VStack {
@@ -121,10 +124,10 @@ private extension AttendanceCheckView {
         .padding(.horizontal, 24)
       }
       .scrollDisabled(true)
-      
+
       Spacer()
         .frame(height: 12)
-      
+
       Divider()
         .frame(height: 1)
         .background(.borderInactive.opacity(0.12))
@@ -139,27 +142,27 @@ private extension AttendanceCheckView {
       }
     }
   }
-  
+
   @ViewBuilder
   func teamTabItem(item: SelectTeamEntity) -> some View {
     let mappedTeam = item.teams
     let isSelected = store.selectPart == mappedTeam
-    
+
     VStack(spacing: .zero) {
       HStack {
         Spacer().frame(width: 16)
-        
+
         Text(item.teams.attendanceListDescription)
           .pretendardFont(family: .Bold, size: 16)
           .foregroundColor(isSelected ? .staticWhite : .gray600)
           .animation(.easeInOut(duration: 0.25), value: store.selectPart)
           .background(teamTabWidthProbe(itemID: item.id))
-        
+
         Spacer().frame(width: 16)
       }
-      
+
       Spacer().frame(height: 12)
-      
+
       teamTabUnderline(itemID: item.id, isSelected: isSelected)
     }
     .onPreferenceChange(TeamTextWidthPreferenceKey.self) { newWidths in
@@ -172,7 +175,7 @@ private extension AttendanceCheckView {
     }
     .id(item.id)
   }
-  
+
   @ViewBuilder
   func teamTabWidthProbe(itemID: Int) -> some View {
     GeometryReader { geometry in
@@ -180,7 +183,7 @@ private extension AttendanceCheckView {
         .preference(key: TeamTextWidthPreferenceKey.self, value: [itemID: geometry.size.width])
     }
   }
-  
+
   @ViewBuilder
   func teamTabUnderline(itemID: Int, isSelected: Bool) -> some View {
     ZStack {
@@ -194,7 +197,7 @@ private extension AttendanceCheckView {
       }
     }
   }
-  
+
   @ViewBuilder
   func selectPartAttendanceStatus() -> some View {
     if let selectPart = store.selectPart,
@@ -214,7 +217,7 @@ private extension AttendanceCheckView {
               }
             }
         )
-      
+
       Spacer()
         .frame(height: 20)
     } else {
@@ -234,22 +237,26 @@ private extension AttendanceCheckView {
         )
     }
   }
-  
+
   @ViewBuilder
   func selectPartAttendanceStatusCard() -> some View {
     let attendanceModel = getAttendanceModel()
-    
-    if attendanceModel.isEmpty {
-      noMemberAttendanceView()
-    } else {
-      AttendanceScrollView(attendanceModel: attendanceModel)
+
+    Group {
+      if attendanceModel.isEmpty {
+        noMemberAttendanceView()
+      } else {
+        AttendanceScrollView(attendanceModel: attendanceModel)
+      }
     }
+    .id(store.selectPart)
+    .transition(.opacity.animation(.easeInOut(duration: 0.2)))
   }
-  
+
   private func getAttendanceModel() -> [Attendance] {
     return store.attendanceByTeam[store.selectTeamID] ?? store.attendanceModel
   }
-  
+
   @ViewBuilder
   private func AttendanceScrollView(attendanceModel: [Attendance]) -> some View {
     ScrollView(.vertical) {
@@ -262,12 +269,11 @@ private extension AttendanceCheckView {
       .padding(.bottom, 10)
     }
     .scrollIndicators(.hidden)
-    .transaction(value: store.selectPart) { $0.animation = nil }
     .onAppear {
       UIScrollView.appearance().bounces = false
     }
   }
-  
+
   @ViewBuilder
   private func AttendanceCard(item: Attendance) -> some View {
     AttendanceCheckStatusCard(
@@ -287,28 +293,28 @@ private extension AttendanceCheckView {
       }
     )
   }
-  
+
   @ViewBuilder
   func noMemberAttendanceView() -> some View {
     LazyVStack {
       Spacer()
         .frame(height: UIScreen.screenHeight * 0.08)
-      
+
       VStack {
         Spacer()
-        
+
         Image(asset: .stamp)
           .resizable()
           .scaledToFit()
           .frame(width: 100, height: 100)
-        
+
         Spacer()
           .frame(height: 12)
-        
+
         Text("아직 출석 인원이 없어요.")
           .pretendardCustomFont(textStyle: .body1NormalMedium)
           .foregroundStyle(.textSecondary)
-        
+
         Spacer()
       }
     }
@@ -317,7 +323,7 @@ private extension AttendanceCheckView {
 
 private struct TeamTextWidthPreferenceKey: PreferenceKey {
   static var defaultValue: [Int: CGFloat] = [:]
-  
+
   static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
     value.merge(nextValue(), uniquingKeysWith: { $1 })
   }

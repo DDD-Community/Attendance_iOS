@@ -9,16 +9,19 @@ import Foundation
 
 public enum QRCodeError: Error, LocalizedError, Equatable {
   // MARK: - QR Code Generation Errors
+
   case generationFailed
   case invalidPayload
   case imageRenderingFailed
 
   // MARK: - QR Code Fetch Errors
+
   case createFailed
   case userNotFound
   case invalidSession
 
   // MARK: - General Errors
+
   case networkError
   case unknownError(String)
 
@@ -38,7 +41,7 @@ public enum QRCodeError: Error, LocalizedError, Equatable {
       return "세션이 유효하지 않습니다"
     case .networkError:
       return "네트워크 오류가 발생했습니다"
-    case .unknownError(let message):
+    case let .unknownError(message):
       return "알 수 없는 오류가 발생했습니다: \(message)"
     }
   }

@@ -1,0 +1,175 @@
+{
+  "targets" : [
+    {
+      "layer" : "app",
+      "projectPath" : "Projects/App",
+      "targetName" : "DDDAttendance"
+    },
+    {
+      "layer" : "app",
+      "projectPath" : "Projects/App",
+      "targetName" : "DDDAttendance-Debug"
+    },
+    {
+      "layer" : "app",
+      "projectPath" : "Projects/App",
+      "targetName" : "DDDAttendance-Prod"
+    },
+    {
+      "layer" : "app",
+      "projectPath" : "Projects/App",
+      "targetName" : "DDDAttendance-Stage"
+    },
+    {
+      "layer" : "infrastructure",
+      "projectPath" : "Projects/Data/API",
+      "targetName" : "API"
+    },
+    {
+      "layer" : "data",
+      "projectPath" : "Projects/Data/Model",
+      "targetName" : "Model"
+    },
+    {
+      "layer" : "data",
+      "projectPath" : "Projects/Data/Repository",
+      "targetName" : "Repository"
+    },
+    {
+      "layer" : "data",
+      "projectPath" : "Projects/Data/Repository",
+      "targetName" : "RepositoryTests"
+    },
+    {
+      "layer" : "service",
+      "projectPath" : "Projects/Data/Service",
+      "targetName" : "Service"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/DomainInterface",
+      "targetName" : "DomainInterface"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/Entity",
+      "targetName" : "Entity"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/UseCase",
+      "targetName" : "UseCase"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/UseCase",
+      "targetName" : "UseCaseTests"
+    },
+    {
+      "layer" : "infrastructure",
+      "projectPath" : "Projects/Network/Foundations",
+      "targetName" : "Foundations"
+    },
+    {
+      "layer" : "infrastructure",
+      "projectPath" : "Projects/Network/Networks",
+      "targetName" : "Networks"
+    },
+    {
+      "layer" : "infrastructure",
+      "projectPath" : "Projects/Network/ThirdPartys",
+      "targetName" : "ThirdPartys"
+    },
+    {
+      "layer" : "Presentaion",
+      "projectPath" : "Projects/Presentation/Auth",
+      "targetName" : "Auth"
+    },
+    {
+      "layer" : "testing",
+      "projectPath" : "Projects/Presentation/Auth",
+      "targetName" : "AuthTests"
+    },
+    {
+      "layer" : "Presentaion",
+      "projectPath" : "Projects/Presentation/Management",
+      "targetName" : "Management"
+    },
+    {
+      "layer" : "testing",
+      "projectPath" : "Projects/Presentation/Management",
+      "targetName" : "ManagementTests"
+    },
+    {
+      "layer" : "Presentaion",
+      "projectPath" : "Projects/Presentation/Member",
+      "targetName" : "Member"
+    },
+    {
+      "layer" : "testing",
+      "projectPath" : "Projects/Presentation/Member",
+      "targetName" : "MemberTests"
+    },
+    {
+      "layer" : "Presentaion",
+      "projectPath" : "Projects/Presentation/OnBoarding",
+      "targetName" : "OnBoarding"
+    },
+    {
+      "layer" : "testing",
+      "projectPath" : "Projects/Presentation/OnBoarding",
+      "targetName" : "OnBoardingTests"
+    },
+    {
+      "layer" : "Presentaion",
+      "projectPath" : "Projects/Presentation/Presentation",
+      "targetName" : "Presentation"
+    },
+    {
+      "layer" : "Presentaion",
+      "projectPath" : "Projects/Presentation/Profile",
+      "targetName" : "Profile"
+    },
+    {
+      "layer" : "testing",
+      "projectPath" : "Projects/Presentation/Profile",
+      "targetName" : "ProfileTests"
+    },
+    {
+      "layer" : "Presentaion",
+      "projectPath" : "Projects/Presentation/Splash",
+      "targetName" : "Splash"
+    },
+    {
+      "layer" : "testing",
+      "projectPath" : "Projects/Presentation/Splash",
+      "targetName" : "SplashTests"
+    },
+    {
+      "layer" : "Presentaion",
+      "projectPath" : "Projects/Presentation/Web",
+      "targetName" : "Web"
+    },
+    {
+      "layer" : "design-system",
+      "projectPath" : "Projects/Shared/DesignSystem",
+      "targetName" : "DesignSystem"
+    },
+    {
+      "layer" : "shared",
+      "projectPath" : "Projects/Shared/Shareds",
+      "targetName" : "Shareds"
+    },
+    {
+      "layer" : "shared",
+      "projectPath" : "Projects/Shared/ThirdParty",
+      "targetName" : "ThirdParty"
+    },
+    {
+      "layer" : "shared",
+      "projectPath" : "Projects/Shared/Utill",
+      "targetName" : "Utill"
+    }
+  ],
+  "version" : 1
+}

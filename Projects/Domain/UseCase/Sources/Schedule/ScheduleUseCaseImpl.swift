@@ -6,26 +6,32 @@
 //
 
 import DomainInterface
-import Model
 import Entity
+import Model
 import WeaveDI
 
 public struct ScheduleUseCaseImpl: ScheduleInterface {
   @Dependency(\.scheduleRepository) var repository
 
-  public init() { }
+  public init() {}
+
+  // MARK: - 캐시 즉시 조회 (만료 시 nil)
+
+  public func getCachedSchedule() async -> [Schedule]? {
+    await repository.getCachedSchedule()
+  }
 
   // MARK: - 스케줄 조회
+
   public func getSchedule() async throws -> [Schedule] {
     return try await repository.getSchedule()
   }
 }
 
-
 extension ScheduleUseCaseImpl: DependencyKey {
-  static public var liveValue: ScheduleInterface = ScheduleUseCaseImpl()
-  static public var testValue: ScheduleInterface = ScheduleUseCaseImpl()
-  static public var previewValue: ScheduleInterface = liveValue
+  public static var liveValue: ScheduleInterface = ScheduleUseCaseImpl()
+  public static var testValue: ScheduleInterface = ScheduleUseCaseImpl()
+  public static var previewValue: ScheduleInterface = liveValue
 }
 
 public extension DependencyValues {

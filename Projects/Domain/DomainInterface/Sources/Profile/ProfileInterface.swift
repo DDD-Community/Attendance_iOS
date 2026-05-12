@@ -6,16 +6,17 @@
 //  Updated for WeaveDI v4.0 - Protocol-based DI Registration
 //
 
+import Entity
 import Foundation
 import WeaveDI
-import Entity
 
 /// Profile 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol ProfileInterface: Sendable {
   func getProfile() async throws -> ProfileEntity
+  func getCachedProfile() async -> ProfileEntity?
+  func refreshProfile() async throws -> ProfileEntity
   func editProfile(input: EditProfileInput) async throws -> ProfileEntity
 }
-
 
 /// Profile Repository의 DependencyKey 구조체
 public struct ProfileRepositoryDependency: DependencyKey {
