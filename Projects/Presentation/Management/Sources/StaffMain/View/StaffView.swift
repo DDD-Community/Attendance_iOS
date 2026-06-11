@@ -171,32 +171,38 @@ private extension StaffView {
   @ViewBuilder
   func dropDownView() -> some View {
     if store.isExpandedDropDown {
-      ZStack {
-        // 반투명 배경
-        Rectangle()
-          .fill(Color.black.opacity(0.8))
-          .edgesIgnoringSafeArea(.all)
+      ZStack(alignment: .topLeading) {
+        // 반투명 배경 (탭 시 닫힘)
+        Color.black.opacity(0.6)
+          .ignoresSafeArea()
           .onTapGesture {
-            // 배경 클릭 시 닫힘
             withAnimation {
               store.isExpandedDropDown = false
             }
           }
 
-        // 드롭다운 리스트
-        VStack {
-          DropdownList(
-            items: store.dropDownItem,
-            selectedItem: $store.selectDropDownItem,
-            isExpanded: $store.isExpandedDropDown
-          )
-          .frame(width: 140) // 드롭다운 리스트의 너비
-          .padding(.leading, 24)
-          .cornerRadius(6)
-        }
-        .offset(x: -UIScreen.screenWidth * 0.3, y: -UIScreen.screenHeight * 0.32) // 리스트의 위치 조정
+        HomeDropdownMenu(
+          entries: SelectDropDownItem.allCases.map { item in
+            HomeDropdownMenu.Entry(
+              id: item.rawValue,
+              title: item.desc,
+              isSelected: item == store.selectDropDownItem,
+              showsNewBadge: item == .vote
+            )
+          },
+          onSelect: { entry in
+            if let matched = SelectDropDownItem.allCases.first(where: { $0.rawValue == entry.id }) {
+              store.selectDropDownItem = matched
+            }
+            withAnimation {
+              store.isExpandedDropDown = false
+            }
+          }
+        )
+        .padding(.leading, 24)
+        .padding(.top, 96)
       }
-      .zIndex(1) // 드롭다운이 다른 뷰보다 위에 표시
+      .zIndex(1)
     }
   }
 }
