@@ -38,7 +38,7 @@ struct MemberMainView: View {
         .scrollIndicators(.hidden)
 
       case .vote:
-        voteTabPlaceholder()
+        MemberVoteView(store: store.scope(state: \.vote, action: \.vote))
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -156,20 +156,6 @@ struct MemberMainView: View {
       }
       .zIndex(1)
     }
-  }
-
-  @ViewBuilder
-  private func voteTabPlaceholder() -> some View {
-    VStack(spacing: 8) {
-      Text("투표")
-        .pretendardFont(family: .Bold, size: 18)
-        .foregroundStyle(.staticWhite)
-
-      Text("진행 중인 투표가 표시될 예정이에요.")
-        .pretendardFont(family: .Medium, size: 14)
-        .foregroundStyle(.textCaption)
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 
   private var attendanceStatus: some View {

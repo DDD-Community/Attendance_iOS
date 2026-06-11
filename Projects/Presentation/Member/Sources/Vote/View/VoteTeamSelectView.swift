@@ -20,13 +20,13 @@ struct VoteTeamSelectView: View {
   }
 
   private let info: TeamVoteTemplateInfo
-  private let onNext: () -> Void
+  private let onNext: ([TeamVoteAnswer]) -> Void
 
   @State private var answers: [CategoryAnswer]
 
   init(
     info: TeamVoteTemplateInfo,
-    onNext: @escaping () -> Void = {}
+    onNext: @escaping ([TeamVoteAnswer]) -> Void = { _ in }
   ) {
     self.info = info
     self.onNext = onNext
@@ -83,9 +83,19 @@ struct VoteTeamSelectView: View {
     }
   }
 
+  private func makeTeamVoteAnswers() -> [TeamVoteAnswer] {
+    answers.map { answer in
+      TeamVoteAnswer(
+        categoryId: answer.category.id,
+        teamIds: Array(answer.selectedTeamIds),
+        reason: answer.reason.isEmpty ? nil : answer.reason
+      )
+    }
+  }
+
   private var nextButton: some View {
     Button {
-      onNext()
+      onNext(makeTeamVoteAnswers())
     } label: {
       Text("다음")
         .pretendardFont(family: .Bold, size: 16)

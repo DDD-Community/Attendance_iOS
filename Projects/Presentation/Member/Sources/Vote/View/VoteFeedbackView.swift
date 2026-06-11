@@ -22,13 +22,13 @@ struct VoteFeedbackView: View {
   }
 
   private let info: FeedbackTemplateInfo
-  private let onSubmit: () -> Void
+  private let onSubmit: ([FeedbackAnswer]) -> Void
 
   @State private var answers: [QuestionAnswer]
 
   init(
     info: FeedbackTemplateInfo,
-    onSubmit: @escaping () -> Void = {}
+    onSubmit: @escaping ([FeedbackAnswer]) -> Void = { _ in }
   ) {
     self.info = info
     self.onSubmit = onSubmit
@@ -78,9 +78,51 @@ struct VoteFeedbackView: View {
     }
   }
 
+  private func makeFeedbackAnswers() -> [FeedbackAnswer] {
+    var result: [FeedbackAnswer] = []
+    for answer in answers {
+      switch answer.question.type {
+      case .multiSelect, .teamSelect:
+        result.append(FeedbackAnswer(
+          questionId: answer.question.id,
+          optionIds: Array(answer.selectedOptionIds),
+          textValue: nil,
+          boolValue: nil
+        ))
+
+      case .longText:
+        result.append(FeedbackAnswer(
+          questionId: answer.question.id,
+          optionIds: nil,
+          textValue: answer.textValue.isEmpty ? nil : answer.textValue,
+          boolValue: nil
+        ))
+
+      case .boolean:
+        result.append(FeedbackAnswer(
+          questionId: answer.question.id,
+          optionIds: nil,
+          textValue: nil,
+          boolValue: answer.boolAnswer.map { $0 == .yes }
+        ))
+      }
+
+      // followUp 텍스트 답변은 별도 질문으로 함께 제출한다.
+      for (followUpId, text) in answer.followUpTexts where !text.isEmpty {
+        result.append(FeedbackAnswer(
+          questionId: followUpId,
+          optionIds: nil,
+          textValue: text,
+          boolValue: nil
+        ))
+      }
+    }
+    return result
+  }
+
   private var submitButton: some View {
     Button {
-      onSubmit()
+      onSubmit(makeFeedbackAnswers())
     } label: {
       Text("제출하기")
         .pretendardFont(family: .Bold, size: 16)

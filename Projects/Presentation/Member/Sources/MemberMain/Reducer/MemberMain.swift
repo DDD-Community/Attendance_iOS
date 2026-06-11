@@ -38,6 +38,9 @@ public struct MemberMain {
     var selectedHomeTab: HomeTab = .attendance
     var isExpandedDropDown: Bool = false
 
+    // 투표 탭
+    var vote: MemberVote.State = .init()
+
     @ObservationStateIgnored
     var didAppear: Bool = false
 
@@ -62,6 +65,7 @@ public struct MemberMain {
     case inner(InnerAction)
     case async(AsyncAction)
     case navigation(NavigationAction)
+    case vote(MemberVote.Action)
   }
 
   @CasePathable
@@ -104,6 +108,10 @@ public struct MemberMain {
   public var body: some Reducer<State, Action> {
     BindingReducer()
 
+    Scope(state: \.vote, action: \.vote) {
+      MemberVote()
+    }
+
     Reduce { state, action in
       switch action {
       case .binding:
@@ -120,6 +128,9 @@ public struct MemberMain {
 
       case let .navigation(action):
         return handleNavigationAction(state: &state, action: action)
+
+      case .vote:
+        return .none
       }
     }
   }
