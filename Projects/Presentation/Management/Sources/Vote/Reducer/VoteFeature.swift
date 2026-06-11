@@ -71,18 +71,22 @@ public struct VoteFeature {
   }
 
   public enum InnerAction: Equatable {
-    case votesResponse([Vote])
-    case participationUpdated(VoteParticipation)
-    case nonRespondersResponse([NonParticipant])
-    case openVoteSucceeded
-    case closeVoteSucceeded
-    case voteFailed(message: String, retry: AsyncAction)
+    case votesResponse(Result<[Vote], VoteError>)
+    case participationResponse(Result<VoteParticipation, VoteError>)
+    case nonRespondersResponse(Result<[NonParticipant], VoteError>)
+    case openVoteResponse(Result<Bool, VoteError>)
+    case closeVoteResponse(Result<Bool, VoteError>)
   }
 
   public enum DelegateAction: Equatable {}
 
   nonisolated enum CancelID: Hashable {
+    case fetchVotes
+    case fetchParticipation
     case participationStream
+    case openVote
+    case closeVote
+    case fetchNonResponders
   }
 
   @Dependency(\.voteUseCase) var voteUseCase
@@ -164,26 +168,30 @@ extension VoteFeature {
     switch action {
     case .fetchVotes:
       return .run { send in
-        let votes = try await voteUseCase.fetchVotes()
-        await send(.inner(.votesResponse(votes)))
-      } catch: { error, send in
-        await send(.inner(.voteFailed(message: error.localizedDescription, retry: .fetchVotes)))
+        let result = await Result {
+          try await voteUseCase.fetchVotes()
+        }
+        .mapError(VoteError.from)
+        await send(.inner(.votesResponse(result)))
       }
+      .cancellable(id: CancelID.fetchVotes, cancelInFlight: true)
 
     case .fetchParticipation:
       guard let voteId = state.voteId else { return .none }
       return .run { send in
-        let participation = try await voteUseCase.fetchParticipation(voteId: voteId)
-        await send(.inner(.participationUpdated(participation)))
-      } catch: { error, send in
-        await send(.inner(.voteFailed(message: error.localizedDescription, retry: .fetchParticipation)))
+        let result = await Result {
+          try await voteUseCase.fetchParticipation(voteId: voteId)
+        }
+        .mapError(VoteError.from)
+        await send(.inner(.participationResponse(result)))
       }
+      .cancellable(id: CancelID.fetchParticipation, cancelInFlight: true)
 
     case .startParticipationStream:
       guard let voteId = state.voteId else { return .none }
       return .run { send in
         for await participation in voteUseCase.participationStream(voteId: voteId, interval: 5) {
-          await send(.inner(.participationUpdated(participation)))
+          await send(.inner(.participationResponse(.success(participation))))
         }
       }
       .cancellable(id: CancelID.participationStream, cancelInFlight: true)
@@ -191,29 +199,37 @@ extension VoteFeature {
     case .openVote:
       guard let voteId = state.voteId else { return .none }
       return .run { send in
-        try await voteUseCase.openVote(voteId: voteId)
-        await send(.inner(.openVoteSucceeded))
-      } catch: { error, send in
-        await send(.inner(.voteFailed(message: error.localizedDescription, retry: .openVote)))
+        let result = await Result { () -> Bool in
+          try await voteUseCase.openVote(voteId: voteId)
+          return true
+        }
+        .mapError(VoteError.from)
+        await send(.inner(.openVoteResponse(result)))
       }
+      .cancellable(id: CancelID.openVote, cancelInFlight: true)
 
     case .closeVote:
       guard let voteId = state.voteId else { return .none }
       return .run { send in
-        try await voteUseCase.closeVote(voteId: voteId)
-        await send(.inner(.closeVoteSucceeded))
-      } catch: { error, send in
-        await send(.inner(.voteFailed(message: error.localizedDescription, retry: .closeVote)))
+        let result = await Result { () -> Bool in
+          try await voteUseCase.closeVote(voteId: voteId)
+          return true
+        }
+        .mapError(VoteError.from)
+        await send(.inner(.closeVoteResponse(result)))
       }
+      .cancellable(id: CancelID.closeVote, cancelInFlight: true)
 
     case .fetchNonResponders:
       guard let voteId = state.voteId else { return .none }
       return .run { send in
-        let members = try await voteUseCase.fetchNonResponders(voteId: voteId)
-        await send(.inner(.nonRespondersResponse(members)))
-      } catch: { error, send in
-        await send(.inner(.voteFailed(message: error.localizedDescription, retry: .fetchNonResponders)))
+        let result = await Result {
+          try await voteUseCase.fetchNonResponders(voteId: voteId)
+        }
+        .mapError(VoteError.from)
+        await send(.inner(.nonRespondersResponse(result)))
       }
+      .cancellable(id: CancelID.fetchNonResponders, cancelInFlight: true)
     }
   }
 
@@ -222,59 +238,93 @@ extension VoteFeature {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-    case let .votesResponse(votes):
+    case let .votesResponse(result):
       state.loading = false
-      guard let latest = votes.first else {
-        state.voteId = nil
-        state.voteStatus = .before
-        return .none
-      }
-      state.voteId = latest.id
-      state.voteStatus = latest.status
-      switch latest.status {
-      case .inProgress:
-        return .send(.async(.startParticipationStream))
-      case .after:
-        return .send(.async(.fetchParticipation))
-      case .before:
-        return .none
+      switch result {
+      case let .success(votes):
+        guard let latest = votes.first else {
+          state.voteId = nil
+          state.voteStatus = .before
+          return .none
+        }
+        state.voteId = latest.id
+        state.voteStatus = latest.status
+        switch latest.status {
+        case .inProgress:
+          return .send(.async(.startParticipationStream))
+        case .after:
+          return .send(.async(.fetchParticipation))
+        case .before:
+          return .none
+        }
+      case let .failure(error):
+        return presentError(state: &state, error: error, retry: .fetchVotes)
       }
 
-    case let .participationUpdated(participation):
-      state.participation = participation
-      state.voteStatus = participation.status
-      return .none
+    case let .participationResponse(result):
+      switch result {
+      case let .success(participation):
+        state.participation = participation
+        state.voteStatus = participation.status
+        return .none
+      case let .failure(error):
+        return presentError(state: &state, error: error, retry: .fetchParticipation)
+      }
 
-    case let .nonRespondersResponse(members):
+    case let .nonRespondersResponse(result):
       state.isNonParticipantsLoading = false
-      state.nonParticipants = members
-      return .none
-
-    case .openVoteSucceeded:
-      state.voteStatus = .inProgress
-      return .send(.async(.startParticipationStream))
-
-    case .closeVoteSucceeded:
-      state.voteStatus = .after
-      return .cancel(id: CancelID.participationStream)
-
-    case let .voteFailed(message, retry):
-      state.loading = false
-      #logNetwork("투표 API 오류", message)
-      state.alert = AlertState {
-        TextState("요청을 처리하지 못했어요")
-      } actions: {
-        ButtonState(action: .retry(retry)) {
-          TextState("재시도")
-        }
-        ButtonState(role: .cancel, action: .cancel) {
-          TextState("닫기")
-        }
-      } message: {
-        TextState(message)
+      switch result {
+      case let .success(members):
+        state.nonParticipants = members
+        return .none
+      case let .failure(error):
+        state.isNonParticipantsPresented = false
+        return presentError(state: &state, error: error, retry: .fetchNonResponders)
       }
-      return .none
+
+    case let .openVoteResponse(result):
+      switch result {
+      case .success:
+        state.voteStatus = .inProgress
+        return .send(.async(.startParticipationStream))
+      case let .failure(error):
+        return presentError(state: &state, error: error, retry: .openVote)
+      }
+
+    case let .closeVoteResponse(result):
+      switch result {
+      case .success:
+        state.voteStatus = .after
+        return .merge(
+          .cancel(id: CancelID.participationStream),
+          .send(.async(.fetchParticipation))
+        )
+      case let .failure(error):
+        return presentError(state: &state, error: error, retry: .closeVote)
+      }
     }
+  }
+
+  private func presentError(
+    state: inout State,
+    error: VoteError,
+    retry: AsyncAction
+  ) -> Effect<Action> {
+    state.loading = false
+    #logNetwork("투표 API 오류", error.localizedDescription)
+    state.alert = AlertState {
+      TextState("요청을 처리하지 못했어요")
+    } actions: {
+      ButtonState(action: .retry(retry)) {
+        TextState("재시도")
+      }
+      ButtonState(role: .cancel, action: .cancel) {
+        TextState("닫기")
+      }
+    } message: {
+      TextState(error.errorDescription ?? "알 수 없는 오류가 발생했어요")
+    }
+    return .none
   }
 
   private func handleCustomAlertAction(
