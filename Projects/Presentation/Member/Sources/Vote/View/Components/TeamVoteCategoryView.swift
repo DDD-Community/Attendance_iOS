@@ -1,6 +1,6 @@
 //
 //  TeamVoteCategoryView.swift
-//  Management
+//  Member
 //
 //  Created by Roy on 6/11/26.
 //
@@ -53,7 +53,9 @@ struct TeamVoteCategoryView: View {
     VStack(spacing: 0) {
       ForEach(Array(teams.enumerated()), id: \.element.id) { idx, team in
         TeamSelectionRow(
-          team: team,
+          name: team.name,
+          serviceName: team.serviceName,
+          isOwnTeam: team.isOwnTeam,
           isSelected: selectedTeamIds.contains(team.id),
           onTap: { toggle(team) }
         )

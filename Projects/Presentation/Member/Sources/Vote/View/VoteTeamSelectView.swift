@@ -1,6 +1,6 @@
 //
 //  VoteTeamSelectView.swift
-//  Management
+//  Member
 //
 //  Created by Roy on 6/11/26.
 //
@@ -12,11 +12,26 @@ import Entity
 
 /// [멤버] 투표 1단계 — 팀 선택 화면 (Figma: iOS/투표_1단계(팀 선택))
 struct VoteTeamSelectView: View {
-  let info: TeamVoteTemplateInfo
-  var onNext: ([String: Set<Int>], [String: String]) -> Void = { _, _ in }
+  private struct CategoryAnswer: Identifiable {
+    let category: TeamVoteCategory
+    var selectedTeamIds: Set<Int> = []
+    var reason: String = ""
+    var id: String { category.id }
+  }
 
-  @State private var selections: [String: Set<Int>] = [:]
-  @State private var reasons: [String: String] = [:]
+  private let info: TeamVoteTemplateInfo
+  private let onNext: () -> Void
+
+  @State private var answers: [CategoryAnswer]
+
+  init(
+    info: TeamVoteTemplateInfo,
+    onNext: @escaping () -> Void = {}
+  ) {
+    self.info = info
+    self.onNext = onNext
+    _answers = State(initialValue: info.template.categories.map { CategoryAnswer(category: $0) })
+  }
 
   var body: some View {
     ScrollView {
@@ -25,13 +40,13 @@ struct VoteTeamSelectView: View {
 
         headerView
 
-        ForEach(Array(info.template.categories.enumerated()), id: \.element.id) { index, category in
+        ForEach(answers.indices, id: \.self) { index in
           TeamVoteCategoryView(
             index: index,
-            category: category,
+            category: answers[index].category,
             teams: info.teams,
-            selectedTeamIds: binding(for: category.id),
-            reason: reasonBinding(for: category.id)
+            selectedTeamIds: $answers[index].selectedTeamIds,
+            reason: $answers[index].reason
           )
         }
 
@@ -70,7 +85,7 @@ struct VoteTeamSelectView: View {
 
   private var nextButton: some View {
     Button {
-      onNext(selections, reasons)
+      onNext()
     } label: {
       Text("다음")
         .pretendardFont(family: .Bold, size: 16)
@@ -83,19 +98,5 @@ struct VoteTeamSelectView: View {
         }
     }
     .buttonStyle(.plain)
-  }
-
-  private func binding(for categoryId: String) -> Binding<Set<Int>> {
-    Binding(
-      get: { selections[categoryId] ?? [] },
-      set: { selections[categoryId] = $0 }
-    )
-  }
-
-  private func reasonBinding(for categoryId: String) -> Binding<String> {
-    Binding(
-      get: { reasons[categoryId] ?? "" },
-      set: { reasons[categoryId] = $0 }
-    )
   }
 }

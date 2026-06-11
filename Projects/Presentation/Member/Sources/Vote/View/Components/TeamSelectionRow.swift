@@ -1,29 +1,43 @@
 //
 //  TeamSelectionRow.swift
-//  Management
+//  Member
 //
 //  Created by Roy on 6/11/26.
 //
 
 import SwiftUI
 
-import DesignSystem
-import Entity
-
-/// 팀 투표 1단계의 팀 선택 행 (이름 + 서비스명 + 체크박스/본인팀 칩)
+/// 팀 투표 1단계의 팀 선택 행 (이름 + 서비스명 + 체크박스/본인팀 칩).
+/// 도메인 비의존 — feature 에서 모델을 매핑해 사용한다.
 struct TeamSelectionRow: View {
-  let team: VoteTeam
-  let isSelected: Bool
-  let onTap: () -> Void
+  private let name: String
+  private let serviceName: String?
+  private let isOwnTeam: Bool
+  private let isSelected: Bool
+  private let onTap: () -> Void
+
+  init(
+    name: String,
+    serviceName: String?,
+    isOwnTeam: Bool,
+    isSelected: Bool,
+    onTap: @escaping () -> Void
+  ) {
+    self.name = name
+    self.serviceName = serviceName
+    self.isOwnTeam = isOwnTeam
+    self.isSelected = isSelected
+    self.onTap = onTap
+  }
 
   var body: some View {
     HStack(spacing: 12) {
       VStack(alignment: .leading, spacing: 2) {
-        Text(team.name)
+        Text(name)
           .pretendardFont(family: .Bold, size: 16)
-          .foregroundStyle(team.isOwnTeam ? Color.gray60 : Color.staticWhite)
+          .foregroundStyle(isOwnTeam ? Color.gray60 : Color.staticWhite)
 
-        if let serviceName = team.serviceName, !serviceName.isEmpty {
+        if let serviceName, !serviceName.isEmpty {
           Text(serviceName)
             .pretendardFont(family: .Regular, size: 13)
             .foregroundStyle(.gray60)
@@ -31,7 +45,7 @@ struct TeamSelectionRow: View {
       }
       .frame(maxWidth: .infinity, alignment: .leading)
 
-      if team.isOwnTeam {
+      if isOwnTeam {
         ownTeamChip
       } else {
         checkBox
@@ -40,7 +54,7 @@ struct TeamSelectionRow: View {
     .padding(.vertical, 16)
     .contentShape(Rectangle())
     .onTapGesture {
-      guard !team.isOwnTeam else { return }
+      guard !isOwnTeam else { return }
       onTap()
     }
   }
