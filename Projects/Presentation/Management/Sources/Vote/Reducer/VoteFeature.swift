@@ -222,6 +222,8 @@ extension VoteFeature {
 
     case .fetchNonResponders:
       guard let voteId = state.voteId else { return .none }
+      state.isNonParticipantsPresented = true
+      state.isNonParticipantsLoading = true
       return .run { send in
         let result = await Result {
           try await voteUseCase.fetchNonResponders(voteId: voteId)
