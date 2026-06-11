@@ -5,14 +5,13 @@
 //  Created by Wonji Suh  on 5/7/25.
 //
 
-import Foundation
 import ComposableArchitecture
+import Foundation
 
 public struct APIHeader {
-
-  public static let contentType   = "Content-Type"
-  public static let accessToken   = "Authorization"
-  public static let accept        = "accept"
+  public static let contentType = "Content-Type"
+  public static let accessToken = "Authorization"
+  public static let accept = "accept"
 
   @Dependency(\.tokenProvider) private static var tokenProvider
 
@@ -32,8 +31,8 @@ public struct APIHeader {
   public init() {}
 }
 
-extension APIHeader {
-  static func baseHeaders(_ headers: [String: String]?) -> [String: String] {
+public extension APIHeader {
+  internal static func baseHeaders(_ headers: [String: String]?) -> [String: String] {
     var baseHeaders = baseHeader
     if let headers = headers {
       baseHeaders.merge(headers) { $1 }
@@ -41,7 +40,7 @@ extension APIHeader {
     return baseHeaders
   }
 
-  public static var baseHeader: Dictionary<String, String> {
+  static var baseHeader: [String: String] {
     [
       contentType: APIHeaderManger.contentType,
       accessToken: "Bearer \(accessTokenKeyChain)",
@@ -49,21 +48,30 @@ extension APIHeader {
     ]
   }
 
-  public static var notAccessTokenHeader: Dictionary<String, String> {
+  // TODO: 임시 토큰 — Vote API 연동 테스트용. 실제 토큰 연동 후 제거하고 baseHeader 사용
+  static var voteTempHeader: [String: String] {
+    [
+      contentType: APIHeaderManger.contentType,
+      accessToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyNzgiLCJyb2xlIjoiTUFOQUdFUiIsImV4cCI6NDEwMjQ0NDgwMH0.k7iylOR-v0Sy0B004wn_iD-q4-r1-ccFcx4udPzccTk",
+      accept: APIHeaderManger.contentType
+    ]
+  }
+
+  static var notAccessTokenHeader: [String: String] {
     [
       contentType: APIHeaderManger.contentType,
       accept: APIHeaderManger.contentType
     ]
   }
 
-  public static var mutiPartbaseHeader: Dictionary<String, String> {
+  static var mutiPartbaseHeader: [String: String] {
     [
       contentType: APIHeaderManger.multipartContentType,
-      accessToken: "Bearer \(accessTokenKeyChain)",
+      accessToken: "Bearer \(accessTokenKeyChain)"
     ]
   }
 
-  public static var applebaseHeader: Dictionary<String, String> {
+  static var applebaseHeader: [String: String] {
     [
       contentType: APIHeaderManger.contentType,
       accept: APIHeaderManger.contentType

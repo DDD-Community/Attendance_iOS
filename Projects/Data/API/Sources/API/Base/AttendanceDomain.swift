@@ -19,13 +19,14 @@ public enum AttendanceDomain {
   case schedule
   case attendance
   case myPage
+  case vote
 }
 
 extension AttendanceDomain: DomainType {
   public var baseURLString: String {
     return BaseAPI.base.apiDescription
   }
-  
+
   public var url: String {
     switch self {
     case .auth:
@@ -46,6 +47,8 @@ extension AttendanceDomain: DomainType {
       return "api/attendances"
     case .myPage:
       return "api/me"
+    case .vote:
+      return "api/votes"
     }
   }
 }
