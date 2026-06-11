@@ -48,11 +48,20 @@ public extension APIHeader {
     ]
   }
 
-  // TODO: 임시 토큰 — Vote API 연동 테스트용. 실제 토큰 연동 후 제거하고 baseHeader 사용
-  static var voteTempHeader: [String: String] {
+  // TODO: 임시 토큰(운영진) — Vote API 연동 테스트용. 실제 토큰 연동 후 제거하고 baseHeader 사용
+  static var voteManagerTempHeader: [String: String] {
     [
       contentType: APIHeaderManger.contentType,
       accessToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyNzgiLCJyb2xlIjoiTUFOQUdFUiIsImV4cCI6NDEwMjQ0NDgwMH0.k7iylOR-v0Sy0B004wn_iD-q4-r1-ccFcx4udPzccTk",
+      accept: APIHeaderManger.contentType
+    ]
+  }
+
+  // TODO: 임시 토큰(멤버) — Vote API 연동 테스트용. 실제 토큰 연동 후 제거하고 baseHeader 사용
+  static var voteMemberTempHeader: [String: String] {
+    [
+      contentType: APIHeaderManger.contentType,
+      accessToken: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyNzkiLCJyb2xlIjoiTUVNQkVSIiwiZXhwIjo0MTAyNDQ0ODAwfQ.jiLCmNMp-XVmWp_mzLWgEBZH5p_Jk96IKJHUmEvOgPc",
       accept: APIHeaderManger.contentType
     ]
   }
