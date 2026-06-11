@@ -16,25 +16,24 @@ import SDWebImageSwiftUI
 struct StaffView: View {
   @Bindable var store: StoreOf<Staff>
   @State var isExpanded: Bool = false
-  
+
   init(store: StoreOf<Staff>) {
     self.store = store
   }
-  
+
   var body: some View {
     ZStack {
       Color.basicBlack
         .edgesIgnoringSafeArea(.all)
-       
+
       VStack {
-        
         navigationTrallingButton()
-        
+
         Spacer()
           .frame(height: 10)
-        
+
         switchSelectDropDownView()
-        
+
         Spacer()
       }
     }
@@ -54,7 +53,7 @@ struct StaffView: View {
         }
       }
     }
-  
+
     .gesture(
       DragGesture()
         .onEnded { value in
@@ -73,21 +72,18 @@ struct StaffView: View {
       .presentationDetents([.height(UIScreen.screenHeight * 0.85)])
       .presentationCornerRadius(20)
       .presentationDragIndicator(.hidden)
-      
     }
   }
 }
 
-extension StaffView {
-  
+private extension StaffView {
   @ViewBuilder
-  fileprivate func navigationTrallingButton() -> some View {
+  func navigationTrallingButton() -> some View {
     VStack {
       Spacer()
         .frame(height: 10)
-      
+
       HStack(spacing: .zero) {
-        
         Button {
           withAnimation {
             store.isExpandedDropDown.toggle()
@@ -95,23 +91,23 @@ extension StaffView {
         } label: {
           HStack {
             Text(store.selectDropDownItem.desc)
-                  .pretendardCustomFont(textStyle: .title2NormalBold)
-                  .foregroundColor(.staticWhite)
-              
-              Spacer()
-                  .frame(width: 10)
-              
+              .pretendardCustomFont(textStyle: .title2NormalBold)
+              .foregroundColor(.staticWhite)
+
+            Spacer()
+              .frame(width: 10)
+
             Image(systemName: store.isExpandedDropDown ? "chevron.up" : "chevron.down")
-                  .renderingMode(.template) // 시스템 이미지 렌더링 최적화
-                  .foregroundColor(.white)
-                  .frame(width: 12, height: 7)
-                  .bold()
+              .renderingMode(.template) // 시스템 이미지 렌더링 최적화
+              .foregroundColor(.white)
+              .frame(width: 12, height: 7)
+              .bold()
           }
           .padding(.leading, 24)
         }
-        
+
         Spacer()
-        
+
         Circle()
           .fill(.blue70)
           .frame(width: 36, height: 36)
@@ -125,10 +121,10 @@ extension StaffView {
           .onTapGesture {
             store.send(.view(.presentQrcode))
           }
-        
+
         Spacer()
           .frame(width: 12)
-        
+
         Circle()
           .fill(.gray80)
           .frame(width: 36, height: 36)
@@ -146,23 +142,23 @@ extension StaffView {
     }
     .padding(.trailing, 24)
   }
-  
+
   @ViewBuilder
-  fileprivate func switchSelectDropDownView() -> some View {
+  func switchSelectDropDownView() -> some View {
     switch store.selectDropDownItem {
     case .attandance:
-      AttendanceCheckView(store: self.store.scope(state: \.attendanceCheck, action: \.attendanceCheck))
+      AttendanceCheckView(store: store.scope(state: \.attendanceCheck, action: \.attendanceCheck))
 
     case .schedule:
-      ScheduleView(store: self.store.scope(state: \.schedule, action: \.schedule))
-      
+      ScheduleView(store: store.scope(state: \.schedule, action: \.schedule))
+
     case .vote:
-       EmptyView()
+      VoteView(store: store.scope(state: \.vote, action: \.vote))
     }
   }
-  
+
   @ViewBuilder
-  fileprivate func dropDownView() -> some View {
+  func dropDownView() -> some View {
     if store.isExpandedDropDown {
       ZStack {
         // 반투명 배경
@@ -175,7 +171,7 @@ extension StaffView {
               store.isExpandedDropDown = false
             }
           }
-        
+
         // 드롭다운 리스트
         VStack {
           DropdownList(
@@ -187,12 +183,11 @@ extension StaffView {
           .padding(.leading, 24)
           .cornerRadius(6)
         }
-        .offset(x: -UIScreen.screenWidth * 0.3 ,y: -UIScreen.screenHeight * 0.32 ) // 리스트의 위치 조정
+        .offset(x: -UIScreen.screenWidth * 0.3, y: -UIScreen.screenHeight * 0.32) // 리스트의 위치 조정
       }
       .zIndex(1) // 드롭다운이 다른 뷰보다 위에 표시
     }
   }
-  
 }
 
 private extension StaffView {
@@ -215,7 +210,7 @@ private extension StaffView {
     case .schedule:
       ScheduleSkeletonView()
     case .vote:
-      EmptyView()
+      VoteSkeletonView()
     }
   }
 }

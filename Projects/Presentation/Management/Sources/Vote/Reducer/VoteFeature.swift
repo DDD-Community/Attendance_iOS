@@ -10,6 +10,7 @@ import DesignSystem
 import Entity
 import Foundation
 import LogMacro
+import UseCase
 
 @Reducer
 public struct VoteFeature {
@@ -18,10 +19,14 @@ public struct VoteFeature {
   @ObservableState
   public struct State: Equatable {
     var loading: Bool = false
+    var voteId: Int?
     var voteStatus: VoteStatus = .before
+    var participation: VoteParticipation?
     var isNonParticipantsPresented: Bool = false
+    var isNonParticipantsLoading: Bool = false
     var nonParticipants: [NonParticipant] = []
     @Presents public var customAlert: CustomAlertState<CustomAlertAction>?
+    @Presents public var alert: AlertState<AlertAction>?
     public init() {}
   }
 
@@ -34,36 +39,53 @@ public struct VoteFeature {
     case scope(ScopeAction)
   }
 
-  // MARK: - ViewAction
-
   @CasePathable
   public enum View {
+    case onAppear
+    case onDisappear
     case tappedStartVoteButton
     case tappedCheckNonParticipants
     case tappedCloseNonParticipants
     case tappedEndVoteButton
   }
 
-  // MARK: - ScopeAction
-
   @CasePathable
   public enum ScopeAction {
     case customAlert(PresentationAction<CustomAlertAction>)
+    case alert(PresentationAction<AlertAction>)
   }
 
-  // MARK: - AsyncAction 비동기 처리 액션
+  @CasePathable
+  public enum AlertAction: Equatable {
+    case cancel
+    case retry(AsyncAction)
+  }
 
-  public enum AsyncAction: Equatable {}
+  public enum AsyncAction: Equatable {
+    case fetchVotes
+    case fetchParticipation
+    case startParticipationStream
+    case openVote
+    case closeVote
+    case fetchNonResponders
+  }
 
-  // MARK: - 앱내에서 사용하는 액션
-
-  public enum InnerAction: Equatable {}
-
-  // MARK: - NavigationAction
+  public enum InnerAction: Equatable {
+    case votesResponse([Vote])
+    case participationUpdated(VoteParticipation)
+    case nonRespondersResponse([NonParticipant])
+    case openVoteSucceeded
+    case closeVoteSucceeded
+    case voteFailed(message: String, retry: AsyncAction)
+  }
 
   public enum DelegateAction: Equatable {}
 
-  nonisolated enum CancelID: Hashable {}
+  nonisolated enum CancelID: Hashable {
+    case participationStream
+  }
+
+  @Dependency(\.voteUseCase) var voteUseCase
 
   public var body: some Reducer<State, Action> {
     BindingReducer()
@@ -88,12 +110,17 @@ public struct VoteFeature {
         switch scopeAction {
         case let .customAlert(customAlertAction):
           return handleCustomAlertAction(state: &state, action: customAlertAction)
+
+        case let .alert(alertAction):
+          guard case let .presented(.retry(retryAction)) = alertAction else { return .none }
+          return .send(.async(retryAction))
         }
       }
     }
     .ifLet(\.$customAlert, action: \.scope.customAlert) {
       CustomConfirmAlert()
     }
+    .ifLet(\.$alert, action: \.scope.alert)
   }
 }
 
@@ -103,15 +130,22 @@ extension VoteFeature {
     action: View
   ) -> Effect<Action> {
     switch action {
+    case .onAppear:
+      state.loading = true
+      return .send(.async(.fetchVotes))
+
+    case .onDisappear:
+      return .cancel(id: CancelID.participationStream)
+
     case .tappedStartVoteButton:
       state.customAlert = .startVote()
       return .none
 
     case .tappedCheckNonParticipants:
-      // TODO: API 연동 후 GET /votes/{id}/non-responders 결과로 대체
-      state.nonParticipants = NonParticipant.placeholders
+      state.nonParticipants = []
+      state.isNonParticipantsLoading = true
       state.isNonParticipantsPresented = true
-      return .none
+      return .send(.async(.fetchNonResponders))
 
     case .tappedCloseNonParticipants:
       state.isNonParticipantsPresented = false
@@ -119,6 +153,126 @@ extension VoteFeature {
 
     case .tappedEndVoteButton:
       state.customAlert = .endVote()
+      return .none
+    }
+  }
+
+  private func handleAsyncAction(
+    state: inout State,
+    action: AsyncAction
+  ) -> Effect<Action> {
+    switch action {
+    case .fetchVotes:
+      return .run { send in
+        let votes = try await voteUseCase.fetchVotes()
+        await send(.inner(.votesResponse(votes)))
+      } catch: { error, send in
+        await send(.inner(.voteFailed(message: error.localizedDescription, retry: .fetchVotes)))
+      }
+
+    case .fetchParticipation:
+      guard let voteId = state.voteId else { return .none }
+      return .run { send in
+        let participation = try await voteUseCase.fetchParticipation(voteId: voteId)
+        await send(.inner(.participationUpdated(participation)))
+      } catch: { error, send in
+        await send(.inner(.voteFailed(message: error.localizedDescription, retry: .fetchParticipation)))
+      }
+
+    case .startParticipationStream:
+      guard let voteId = state.voteId else { return .none }
+      return .run { send in
+        for await participation in voteUseCase.participationStream(voteId: voteId, interval: 5) {
+          await send(.inner(.participationUpdated(participation)))
+        }
+      }
+      .cancellable(id: CancelID.participationStream, cancelInFlight: true)
+
+    case .openVote:
+      guard let voteId = state.voteId else { return .none }
+      return .run { send in
+        try await voteUseCase.openVote(voteId: voteId)
+        await send(.inner(.openVoteSucceeded))
+      } catch: { error, send in
+        await send(.inner(.voteFailed(message: error.localizedDescription, retry: .openVote)))
+      }
+
+    case .closeVote:
+      guard let voteId = state.voteId else { return .none }
+      return .run { send in
+        try await voteUseCase.closeVote(voteId: voteId)
+        await send(.inner(.closeVoteSucceeded))
+      } catch: { error, send in
+        await send(.inner(.voteFailed(message: error.localizedDescription, retry: .closeVote)))
+      }
+
+    case .fetchNonResponders:
+      guard let voteId = state.voteId else { return .none }
+      return .run { send in
+        let members = try await voteUseCase.fetchNonResponders(voteId: voteId)
+        await send(.inner(.nonRespondersResponse(members)))
+      } catch: { error, send in
+        await send(.inner(.voteFailed(message: error.localizedDescription, retry: .fetchNonResponders)))
+      }
+    }
+  }
+
+  private func handleInnerAction(
+    state: inout State,
+    action: InnerAction
+  ) -> Effect<Action> {
+    switch action {
+    case let .votesResponse(votes):
+      state.loading = false
+      guard let latest = votes.first else {
+        state.voteId = nil
+        state.voteStatus = .before
+        return .none
+      }
+      state.voteId = latest.id
+      state.voteStatus = latest.status
+      switch latest.status {
+      case .inProgress:
+        return .send(.async(.startParticipationStream))
+      case .after:
+        return .send(.async(.fetchParticipation))
+      case .before:
+        return .none
+      }
+
+    case let .participationUpdated(participation):
+      state.participation = participation
+      state.voteStatus = participation.status
+      return .none
+
+    case let .nonRespondersResponse(members):
+      state.isNonParticipantsLoading = false
+      state.nonParticipants = members
+      return .none
+
+    case .openVoteSucceeded:
+      state.voteStatus = .inProgress
+      return .send(.async(.startParticipationStream))
+
+    case .closeVoteSucceeded:
+      state.voteStatus = .after
+      return .cancel(id: CancelID.participationStream)
+
+    case let .voteFailed(message, retry):
+      state.loading = false
+      #logNetwork("투표 API 오류", message)
+      state.alert = AlertState {
+        TextState("요청을 처리하지 못했어요")
+      } actions: {
+        ButtonState(action: .retry(retry)) {
+          TextState("재시도")
+        }
+        ButtonState(role: .cancel, action: .cancel) {
+          TextState("닫기")
+        }
+      } message: {
+        TextState(message)
+      }
       return .none
     }
   }
@@ -132,24 +286,20 @@ extension VoteFeature {
       let alertStyle = state.customAlert?.style
 
       switch customAlertAction {
-      // 좌측 회색 버튼("취소") = 닫기
       case .confirmTapped:
         state.customAlert = nil
         return .none
 
-      // 우측 accent 버튼 = 실행 (시작하기 / 종료하기)
       case .cancelTapped:
         state.customAlert = nil
-        // TODO: API 연동 후 성공 응답 시 상태 전환
         switch alertStyle {
         case .startConfirmation:
-          state.voteStatus = .inProgress
+          return .send(.async(.openVote))
         case .endConfirmation:
-          state.voteStatus = .after
+          return .send(.async(.closeVote))
         default:
-          break
+          return .none
         }
-        return .none
 
       case .policyTapped:
         return .none
@@ -159,18 +309,6 @@ extension VoteFeature {
       return .none
     }
   }
-
-  private func handleAsyncAction(
-    state _: inout State,
-    action: AsyncAction
-  ) -> Effect<Action> {
-    switch action {}
-  }
-
-  private func handleInnerAction(
-    state _: inout State,
-    action _: InnerAction
-  ) -> Effect<Action> {}
 
   private func handleDelegateAction(
     state _: inout State,

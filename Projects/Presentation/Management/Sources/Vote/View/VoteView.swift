@@ -41,19 +41,22 @@ public struct VoteView: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     .padding(.top, 20)
     .padding(.horizontal, 24)
-    .customAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
-    .overlay {
-      if store.isNonParticipantsPresented {
-        NonParticipantsModalView(
-          members: store.nonParticipants,
-          onClose: {
-            store.send(.view(.tappedCloseNonParticipants))
-          }
-        )
-        .transition(.opacity)
-      }
+    .onAppear {
+      store.send(.view(.onAppear))
     }
-    .animation(.easeInOut(duration: 0.2), value: store.isNonParticipantsPresented)
+    .onDisappear {
+      store.send(.view(.onDisappear))
+    }
+    .customAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
+    .alert($store.scope(state: \.alert, action: \.scope.alert))
+    .nonParticipantsModal(
+      isPresented: store.isNonParticipantsPresented,
+      isLoading: store.isNonParticipantsLoading,
+      members: store.nonParticipants,
+      onClose: {
+        store.send(.view(.tappedCloseNonParticipants))
+      }
+    )
   }
 }
 
@@ -75,11 +78,9 @@ extension VoteView {
     }
   }
 
-  /// ① 투표 상태 + ② 참여 현황 — 단일 카드 안에 2개 행 + 구분선
   @ViewBuilder
   func voteStatusView() -> some View {
     VStack(spacing: 0) {
-      // ① 투표 상태 — 상태 칩
       HStack(spacing: 0) {
         Text("투표 상태")
           .pretendardCustomFont(textStyle: .body3NormalMedium)
@@ -91,12 +92,10 @@ extension VoteView {
       }
       .padding(.vertical, 14)
 
-      // 구분선
       Rectangle()
         .fill(.gray80)
         .frame(height: 1)
 
-      // ② 참여 현황
       HStack(spacing: 0) {
         Text("참여 현황")
           .pretendardCustomFont(textStyle: .body3NormalMedium)
@@ -120,7 +119,6 @@ extension VoteView {
     }
   }
 
-  /// 투표 상태 칩 — 투표 전(회색) / 진행 중(파랑) / 투표 종료(회색)
   @ViewBuilder
   func statusChip() -> some View {
     Text(statusChipTitle)
@@ -157,21 +155,19 @@ extension VoteView {
     }
   }
 
-  /// 참여 현황 텍스트
   var participationText: String {
     switch store.voteStatus {
     case .before:
       return "투표 시작 전이에요"
     case .inProgress:
-      // TODO: API 연동 후 실제 참여 현황으로 대체
-      return "42명 중 35명 참여 (83%)"
+      guard let p = store.participation else { return "집계 중이에요" }
+      return "\(p.totalMembers)명 중 \(p.respondedMembers)명 참여 (\(p.participationRate)%)"
     case .after:
-      // TODO: API 연동 후 실제 최종 집계로 대체
-      return "최종 38명 참여 (90%)"
+      guard let p = store.participation else { return "집계 완료" }
+      return "최종 \(p.respondedMembers)명 참여 (\(p.participationRate)%)"
     }
   }
 
-  /// 투표 전 — '투표 시작하기' CTA (파랑)
   @ViewBuilder
   func startVoteButton() -> some View {
     CustomButton(
@@ -184,7 +180,6 @@ extension VoteView {
     )
   }
 
-  /// 진행 중 — '미참여 인원 확인하기' (아웃라인)
   @ViewBuilder
   func checkNonParticipantsButton() -> some View {
     Button {
@@ -209,7 +204,6 @@ extension VoteView {
     .buttonStyle(.plain)
   }
 
-  /// 진행 중 — '투표 종료하기' CTA (빨강)
   @ViewBuilder
   func endVoteButton() -> some View {
     CustomButton(
@@ -222,7 +216,6 @@ extension VoteView {
     )
   }
 
-  /// 투표 종료 — '투표가 종료되었어요' 비활성 안내 (회색, 탭 불가)
   @ViewBuilder
   func endedNoticeView() -> some View {
     Text("투표가 종료되었어요")
