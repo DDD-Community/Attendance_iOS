@@ -197,7 +197,9 @@ extension VoteFeature {
       .cancellable(id: CancelID.participationStream, cancelInFlight: true)
 
     case .openVote:
-      guard let voteId = state.voteId else { return .none }
+      guard let voteId = state.voteId else {
+        return presentError(state: &state, error: .noActiveVote, retry: .fetchVotes)
+      }
       return .run { send in
         let result = await Result { () -> Bool in
           try await voteUseCase.openVote(voteId: voteId)
@@ -209,7 +211,9 @@ extension VoteFeature {
       .cancellable(id: CancelID.openVote, cancelInFlight: true)
 
     case .closeVote:
-      guard let voteId = state.voteId else { return .none }
+      guard let voteId = state.voteId else {
+        return presentError(state: &state, error: .noActiveVote, retry: .fetchVotes)
+      }
       return .run { send in
         let result = await Result { () -> Bool in
           try await voteUseCase.closeVote(voteId: voteId)
@@ -221,7 +225,11 @@ extension VoteFeature {
       .cancellable(id: CancelID.closeVote, cancelInFlight: true)
 
     case .fetchNonResponders:
-      guard let voteId = state.voteId else { return .none }
+      guard let voteId = state.voteId else {
+        state.isNonParticipantsPresented = false
+        state.isNonParticipantsLoading = false
+        return presentError(state: &state, error: .noActiveVote, retry: .fetchVotes)
+      }
       state.isNonParticipantsPresented = true
       state.isNonParticipantsLoading = true
       return .run { send in
