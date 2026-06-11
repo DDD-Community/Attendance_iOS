@@ -51,19 +51,29 @@ struct CustomConfirmationPopup: View {
         .opacity(isContentVisible ? 0.6 : 0)
         .edgesIgnoringSafeArea(.all)
         .onTapGesture {
-          if style != .consent {
+          switch style {
+          case .consent:
+            break
+          case .startConfirmation, .endConfirmation:
+            // 우측 accent 버튼(onCancel)이 실행 액션이므로 dim 탭은 닫기(onConfirm)로 처리
+            onConfirm()
+          case .confirmation:
             onCancel()
           }
         }
 
       Group {
-        if style == .consent {
+        switch style {
+        case .consent:
           consentContent
-        } else {
+        case .startConfirmation:
+          accentConfirmContent(accent: .blue45)
+        case .endConfirmation:
+          accentConfirmContent(accent: .statusErrorText)
+        case .confirmation:
           confirmationContent
         }
       }
-      .padding(.horizontal, 10)
       .offset(y: isContentVisible ? 0 : 120)
       .opacity(isContentVisible ? 1 : 0)
     }
@@ -124,6 +134,67 @@ struct CustomConfirmationPopup: View {
     .background(.gray90)
     .clipShape(.rect(cornerRadius: 20))
     .onTapGesture {}
+    .padding(.horizontal, 10)
+  }
+
+  /// 운영진 투표 시작/종료 확인 전용 스타일 (Figma: 시작확인/종료확인 모달).
+  /// 다른 확인 팝업과 분리된 디자인 — 좌측 회색 confirm, 우측 accent cancel.
+  /// - Parameter accent: 우측 강조 버튼 배경색 (시작=파랑, 종료=빨강)
+  private func accentConfirmContent(accent: Color) -> some View {
+    VStack(alignment: .center, spacing: 0) {
+      Text(title)
+        .pretendardFont(family: .Bold, size: 18)
+        .foregroundStyle(.staticWhite)
+        .multilineTextAlignment(.center)
+
+      if !message.isEmpty {
+        Color.clear.frame(height: 10)
+
+        Text(message)
+          .pretendardFont(family: .Medium, size: 14)
+          .foregroundStyle(.textCaption)
+          .multilineTextAlignment(.center)
+          .lineSpacing(4)
+      }
+
+      Color.clear.frame(height: 22)
+
+      HStack(spacing: 8) {
+        Button {
+          onConfirm()
+        } label: {
+          Text(confirmTitle)
+            .pretendardFont(family: .Bold, size: 16)
+            .foregroundStyle(.staticWhite)
+            .frame(maxWidth: .infinity)
+            .frame(height: 48)
+        }
+        .background(.gray80)
+        .clipShape(.rect(cornerRadius: 10))
+        .contentShape(.rect(cornerRadius: 10))
+
+        Button {
+          onCancel()
+        } label: {
+          Text(cancelTitle)
+            .pretendardFont(family: .Bold, size: 16)
+            .foregroundStyle(.staticWhite)
+            .frame(maxWidth: .infinity)
+            .frame(height: 48)
+        }
+        .background(accent)
+        .clipShape(.rect(cornerRadius: 10))
+        .contentShape(.rect(cornerRadius: 10))
+      }
+    }
+    .padding(.top, 26)
+    .padding(.bottom, 16)
+    .padding(.horizontal, 20)
+    .frame(maxWidth: .infinity)
+    .background(.gray90)
+    .clipShape(.rect(cornerRadius: 16))
+    .onTapGesture {}
+    .padding(.horizontal, 48) // 화면 양옆 48 (Figma: 375 기준 너비 280)
   }
 
   private var consentContent: some View {
@@ -178,8 +249,8 @@ struct CustomConfirmationPopup: View {
     .background(.gray90)
     .clipShape(.rect(cornerRadius: 20))
     .onTapGesture {}
+    .padding(.horizontal, 10)
   }
-
 }
 
 #Preview("Item Based") {

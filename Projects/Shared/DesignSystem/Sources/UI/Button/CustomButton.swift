@@ -12,7 +12,7 @@ public struct CustomButton: View {
   private let title: String
   private let config: DDDCustomButtonConfig
   private var isEnable: Bool = false
-  
+
   public init(
     action: @escaping () -> Void,
     title: String,
@@ -24,12 +24,12 @@ public struct CustomButton: View {
     self.action = action
     self.isEnable = isEnable
   }
-  
+
   public var body: some View {
     RoundedRectangle(cornerRadius: config.cornerRadius)
       .fill(isEnable ? config.enableBackgroundColor : config.disableBackgroundColor)
       .frame(height: config.frameHeight)
-      .clipShape(Capsule())
+      .clipShape(RoundedRectangle(cornerRadius: config.cornerRadius))
       .overlay {
         Text(title)
           .pretendardFont(family: .SemiBold, size: 20)

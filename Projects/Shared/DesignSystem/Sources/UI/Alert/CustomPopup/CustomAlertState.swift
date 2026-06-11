@@ -5,8 +5,8 @@
 //  Created by Wonji Suh on 1/4/26.
 //
 
-import SwiftUI
 import ComposableArchitecture
+import SwiftUI
 
 @ObservableState
 public struct CustomAlertState<Action>: Equatable {
@@ -40,6 +40,10 @@ public struct CustomAlertState<Action>: Equatable {
 public enum CustomAlertStyle: Equatable {
   case confirmation
   case consent
+  /// 운영진 투표 시작 확인 전용 스타일 (다른 확인 팝업과 분리)
+  case startConfirmation
+  /// 운영진 투표 종료 확인 전용 스타일 (우측 빨강 버튼)
+  case endConfirmation
 }
 
 @CasePathable
@@ -84,6 +88,49 @@ public extension CustomAlertState where Action == CustomAlertAction {
       confirmTitle: "탈퇴하기",
       cancelTitle: "취소",
       isDestructive: true
+    )
+  }
+
+  /// 투표 작성 화면 이탈 방지 모달.
+  /// confirm("계속 작성") = 화면 유지, cancel("나가기") = 입력값 미저장 후 이탈.
+  /// 좌측 회색 버튼이 confirm, 우측 파란 버튼이 cancel과 매칭된다.
+  static func exitWriting() -> CustomAlertState<CustomAlertAction> {
+    CustomAlertState(
+      title: "정말 뒤로 가시겠어요?",
+      message: "지금 나가면 작성 중인 내용이 저장되지 않아요.",
+      confirmTitle: "계속 작성",
+      cancelTitle: "나가기",
+      isDestructive: false,
+      style: .startConfirmation,
+      checkboxTitle: ""
+    )
+  }
+
+  /// 운영진 투표 시작 확인 모달.
+  /// 좌측 회색 버튼이 confirm("취소") = 닫기, 우측 파란 버튼이 cancel("시작하기") = 투표 시작.
+  static func startVote() -> CustomAlertState<CustomAlertAction> {
+    CustomAlertState(
+      title: "투표를 시작할까요?",
+      message: "시작하면 멤버 메뉴에 '투표'가\n노출되고 참여를 받기 시작해요.",
+      confirmTitle: "취소",
+      cancelTitle: "시작하기",
+      isDestructive: false,
+      style: .startConfirmation,
+      checkboxTitle: ""
+    )
+  }
+
+  /// 운영진 투표 종료 확인 모달.
+  /// 좌측 회색 confirm("취소") = 닫기, 우측 빨강 cancel("종료하기") = 투표 종료.
+  static func endVote() -> CustomAlertState<CustomAlertAction> {
+    CustomAlertState(
+      title: "투표를 종료할까요?",
+      message: "종료 후에는 투표를 다시 시작할 수 없어요.\n결과는 최종 발표에서 공개돼요.",
+      confirmTitle: "취소",
+      cancelTitle: "종료하기",
+      isDestructive: true,
+      style: .endConfirmation,
+      checkboxTitle: ""
     )
   }
 
