@@ -7,6 +7,8 @@
 
 import Foundation
 
+// MARK: - [공통] 투표 에러 (운영진/멤버 공용)
+
 public enum VoteError: LocalizedError, Equatable {
   case noActiveVote
   case notFound
@@ -72,14 +74,20 @@ public enum VoteError: LocalizedError, Equatable {
     }
   }
 
-  public static func from(_ error: Error) -> VoteError {
+  public static func from(
+    _ error: Error
+  ) -> VoteError {
     if let voteError = error as? VoteError {
       return voteError
     }
     return .unknown(error.localizedDescription)
   }
 
-  public static func from(statusCode: Int, code: String?, message: String? = nil) -> VoteError {
+  public static func from(
+    statusCode: Int,
+    code: String?,
+    message: String? = nil
+  ) -> VoteError {
     switch code {
     case "VOTE_NO_ACTIVE":
       return .noActiveVote

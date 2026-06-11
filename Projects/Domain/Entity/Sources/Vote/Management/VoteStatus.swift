@@ -7,6 +7,8 @@
 
 import Foundation
 
+// MARK: - [공통] 투표 상태 (운영진/멤버 공용)
+
 public enum VoteStatus: Equatable, Sendable {
   case before // 투표 전
   case inProgress // 진행 중

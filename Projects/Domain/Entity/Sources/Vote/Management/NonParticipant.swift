@@ -7,6 +7,8 @@
 
 import Foundation
 
+// MARK: - [운영진] 미참여 멤버 명단
+
 public struct NonParticipant: Equatable, Identifiable, Sendable {
   public let id: Int // memberId
   public let name: String
@@ -23,19 +25,5 @@ public struct NonParticipant: Equatable, Identifiable, Sendable {
     self.name = name
     self.teamName = teamName
     self.attendance = attendance
-  }
-}
-
-public enum VoteAttendanceMark: Equatable, Sendable {
-  case attended // 출석
-  case late // 지각
-  case absent // 결석
-
-  public var title: String {
-    switch self {
-    case .attended: return "출석"
-    case .late: return "지각"
-    case .absent: return "결석"
-    }
   }
 }

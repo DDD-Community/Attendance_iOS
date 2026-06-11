@@ -7,6 +7,8 @@
 
 import Foundation
 
+// MARK: - [운영진] 참여 현황
+
 public struct VoteParticipation: Equatable, Sendable {
   public let voteId: Int
   public let status: VoteStatus
