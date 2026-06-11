@@ -11,8 +11,9 @@ import Shareds
 import SDWebImageSwiftUI
 import Entity
 
+@ViewAction(for: ScheduleModal.self)
 public struct ScheduleModalView: View {
-  @Bindable var store: StoreOf<ScheduleModal>
+  @Bindable public var store: StoreOf<ScheduleModal>
 
   public init(store: StoreOf<ScheduleModal>) {
     self.store = store
@@ -90,7 +91,7 @@ extension ScheduleModalView {
 
     scheduleCard(item: item, isSelected: isSelected)
       .onTapGesture {
-        store.send(.view(.selectSchedule(item: item)))
+        send(.selectSchedule(item: item))
       }
   }
 
@@ -143,7 +144,7 @@ extension ScheduleModalView {
   private func confirmButton() -> some View {
     CustomButton(
       action: {
-        store.send(.view(.confirmSelection))
+        send(.confirmSelection)
       },
       title: "확인",
       config: CustomButtonConfig.create(),

@@ -12,8 +12,9 @@ import DesignSystem
 import SDWebImageSwiftUI
 import ComposableArchitecture
 
+@ViewAction(for: SelectPartReducer.self)
 public struct SelectPartView: View {
-  @Bindable var store: StoreOf<SelectPartReducer>
+  @Bindable public var store: StoreOf<SelectPartReducer>
   var backAction: () -> Void = {}
   
   public init(
@@ -56,7 +57,7 @@ public struct SelectPartView: View {
 
       }
       .task {
-        store.send(.view(.onAppear))
+        send(.onAppear)
       }
     }
   }
@@ -92,7 +93,7 @@ extension SelectPartView {
               content: item.job.desc,
               isActive: item.job == store.selectPart
             ) {
-              store.send(.view(.selectPartButton(selectPart: item)))
+              send(.selectPartButton(selectPart: item))
             }
           }
         }

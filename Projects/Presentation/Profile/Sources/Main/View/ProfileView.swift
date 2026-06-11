@@ -10,8 +10,9 @@ import SwiftUI
 import ComposableArchitecture
 import DesignSystem
 
+@ViewAction(for: ProfileReducer.self)
 public struct ProfileView: View {
-  @Bindable private var store: StoreOf<ProfileReducer>
+  @Bindable public var store: StoreOf<ProfileReducer>
   private var backAction: () -> Void
 
   public init(
@@ -46,7 +47,7 @@ public struct ProfileView: View {
 
     .sheet(item: $store.scope(state: \.destination?.createApp, action: \.destination.createApp)) { crateAppStore in
       CreateAppView(store: crateAppStore) {
-        store.send(.view(.closeModal))
+        send(.closeModal)
       }
       .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
       .presentationCornerRadius(20)
@@ -64,7 +65,7 @@ extension ProfileView {
           .frame(height: 12)
 
         CustomNavigationBar(backAction: backAction, addAction: {
-          store.send(.view(.appearModal))
+          send(.appearModal)
         }, image: .info)
 
         ProfileSkeletonView()
@@ -81,7 +82,7 @@ extension ProfileView {
         .frame(height: 12)
 
       CustomNavigationBar(backAction: backAction, addAction: {
-        store.send(.view(.appearModal))
+        send(.appearModal)
       }, image: .info)
 
       mangerCardImage()
@@ -366,7 +367,7 @@ extension ProfileView {
           .foregroundStyle(.mediumGray)
           .underline(true, color: .mediumGray)
           .onTapGesture {
-            store.send(.view(.showWithdrawAlert))
+            send(.showWithdrawAlert)
           }
 
       Spacer()
@@ -377,7 +378,7 @@ extension ProfileView {
           .foregroundStyle(.staticWhite)
           .underline(true, color: .staticWhite)
           .onTapGesture {
-            store.send(.view(.showLogoutAlert))
+            send(.showLogoutAlert)
           }
       }
     }

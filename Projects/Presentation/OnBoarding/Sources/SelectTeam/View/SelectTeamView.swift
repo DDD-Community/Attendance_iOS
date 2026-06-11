@@ -12,8 +12,9 @@ import DesignSystem
 import ComposableArchitecture
 import SDWebImageSwiftUI
 
+@ViewAction(for: SelectTeam.self)
 public struct SelectTeamView: View {
-  @Bindable var store: StoreOf<SelectTeam>
+  @Bindable public var store: StoreOf<SelectTeam>
   var backAction: () -> Void
   
   public init(
@@ -57,7 +58,7 @@ public struct SelectTeamView: View {
       }
       .onAppear {
         store.userSession.selectTeam = .unknown
-        store.send(.view(.onAppear))
+        send(.onAppear)
       }
       .alert($store.scope(state: \.alert, action: \.scope.alert))
     }
@@ -87,7 +88,7 @@ extension SelectTeamView {
             SelectTeamIteam(
               content: item.teams.selectTeamDescription,
               isActive: item.teams == store.userSession.selectTeam) {
-                store.send(.view(.selectTeamButton(selectTeam: item)))
+                send(.selectTeamButton(selectTeam: item))
               }
           }
         }
@@ -104,7 +105,7 @@ extension SelectTeamView {
       
       CustomButton(
         action: {
-          store.send(.view(.signUp))
+          send(.signUp)
         },
         title: "가입 완료",
         config: CustomButtonConfig.create(),

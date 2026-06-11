@@ -11,6 +11,7 @@ import SwiftUIX
 import DesignSystem
 import ComposableArchitecture
 
+@ViewAction(for: ScheduleReducer.self)
 struct ScheduleView: View {
   @Bindable var store: StoreOf<ScheduleReducer>
 
@@ -43,7 +44,7 @@ struct ScheduleView: View {
           scheduleListView()
         }
         .onAppear {
-          store.send(.view(.onAppear))
+          send(.onAppear)
         }
       }
     }
