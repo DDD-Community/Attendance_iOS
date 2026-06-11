@@ -54,6 +54,7 @@ public final class AppDIManager: Sendable {
       .register { MyPageRepositoryImpl() as MyPageRepositoryInterface }
       .register { ScheduleRepositoryImpl() as ScheduleInterface }
       .register { QRCodeRepositoryImpl() as QRCodeInterface }
+      .register { VoteRepositoryImpl() as VoteInterface }
       .configure()
   }
 }
