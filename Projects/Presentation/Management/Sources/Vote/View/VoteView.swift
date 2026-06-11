@@ -12,8 +12,9 @@ import Entity
 
 import ComposableArchitecture
 
+@ViewAction(for: VoteFeature.self)
 public struct VoteView: View {
-  @Bindable var store: StoreOf<VoteFeature>
+  @Bindable public var store: StoreOf<VoteFeature>
 
   public init(store: StoreOf<VoteFeature>) {
     self.store = store
@@ -42,10 +43,10 @@ public struct VoteView: View {
     .padding(.top, 20)
     .padding(.horizontal, 24)
     .onAppear {
-      store.send(.view(.onAppear))
+      send(.onAppear)
     }
     .onDisappear {
-      store.send(.view(.onDisappear))
+      send(.onDisappear)
     }
   }
 }
@@ -162,7 +163,7 @@ extension VoteView {
   func startVoteButton() -> some View {
     CustomButton(
       action: {
-        store.send(.view(.tappedStartVoteButton))
+        send(.tappedStartVoteButton)
       },
       title: "투표 시작하기",
       config: CustomButtonConfig.createVoteButton(),
@@ -173,7 +174,7 @@ extension VoteView {
   @ViewBuilder
   func checkNonParticipantsButton() -> some View {
     Button {
-      store.send(.view(.tappedCheckNonParticipants))
+      send(.tappedCheckNonParticipants)
     } label: {
       HStack(spacing: 8) {
         Text("미참여 인원 확인하기")
@@ -198,7 +199,7 @@ extension VoteView {
   func endVoteButton() -> some View {
     CustomButton(
       action: {
-        store.send(.view(.tappedEndVoteButton))
+        send(.tappedEndVoteButton)
       },
       title: "투표 종료하기",
       config: CustomButtonConfig.createEndVoteButton(),
