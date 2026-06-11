@@ -29,13 +29,18 @@ final class MockVoteRepository: VoteInterface {
     return try votesResponse.get()
   }
 
-  func fetchParticipation(voteId _: Int) async throws -> VoteParticipation {
+  func fetchParticipation(
+    voteId _: Int
+  ) async throws -> VoteParticipation {
     participationCallCount += 1
     guard let participationResponse else { throw VoteError.unknown("not configured") }
     return try participationResponse.get()
   }
 
-  func participationStream(voteId _: Int, interval _: Double) -> AsyncStream<VoteParticipation> {
+  func participationStream(
+    voteId _: Int,
+    interval _: Double
+  ) -> AsyncStream<VoteParticipation> {
     AsyncStream { continuation in
       if case let .success(participation) = participationResponse {
         continuation.yield(participation)
@@ -44,22 +49,80 @@ final class MockVoteRepository: VoteInterface {
     }
   }
 
-  func fetchNonResponders(voteId _: Int) async throws -> [NonParticipant] {
+  func fetchNonResponders(
+    voteId _: Int
+  ) async throws -> [NonParticipant] {
     nonRespondersCallCount += 1
     guard let nonRespondersResponse else { throw VoteError.unknown("not configured") }
     return try nonRespondersResponse.get()
   }
 
-  func openVote(voteId _: Int) async throws {
+  func openVote(
+    voteId _: Int
+  ) async throws {
     openVoteCallCount += 1
     guard let openVoteResponse else { throw VoteError.unknown("not configured") }
     try openVoteResponse.get()
   }
 
-  func closeVote(voteId _: Int) async throws {
+  func closeVote(
+    voteId _: Int
+  ) async throws {
     closeVoteCallCount += 1
     guard let closeVoteResponse else { throw VoteError.unknown("not configured") }
     try closeVoteResponse.get()
+  }
+
+  func createVote(
+    input _: CreateVoteInput
+  ) async throws -> Int { 0 }
+
+  func fetchTeamVoteResults(
+    voteId: Int
+  ) async throws -> TeamVoteResults {
+    TeamVoteResults(voteId: voteId, title: "", status: .before, totalResponses: 0, categories: [])
+  }
+
+  func fetchFeedbackResults(
+    voteId: Int
+  ) async throws -> FeedbackResults {
+    FeedbackResults(voteId: voteId, totalResponses: 0, questions: [])
+  }
+
+  func fetchActiveVote() async throws -> ActiveVote {
+    ActiveVote(voteId: 0, title: "", alreadyResponded: false)
+  }
+
+  func fetchTeamVoteTemplate(
+    voteId _: Int
+  ) async throws -> TeamVoteTemplateInfo {
+    TeamVoteTemplateInfo(
+      templateVersion: 0,
+      status: .before,
+      template: TeamVoteTemplate(title: "", description: "", notice: "", categories: []),
+      teams: []
+    )
+  }
+
+  func fetchFeedbackTemplate(
+    voteId _: Int
+  ) async throws -> FeedbackTemplateInfo {
+    FeedbackTemplateInfo(
+      templateVersion: 0,
+      status: .before,
+      template: FeedbackTemplate(title: "", description: "", questions: [])
+    )
+  }
+
+  func submitVote(
+    voteId _: Int,
+    submission _: VoteSubmission
+  ) async throws {}
+
+  func fetchMyResponse(
+    voteId: Int
+  ) async throws -> MyVoteResponse {
+    MyVoteResponse(voteId: voteId, responded: false)
   }
 
   func configureVotesSuccess(_ votes: [Vote]) { votesResponse = .success(votes) }
