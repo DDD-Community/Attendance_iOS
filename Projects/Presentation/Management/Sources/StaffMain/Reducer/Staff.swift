@@ -27,6 +27,7 @@ public struct Staff {
     
     var attendanceCheck = AttendanceCheck.State()
     var schedule = ScheduleReducer.State()
+    var vote = VoteFeature.State()
     
     var qrcodeImage: ImageAsset = .qrCode
     var eventImage: ImageAsset = .eventGenerate
@@ -48,6 +49,7 @@ public struct Staff {
     case navigation(NavigationAction)
     case attendanceCheck(AttendanceCheck.Action)
     case schedule(ScheduleReducer.Action)
+    case vote(VoteFeature.Action)
   }
   
   // MARK: - View action
@@ -121,6 +123,9 @@ public struct Staff {
     }
     Scope(state: \.schedule, action: \.schedule) {
       ScheduleReducer()
+    }
+    Scope(state: \.vote, action: \.vote) {
+      VoteFeature()
     }
   }
 }

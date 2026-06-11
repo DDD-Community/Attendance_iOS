@@ -155,6 +155,9 @@ extension StaffView {
 
     case .schedule:
       ScheduleView(store: self.store.scope(state: \.schedule, action: \.schedule))
+      
+    case .vote:
+       EmptyView()
     }
   }
   
@@ -199,6 +202,8 @@ private extension StaffView {
       return store.attendanceCheck.loading
     case .schedule:
       return store.schedule.loading
+    case .vote:
+      return store.vote.loading
     }
   }
 
@@ -209,6 +214,8 @@ private extension StaffView {
       StaffSkeletonView()
     case .schedule:
       ScheduleSkeletonView()
+    case .vote:
+      EmptyView()
     }
   }
 }

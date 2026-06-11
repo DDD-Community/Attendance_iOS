@@ -10,6 +10,7 @@ import Foundation
 public enum SelectDropDownItem: String, CaseIterable, Codable {
   case attandance
   case schedule
+  case vote
   
   public var desc: String {
     switch self {
@@ -17,6 +18,8 @@ public enum SelectDropDownItem: String, CaseIterable, Codable {
       return "출석"
     case .schedule:
       return "일정"
+    case .vote:
+      return "투표"
     }
   }
   
