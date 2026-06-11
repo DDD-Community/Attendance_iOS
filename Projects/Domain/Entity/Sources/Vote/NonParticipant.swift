@@ -7,8 +7,7 @@
 
 import Foundation
 
-/// 투표 미참여 멤버
-public struct NonParticipant: Equatable, Identifiable {
+public struct NonParticipant: Equatable, Identifiable, Sendable {
   public let id: Int // memberId
   public let name: String
   public let teamName: String
@@ -27,8 +26,7 @@ public struct NonParticipant: Equatable, Identifiable {
   }
 }
 
-/// 미참여 멤버의 출결 상태
-public enum VoteAttendanceMark: Equatable {
+public enum VoteAttendanceMark: Equatable, Sendable {
   case attended // 출석
   case late // 지각
   case absent // 결석
