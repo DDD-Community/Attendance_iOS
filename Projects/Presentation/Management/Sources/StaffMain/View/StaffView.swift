@@ -200,7 +200,7 @@ private extension StaffView {
           }
         )
         .padding(.leading, 24)
-        .padding(.top, 96)
+        .padding(.top, 52)
       }
       .zIndex(1)
     }

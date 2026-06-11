@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-/// 홈 상단 드롭다운 메뉴 (Figma: iOS/홈_드롭다운).
-/// 도메인 비의존 — feature 에서 항목을 매핑해 사용한다.
 public struct HomeDropdownMenu: View {
   public struct Entry: Identifiable {
     public let id: String
@@ -61,14 +59,14 @@ public struct HomeDropdownMenu: View {
   private func menuItem(_ entry: Entry) -> some View {
     HStack(spacing: 8) {
       Text(entry.title)
-        .pretendardFont(family: entry.isSelected ? .Bold : .Medium, size: 16)
-        .foregroundStyle(entry.isSelected ? Color.staticWhite : Color.borderInactive)
+        .pretendardFont(family: entry.isSelected ? .Bold : .Medium, size: 20)
+        .foregroundStyle(entry.isSelected ? .staticWhite : .borderInactive)
+
+      Spacer(minLength: 0)
 
       if entry.showsNewBadge {
         newBadge
       }
-
-      Spacer(minLength: 0)
     }
     .padding(.horizontal, 16)
     .padding(.vertical, 14)
@@ -84,7 +82,7 @@ public struct HomeDropdownMenu: View {
       .padding(.horizontal, 8)
       .padding(.vertical, 3)
       .background {
-        Capsule().fill(Color.blue40)
+        Capsule().fill(.blue40)
       }
   }
 }
