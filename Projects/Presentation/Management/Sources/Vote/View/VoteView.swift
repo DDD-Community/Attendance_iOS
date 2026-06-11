@@ -47,16 +47,6 @@ public struct VoteView: View {
     .onDisappear {
       store.send(.view(.onDisappear))
     }
-    .customAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
-    .alert($store.scope(state: \.alert, action: \.scope.alert))
-    .nonParticipantsModal(
-      isPresented: store.isNonParticipantsPresented,
-      isLoading: store.isNonParticipantsLoading,
-      members: store.nonParticipants,
-      onClose: {
-        store.send(.view(.tappedCloseNonParticipants))
-      }
-    )
   }
 }
 

@@ -115,6 +115,7 @@ struct NonParticipantsModalView: View {
     }
     .frame(maxHeight: 360)
     .scrollBounceBehavior(.basedOnSize)
+    .scrollIndicators(.hidden)
   }
 
   private var skeletonList: some View {
