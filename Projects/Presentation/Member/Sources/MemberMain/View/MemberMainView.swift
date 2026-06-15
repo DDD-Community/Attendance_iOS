@@ -13,8 +13,9 @@ import Model
 import ComposableArchitecture
 import Entity
 
+@ViewAction(for: MemberMain.self)
 struct MemberMainView: View {
-  @Bindable private var store: StoreOf<MemberMain>
+  @Bindable var store: StoreOf<MemberMain>
 
   init(store: StoreOf<MemberMain>) {
     self.store = store
@@ -24,26 +25,37 @@ struct MemberMainView: View {
     VStack(alignment: .leading, spacing: .zero) {
       navigationBar
 
-      ScrollView(showsIndicators: false) {
-        VStack(alignment: .leading, spacing: 56) {
-          attendanceStatus
+      switch store.selectedHomeTab {
+      case .attendance:
+        ScrollView {
+          VStack(alignment: .leading, spacing: 56) {
+            attendanceStatus
 
-          generationScheduleListView
+            generationScheduleListView
+          }
+          .padding(.horizontal, 24)
         }
-        .padding(.horizontal, 24)
+        .scrollIndicators(.hidden)
+
+      case .vote:
+        MemberVoteView(store: store.scope(state: \.vote, action: \.vote))
       }
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     .background(.backGroundPrimary)
+    .overlay {
+      dropDownOverlay()
+    }
     .customAlert(
       isPresented: store.isPresentAttendanceWarningAlert,
       title: "주의해주세요!",
       message: "2번 지각 시 노쇼비를 돌려받을 수 없습니다.",
       onConfirm: {
-        store.send(.view(.didTapDismissAlertButton))
+        send(.didTapDismissAlertButton)
       }
     )
     .onAppear {
-      store.send(.view(.onAppear))
+      send(.onAppear)
     }
     .onDisappear {
       store.didAppear = false
@@ -52,12 +64,22 @@ struct MemberMainView: View {
 
   private var navigationBar: some View {
     HStack(spacing: .zero) {
-      Image(asset: ImageAsset.appLogo)
-        .renderingMode(.template)
-        .resizable()
-        .scaledToFit()
-        .frame(width: 25, height: 28)
-        .foregroundStyle(.gray60)
+      Button {
+        withAnimation {
+          _ = send(.toggleDropDown)
+        }
+      } label: {
+        HStack(spacing: 6) {
+          Text(store.selectedHomeTab.title)
+            .pretendardFont(family: .Bold, size: 24)
+            .foregroundStyle(.staticWhite)
+
+          Image(systemName: store.isExpandedDropDown ? "chevron.up" : "chevron.down")
+            .font(.system(size: 12, weight: .bold))
+            .foregroundStyle(.staticWhite)
+        }
+      }
+      .buttonStyle(.plain)
 
       Spacer()
 
@@ -99,6 +121,43 @@ struct MemberMainView: View {
     .padding(.horizontal, 24)
   }
 
+  @ViewBuilder
+  private func dropDownOverlay() -> some View {
+    if store.isExpandedDropDown {
+      ZStack(alignment: .topLeading) {
+        Rectangle()
+          .fill(Color.black.opacity(0.6))
+          .ignoresSafeArea()
+          .onTapGesture {
+            withAnimation {
+              _ = send(.toggleDropDown)
+            }
+          }
+
+        HomeDropdownMenu(
+          entries: MemberMain.HomeTab.allCases.map { tab in
+            HomeDropdownMenu.Entry(
+              id: tab.rawValue,
+              title: tab.title,
+              isSelected: tab == store.selectedHomeTab,
+              showsNewBadge: tab == .vote
+            )
+          },
+          onSelect: { entry in
+            if let tab = MemberMain.HomeTab(rawValue: entry.id) {
+              withAnimation {
+                send(.selectHomeTab(tab))
+              }
+            }
+          }
+        )
+        .padding(.leading, 24)
+        .padding(.top, 52)
+      }
+      .zIndex(1)
+    }
+  }
+
   private var attendanceStatus: some View {
     VStack(alignment: .leading, spacing: 16) {
       Text("\(store.state.member?.name ?? "")님의 출석 현황")
@@ -116,7 +175,7 @@ struct MemberMainView: View {
           absentCount: store.absentCount,
           showWarning: store.showAttendanceWarningIcon,
           onTapAbsentButton: {
-            store.send(.view(.didTapAbesentButton))
+            send(.didTapAbesentButton)
           }
         )
       }
@@ -172,7 +231,7 @@ struct MemberMainView: View {
 private extension ScheduleModel.AttendanceStatus {
   var toScheduleCellStyle: ScheduleCellStyle {
     switch self {
-      case .attended:
+    case .attended:
       return .init(
         backgroundColor: .blue40,
         stampImage: Image(asset: .present_stamp),
@@ -190,7 +249,7 @@ private extension ScheduleModel.AttendanceStatus {
         titleDescriptionOpacity: 0.4
       )
 
-      case .absent:
+    case .absent:
       return .init(
         backgroundColor: .clear,
         stampImage: nil,

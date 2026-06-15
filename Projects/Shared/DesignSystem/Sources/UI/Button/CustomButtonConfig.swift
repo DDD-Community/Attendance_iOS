@@ -8,7 +8,7 @@
 import SwiftUI
 
 public class CustomButtonConfig: DDDCustomButtonConfig {
-  static public func create() -> DDDCustomButtonConfig {
+  public static func create() -> DDDCustomButtonConfig {
     let config = DDDCustomButtonConfig(
       cornerRadius: 30,
       enableFontColor: Color.grayWhite,
@@ -17,11 +17,35 @@ public class CustomButtonConfig: DDDCustomButtonConfig {
       disableFontColor: Color.grayWhite,
       disableBackgroundColor: Color.blue30
     )
-    
+
     return config
   }
-  
-  static public func createDateButton() -> DDDCustomButtonConfig {
+
+  public static func createVoteButton() -> DDDCustomButtonConfig {
+    let config = DDDCustomButtonConfig(
+      cornerRadius: 10,
+      enableFontColor: .grayWhite,
+      enableBackgroundColor: .blue45,
+      frameHeight: 52,
+      disableFontColor: .grayWhite,
+      disableBackgroundColor: .blue20
+    )
+    return config
+  }
+
+  public static func createEndVoteButton() -> DDDCustomButtonConfig {
+    let config = DDDCustomButtonConfig(
+      cornerRadius: 10,
+      enableFontColor: .grayWhite,
+      enableBackgroundColor: .statusErrorText,
+      frameHeight: 52,
+      disableFontColor: .grayWhite,
+      disableBackgroundColor: .gray80
+    )
+    return config
+  }
+
+  public static func createDateButton() -> DDDCustomButtonConfig {
     let config = DDDCustomButtonConfig(
       cornerRadius: 30,
       enableFontColor: .grayWhite,
@@ -32,5 +56,4 @@ public class CustomButtonConfig: DDDCustomButtonConfig {
     )
     return config
   }
-  
 }

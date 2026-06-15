@@ -10,8 +10,9 @@ import DesignSystem
 import ComposableArchitecture
 import SDWebImageSwiftUI
 
+@ViewAction(for: SelectManagingReducer.self)
 public struct SelectManagingView: View {
-  @Bindable var store: StoreOf<SelectManagingReducer>
+  @Bindable public var store: StoreOf<SelectManagingReducer>
   var backAction: () -> Void = {}
   
   public init(
@@ -56,7 +57,7 @@ public struct SelectManagingView: View {
       .alert($store.scope(state: \.alert, action: \.scope.alert))
       .onAppear {
         store.userSession.managing = []
-        store.send(.view(.onAppear))
+        send(.onAppear)
       }
     }
   }
@@ -87,7 +88,7 @@ extension SelectManagingView {
               content: item.managing.desc,
               isActive: store.userSession.managing.contains(item.managing)) {
 
-                store.send(.view(.selectManagingButton(selectManaging: item)))
+                send(.selectManagingButton(selectManaging: item))
               }
           }
         }
@@ -108,7 +109,7 @@ extension SelectManagingView {
           if store.userSession.managing.contains(.teamManaging) || store.userSession.userRole == .manager {
             store.send(.navigation(.presentSelectTeam))
           } else {
-            store.send(.view(.signUp))
+            send(.signUp)
           }
         },
         title: (store.userSession.managing.contains(.teamManaging) || store.userSession.userRole == .manager) ? "다음" : "가입완료",

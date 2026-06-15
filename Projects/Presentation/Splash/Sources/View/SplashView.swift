@@ -13,8 +13,9 @@ import Shareds
 import ComposableArchitecture
 import SDWebImageSwiftUI
 
+@ViewAction(for: Splash.self)
 public struct SplashView: View {
-  @Bindable var store: StoreOf<Splash>
+  @Bindable public var store: StoreOf<Splash>
   @State private var isAnimating = false // GIF 애니메이션 상태 관리
 
   public init(
@@ -41,7 +42,7 @@ public struct SplashView: View {
     }
     .onAppear {
       isAnimating = true // 화면 표시시 애니메이션 시작
-      store.send(.view(.onAppear))
+      send(.onAppear)
     }
     .onDisappear {
       isAnimating = false // 화면 종료시 애니메이션 중지 (메모리 절약)

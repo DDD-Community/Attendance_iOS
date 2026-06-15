@@ -13,6 +13,7 @@ import Shareds
 
 import ComposableArchitecture
 
+@ViewAction(for: AttendanceCheck.self)
 struct AttendanceCheckView: View {
   @Bindable var store: StoreOf<AttendanceCheck>
   @Namespace private var teamTabNamespace
@@ -28,7 +29,7 @@ struct AttendanceCheckView: View {
       selectPartAttendanceStatus()
     }
     .onAppear {
-      store.send(.view(.onAppear))
+      send(.onAppear)
     }
     .sheet(item: $store.scope(
       state: \.destination?.scheduleModal,
@@ -65,7 +66,7 @@ private extension AttendanceCheckView {
         Spacer()
       }
       .onTapGesture {
-        store.send(.view(.tapSelectDate))
+        send(.tapSelectDate)
       }
     }
     .padding(.horizontal, 24)
@@ -103,9 +104,9 @@ private extension AttendanceCheckView {
           let swipeThreshold: CGFloat = 50
           withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
             if value.translation.width > swipeThreshold {
-              _ = store.send(.view(.swipeNext))
+              _ = send(.swipeNext)
             } else if value.translation.width < -swipeThreshold {
-              _ = store.send(.view(.swipePrevious))
+              _ = send(.swipePrevious)
             }
           }
         }
@@ -166,11 +167,11 @@ private extension AttendanceCheckView {
       teamTabUnderline(itemID: item.id, isSelected: isSelected)
     }
     .onPreferenceChange(TeamTextWidthPreferenceKey.self) { newWidths in
-      store.send(.view(.updateDividerWidths(newWidths)))
+      send(.updateDividerWidths(newWidths))
     }
     .onTapGesture {
       withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-        _ = store.send(.view(.selectPartButton(selectPart: item)))
+        _ = send(.selectPartButton(selectPart: item))
       }
     }
     .id(item.id)
@@ -210,9 +211,9 @@ private extension AttendanceCheckView {
               let swipeThreshold: CGFloat = 50
               withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                 if value.translation.width > swipeThreshold {
-                  _ = store.send(.view(.swipePrevious))
+                  _ = send(.swipePrevious)
                 } else if value.translation.width < -swipeThreshold {
-                  _ = store.send(.view(.swipeNext))
+                  _ = send(.swipeNext)
                 }
               }
             }
@@ -228,9 +229,9 @@ private extension AttendanceCheckView {
               let swipeThreshold: CGFloat = 50
               withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                 if value.translation.width > swipeThreshold {
-                  _ = store.send(.view(.swipePrevious))
+                  _ = send(.swipePrevious)
                 } else if value.translation.width < -swipeThreshold {
-                  _ = store.send(.view(.swipeNext))
+                  _ = send(.swipeNext)
                 }
               }
             }

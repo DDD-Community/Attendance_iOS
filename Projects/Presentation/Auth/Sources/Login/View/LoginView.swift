@@ -13,8 +13,9 @@ import Entity
 
 import ComposableArchitecture
 
+@ViewAction(for: Login.self)
 public struct LoginView: View {
-  @Bindable private var store: StoreOf<Login>
+  @Bindable public var store: StoreOf<Login>
   
   public init(store: StoreOf<Login>) {
     self.store = store
@@ -61,7 +62,7 @@ extension LoginView {
             store: store,
             type: type
           ) {
-            store.send(.view(.signInWithSocial(social: type)))
+            send(.signInWithSocial(social: type))
           }
         }
       }

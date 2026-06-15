@@ -13,8 +13,9 @@ import SwiftUIX
 import ComposableArchitecture
 
 
+@ViewAction(for: OnBoardingName.self)
 public struct  OnBoardingNameView: View {
-  @Bindable var store: StoreOf<OnBoardingName>
+  @Bindable public var store: StoreOf<OnBoardingName>
   var backAction: () -> Void = {}
   
   public init(
@@ -65,7 +66,7 @@ public struct  OnBoardingNameView: View {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
       }
       .onAppear {
-        store.send(.view(.initSignUpName))
+        send(.initSignUpName)
       }
     }
   }
@@ -167,7 +168,7 @@ extension  OnBoardingNameView {
       
       CustomButton(
         action: {
-          store.send(.view(.checkIsAvailableName))
+          send(.checkIsAvailableName)
         },
         title: "다음",
         config: CustomButtonConfig.create(),

@@ -18,9 +18,28 @@ import ComposableArchitecture
 public struct MemberMain {
   public init() {}
 
+  // 멤버 홈 탭 (일정은 운영진 전용이라 제외)
+  public enum HomeTab: String, CaseIterable, Equatable {
+    case attendance
+    case vote
+
+    public var title: String {
+      switch self {
+      case .attendance: return "출석현황"
+      case .vote: return "투표"
+      }
+    }
+  }
+
   @ObservableState
   public struct State: Equatable {
     var member: ProfileEntity?
+
+    var selectedHomeTab: HomeTab = .attendance
+    var isExpandedDropDown: Bool = false
+
+    // 투표 탭
+    var vote: MemberVote.State = .init()
 
     @ObservationStateIgnored
     var didAppear: Bool = false
@@ -40,12 +59,13 @@ public struct MemberMain {
     public init() {}
   }
 
-  public enum Action: BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction, FeatureAction {
     case binding(BindingAction<State>)
     case view(View)
     case inner(InnerAction)
     case async(AsyncAction)
     case navigation(NavigationAction)
+    case vote(MemberVote.Action)
   }
 
   @CasePathable
@@ -53,6 +73,8 @@ public struct MemberMain {
     case onAppear
     case didTapAbesentButton
     case didTapDismissAlertButton
+    case toggleDropDown
+    case selectHomeTab(HomeTab)
   }
 
   public enum AsyncAction: Equatable {
@@ -86,6 +108,10 @@ public struct MemberMain {
   public var body: some Reducer<State, Action> {
     BindingReducer()
 
+    Scope(state: \.vote, action: \.vote) {
+      MemberVote()
+    }
+
     Reduce { state, action in
       switch action {
       case .binding:
@@ -102,6 +128,9 @@ public struct MemberMain {
 
       case let .navigation(action):
         return handleNavigationAction(state: &state, action: action)
+
+      case .vote:
+        return .none
       }
     }
   }
@@ -135,6 +164,15 @@ extension MemberMain {
 
     case .didTapDismissAlertButton:
       state.isPresentAttendanceWarningAlert = false
+      return .none
+
+    case .toggleDropDown:
+      state.isExpandedDropDown.toggle()
+      return .none
+
+    case let .selectHomeTab(tab):
+      state.selectedHomeTab = tab
+      state.isExpandedDropDown = false
       return .none
     }
   }

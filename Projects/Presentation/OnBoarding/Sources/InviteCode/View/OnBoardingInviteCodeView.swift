@@ -12,8 +12,9 @@ import DesignSystem
 import ComposableArchitecture
 import SwiftUIX
 
+@ViewAction(for: InviteCodeReducer.self)
 public struct InviteCodeView : View {
-  @Bindable var store: StoreOf<InviteCodeReducer>
+  @Bindable public var store: StoreOf<InviteCodeReducer>
   @FocusState private var focusedField: InviteCodeReducer.FocusField?
   var backAction: ()  -> Void = {}
   
@@ -60,11 +61,11 @@ public struct InviteCodeView : View {
           focusedField = nil
         }
         .onAppear {
-          store.send(.view(.initInviteCode))
+          send(.initInviteCode)
         }
         .onChange(of: focusedField) { _, newValue in
           guard store.focusedField != newValue else { return }
-          store.send(.view(.focusChanged(newValue)))
+          send(.focusChanged(newValue))
         }
         .onChange(of: store.focusedField) { _, newValue in
           guard focusedField != newValue else { return }
