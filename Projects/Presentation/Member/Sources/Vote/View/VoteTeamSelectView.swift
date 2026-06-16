@@ -46,7 +46,6 @@ struct VoteTeamSelectView: View {
 
         ForEach(answers.indices, id: \.self) { index in
           TeamVoteCategoryView(
-            index: index,
             category: answers[index].category,
             teams: info.teams,
             selectedTeamIds: $answers[index].selectedTeamIds,
