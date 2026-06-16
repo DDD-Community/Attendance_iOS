@@ -22,6 +22,7 @@ struct VoteFeedbackView: View {
   }
 
   private let info: FeedbackTemplateInfo
+  private let onBack: () -> Void
   private let onSubmit: ([FeedbackAnswer]) -> Void
 
   private let textMinLength = 5
@@ -30,9 +31,11 @@ struct VoteFeedbackView: View {
 
   init(
     info: FeedbackTemplateInfo,
+    onBack: @escaping () -> Void = {},
     onSubmit: @escaping ([FeedbackAnswer]) -> Void = { _ in }
   ) {
     self.info = info
+    self.onBack = onBack
     self.onSubmit = onSubmit
     _answers = State(initialValue: info.template.questions.map { QuestionAnswer(question: $0) })
   }
@@ -70,6 +73,30 @@ struct VoteFeedbackView: View {
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.backGroundPrimary)
+    .overlay(alignment: .leading) {
+      edgeSwipeArea(gesture: edgeBackGesture)
+    }
+  }
+
+  private var edgeBackGesture: some Gesture {
+    DragGesture(minimumDistance: 20, coordinateSpace: .global)
+      .onEnded { value in
+        guard isBackSwipe(value) else { return }
+        onBack()
+      }
+  }
+
+  private func isBackSwipe(_ value: DragGesture.Value) -> Bool {
+    value.startLocation.x <= 24
+      && value.translation.width >= 80
+      && abs(value.translation.height) <= 60
+  }
+
+  private func edgeSwipeArea(gesture: some Gesture) -> some View {
+    Color.clear
+      .frame(width: 24)
+      .contentShape(Rectangle())
+      .gesture(gesture)
   }
 
   private var headerView: some View {

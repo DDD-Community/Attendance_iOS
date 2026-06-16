@@ -129,6 +129,12 @@ public struct MemberMain {
       case let .navigation(action):
         return handleNavigationAction(state: &state, action: action)
 
+      case .vote(.delegate(.exitVote)):
+        state.selectedHomeTab = .attendance
+        state.isExpandedDropDown = false
+        state.vote = .init()
+        return .none
+
       case .vote:
         return .none
       }

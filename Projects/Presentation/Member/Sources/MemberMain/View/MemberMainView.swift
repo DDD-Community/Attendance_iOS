@@ -54,6 +54,7 @@ struct MemberMainView: View {
         send(.didTapDismissAlertButton)
       }
     )
+    .customAlert($store.scope(state: \.vote.exitAlert, action: \.vote.scope.exitAlert))
     .onAppear {
       send(.onAppear)
     }

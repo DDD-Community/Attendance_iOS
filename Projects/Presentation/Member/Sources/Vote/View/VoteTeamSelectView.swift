@@ -20,6 +20,7 @@ struct VoteTeamSelectView: View {
   }
 
   private let info: TeamVoteTemplateInfo
+  private let onRequestExit: () -> Void
   private let onNext: ([TeamVoteAnswer]) -> Void
 
   @State private var answers: [CategoryAnswer]
@@ -27,10 +28,12 @@ struct VoteTeamSelectView: View {
   init(
     info: TeamVoteTemplateInfo,
     initialAnswers: [TeamVoteAnswer] = [],
+    onRequestExit: @escaping () -> Void = {},
     onNext: @escaping ([TeamVoteAnswer]) -> Void = { _ in }
   ) {
     let categories = Self.orderedCategories(info.template.categories)
     self.info = info
+    self.onRequestExit = onRequestExit
     self.onNext = onNext
     _answers = State(
       initialValue: Self.makeInitialAnswers(
@@ -74,6 +77,9 @@ struct VoteTeamSelectView: View {
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.backGroundPrimary)
+    .overlay(alignment: .leading) {
+      edgeSwipeArea(gesture: edgeExitGesture)
+    }
   }
 
   private static func orderedCategories(_ categories: [TeamVoteCategory]) -> [TeamVoteCategory] {
@@ -127,6 +133,27 @@ struct VoteTeamSelectView: View {
     guard answer.category.reasonRequired else { return true }
     return answer.reason.normalizedInputCharacterCount >= answer.category.reasonMinLength
       && answer.reason.count <= answer.category.reasonMaxLength
+  }
+
+  private var edgeExitGesture: some Gesture {
+    DragGesture(minimumDistance: 20, coordinateSpace: .global)
+      .onEnded { value in
+        guard isBackSwipe(value) else { return }
+        onRequestExit()
+      }
+  }
+
+  private func isBackSwipe(_ value: DragGesture.Value) -> Bool {
+    value.startLocation.x <= 24
+      && value.translation.width >= 80
+      && abs(value.translation.height) <= 60
+  }
+
+  private func edgeSwipeArea(gesture: some Gesture) -> some View {
+    Color.clear
+      .frame(width: 24)
+      .contentShape(Rectangle())
+      .gesture(gesture)
   }
 
   private var nextButton: some View {

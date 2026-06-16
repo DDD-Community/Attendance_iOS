@@ -55,6 +55,9 @@ struct MemberVoteView: View {
         VoteTeamSelectView(
           info: info,
           initialAnswers: store.teamAnswers,
+          onRequestExit: {
+            send(.requestExit)
+          },
           onNext: { answers in
             send(.teamSelectNext(answers))
           }
@@ -65,9 +68,15 @@ struct MemberVoteView: View {
 
     case .feedback:
       if let info = store.feedbackTemplate {
-        VoteFeedbackView(info: info) { answers in
-          send(.submitFeedback(answers))
-        }
+        VoteFeedbackView(
+          info: info,
+          onBack: {
+            send(.requestExit)
+          },
+          onSubmit: { answers in
+            send(.submitFeedback(answers))
+          }
+        )
       } else {
         loadingView()
       }
