@@ -41,32 +41,37 @@ struct VoteTeamSelectView: View {
   }
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 24) {
-        StepProgressBar(currentStep: 1, totalSteps: 2)
+    VStack(spacing: 0) {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 24) {
+          StepProgressBar(currentStep: 1, totalSteps: 2)
 
-        TeamVoteHeaderView(
-          title: info.template.title,
-          description: info.template.description,
-          notice: info.template.notice
-        )
-
-        ForEach(answers.indices, id: \.self) { index in
-          TeamVoteCategoryView(
-            category: answers[index].category,
-            teams: info.teams,
-            selectedTeamIds: $answers[index].selectedTeamIds,
-            reason: $answers[index].reason
+          TeamVoteHeaderView(
+            title: info.template.title,
+            description: info.template.description,
+            notice: info.template.notice
           )
-        }
 
-        nextButton
+          ForEach(answers.indices, id: \.self) { index in
+            TeamVoteCategoryView(
+              category: answers[index].category,
+              teams: info.teams,
+              selectedTeamIds: $answers[index].selectedTeamIds,
+              reason: $answers[index].reason
+            )
+          }
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 20)
+        .padding(.bottom, 24)
       }
-      .padding(.horizontal, 24)
-      .padding(.top, 20)
-      .padding(.bottom, 24)
+      .scrollIndicators(.hidden)
+
+      nextButton
+        .padding(.horizontal, 24)
+        .padding(.top, 12)
+        .padding(.bottom, 24)
     }
-    .scrollIndicators(.hidden)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.backGroundPrimary)
   }

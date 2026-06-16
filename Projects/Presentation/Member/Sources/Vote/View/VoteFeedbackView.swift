@@ -36,30 +36,35 @@ struct VoteFeedbackView: View {
   }
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 28) {
-        StepProgressBar(currentStep: 2, totalSteps: 2)
+    VStack(spacing: 0) {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 28) {
+          StepProgressBar(currentStep: 2, totalSteps: 2)
 
-        headerView
+          headerView
 
-        ForEach(answers.indices, id: \.self) { index in
-          FeedbackQuestionView(
-            index: index,
-            question: answers[index].question,
-            selectedOptionIds: $answers[index].selectedOptionIds,
-            textValue: $answers[index].textValue,
-            boolAnswer: $answers[index].boolAnswer,
-            followUpTexts: $answers[index].followUpTexts
-          )
+          ForEach(answers.indices, id: \.self) { index in
+            FeedbackQuestionView(
+              index: index,
+              question: answers[index].question,
+              selectedOptionIds: $answers[index].selectedOptionIds,
+              textValue: $answers[index].textValue,
+              boolAnswer: $answers[index].boolAnswer,
+              followUpTexts: $answers[index].followUpTexts
+            )
+          }
         }
-
-        submitButton
+        .padding(.horizontal, 24)
+        .padding(.top, 8)
+        .padding(.bottom, 24)
       }
-      .padding(.horizontal, 24)
-      .padding(.top, 8)
-      .padding(.bottom, 40)
+      .scrollIndicators(.hidden)
+
+      submitButton
+        .padding(.horizontal, 24)
+        .padding(.top, 12)
+        .padding(.bottom, 24)
     }
-    .scrollIndicators(.hidden)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.backGroundPrimary)
   }
