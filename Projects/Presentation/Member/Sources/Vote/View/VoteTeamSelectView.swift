@@ -38,7 +38,11 @@ struct VoteTeamSelectView: View {
       VStack(alignment: .leading, spacing: 24) {
         StepProgressBar(currentStep: 1, totalSteps: 2)
 
-        headerView
+        TeamVoteHeaderView(
+          title: info.template.title,
+          description: info.template.description,
+          notice: info.template.notice
+        )
 
         ForEach(answers.indices, id: \.self) { index in
           TeamVoteCategoryView(
@@ -59,28 +63,6 @@ struct VoteTeamSelectView: View {
     .scrollIndicators(.hidden)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.backGroundPrimary)
-  }
-
-  private var headerView: some View {
-    VStack(alignment: .leading, spacing: 8) {
-      Text(info.template.title)
-        .pretendardFont(family: .Bold, size: 28)
-        .foregroundStyle(.staticWhite)
-
-      Text(info.template.description)
-        .pretendardFont(family: .Regular, size: 16)
-        .foregroundStyle(.borderInactive)
-        .fixedSize(horizontal: false, vertical: true)
-        .frame(maxWidth: .infinity, alignment: .leading)
-
-      if !info.template.notice.isEmpty {
-        Text(info.template.notice)
-          .pretendardFont(family: .Regular, size: 14)
-          .foregroundStyle(.gray60)
-          .fixedSize(horizontal: false, vertical: true)
-          .frame(maxWidth: .infinity, alignment: .leading)
-      }
-    }
   }
 
   private func makeTeamVoteAnswers() -> [TeamVoteAnswer] {
