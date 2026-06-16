@@ -108,12 +108,25 @@ struct VoteTeamSelectView: View {
 
   private func makeTeamVoteAnswers() -> [TeamVoteAnswer] {
     answers.map { answer in
-      TeamVoteAnswer(
+      let reason = answer.reason.trimmingCharacters(in: .whitespacesAndNewlines)
+      return TeamVoteAnswer(
         categoryId: answer.category.id,
         teamIds: Array(answer.selectedTeamIds),
-        reason: answer.reason.isEmpty ? nil : answer.reason
+        reason: reason.isEmpty ? nil : reason
       )
     }
+  }
+
+  private var isNextEnabled: Bool {
+    answers.allSatisfy { answer in
+      !answer.selectedTeamIds.isEmpty && isReasonValid(answer)
+    }
+  }
+
+  private func isReasonValid(_ answer: CategoryAnswer) -> Bool {
+    guard answer.category.reasonRequired else { return true }
+    return answer.reason.normalizedInputCharacterCount >= answer.category.reasonMinLength
+      && answer.reason.count <= answer.category.reasonMaxLength
   }
 
   private var nextButton: some View {
@@ -122,14 +135,23 @@ struct VoteTeamSelectView: View {
     } label: {
       Text("다음")
         .pretendardFont(family: .Bold, size: 16)
-        .foregroundStyle(.staticWhite)
+        .foregroundStyle(isNextEnabled ? .staticWhite : .gray60)
         .frame(maxWidth: .infinity)
         .frame(height: 55)
         .background {
           RoundedRectangle(cornerRadius: 14)
-            .fill(Color.blue40)
+            .fill(isNextEnabled ? Color.blue40 : Color.gray80)
         }
     }
     .buttonStyle(.plain)
+    .disabled(!isNextEnabled)
+  }
+}
+
+private extension String {
+  var normalizedInputCharacterCount: Int {
+    split(whereSeparator: \.isWhitespace)
+      .joined(separator: " ")
+      .count
   }
 }
