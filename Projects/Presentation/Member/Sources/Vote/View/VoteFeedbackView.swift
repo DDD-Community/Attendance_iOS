@@ -24,6 +24,8 @@ struct VoteFeedbackView: View {
   private let info: FeedbackTemplateInfo
   private let onSubmit: ([FeedbackAnswer]) -> Void
 
+  private let textMinLength = 5
+
   @State private var answers: [QuestionAnswer]
 
   init(
@@ -47,6 +49,7 @@ struct VoteFeedbackView: View {
             FeedbackQuestionView(
               index: index,
               question: answers[index].question,
+              textMinLength: textMinLength,
               selectedOptionIds: $answers[index].selectedOptionIds,
               textValue: $answers[index].textValue,
               boolAnswer: $answers[index].boolAnswer,
@@ -96,10 +99,11 @@ struct VoteFeedbackView: View {
         ))
 
       case .longText:
+        let textValue = answer.textValue.trimmingCharacters(in: .whitespacesAndNewlines)
         result.append(FeedbackAnswer(
           questionId: answer.question.id,
           optionIds: nil,
-          textValue: answer.textValue.isEmpty ? nil : answer.textValue,
+          textValue: textValue.normalizedInputCharacterCount == 0 ? nil : textValue,
           boolValue: nil
         ))
 
@@ -113,16 +117,63 @@ struct VoteFeedbackView: View {
       }
 
       // followUp 텍스트 답변은 별도 질문으로 함께 제출한다.
-      for (followUpId, text) in answer.followUpTexts where !text.isEmpty {
+      for (followUpId, text) in answer.followUpTexts {
+        let textValue = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard textValue.normalizedInputCharacterCount > 0 else { continue }
         result.append(FeedbackAnswer(
           questionId: followUpId,
           optionIds: nil,
-          textValue: text,
+          textValue: textValue,
           boolValue: nil
         ))
       }
     }
     return result
+  }
+
+  private var isSubmitEnabled: Bool {
+    answers.allSatisfy(isQuestionValid)
+  }
+
+  private func isQuestionValid(_ answer: QuestionAnswer) -> Bool {
+    let question = answer.question
+
+    switch question.type {
+    case .multiSelect, .teamSelect:
+      guard !question.required || !answer.selectedOptionIds.isEmpty else { return false }
+
+      if let maxSelectableOptions = question.maxSelectableOptions,
+         answer.selectedOptionIds.count > maxSelectableOptions {
+        return false
+      }
+
+      return question.followUp.allSatisfy { followUp in
+        isTextAnswerValid(
+          answer.followUpTexts[followUp.id] ?? "",
+          question: followUp
+        )
+      }
+
+    case .longText:
+      return isTextAnswerValid(answer.textValue, question: question)
+
+    case .boolean:
+      return !question.required || answer.boolAnswer != nil
+    }
+  }
+
+  private func isTextAnswerValid(
+    _ text: String,
+    question: FeedbackQuestion
+  ) -> Bool {
+    let contentLength = text.normalizedInputCharacterCount
+
+    if contentLength == 0 {
+      return !question.required
+    }
+
+    return contentLength >= textMinLength
+      && text.count <= (question.maxLength ?? 300)
   }
 
   private var submitButton: some View {
@@ -131,14 +182,23 @@ struct VoteFeedbackView: View {
     } label: {
       Text("제출하기")
         .pretendardFont(family: .Bold, size: 16)
-        .foregroundStyle(.staticWhite)
+        .foregroundStyle(isSubmitEnabled ? .staticWhite : .gray60)
         .frame(maxWidth: .infinity)
         .frame(height: 56)
         .background {
           RoundedRectangle(cornerRadius: 14)
-            .fill(Color.blue40)
+            .fill(isSubmitEnabled ? Color.blue40 : Color.gray80)
         }
     }
     .buttonStyle(.plain)
+    .disabled(!isSubmitEnabled)
+  }
+}
+
+private extension String {
+  var normalizedInputCharacterCount: Int {
+    split(whereSeparator: \.isWhitespace)
+      .joined(separator: " ")
+      .count
   }
 }
