@@ -151,7 +151,9 @@ extension MemberVote {
       return .send(.async(.fetchActiveVote))
 
     case .requestExit:
-      guard state.step == .teamSelect || state.step == .feedback else { return .none }
+      guard state.step == .teamSelect || state.step == .feedback else {
+        return state.step == .loading ? .send(.delegate(.exitVote)) : .none
+      }
       state.exitAlert = .exitWriting()
       return .none
 

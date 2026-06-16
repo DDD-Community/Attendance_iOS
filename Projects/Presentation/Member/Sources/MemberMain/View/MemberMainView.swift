@@ -23,7 +23,7 @@ struct MemberMainView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: .zero) {
-      navigationBar
+      topNavigationBar
 
       switch store.selectedHomeTab {
       case .attendance:
@@ -60,6 +60,15 @@ struct MemberMainView: View {
     }
     .onDisappear {
       store.didAppear = false
+    }
+  }
+
+  @ViewBuilder
+  private var topNavigationBar: some View {
+    if store.usesVoteWritingNavigationBar {
+      voteWritingNavigationBar
+    } else {
+      navigationBar
     }
   }
 
@@ -120,6 +129,26 @@ struct MemberMainView: View {
     }
     .frame(height: 52)
     .padding(.horizontal, 24)
+  }
+
+  private var voteWritingNavigationBar: some View {
+    HStack(spacing: .zero) {
+      Button {
+        send(.didTapVoteBackButton)
+      } label: {
+        Image(asset: .backButton)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 12, height: 20)
+          .foregroundStyle(Color.gray400)
+      }
+      .frame(width: 40, height: 44)
+      .buttonStyle(.plain)
+
+      Spacer()
+    }
+    .frame(height: 52)
+    .padding(.horizontal, 16)
   }
 
   @ViewBuilder
