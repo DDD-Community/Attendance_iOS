@@ -136,6 +136,11 @@ public struct FeedbackTextEditor: View {
         .hidden()
     }
     .onPreferenceChange(ContentHeightKey.self) { contentHeight = $0 }
+    .onChange(of: text) { _, newValue in
+      guard newValue.count > maxLength else { return }
+      text = String(newValue.prefix(maxLength))
+      ToastManager.shared.showWarning("최대 \(maxLength)자까지 입력할 수 있어요")
+    }
   }
 
   private var counterRow: some View {

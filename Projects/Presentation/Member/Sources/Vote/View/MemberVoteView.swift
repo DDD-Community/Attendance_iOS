@@ -26,6 +26,7 @@ struct MemberVoteView: View {
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .background(Color.backGroundPrimary)
       .alert($store.scope(state: \.alert, action: \.scope.alert))
+      .toastOverlay()
       .onAppear {
         send(.onAppear)
       }
