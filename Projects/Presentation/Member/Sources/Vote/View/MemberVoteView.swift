@@ -82,10 +82,7 @@ struct MemberVoteView: View {
       }
 
     case .completed:
-      messageView(
-        title: "투표를 완료했어요",
-        description: "소중한 의견 감사합니다."
-      )
+      completedView
     }
   }
 
@@ -114,5 +111,43 @@ struct MemberVoteView: View {
     }
     .padding(.horizontal, 24)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
+  }
+
+  private var completedView: some View {
+    VStack(spacing: 0) {
+      Spacer()
+        .frame(height: 192)
+
+      Image(asset: .voteComplete)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 88, height: 88)
+
+      Text("투표 완료!")
+        .pretendardFont(family: .Bold, size: 28)
+        .foregroundStyle(Color.staticWhite)
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 34)
+
+      Text("소중한 한 표를 보내주셔서 감사해요.\nDDD 13기 모두 정말 고생 많았어요 🎉")
+        .pretendardFont(family: .Regular, size: 16)
+        .foregroundStyle(Color(hex: "B2B8BF"))
+        .lineSpacing(8)
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 8)
+
+      Text("결과는 최종 발표에서 공개될 예정이에요.")
+        .pretendardFont(family: .Regular, size: 14)
+        .foregroundStyle(Color(hex: "737880"))
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 54)
+
+      Spacer(minLength: 0)
+    }
+    .padding(.horizontal, 20)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
   }
 }
