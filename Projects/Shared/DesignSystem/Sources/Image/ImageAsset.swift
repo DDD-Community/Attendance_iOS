@@ -62,5 +62,8 @@ public enum ImageAsset: String {
   case qrCheck
   case edit
   case editAttendance
+  
+  // MARK: - Vote
+  case voteComplete = "vote_complete"
 
 }
