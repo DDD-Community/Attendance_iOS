@@ -51,9 +51,13 @@ struct MemberVoteView: View {
 
     case .teamSelect:
       if let info = store.teamTemplate {
-        VoteTeamSelectView(info: info) { answers in
-          send(.teamSelectNext(answers))
-        }
+        VoteTeamSelectView(
+          info: info,
+          initialAnswers: store.teamAnswers,
+          onNext: { answers in
+            send(.teamSelectNext(answers))
+          }
+        )
       } else {
         loadingView()
       }

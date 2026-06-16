@@ -26,11 +26,18 @@ struct VoteTeamSelectView: View {
 
   init(
     info: TeamVoteTemplateInfo,
+    initialAnswers: [TeamVoteAnswer] = [],
     onNext: @escaping ([TeamVoteAnswer]) -> Void = { _ in }
   ) {
+    let categories = Self.orderedCategories(info.template.categories)
     self.info = info
     self.onNext = onNext
-    _answers = State(initialValue: info.template.categories.map { CategoryAnswer(category: $0) })
+    _answers = State(
+      initialValue: Self.makeInitialAnswers(
+        categories: categories,
+        storedAnswers: initialAnswers
+      )
+    )
   }
 
   var body: some View {
@@ -62,6 +69,36 @@ struct VoteTeamSelectView: View {
     .scrollIndicators(.hidden)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.backGroundPrimary)
+  }
+
+  private static func orderedCategories(_ categories: [TeamVoteCategory]) -> [TeamVoteCategory] {
+    categories.enumerated()
+      .sorted { lhs, rhs in
+        guard lhs.element.order != rhs.element.order else {
+          return lhs.offset < rhs.offset
+        }
+        return lhs.element.order < rhs.element.order
+      }
+      .map(\.element)
+  }
+
+  private static func makeInitialAnswers(
+    categories: [TeamVoteCategory],
+    storedAnswers: [TeamVoteAnswer]
+  ) -> [CategoryAnswer] {
+    var answerByCategory: [String: TeamVoteAnswer] = [:]
+    for answer in storedAnswers {
+      answerByCategory[answer.categoryId] = answer
+    }
+
+    return categories.map { category in
+      let storedAnswer = answerByCategory[category.id]
+      return CategoryAnswer(
+        category: category,
+        selectedTeamIds: Set(storedAnswer?.teamIds ?? []),
+        reason: storedAnswer?.reason ?? ""
+      )
+    }
   }
 
   private func makeTeamVoteAnswers() -> [TeamVoteAnswer] {
