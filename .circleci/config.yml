@@ -1,0 +1,96 @@
+version: 2.1
+
+# develop 브랜치 푸시 시 Stage(DDDAttendance-Stage) 빌드 후 TestFlight 업로드
+# 실제 업로드/서명 로직은 fastlane QA 레인(fastlane/Fastfile) 재사용
+
+parameters:
+  xcode-version:
+    type: string
+    default: "16.1.0"
+
+jobs:
+  testflight-stage:
+    macos:
+      xcode: << pipeline.parameters.xcode-version >>
+    resource_class: m2pro.medium
+    environment:
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      FASTLANE_SKIP_UPDATE_CHECK: "1"
+      FASTLANE_HIDE_CHANGELOG: "1"
+      FL_OUTPUT_DIR: fastlane/output
+    steps:
+      - checkout
+
+      # 비공개 Config 레포에서 fastlane/.env 받아오기 (secret은 PUBLIC 레포에 두지 않음)
+      # FastlaneMatch private 레포도 HTTPS + PAT(MATCH_GIT_BASIC_AUTHORIZATION)로 접근
+      - run:
+          name: Config 레포에서 .env 받아오기
+          command: |
+            git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/Roy-wonji/Attendance-iOS-Config.git" /tmp/aic-config
+            cp /tmp/aic-config/fastlane/.env fastlane/.env
+            echo "✅ fastlane/.env 준비 완료"
+
+      - run:
+          name: mise + Tuist 설치
+          command: |
+            curl https://mise.run | sh
+            echo 'eval "$(~/.local/bin/mise activate bash)"' >> "$BASH_ENV"
+            source "$BASH_ENV"
+            mise install
+            mise exec -- tuist version
+
+      - restore_cache:
+          keys:
+            - v1-tuist-{{ checksum "Tuist/Package.resolved" }}
+            - v1-tuist-
+
+      - run:
+          name: Tuist 의존성 설치 & 프로젝트 생성
+          command: |
+            source "$BASH_ENV"
+            mise exec -- tuist install
+            mise exec -- tuist generate --no-open
+
+      - save_cache:
+          key: v1-tuist-{{ checksum "Tuist/Package.resolved" }}
+          paths:
+            - ~/.cache/tuist
+            - Tuist/.build
+
+      - run:
+          name: Bundler(fastlane) 설치
+          command: |
+            bundle config set --local path vendor/bundle
+            bundle install --jobs 4 --retry 3
+
+      - restore_cache:
+          keys:
+            - v1-gems-{{ checksum "Gemfile.lock" }}
+
+      - save_cache:
+          key: v1-gems-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+
+      - run:
+          name: Fastlane QA — Stage 빌드 & TestFlight 업로드
+          no_output_timeout: 30m
+          command: |
+            source "$BASH_ENV"
+            export PATH="$HOME/.local/bin:$PATH"
+            bundle exec fastlane QA
+
+      - store_artifacts:
+          path: fastlane/output
+          destination: fastlane-output
+
+workflows:
+  stage-testflight:
+    jobs:
+      - testflight-stage:
+          filters:
+            branches:
+              only:
+                - develop

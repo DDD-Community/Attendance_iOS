@@ -39,7 +39,7 @@ platform :ios do
     match(
       type: "appstore",
       readonly: true,
-      git_url: "git@github.com:Roy-wonji/FastlaneMatch.git",
+      git_url: "https://github.com/Roy-wonji/FastlaneMatch.git",
       storage_mode: "git",
       app_identifier: ["io.DDD.Attendance"]
     )
@@ -173,7 +173,7 @@ platform :ios do
       match(
         type: "appstore",
         readonly: true,
-        git_url: "git@github.com:Roy-wonji/FastlaneMatch.git",
+        git_url: "https://github.com/Roy-wonji/FastlaneMatch.git",
         storage_mode: "git",
         app_identifier: ["io.DDD.Attendance"]
       )
