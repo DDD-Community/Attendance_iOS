@@ -69,13 +69,19 @@ jobs:
 
       # 프로젝트 검증 방식(TuistTool.swift)으로 의존성 설치 (test.yml과 동일)
       # 프로젝트 생성(generate)은 fastlane QA 레인이 ./make generate 로 수행
-      - name: Tuist 의존성 설치
-        run: swift TuistTool.swift install
+      # mise로 tuist만 명시 설치 (.tool-versions의 node/python 충돌은 install:false로 회피)
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+        with:
+          install: false
 
-      # 워크스페이스를 미리 생성 (fastlane QA가 generate 단계를 건너뛰게 함)
-      # fastlane 내부의 ./make generate 는 Xcode 16.1 dylib 이슈가 있어 우회
-      - name: Tuist 프로젝트 생성
-        run: swift TuistTool.swift generate
+      # 워크스페이스를 미리 생성하고 실제 생성 여부를 검증 (fastlane QA가 generate를 건너뛰게 함)
+      - name: Tuist 설치 · 의존성 · 워크스페이스 생성
+        run: |
+          mise install tuist@4.180.0
+          mise exec tuist@4.180.0 -- tuist install
+          mise exec tuist@4.180.0 -- tuist generate --no-open
+          ls -d *.xcworkspace || { echo "::error::워크스페이스 생성 실패"; exit 1; }
 
       - name: Setup Ruby (fastlane)
         uses: ruby/setup-ruby@v1
