@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import DesignSystem
 import Entity
 import Foundation
 import LogMacro
@@ -36,6 +37,7 @@ public struct MemberVote {
     var feedbackTemplate: FeedbackTemplateInfo?
     var teamAnswers: [TeamVoteAnswer] = []
     var submitting: Bool = false
+    @Presents public var exitAlert: CustomAlertState<CustomAlertAction>?
     @Presents public var alert: AlertState<AlertAction>?
     public init() {}
   }
@@ -45,18 +47,22 @@ public struct MemberVote {
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
+    case delegate(DelegateAction)
     case scope(ScopeAction)
   }
 
   @CasePathable
   public enum View {
     case onAppear
+    case requestExit
     case teamSelectNext([TeamVoteAnswer])
+    case backToTeamSelect
     case submitFeedback([FeedbackAnswer])
   }
 
   @CasePathable
   public enum ScopeAction {
+    case exitAlert(PresentationAction<CustomAlertAction>)
     case alert(PresentationAction<AlertAction>)
   }
 
@@ -76,6 +82,10 @@ public struct MemberVote {
     case activeVoteResponse(Result<ActiveVote, VoteError>)
     case templatesResponse(Result<Templates, VoteError>)
     case submitResponse(Result<Bool, VoteError>)
+  }
+
+  public enum DelegateAction: Equatable {
+    case exitVote
   }
 
   /// 1·2단계 템플릿을 한 번에 로드한 결과.
@@ -108,13 +118,22 @@ public struct MemberVote {
       case let .inner(innerAction):
         return handleInnerAction(state: &state, action: innerAction)
 
+      case .delegate:
+        return .none
+
       case let .scope(scopeAction):
         switch scopeAction {
+        case let .exitAlert(exitAlertAction):
+          return handleExitAlertAction(state: &state, action: exitAlertAction)
+
         case let .alert(alertAction):
           guard case let .presented(.retry(retryAction)) = alertAction else { return .none }
           return .send(.async(retryAction))
         }
       }
+    }
+    .ifLet(\.$exitAlert, action: \.scope.exitAlert) {
+      CustomConfirmAlert()
     }
     .ifLet(\.$alert, action: \.scope.alert)
   }
@@ -131,9 +150,21 @@ extension MemberVote {
       guard state.step == .loading else { return .none }
       return .send(.async(.fetchActiveVote))
 
+    case .requestExit:
+      guard state.step == .teamSelect || state.step == .feedback else {
+        return state.step == .loading ? .send(.delegate(.exitVote)) : .none
+      }
+      state.exitAlert = .exitWriting()
+      return .none
+
     case let .teamSelectNext(answers):
       state.teamAnswers = answers
       state.step = .feedback
+      return .none
+
+    case .backToTeamSelect:
+      guard state.step == .feedback else { return .none }
+      state.step = .teamSelect
       return .none
 
     case let .submitFeedback(feedbackAnswers):
@@ -270,5 +301,38 @@ extension MemberVote {
       TextState(error.errorDescription ?? "알 수 없는 오류가 발생했어요")
     }
     return .none
+  }
+
+  private func handleExitAlertAction(
+    state: inout State,
+    action: PresentationAction<CustomAlertAction>
+  ) -> Effect<Action> {
+    switch action {
+    case let .presented(alertAction):
+      switch alertAction {
+      case .confirmTapped:
+        state.exitAlert = nil
+        return .none
+
+      case .cancelTapped:
+        state.exitAlert = nil
+        switch state.step {
+        case .feedback:
+          return .send(.view(.backToTeamSelect))
+
+        case .teamSelect:
+          return .send(.delegate(.exitVote))
+
+        default:
+          return .none
+        }
+
+      case .policyTapped:
+        return .none
+      }
+
+    case .dismiss:
+      return .none
+    }
   }
 }

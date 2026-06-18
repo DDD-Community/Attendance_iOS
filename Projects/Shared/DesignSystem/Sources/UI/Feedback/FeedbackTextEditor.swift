@@ -52,8 +52,9 @@ public struct FeedbackTextEditor: View {
   }
 
   private var isOverLimit: Bool { text.count > maxLength }
+  private var contentLength: Int { text.normalizedInputCharacterCount }
   /// 비어 있을 때(미입력)는 에러로 보지 않고, 입력이 시작된 뒤 최소 글자수 미만일 때만 강조.
-  private var isUnderMin: Bool { minLength > 0 && !text.isEmpty && text.count < minLength }
+  private var isUnderMin: Bool { minLength > 0 && !text.isEmpty && contentLength < minLength }
   private var isError: Bool { isOverLimit || isUnderMin }
   /// 텍스트가 입력창 높이를 넘쳐야만 내부 스크롤 허용(첫 입력 점프 방지).
   private var needsScroll: Bool { contentHeight > height - 24 }
@@ -135,6 +136,11 @@ public struct FeedbackTextEditor: View {
         .hidden()
     }
     .onPreferenceChange(ContentHeightKey.self) { contentHeight = $0 }
+    .onChange(of: text) { _, newValue in
+      guard newValue.count > maxLength else { return }
+      text = String(newValue.prefix(maxLength))
+      ToastManager.shared.showWarning("최대 \(maxLength)자까지 입력할 수 있어요")
+    }
   }
 
   private var counterRow: some View {
@@ -167,6 +173,14 @@ private struct ContentHeightKey: PreferenceKey {
   static var defaultValue: CGFloat = 0
   static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
     value = max(value, nextValue())
+  }
+}
+
+private extension String {
+  var normalizedInputCharacterCount: Int {
+    split(whereSeparator: \.isWhitespace)
+      .joined(separator: " ")
+      .count
   }
 }
 

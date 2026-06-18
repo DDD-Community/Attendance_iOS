@@ -14,6 +14,7 @@ import Entity
 struct FeedbackQuestionView: View {
   let index: Int
   let question: FeedbackQuestion
+  let textMinLength: Int
   @Binding var selectedOptionIds: Set<String>
   @Binding var textValue: String
   @Binding var boolAnswer: YesNoAnswer?
@@ -61,7 +62,7 @@ struct FeedbackQuestionView: View {
           titleStyle: .secondary,
           placeholder: defaultPlaceholder,
           text: followUpBinding(for: followUp.id),
-          minLength: 0,
+          minLength: textMinLength,
           maxLength: followUp.maxLength ?? 300
         )
       }
@@ -74,7 +75,7 @@ struct FeedbackQuestionView: View {
       description: question.helpText,
       placeholder: defaultPlaceholder,
       text: $textValue,
-      minLength: 0,
+      minLength: textMinLength,
       maxLength: question.maxLength ?? 300
     )
   }

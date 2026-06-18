@@ -33,6 +33,7 @@ public struct FeedbackYesNoQuestion: View {
           optionButton(option)
         }
       }
+      .frame(maxWidth: .infinity)
     }
   }
 
@@ -45,7 +46,8 @@ public struct FeedbackYesNoQuestion: View {
         .pretendardFont(family: isSelected ? .Bold : .Medium, size: 16)
         .foregroundStyle(isSelected ? Color.staticWhite : Color.borderInactive)
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
+        .frame(minHeight: 48)
+        .contentShape(RoundedRectangle(cornerRadius: 12))
         .background {
           RoundedRectangle(cornerRadius: 12)
             .fill(isSelected ? Color.statusFocus : Color.clear)
@@ -55,6 +57,8 @@ public struct FeedbackYesNoQuestion: View {
             }
         }
     }
+    .frame(maxWidth: .infinity)
+    .contentShape(RoundedRectangle(cornerRadius: 12))
     .buttonStyle(.plain)
   }
 }

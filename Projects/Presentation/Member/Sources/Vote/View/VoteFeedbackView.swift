@@ -22,46 +22,81 @@ struct VoteFeedbackView: View {
   }
 
   private let info: FeedbackTemplateInfo
+  private let onBack: () -> Void
   private let onSubmit: ([FeedbackAnswer]) -> Void
+
+  private let textMinLength = 5
 
   @State private var answers: [QuestionAnswer]
 
   init(
     info: FeedbackTemplateInfo,
+    onBack: @escaping () -> Void = {},
     onSubmit: @escaping ([FeedbackAnswer]) -> Void = { _ in }
   ) {
     self.info = info
+    self.onBack = onBack
     self.onSubmit = onSubmit
     _answers = State(initialValue: info.template.questions.map { QuestionAnswer(question: $0) })
   }
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 28) {
-        StepProgressBar(currentStep: 2, totalSteps: 2)
+    VStack(spacing: 0) {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 28) {
+          StepProgressBar(currentStep: 2, totalSteps: 2)
 
-        headerView
+          headerView
 
-        ForEach(answers.indices, id: \.self) { index in
-          FeedbackQuestionView(
-            index: index,
-            question: answers[index].question,
-            selectedOptionIds: $answers[index].selectedOptionIds,
-            textValue: $answers[index].textValue,
-            boolAnswer: $answers[index].boolAnswer,
-            followUpTexts: $answers[index].followUpTexts
-          )
+          ForEach(answers.indices, id: \.self) { index in
+            FeedbackQuestionView(
+              index: index,
+              question: answers[index].question,
+              textMinLength: textMinLength,
+              selectedOptionIds: $answers[index].selectedOptionIds,
+              textValue: $answers[index].textValue,
+              boolAnswer: $answers[index].boolAnswer,
+              followUpTexts: $answers[index].followUpTexts
+            )
+          }
         }
-
-        submitButton
+        .padding(.horizontal, 24)
+        .padding(.top, 8)
+        .padding(.bottom, 24)
       }
-      .padding(.horizontal, 24)
-      .padding(.top, 8)
-      .padding(.bottom, 40)
+      .scrollIndicators(.hidden)
+
+      submitButton
+        .padding(.horizontal, 24)
+        .padding(.top, 12)
+        .padding(.bottom, 24)
     }
-    .scrollIndicators(.hidden)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.backGroundPrimary)
+    .overlay(alignment: .leading) {
+      edgeSwipeArea(gesture: edgeBackGesture)
+    }
+  }
+
+  private var edgeBackGesture: some Gesture {
+    DragGesture(minimumDistance: 20, coordinateSpace: .global)
+      .onEnded { value in
+        guard isBackSwipe(value) else { return }
+        onBack()
+      }
+  }
+
+  private func isBackSwipe(_ value: DragGesture.Value) -> Bool {
+    value.startLocation.x <= 24
+      && value.translation.width >= 80
+      && abs(value.translation.height) <= 60
+  }
+
+  private func edgeSwipeArea(gesture: some Gesture) -> some View {
+    Color.clear
+      .frame(width: 24)
+      .contentShape(Rectangle())
+      .gesture(gesture)
   }
 
   private var headerView: some View {
@@ -91,10 +126,11 @@ struct VoteFeedbackView: View {
         ))
 
       case .longText:
+        let textValue = answer.textValue.trimmingCharacters(in: .whitespacesAndNewlines)
         result.append(FeedbackAnswer(
           questionId: answer.question.id,
           optionIds: nil,
-          textValue: answer.textValue.isEmpty ? nil : answer.textValue,
+          textValue: textValue.normalizedInputCharacterCount == 0 ? nil : textValue,
           boolValue: nil
         ))
 
@@ -108,16 +144,63 @@ struct VoteFeedbackView: View {
       }
 
       // followUp 텍스트 답변은 별도 질문으로 함께 제출한다.
-      for (followUpId, text) in answer.followUpTexts where !text.isEmpty {
+      for (followUpId, text) in answer.followUpTexts {
+        let textValue = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard textValue.normalizedInputCharacterCount > 0 else { continue }
         result.append(FeedbackAnswer(
           questionId: followUpId,
           optionIds: nil,
-          textValue: text,
+          textValue: textValue,
           boolValue: nil
         ))
       }
     }
     return result
+  }
+
+  private var isSubmitEnabled: Bool {
+    answers.allSatisfy(isQuestionValid)
+  }
+
+  private func isQuestionValid(_ answer: QuestionAnswer) -> Bool {
+    let question = answer.question
+
+    switch question.type {
+    case .multiSelect, .teamSelect:
+      guard !question.required || !answer.selectedOptionIds.isEmpty else { return false }
+
+      if let maxSelectableOptions = question.maxSelectableOptions,
+         answer.selectedOptionIds.count > maxSelectableOptions {
+        return false
+      }
+
+      return question.followUp.allSatisfy { followUp in
+        isTextAnswerValid(
+          answer.followUpTexts[followUp.id] ?? "",
+          question: followUp
+        )
+      }
+
+    case .longText:
+      return isTextAnswerValid(answer.textValue, question: question)
+
+    case .boolean:
+      return !question.required || answer.boolAnswer != nil
+    }
+  }
+
+  private func isTextAnswerValid(
+    _ text: String,
+    question: FeedbackQuestion
+  ) -> Bool {
+    let contentLength = text.normalizedInputCharacterCount
+
+    if contentLength == 0 {
+      return !question.required
+    }
+
+    return contentLength >= textMinLength
+      && text.count <= (question.maxLength ?? 300)
   }
 
   private var submitButton: some View {
@@ -126,14 +209,23 @@ struct VoteFeedbackView: View {
     } label: {
       Text("제출하기")
         .pretendardFont(family: .Bold, size: 16)
-        .foregroundStyle(.staticWhite)
+        .foregroundStyle(isSubmitEnabled ? .staticWhite : .gray60)
         .frame(maxWidth: .infinity)
         .frame(height: 56)
         .background {
           RoundedRectangle(cornerRadius: 14)
-            .fill(Color.blue40)
+            .fill(isSubmitEnabled ? Color.blue40 : Color.gray80)
         }
     }
     .buttonStyle(.plain)
+    .disabled(!isSubmitEnabled)
+  }
+}
+
+private extension String {
+  var normalizedInputCharacterCount: Int {
+    split(whereSeparator: \.isWhitespace)
+      .joined(separator: " ")
+      .count
   }
 }

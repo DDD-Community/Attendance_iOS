@@ -54,8 +54,11 @@ struct TeamSelectionRow: View {
     .padding(.vertical, 16)
     .contentShape(Rectangle())
     .onTapGesture {
+      dismissKeyboard()
       guard !isOwnTeam else { return }
-      onTap()
+      DispatchQueue.main.async {
+        onTap()
+      }
     }
   }
 
@@ -84,5 +87,14 @@ struct TeamSelectionRow: View {
         }
       }
       .frame(width: 22, height: 22)
+  }
+
+  private func dismissKeyboard() {
+    UIApplication.shared.sendAction(
+      #selector(UIResponder.resignFirstResponder),
+      to: nil,
+      from: nil,
+      for: nil
+    )
   }
 }

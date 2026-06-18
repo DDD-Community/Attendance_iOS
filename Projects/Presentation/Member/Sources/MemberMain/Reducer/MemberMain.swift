@@ -75,6 +75,7 @@ public struct MemberMain {
     case didTapDismissAlertButton
     case toggleDropDown
     case selectHomeTab(HomeTab)
+    case didTapVoteBackButton
   }
 
   public enum AsyncAction: Equatable {
@@ -129,9 +130,32 @@ public struct MemberMain {
       case let .navigation(action):
         return handleNavigationAction(state: &state, action: action)
 
+      case .vote(.delegate(.exitVote)):
+        state.selectedHomeTab = .attendance
+        state.isExpandedDropDown = false
+        state.vote = .init()
+        return .none
+
       case .vote:
         return .none
       }
+    }
+  }
+}
+
+extension MemberMain.State {
+  var usesVoteWritingNavigationBar: Bool {
+    selectedHomeTab == .vote && vote.step.usesVoteWritingNavigationBar
+  }
+}
+
+private extension MemberVote.Step {
+  var usesVoteWritingNavigationBar: Bool {
+    switch self {
+    case .loading, .teamSelect, .feedback:
+      return true
+    case .empty, .alreadyVoted, .completed:
+      return false
     }
   }
 }
@@ -174,6 +198,9 @@ extension MemberMain {
       state.selectedHomeTab = tab
       state.isExpandedDropDown = false
       return .none
+
+    case .didTapVoteBackButton:
+      return .send(.vote(.view(.requestExit)))
     }
   }
 
