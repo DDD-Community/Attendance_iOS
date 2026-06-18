@@ -40,9 +40,21 @@ jobs:
           cp /tmp/cfg/fastlane/.env       fastlane/.env
           cp /tmp/cfg/fastlane/Matchfile  fastlane/Matchfile
           cp /tmp/cfg/fastlane/Fastfile   fastlane/Fastfile
-          # 받아온 비밀 자산이 절대 메인 레포에 커밋되지 않도록 git 추적에서 제외
+          # 받아온 비밀 자산이 절대 메인 레포에 커밋되지 않도록 git 추적/스테이징에서 제외
           git update-index --skip-worktree fastlane/Matchfile fastlane/Fastfile 2>/dev/null || true
+          printf '%s\n' 'fastlane/.env' '*.env' 'Config/' >> .git/info/exclude
           echo "✅ CI 자산 주입 완료 (이 워크플로우는 commit/push를 수행하지 않음)"
+
+      # 비밀 파일(.env 등)이 git 추적되면 빌드를 즉시 실패시켜 커밋을 원천 차단
+      - name: 비밀파일 커밋 방지 검증
+        run: |
+          for f in fastlane/.env; do
+            if git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
+              echo "::error::$f 가 git에 추적됨 — 커밋 위험! 빌드 중단"
+              exit 1
+            fi
+          done
+          echo "✅ .env 는 git 추적되지 않음 (커밋 불가) 확인"
 
       - name: Setup mise (Tuist)
         uses: jdx/mise-action@v2
