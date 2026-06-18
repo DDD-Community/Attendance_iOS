@@ -1,7 +1,11 @@
 version: 2.1
 
-# develop 브랜치 푸시 시 Stage(DDDAttendance-Stage) 빌드 후 TestFlight 업로드
-# 실제 업로드/서명 로직은 fastlane QA 레인(fastlane/Fastfile) 재사용
+# develop 브랜치에 머지/푸시되면 CircleCI가 자동으로
+# DDDAttendance-Stage 빌드 → TestFlight 업로드를 수행합니다.
+#
+# 비밀정보(.env / 인증서 / 키 / Config xcconfig / Matchfile / Fastfile)는
+# 이 PUBLIC 레포에 두지 않고, 빌드 중 비공개 레포(Roy-wonji/Attendance-iOS-Config)에서
+# 받아와 주입합니다. (인증: CircleCI 환경변수 CONFIG_REPO_TOKEN = GitHub PAT)
 
 parameters:
   xcode-version:
@@ -19,18 +23,21 @@ jobs:
       HOMEBREW_NO_AUTO_UPDATE: "1"
       FASTLANE_SKIP_UPDATE_CHECK: "1"
       FASTLANE_HIDE_CHANGELOG: "1"
-      FL_OUTPUT_DIR: fastlane/output
     steps:
       - checkout
 
-      # 비공개 Config 레포에서 fastlane/.env 받아오기 (secret은 PUBLIC 레포에 두지 않음)
-      # FastlaneMatch private 레포도 HTTPS + PAT(MATCH_GIT_BASIC_AUTHORIZATION)로 접근
+      # 비공개 Config 레포에서 CI 자산 주입 (secret은 메인 레포에 없음)
       - run:
-          name: Config 레포에서 .env 받아오기
+          name: 비공개 Config 레포에서 CI 자산 받아오기
           command: |
-            git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/Roy-wonji/Attendance-iOS-Config.git" /tmp/aic-config
-            cp /tmp/aic-config/fastlane/.env fastlane/.env
-            echo "✅ fastlane/.env 준비 완료"
+            git clone --depth 1 \
+              "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/Roy-wonji/Attendance-iOS-Config.git" /tmp/cfg
+            mkdir -p Config fastlane
+            cp /tmp/cfg/Config/*.xcconfig Config/
+            cp /tmp/cfg/fastlane/.env       fastlane/.env
+            cp /tmp/cfg/fastlane/Matchfile  fastlane/Matchfile
+            cp /tmp/cfg/fastlane/Fastfile   fastlane/Fastfile
+            echo "✅ CI 자산 주입 완료"
 
       - run:
           name: mise + Tuist 설치
@@ -65,21 +72,11 @@ jobs:
             bundle config set --local path vendor/bundle
             bundle install --jobs 4 --retry 3
 
-      - restore_cache:
-          keys:
-            - v1-gems-{{ checksum "Gemfile.lock" }}
-
-      - save_cache:
-          key: v1-gems-{{ checksum "Gemfile.lock" }}
-          paths:
-            - vendor/bundle
-
       - run:
           name: Fastlane QA — Stage 빌드 & TestFlight 업로드
           no_output_timeout: 30m
           command: |
             source "$BASH_ENV"
-            export PATH="$HOME/.local/bin:$PATH"
             bundle exec fastlane QA
 
       - store_artifacts:
