@@ -56,22 +56,20 @@ jobs:
           done
           echo "✅ .env 는 git 추적되지 않음 (커밋 불가) 확인"
 
-      - name: Setup mise (Tuist)
-        uses: jdx/mise-action@v2
-
       - name: Cache Tuist
         uses: actions/cache@v4
         with:
           path: |
             ~/.cache/tuist
+            ~/.tuist
             Tuist/.build
           key: ${{ runner.os }}-tuist-${{ hashFiles('Tuist/Package.resolved') }}
           restore-keys: ${{ runner.os }}-tuist-
 
-      - name: Tuist 의존성 설치 & 프로젝트 생성
-        run: |
-          tuist install
-          tuist generate --no-open
+      # 프로젝트 검증 방식(TuistTool.swift)으로 의존성 설치 (test.yml과 동일)
+      # 프로젝트 생성(generate)은 fastlane QA 레인이 ./make generate 로 수행
+      - name: Tuist 의존성 설치
+        run: swift TuistTool.swift install
 
       - name: Setup Ruby (fastlane)
         uses: ruby/setup-ruby@v1
