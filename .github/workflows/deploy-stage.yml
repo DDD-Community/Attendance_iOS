@@ -25,7 +25,8 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.1'
+          # libswiftCompatibilitySpan.dylib(Swift 6.0.3+) 필요 → 16.2 이상
+          xcode-version: '16.2'
 
       # 비밀정보(.env / Config / Matchfile / Fastfile)는 PUBLIC 레포에 두지 않고
       # 비공개 Config 레포(Roy-wonji/Attendance-iOS-Config)에서 받아와 주입
