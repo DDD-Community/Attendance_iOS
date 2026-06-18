@@ -1,0 +1,78 @@
+name: 🚀 Deploy Stage to TestFlight
+
+# develop 브랜치에 머지/푸시되면 Stage(DDDAttendance-Stage) 빌드 후 TestFlight 업로드
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-stage-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testflight-stage:
+    name: Stage → TestFlight
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.1'
+
+      # 비밀정보(.env / Config / Matchfile / Fastfile)는 PUBLIC 레포에 두지 않고
+      # 비공개 Config 레포(Roy-wonji/Attendance-iOS-Config)에서 받아와 주입
+      - name: 비공개 Config 레포에서 CI 자산 받아오기
+        env:
+          CONFIG_REPO_TOKEN: ${{ secrets.CONFIG_REPO_TOKEN }}
+        run: |
+          git clone --depth 1 \
+            "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/Roy-wonji/Attendance-iOS-Config.git" /tmp/cfg
+          mkdir -p Config fastlane
+          cp /tmp/cfg/Config/*.xcconfig Config/
+          cp /tmp/cfg/fastlane/.env       fastlane/.env
+          cp /tmp/cfg/fastlane/Matchfile  fastlane/Matchfile
+          cp /tmp/cfg/fastlane/Fastfile   fastlane/Fastfile
+          echo "✅ CI 자산 주입 완료"
+
+      - name: Setup mise (Tuist)
+        uses: jdx/mise-action@v2
+
+      - name: Cache Tuist
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/tuist
+            Tuist/.build
+          key: ${{ runner.os }}-tuist-${{ hashFiles('Tuist/Package.resolved') }}
+          restore-keys: ${{ runner.os }}-tuist-
+
+      - name: Tuist 의존성 설치 & 프로젝트 생성
+        run: |
+          tuist install
+          tuist generate --no-open
+
+      - name: Setup Ruby (fastlane)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Fastlane QA — Stage 빌드 & TestFlight 업로드
+        run: bundle exec fastlane QA
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stage-ipa-${{ github.run_number }}
+          path: fastlane/output/**
+          retention-days: 14
+          if-no-files-found: ignore
