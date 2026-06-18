@@ -71,6 +71,11 @@ jobs:
       - name: Tuist 의존성 설치
         run: swift TuistTool.swift install
 
+      # 워크스페이스를 미리 생성 (fastlane QA가 generate 단계를 건너뛰게 함)
+      # fastlane 내부의 ./make generate 는 Xcode 16.1 dylib 이슈가 있어 우회
+      - name: Tuist 프로젝트 생성
+        run: swift TuistTool.swift generate
+
       - name: Setup Ruby (fastlane)
         uses: ruby/setup-ruby@v1
         with:
