@@ -40,7 +40,9 @@ jobs:
           cp /tmp/cfg/fastlane/.env       fastlane/.env
           cp /tmp/cfg/fastlane/Matchfile  fastlane/Matchfile
           cp /tmp/cfg/fastlane/Fastfile   fastlane/Fastfile
-          echo "✅ CI 자산 주입 완료"
+          # 받아온 비밀 자산이 절대 메인 레포에 커밋되지 않도록 git 추적에서 제외
+          git update-index --skip-worktree fastlane/Matchfile fastlane/Fastfile 2>/dev/null || true
+          echo "✅ CI 자산 주입 완료 (이 워크플로우는 commit/push를 수행하지 않음)"
 
       - name: Setup mise (Tuist)
         uses: jdx/mise-action@v2
