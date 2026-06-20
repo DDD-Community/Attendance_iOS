@@ -30,8 +30,10 @@ let packageSettings = PackageSettings(
     "IssueReporting": .staticFramework,
     "IssueReportingPackageSupport": .staticFramework,
     "XCTestDynamicOverlay": .staticFramework,
-    "Clocks": .staticFramework,
-    "ConcurrencyExtras": .staticFramework,
+    // Xcode 26 archive에서 generated ObjC 헤더 누락으로 빌드 실패 → 동적 프레임워크로 전환
+    "Clocks": .framework,
+    "CombineSchedulers": .framework,
+    "ConcurrencyExtras": .framework,
     "SDWebImageSwiftUI": .staticFramework,
     "SDWebImage": .staticFramework,
     "SwiftUIX": .staticFramework,
