@@ -45,6 +45,13 @@ let packageSettings = PackageSettings(
     "GTMSessionFetcher": .staticFramework
   ],
   baseSettings: .settings(
+    base: [
+      // Xcode 26 clean archive에서 SPM 의존성(Clocks 등)의 generated ObjC 헤더가
+      // 간헐적으로 누락돼 "could not build Objective-C module 'Clocks'"가 발생(flaky).
+      // 모든 의존성 타겟이 항상 ObjC 헤더를 생성하도록 강제하여 안정화한다.
+      "SWIFT_INSTALL_OBJC_HEADER": "YES",
+      "SWIFT_ENABLE_EXPLICIT_MODULES": "NO"
+    ],
     configurations: [
       .debug(name: "Debug"),
       .debug(name: "Stage"),
