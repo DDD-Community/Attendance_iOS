@@ -1,4 +1,4 @@
-// swift-tools-version: 6.1
+// swift-tools-version: 6.2
 @preconcurrency import PackageDescription
 
 #if TUIST
@@ -30,10 +30,10 @@ let packageSettings = PackageSettings(
     "IssueReporting": .staticFramework,
     "IssueReportingPackageSupport": .staticFramework,
     "XCTestDynamicOverlay": .staticFramework,
-    // Xcode 26 archive에서 generated ObjC 헤더 누락으로 빌드 실패 → 동적 프레임워크로 전환
-    "Clocks": .framework,
-    "CombineSchedulers": .framework,
-    "ConcurrencyExtras": .framework,
+    // Picke 스타일에 맞춰 정적 프레임워크로 통일 (archive 시 strip 노이즈 제거)
+    "Clocks": .staticFramework,
+    "CombineSchedulers": .staticFramework,
+    "ConcurrencyExtras": .staticFramework,
     "SDWebImageSwiftUI": .staticFramework,
     "SDWebImage": .staticFramework,
     "SwiftUIX": .staticFramework,
@@ -45,13 +45,6 @@ let packageSettings = PackageSettings(
     "GTMSessionFetcher": .staticFramework
   ],
   baseSettings: .settings(
-    base: [
-      // Xcode 26 clean archive에서 SPM 의존성(Clocks 등)의 generated ObjC 헤더가
-      // 간헐적으로 누락돼 "could not build Objective-C module 'Clocks'"가 발생(flaky).
-      // 모든 의존성 타겟이 항상 ObjC 헤더를 생성하도록 강제하여 안정화한다.
-      "SWIFT_INSTALL_OBJC_HEADER": "YES",
-      "SWIFT_ENABLE_EXPLICIT_MODULES": "NO"
-    ],
     configurations: [
       .debug(name: "Debug"),
       .debug(name: "Stage"),
