@@ -213,7 +213,7 @@ platform :ios do
       upload_to_testflight(
         ipa: ipa_path,
         changelog: ENV.fetch("RELEASE_NOTES", "변경사항"),
-        groups: ["DDD", "ddd"],
+        groups: ["DDD"],   # External 그룹만 지정 (Internal "ddd"는 모든 빌드 자동 수신)
         beta_app_description: "DDD 출석 앱입니다.",
         notify_external_testers: true,
         skip_waiting_for_build_processing: false,
