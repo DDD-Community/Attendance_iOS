@@ -19,21 +19,16 @@ workflows:
         - pattern: "release-stg-*"
           include: true
     scripts:
-      - name: 비밀 자산 주입 + 빌드번호 + Tuist(make) generate
+      - name: 비밀 자산 주입 + Tuist(make) generate
         script: |
           set -e
-          # 비공개 Config 레포에서 .env / Config / Matchfile / Fastfile 복원
+          # 비공개 Config 레포에서 .env / Config(xcconfig)만 복원
+          # Fastfile/Matchfile/Appfile은 메인 레포에 추적된 최신본을 그대로 사용 (덮어쓰지 않음)
           git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
           mkdir -p Config fastlane
           cp /tmp/cfg/Config/*.xcconfig Config/
           cp /tmp/cfg/fastlane/.env       fastlane/.env
-          cp /tmp/cfg/fastlane/Matchfile  fastlane/Matchfile
-          cp /tmp/cfg/fastlane/Fastfile   fastlane/Fastfile
-          # 빌드번호 = YYMMDDHHMM (generate 전 주입, macOS BSD sed -i '' -E)
-          BUILD_NO=$(date +%y%m%d%H%M)
-          EXT="Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
-          [ -f "$EXT" ] && sed -i '' -E "s/appBuildVersion\(buildVersion: String = \"[0-9]+\"\)/appBuildVersion(buildVersion: String = \"${BUILD_NO}\")/" "$EXT"
-          echo "📦 빌드번호: ${BUILD_NO}"
+          # 빌드번호는 Fastfile QA 레인이 App Store 최신 빌드+1로 자동 증가시킴
           # mise + tuist + make generate
           curl -fsSL https://mise.run | sh
           export PATH="$HOME/.local/bin:$PATH"
@@ -140,23 +135,19 @@ workflows:
       - name: 비밀 자산 주입 + 릴리스 버전 + Tuist(make) generate
         script: |
           set -e
+          # .env / xcconfig만 복원, Fastfile/Matchfile은 메인 레포 최신본 사용
           git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
           mkdir -p Config fastlane
           cp /tmp/cfg/Config/*.xcconfig Config/
           cp /tmp/cfg/fastlane/.env       fastlane/.env
-          cp /tmp/cfg/fastlane/Matchfile  fastlane/Matchfile
-          cp /tmp/cfg/fastlane/Fastfile   fastlane/Fastfile
-          # 빌드번호 = YYMMDDHHMM (중복 방지)
-          BUILD_NO=$(date +%y%m%d%H%M)
+          # 릴리스 버전: 태그(v1.2.3)에서 추출, 없으면 appVersion에서 (빌드번호는 Fastfile이 자동 증가)
           EXT="Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
-          [ -f "$EXT" ] && sed -i '' -E "s/appBuildVersion\(buildVersion: String = \"[0-9]+\"\)/appBuildVersion(buildVersion: String = \"${BUILD_NO}\")/" "$EXT"
-          # 릴리스 버전: 태그(v1.2.3)에서 추출, 없으면 appVersion에서
           VER="${CM_TAG#v}"
           if [ -z "$VER" ]; then
             VER=$(grep -oE 'appVersion\(version: String = "[0-9.]+"' "$EXT" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
           fi
           echo "RELEASE_VERSION=$VER" >> "$CM_ENV"
-          echo "📦 빌드번호: ${BUILD_NO} / 릴리스 버전: ${VER}"
+          echo "📦 릴리스 버전: ${VER}"
           curl -fsSL https://mise.run | sh
           export PATH="$HOME/.local/bin:$PATH"
           eval "$(mise activate bash)"

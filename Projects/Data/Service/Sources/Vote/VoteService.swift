@@ -104,9 +104,9 @@ extension VoteService: BaseTargetType {
     // TODO: 임시 토큰 헤더 — 실제 토큰 연동 후 APIHeader.baseHeader로 교체
     switch self {
     case .active, .teamVoteTemplate, .feedbackTemplate, .submit, .myResponse:
-      return APIHeader.voteMemberTempHeader
+      return APIHeader.baseHeader
     default:
-      return APIHeader.voteManagerTempHeader
+      return APIHeader.baseHeader
     }
   }
 }
