@@ -126,12 +126,14 @@ workflows:
       groups:
         - attendance
     triggering:
+      # 실제 App Store 제출(submit_for_review)이라 v* 태그로만 트리거 (release 브랜치 push 자동 트리거 보류)
+      # release 브랜치로도 돌리려면 아래 push/branch_patterns 주석 해제
       events:
-        - push
+        # - push
         - tag
-      branch_patterns:
-        - pattern: "release"
-          include: true
+      # branch_patterns:
+      #   - pattern: "release"
+      #     include: true
       tag_patterns:
         - pattern: "v*"
           include: true
