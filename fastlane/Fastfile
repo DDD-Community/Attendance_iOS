@@ -216,7 +216,7 @@ platform :ios do
       groups: ["DDD", "ddd"],
       beta_app_description: "DDD 출석 앱입니다.",
       notify_external_testers: true,
-      skip_waiting_for_build_processing: true,
+      skip_waiting_for_build_processing: false,
       demo_account_required: false,
       uses_non_exempt_encryption: false
     )
