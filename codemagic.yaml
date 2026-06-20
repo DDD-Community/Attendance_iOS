@@ -63,13 +63,11 @@ workflows:
           eval "$(mise activate bash)"
           bundle install
           bundle exec fastlane ios QA
-      - name: Discord 성공 알림 (변경사항 포함)
+      - name: Discord 성공 알림
         script: |
           python3 - <<'PY'
           import os, json, urllib.request
-          msg = f"✅ **DDDAttendance** TestFlight 업로드 성공 · #{os.environ.get('BUILD_NUMBER','')}"
-          notes = os.environ.get('RELEASE_NOTES','').strip()
-          if notes: msg += "\n[변경사항]\n" + notes
+          msg = f"✅ **DDDAttendance** TestFlight 배포 완료 · #{os.environ.get('BUILD_NUMBER','')}"
           url = os.environ.get('CM_BUILD_URL','')
           if url: msg += "\n" + url
           wh = os.environ.get('DISCORD_WEBHOOK','')
