@@ -213,7 +213,7 @@ platform :ios do
       upload_to_testflight(
         ipa: ipa_path,
         changelog: ENV.fetch("RELEASE_NOTES", "변경사항"),
-        groups: ["DDD"],   # External 그룹만 지정 (Internal "ddd"는 모든 빌드 자동 수신)
+        groups: ["DDD", "ddd"],
         beta_app_description: "DDD 출석 앱입니다.",
         notify_external_testers: true,
         skip_waiting_for_build_processing: false,
@@ -221,9 +221,11 @@ platform :ios do
         uses_non_exempt_encryption: false
       )
     rescue => e
-      # 외부 그룹 베타 심사는 버전당 1개만 가능 → 이전 빌드 심사 중이면 제출만 실패(바이너리 업로드는 이미 완료)
-      if e.message.include?("Another build is in review") || e.message.downcase.include?("beta review")
-        UI.important("⚠️ 이전 빌드가 베타 심사 중이라 외부 그룹 제출은 보류됨. 바이너리 업로드는 완료 — 이전 심사 완료 후 배포 가능.")
+      # 바이너리 업로드는 끝났는데 그룹/심사 배포 단계만 실패하면 빌드 실패시키지 않고 경고만
+      # (External 베타 심사 충돌 또는 Internal 그룹은 빌드 지정 불가 → 자동 수신)
+      if e.message.include?("Another build is in review") || e.message.downcase.include?("beta review") ||
+         e.message.include?("internal group") || e.message.downcase.include?("cannot be assigned")
+        UI.important("⚠️ 그룹/심사 배포 단계 보류 — 바이너리 업로드는 완료됨. (Internal 그룹은 자동 수신)")
       else
         raise e
       end
