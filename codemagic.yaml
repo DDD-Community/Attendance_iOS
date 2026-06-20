@@ -37,10 +37,14 @@ workflows:
           chmod +x ./make
           mise exec "tuist@${TUIST_VERSION}" -- bash -c './make clean && ./make install && ./make generate'
           ls -d *.xcworkspace
-      - name: 릴리스 노트(커밋 메시지) 수집
+      - name: 릴리스 노트 수집 ([v버전] + 요약 파일)
         script: |
-          NOTES=$(git log -n 30 --no-merges --pretty=format:"- %s" 2>/dev/null | grep -vE '^- (Merge|Bump|chore: 빌드|ci: )' | head -10)
-          [ -z "$NOTES" ] && NOTES="- ${CM_COMMIT_MESSAGE:-빌드 업데이트}"
+          EXT="Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
+          VER=$(grep -oE 'appVersion\(version: String = "[0-9.]+"' "$EXT" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          BODY=$(cat fastlane/release_notes.txt 2>/dev/null)
+          [ -z "$BODY" ] && BODY="- 버그 수정"
+          NOTES="[v${VER}]
+          ${BODY}"
           echo "RELEASE_NOTES<<__EOF__" >> "$CM_ENV"
           echo "$NOTES" >> "$CM_ENV"
           echo "__EOF__" >> "$CM_ENV"
