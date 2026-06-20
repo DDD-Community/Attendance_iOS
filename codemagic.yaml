@@ -1,0 +1,118 @@
+workflows:
+  deploy-stg:
+    name: Stage → TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    environment:
+      xcode: "26.0"
+      vars:
+        CONFIG_REPO: "Roy-wonji/Attendance-iOS-Config"
+        TUIST_VERSION: "4.180.0"
+      groups:
+        - attendance   # Codemagic에 CONFIG_REPO_TOKEN, DISCORD_WEBHOOK 등록
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: "develop"
+          include: true
+        - pattern: "release-stg-*"
+          include: true
+    scripts:
+      - name: 비밀 자산 주입 + 빌드번호 + Tuist(make) generate
+        script: |
+          set -e
+          # 비공개 Config 레포에서 .env / Config / Matchfile / Fastfile 복원
+          git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
+          mkdir -p Config fastlane
+          cp /tmp/cfg/Config/*.xcconfig Config/
+          cp /tmp/cfg/fastlane/.env       fastlane/.env
+          cp /tmp/cfg/fastlane/Matchfile  fastlane/Matchfile
+          cp /tmp/cfg/fastlane/Fastfile   fastlane/Fastfile
+          # 빌드번호 = YYMMDDHHMM (generate 전 주입, macOS BSD sed -i '' -E)
+          BUILD_NO=$(date +%y%m%d%H%M)
+          EXT="Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
+          [ -f "$EXT" ] && sed -i '' -E "s/appBuildVersion\(buildVersion: String = \"[0-9]+\"\)/appBuildVersion(buildVersion: String = \"${BUILD_NO}\")/" "$EXT"
+          echo "📦 빌드번호: ${BUILD_NO}"
+          # mise + tuist + make generate
+          curl -fsSL https://mise.run | sh
+          export PATH="$HOME/.local/bin:$PATH"
+          eval "$(mise activate bash)"
+          mise install "tuist@${TUIST_VERSION}"
+          chmod +x ./make
+          mise exec "tuist@${TUIST_VERSION}" -- bash -c './make clean && ./make install && ./make generate'
+          ls -d *.xcworkspace
+      - name: 릴리스 노트(커밋 메시지) 수집
+        script: |
+          NOTES=$(git log -n 30 --no-merges --pretty=format:"- %s" 2>/dev/null | grep -vE '^- (Merge|Bump|chore: 빌드|ci: )' | head -10)
+          [ -z "$NOTES" ] && NOTES="- ${CM_COMMIT_MESSAGE:-빌드 업데이트}"
+          echo "RELEASE_NOTES<<__EOF__" >> "$CM_ENV"
+          echo "$NOTES" >> "$CM_ENV"
+          echo "__EOF__" >> "$CM_ENV"
+          echo "릴리스 노트:"; echo "$NOTES"
+      - name: Discord 빌드 시작 알림
+        script: |
+          python3 - <<'PY'
+          import os, json, urllib.request
+          msg = f"🛠️ **DDDAttendance** TestFlight(QA) 빌드 시작 · #{os.environ.get('BUILD_NUMBER','')}\n{os.environ.get('CM_BUILD_URL','')}"
+          wh = os.environ.get('DISCORD_WEBHOOK','')
+          if wh:
+              req = urllib.request.Request(wh, data=json.dumps({"content": msg}).encode(),
+                                           headers={"Content-Type":"application/json","User-Agent":"DDDAttendance-CI/1.0"})
+              try: urllib.request.urlopen(req); print("discord ok")
+              except Exception as e: print("discord skip:", e)
+          PY
+      - name: Fastlane QA — Stage → TestFlight
+        script: |
+          export PATH="$HOME/.local/bin:$PATH"
+          eval "$(mise activate bash)"
+          bundle install
+          bundle exec fastlane ios QA
+    publishing:
+      scripts:
+        - name: Discord 성공 알림 (변경사항 포함)
+          script: |
+            python3 - <<'PY'
+            import os, json, urllib.request
+            msg = f"✅ **DDDAttendance** TestFlight 업로드 성공 · #{os.environ.get('BUILD_NUMBER','')}"
+            notes = os.environ.get('RELEASE_NOTES','').strip()
+            if notes: msg += "\n[변경사항]\n" + notes
+            url = os.environ.get('CM_BUILD_URL','')
+            if url: msg += "\n" + url
+            wh = os.environ.get('DISCORD_WEBHOOK','')
+            if wh:
+                req = urllib.request.Request(wh, data=json.dumps({"content": msg}).encode(),
+                                             headers={"Content-Type":"application/json","User-Agent":"DDDAttendance-CI/1.0"})
+                try: urllib.request.urlopen(req); print("discord ok")
+                except Exception as e: print("discord skip:", e)
+            PY
+
+  test:
+    name: PR 유닛 테스트
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      xcode: "26.0"
+      vars:
+        CONFIG_REPO: "Roy-wonji/Attendance-iOS-Config"
+        TUIST_VERSION: "4.180.0"
+      groups:
+        - attendance
+    triggering:
+      events:
+        - pull_request
+    scripts:
+      - name: 자산 주입 + generate + 유닛 테스트
+        script: |
+          set -e
+          git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
+          mkdir -p Config fastlane
+          cp /tmp/cfg/Config/*.xcconfig Config/
+          cp /tmp/cfg/fastlane/.env fastlane/.env
+          curl -fsSL https://mise.run | sh
+          export PATH="$HOME/.local/bin:$PATH"
+          eval "$(mise activate bash)"
+          mise install "tuist@${TUIST_VERSION}"
+          chmod +x ./make
+          mise exec "tuist@${TUIST_VERSION}" -- bash -c './make clean && ./make install && ./make generate'
+          mise exec "tuist@${TUIST_VERSION}" -- tuist test
