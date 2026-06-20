@@ -1,5 +1,4 @@
 # Fastlane 기본 설정
-update_fastlane
 default_platform(:ios)
 
 ENV["FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT"] = "600"
@@ -8,10 +7,12 @@ ENV["FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT"] = "600"
 APP_NAME = "DDDAttendance"
 SCHEME = "DDDAttendance"
 STAGE_SCHEME = "DDDAttendance-Stage"
+PROD_SCHEME = "DDDAttendance-Prod"
 BUNDLE_ID = "io.DDD.Attendance"
 OUTPUT_DIR = "./fastlane/output"
 IPA_FILENAME = "#{APP_NAME}.ipa"
 TEAM_ID = ENV["TEAM_ID"] || "N94CS4N6VR"
+MATCH_KEYCHAIN_NAME = ENV["MATCH_KEYCHAIN_NAME"] || "match_keychain"
 
 # 릴리스용 변수 (누락되어 있던 부분 보완)
 APP_RELEASE_NAME = APP_NAME
@@ -20,14 +21,173 @@ APP_RELEASE_SCHEME = SCHEME
 APP_STAGE_NAME = STAGE_SCHEME
 APP_STAGE_SCHEME = STAGE_SCHEME
 
+def unlock_match_keychain
+  keychain_password = ENV["MATCH_KEYCHAIN_PASSWORD"].to_s
+  if keychain_password.empty?
+    UI.important("MATCH_KEYCHAIN_PASSWORD is missing. macOS may ask for the match keychain password.")
+    return
+  end
+
+  keychain_path = File.expand_path("~/Library/Keychains/#{MATCH_KEYCHAIN_NAME}-db")
+  unless File.exist?(keychain_path)
+    # CI 등 키체인이 없는 환경에서는 새로 생성(언락 포함)
+    UI.message("match keychain 생성: #{keychain_path}")
+    create_keychain(
+      name: MATCH_KEYCHAIN_NAME,
+      password: keychain_password,
+      default_keychain: true,
+      unlock: true,
+      timeout: 3600,
+      lock_when_sleeps: false,
+      add_to_search_list: true
+    )
+    return
+  end
+
+  unlock_keychain(
+    path: keychain_path,
+    password: keychain_password,
+    add_to_search_list: true
+  )
+end
+
+# 빌드 번호 자동 증가 — TestFlight/App Store 최신 빌드 번호 + 1
+def next_build_number
+  begin
+    current_build_number = latest_testflight_build_number(
+      app_identifier: BUNDLE_ID,
+      platform: "ios"
+    )
+    puts "📱 TestFlight 최신 빌드 번호: #{current_build_number}"
+  rescue => e
+    puts "⚠️ TestFlight 빌드 번호 조회 실패, 기본값 1 사용: #{e.message}"
+    current_build_number = 1
+  end
+
+  begin
+    live_build_number = app_store_build_number(
+      app_identifier: BUNDLE_ID,
+      platform: "ios"
+    )
+    puts "🏪 App Store 라이브 빌드 번호: #{live_build_number}"
+    current_build_number = [current_build_number, live_build_number].max
+  rescue => e
+    puts "⚠️ App Store 빌드 번호 조회 실패: #{e.message}"
+  end
+
+  new_build_number = current_build_number + 1
+  puts "🔢 새로운 빌드 번호: #{new_build_number}"
+  new_build_number
+end
+
+# Extension+String.swift 의 빌드 번호 갱신 (tuist generate 시 CFBundleVersion 으로 반영)
+def apply_build_number(new_build_number)
+  extension_file_path = "../Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
+  content = File.read(extension_file_path)
+  updated_content = content.gsub(
+    /public static func appBuildVersion\(buildVersion: String = "\d+"\) -> String \{/,
+    "public static func appBuildVersion(buildVersion: String = \"#{new_build_number}\") -> String {"
+  )
+  File.write(extension_file_path, updated_content)
+  puts "✅ 빌드 번호를 #{new_build_number}로 업데이트 완료"
+
+  # 갱신된 빌드 번호 반영을 위해 Tuist 강제 재생성
+  Dir.chdir("..") do
+    puts "🔧 Tuist workspace 재생성 중..."
+    sh("tuist generate --no-open")
+    puts "✅ Tuist workspace 재생성 완료"
+  end
+end
+
+# 빌드 + 서명 + IPA 추출.
+# build_app 을 프로젝트 루트(Dir.chdir("..")) 안에서 호출해야
+#   - OUTPUT_DIR("./fastlane/output") 가 프로젝트 루트 기준으로 정확히 잡히고
+#   - workspace glob 이 동작한다.
+# ipa_path 는 블록 밖으로 반환해야 upload 단계에서 사용할 수 있다(Ruby 블록 스코프 주의).
+def build_ipa(scheme)
+  ipa_path = nil
+  Dir.chdir("..") do
+    puts "📁 Current directory: #{Dir.pwd}"
+
+    workspace_files = Dir.glob("*.xcworkspace")
+    if workspace_files.empty?
+      puts "🔧 No workspace found, trying to generate..."
+
+      tuist_available = system("which tuist > /dev/null 2>&1")
+      puts "Tuist available: #{tuist_available}"
+
+      unless tuist_available
+        puts "🔧 Installing tuist with brew..."
+        sh("brew install tuist")
+      end
+
+      begin
+        if File.exist?("make")
+          puts "🔧 Trying ./make install..."
+          sh("./make install")
+          puts "🔧 Trying ./make generate..."
+          sh("./make generate")
+        else
+          puts "🔧 Trying tuist directly..."
+          sh("tuist install")
+          sh("tuist generate --no-open")
+        end
+      rescue => e
+        puts "❌ Generation failed: #{e.message}"
+      end
+
+      workspace_files = Dir.glob("*.xcworkspace")
+      puts "🔍 Workspace files found: #{workspace_files}"
+    end
+
+    if workspace_files.empty?
+      UI.user_error!("Cannot generate workspace file. Check tuist setup and plugins.")
+    end
+
+    workspace_path = File.expand_path(workspace_files.first)
+    puts "✅ Using workspace: #{workspace_path}"
+
+    ipa_path = build_app(
+      workspace: workspace_path,
+      scheme: scheme,
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: File.expand_path(OUTPUT_DIR),
+      output_name: IPA_FILENAME,
+      clean: false,
+      silent: false,
+      build_timing_summary: true,
+      disable_package_automatic_updates: true,
+      skip_package_dependencies_resolution: true,
+      skip_package_repository_fetches: true,
+      use_system_scm: true,
+      xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
+              "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
+              "SWIFT_COMPILATION_MODE=incremental -parallelizeTargets " +
+              "ENABLE_PARALLEL_SIGNING=YES DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES " +
+              "FRAMEWORK_SEARCH_PATHS='$(inherited)' LIBRARY_SEARCH_PATHS='$(inherited)' " +
+              "-allowProvisioningUpdates",
+      export_options: {
+        signingStyle: "manual",
+        uploadBitcode: false,
+        teamID: TEAM_ID,
+        provisioningProfiles: {
+          "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
+        }
+      }
+    )
+  end
+  ipa_path
+end
+
 platform :ios do
-
-
+  before_all do
+    unlock_match_keychain
+  end
 
   # 🚀 TestFlight 업로드 (Debug)
   desc "Upload to TestFlight (Debug)"
   lane :QA do
-
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
@@ -36,93 +196,23 @@ platform :ios do
       in_house: false
     )
 
+    apply_build_number(next_build_number)
+
     match(
       type: "appstore",
       readonly: true,
-      git_url: "https://github.com/Roy-wonji/FastlaneMatch.git",
+      git_url: ENV.fetch("MATCH_GIT_URL", "git@github.com:Roy-wonji/FastlaneMatch.git"),
       storage_mode: "git",
-      app_identifier: ["io.DDD.Attendance"]
+      app_identifier: [BUNDLE_ID],
+      keychain_name: MATCH_KEYCHAIN_NAME,
+      keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"]
     )
 
-    # Change to project root directory
-    Dir.chdir("..") do
-      puts "📁 Current directory: #{Dir.pwd}"
-      puts "📋 Available files: #{Dir.entries('.')}"
-
-      # Try to generate workspace if missing
-      workspace_files = Dir.glob("*.xcworkspace")
-      if workspace_files.empty?
-        puts "🔧 No workspace found, trying to generate..."
-
-        # Check if tuist is available
-        tuist_available = system("which tuist > /dev/null 2>&1")
-        puts "Tuist available: #{tuist_available}"
-
-        unless tuist_available
-          puts "🔧 Installing tuist with brew..."
-          sh("brew install tuist")
-        end
-
-        begin
-          if File.exist?("make")
-            puts "🔧 Trying ./make install..."
-            sh("./make install")
-            puts "🔧 Trying ./make generate..."
-            sh("./make generate")
-          else
-            puts "🔧 Trying tuist directly..."
-            sh("tuist install")
-            sh("tuist generate --no-open")
-          end
-        rescue => e
-          puts "❌ Generation failed: #{e.message}"
-        end
-
-        workspace_files = Dir.glob("*.xcworkspace")
-        puts "🔍 Workspace files found: #{workspace_files}"
-      end
-
-      if workspace_files.empty?
-        puts "❌ Still no workspace found!"
-        puts "🔍 All files in directory:"
-        Dir.entries('.').each { |f| puts "  #{f}" }
-        UI.user_error!("Cannot generate workspace file. Check tuist setup and plugins.")
-      end
-
-      workspace_name = workspace_files.first
-      workspace_path = File.expand_path(workspace_name)
-      puts "✅ Using workspace: #{workspace_name}"
-      puts "✅ Full workspace path: #{workspace_path}"
-
-      ipa_path = build_app(
-        workspace: workspace_path,
-        scheme: "DDDAttendance-Stage",
-        configuration: "Release",
-        export_method: "app-store",
-        output_directory: File.expand_path("../#{OUTPUT_DIR}"),
-        output_name: IPA_FILENAME,
-        clean: false,
-        silent: true,
-        xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
-                "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
-                "SWIFT_COMPILATION_MODE=wholemodule -parallelizeTargets " +
-                "ENABLE_PARALLEL_SIGNING=YES DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES " +
-                "FRAMEWORK_SEARCH_PATHS='$(inherited)' LIBRARY_SEARCH_PATHS='$(inherited)' " +
-                "-allowProvisioningUpdates -quiet",
-        export_options: {
-          signingStyle: "manual",
-          uploadBitcode: false,
-          teamID: TEAM_ID,
-          provisioningProfiles: {
-            "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
-          }
-        }
-      )
-    end
+    ipa_path = build_ipa(STAGE_SCHEME)
 
     upload_to_testflight(
       ipa: ipa_path,
-      changelog: "변경사항",
+      changelog: ENV.fetch("RELEASE_NOTES", "변경사항"),
       groups: ["DDD", "ddd"],
       beta_app_description: "DDD 출석 앱입니다.",
       notify_external_testers: true,
@@ -144,63 +234,20 @@ platform :ios do
         in_house: false
       )
 
-      # 자동으로 빌드 번호 증가
-      current_build_number = latest_testflight_build_number(
-        app_identifier: BUNDLE_ID,
-        platform: "ios"
-      )
-      new_build_number = current_build_number + 1
-      puts "🔢 Current build number: #{current_build_number}"
-      puts "🔢 New build number: #{new_build_number}"
+      new_build_number = next_build_number
+      apply_build_number(new_build_number)
 
-      # Extension+String.swift 파일에서 빌드 번호 업데이트
-      extension_file_path = "../Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
-      content = File.read(extension_file_path)
-
-      # 빌드 번호 라인 수정
-      updated_content = content.gsub(/public static func appBuildVersion\(buildVersion: String = "\d+"\) -> String \{/,
-                                   "public static func appBuildVersion(buildVersion: String = \"#{new_build_number}\") -> String {")
-
-      File.write(extension_file_path, updated_content)
-      puts "✅ Updated build number to #{new_build_number} in Extension+String.swift"
-
-      # Tuist 프로젝트 재생성
-      Dir.chdir("..") do
-        puts "🔧 Regenerating Tuist workspace with new build number..."
-        sh("tuist generate --no-open")
-        puts "✅ Tuist workspace regenerated"
-      end
       match(
         type: "appstore",
         readonly: true,
-        git_url: "https://github.com/Roy-wonji/FastlaneMatch.git",
+        git_url: ENV.fetch("MATCH_GIT_URL", "git@github.com:Roy-wonji/FastlaneMatch.git"),
         storage_mode: "git",
-        app_identifier: ["io.DDD.Attendance"]
+        app_identifier: [BUNDLE_ID],
+        keychain_name: MATCH_KEYCHAIN_NAME,
+        keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"]
       )
 
-      ipa_path = build_app(
-        workspace: "#{APP_RELEASE_NAME}.xcworkspace",
-        scheme: "DDDAttendance-Prod",
-        configuration: "Release",
-        output_directory: OUTPUT_DIR,
-        output_name: IPA_FILENAME,
-        export_method: "app-store",
-        clean: true,
-        silent: false,
-        verbose: true,
-        xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
-                "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
-                "SWIFT_COMPILATION_MODE=wholemodule " +
-                "-allowProvisioningUpdates",
-        export_options: {
-          signingStyle: "manual",
-          uploadBitcode: false,
-          teamID: TEAM_ID,
-          provisioningProfiles: {
-            "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
-          }
-        }
-      )
+      ipa_path = build_ipa(PROD_SCHEME)
 
       # clean_symbols_from_ipa(ipa_path: ipa_path)
 
@@ -226,11 +273,12 @@ platform :ios do
       UI.important("   1. https://appstoreconnect.apple.com 접속")
       UI.important("   2. DDD Attendance 앱 선택")
       UI.important("   3. 버전 #{options[:version]} 심사 상태 확인")
+      UI.important("   4. 빌드 번호: #{new_build_number}")
       UI.important("")
       UI.success("✅ 빌드, 업로드, 심사 요청이 모두 성공적으로 완료되었습니다!")
       UI.success("🚀 이제 Apple의 심사를 기다리기만 하면 됩니다!")
     else
-      UI.user_error!("⚠️ version 옵션을 지정해주세요: fastlane submit version:'1.0.0'")
+      UI.user_error!("⚠️ version 옵션을 지정해주세요: fastlane release version:'1.0.0'")
     end
   end
 
@@ -277,7 +325,6 @@ platform :ios do
       UI.user_error!("⚠️ version 옵션을 지정해주세요: fastlane submit_for_review version:'1.0.0'")
     end
   end
-
 end
 
 # 🤖 TDD 자동화 CI 레인
