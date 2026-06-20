@@ -51,32 +51,10 @@ def unlock_match_keychain
   )
 end
 
-# 빌드 번호 자동 증가 — TestFlight/App Store 최신 빌드 번호 + 1
+# 빌드 번호 = 날짜형 YYMMDDHHMM (항상 증가, App Store 조회 불필요)
 def next_build_number
-  begin
-    current_build_number = latest_testflight_build_number(
-      app_identifier: BUNDLE_ID,
-      platform: "ios"
-    )
-    puts "📱 TestFlight 최신 빌드 번호: #{current_build_number}"
-  rescue => e
-    puts "⚠️ TestFlight 빌드 번호 조회 실패, 기본값 1 사용: #{e.message}"
-    current_build_number = 1
-  end
-
-  begin
-    live_build_number = app_store_build_number(
-      app_identifier: BUNDLE_ID,
-      platform: "ios"
-    )
-    puts "🏪 App Store 라이브 빌드 번호: #{live_build_number}"
-    current_build_number = [current_build_number, live_build_number].max
-  rescue => e
-    puts "⚠️ App Store 빌드 번호 조회 실패: #{e.message}"
-  end
-
-  new_build_number = current_build_number + 1
-  puts "🔢 새로운 빌드 번호: #{new_build_number}"
+  new_build_number = Time.now.strftime("%y%m%d%H%M")
+  puts "🔢 새로운 빌드 번호(날짜형): #{new_build_number}"
   new_build_number
 end
 
