@@ -40,17 +40,19 @@ workflows:
           chmod +x ./make
           mise exec "tuist@${TUIST_VERSION}" -- bash -c './make clean && ./make install && ./make generate'
           ls -d *.xcworkspace
-      - name: 릴리스 노트 수집 ([v버전] + 요약 파일)
+      - name: 릴리스 노트 수집 ([v버전] 코드 추출 + ko metadata 본문)
         script: |
+          # 버전은 코드(appVersion)에서 추출, 본문은 metadata/ko/release_notes.txt (기존 [v...] 줄은 제거)
           EXT="Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
           VER=$(grep -oE 'appVersion\(version: String = "[0-9.]+"' "$EXT" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
-          BODY=$(cat fastlane/release_notes.txt 2>/dev/null)
+          BODY=$(sed -E '/^\[v ?[0-9.]+\]/d' fastlane/metadata/ko/release_notes.txt 2>/dev/null | sed '/./,$!d')
           [ -z "$BODY" ] && BODY="- 버그 수정"
           NOTES="[v${VER}]
           ${BODY}"
           echo "RELEASE_NOTES<<__EOF__" >> "$CM_ENV"
           echo "$NOTES" >> "$CM_ENV"
           echo "__EOF__" >> "$CM_ENV"
+          echo "릴리스 노트(ko):"; echo "$NOTES"
           echo "릴리스 노트:"; echo "$NOTES"
       - name: Discord 빌드 시작 알림
         script: |
