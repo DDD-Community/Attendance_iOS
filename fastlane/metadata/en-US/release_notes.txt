@@ -1,4 +1,8 @@
-[v 1.0.7]
-- Bug fixes and performance improvements
-- UI Improvements
+[v 1.0.8]
+[New Features]
+- Added the final MVP team voting feature
+- Added the ability to start and end votes
 
+[Improvements]
+- Improved app stability and usability
+- Other bug fixes

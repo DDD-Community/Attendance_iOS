@@ -58,6 +58,15 @@ def next_build_number
   new_build_number
 end
 
+# 마케팅 버전(version)을 Extension+String.swift 의 appVersion 기본값에서 추출
+def current_app_version
+  extension_file_path = "../Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
+  content = File.read(extension_file_path)
+  if content =~ /public static func appVersion\(version: String = "([0-9.]+)"\)/
+    Regexp.last_match(1)
+  end
+end
+
 # Extension+String.swift 의 빌드 번호 갱신 (tuist generate 시 CFBundleVersion 으로 반영)
 def apply_build_number(new_build_number)
   extension_file_path = "../Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
@@ -213,61 +222,64 @@ platform :ios do
   # 🚀 App Store 배포
   desc "Submit to App Store"
   lane :release do |options|
-    if options[:version]
-      app_store_connect_api_key(
-        key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
-        issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-        key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
-        is_key_content_base64: true,
-        in_house: false
-      )
-
-      new_build_number = next_build_number
-      apply_build_number(new_build_number)
-
-      match(
-        type: "appstore",
-        readonly: true,
-        git_url: ENV.fetch("MATCH_GIT_URL", "git@github.com:Roy-wonji/FastlaneMatch.git"),
-        storage_mode: "git",
-        app_identifier: [BUNDLE_ID],
-        keychain_name: MATCH_KEYCHAIN_NAME,
-        keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"]
-      )
-
-      ipa_path = build_ipa(PROD_SCHEME)
-
-      # clean_symbols_from_ipa(ipa_path: ipa_path)
-
-      # 업로드 후 자동으로 심사 요청
-      upload_to_app_store(
-        app_version: options[:version],
-        username: ENV["APPLE_ID"],
-        team_id: "KL4Y9PB9B8",
-        ipa: ipa_path,
-        skip_metadata: false,
-        metadata_path: "./fastlane/metadata",
-        skip_screenshots: true,
-        force: true,
-        submit_for_review: true,
-        automatic_release: false,
-        precheck_include_in_app_purchases: false,
-        reject_if_possible: true
-      )
-
-      UI.success("🎉 앱 업로드 및 심사 요청 완료!")
-      UI.important("")
-      UI.important("📱 심사 진행 상황 확인:")
-      UI.important("   1. https://appstoreconnect.apple.com 접속")
-      UI.important("   2. DDD Attendance 앱 선택")
-      UI.important("   3. 버전 #{options[:version]} 심사 상태 확인")
-      UI.important("   4. 빌드 번호: #{new_build_number}")
-      UI.important("")
-      UI.success("✅ 빌드, 업로드, 심사 요청이 모두 성공적으로 완료되었습니다!")
-      UI.success("🚀 이제 Apple의 심사를 기다리기만 하면 됩니다!")
-    else
-      UI.user_error!("⚠️ version 옵션을 지정해주세요: fastlane release version:'1.0.0'")
+    # version 옵션이 없으면 Extension+String.swift 의 appVersion 에서 자동 추출
+    version = options[:version] || current_app_version
+    if version.nil? || version.empty?
+      UI.user_error!("⚠️ 버전을 확인할 수 없어요. fastlane release version:'1.0.0' 처럼 지정하거나 Extension+String.swift 의 appVersion 을 확인해주세요.")
     end
+    puts "📦 릴리스 버전: #{version}"
+
+    app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: true,
+      in_house: false
+    )
+
+    new_build_number = next_build_number
+    apply_build_number(new_build_number)
+
+    match(
+      type: "appstore",
+      readonly: true,
+      git_url: ENV.fetch("MATCH_GIT_URL", "git@github.com:Roy-wonji/FastlaneMatch.git"),
+      storage_mode: "git",
+      app_identifier: [BUNDLE_ID],
+      keychain_name: MATCH_KEYCHAIN_NAME,
+      keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"]
+    )
+
+    ipa_path = build_ipa(PROD_SCHEME)
+
+    # clean_symbols_from_ipa(ipa_path: ipa_path)
+
+    # 업로드 후 자동으로 심사 요청
+    upload_to_app_store(
+      app_version: version,
+      username: ENV["APPLE_ID"],
+      team_id: "KL4Y9PB9B8",
+      ipa: ipa_path,
+      skip_metadata: false,
+      metadata_path: "./fastlane/metadata",
+      skip_screenshots: true,
+      force: true,
+      submit_for_review: true,
+      automatic_release: false,
+      precheck_include_in_app_purchases: false,
+      reject_if_possible: true
+    )
+
+    UI.success("🎉 앱 업로드 및 심사 요청 완료!")
+    UI.important("")
+    UI.important("📱 심사 진행 상황 확인:")
+    UI.important("   1. https://appstoreconnect.apple.com 접속")
+    UI.important("   2. DDD Attendance 앱 선택")
+    UI.important("   3. 버전 #{version} 심사 상태 확인")
+    UI.important("   4. 빌드 번호: #{new_build_number}")
+    UI.important("")
+    UI.success("✅ 빌드, 업로드, 심사 요청이 모두 성공적으로 완료되었습니다!")
+    UI.success("🚀 이제 Apple의 심사를 기다리기만 하면 됩니다!")
   end
 
   # 🚀 이미 업로드된 버전을 심사에 제출
