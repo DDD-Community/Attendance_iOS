@@ -165,14 +165,18 @@ struct MemberMainView: View {
           }
 
         HomeDropdownMenu(
-          entries: MemberMain.HomeTab.allCases.map { tab in
-            HomeDropdownMenu.Entry(
-              id: tab.rawValue,
-              title: tab.title,
-              isSelected: tab == store.selectedHomeTab,
-              showsNewBadge: tab == .vote
-            )
-          },
+          entries: MemberMain.HomeTab.allCases
+            .filter { tab in
+              tab != .vote || store.isVoteMenuAvailable
+            }
+            .map { tab in
+              HomeDropdownMenu.Entry(
+                id: tab.rawValue,
+                title: tab.title,
+                isSelected: tab == store.selectedHomeTab,
+                showsNewBadge: tab == .vote
+              )
+            },
           onSelect: { entry in
             if let tab = MemberMain.HomeTab(rawValue: entry.id) {
               withAnimation {
