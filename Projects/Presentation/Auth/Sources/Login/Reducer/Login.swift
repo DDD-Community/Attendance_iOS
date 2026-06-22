@@ -27,6 +27,7 @@ public struct Login {
 
     @Shared var userSession: UserSession
     @Shared(.appStorage("staffRole")) var staffRole: Staff?
+    @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
     var loginEntity: LoginEntity?
     var currentSocialType: SocialType?
     @Presents public var customAlert: CustomAlertState<CustomAlertAction>?
@@ -208,6 +209,8 @@ extension Login {
             state.$userSession.withLock { $0.userRole = role }
 
             if loginEntity.isNewUser  {
+              // 신규 가입: editGeneration 잔재(true)로 인한 editProfile 오분기 방지 → 회원가입(signUp) 강제
+              state.$editGeneration.withLock { $0 = false }
               return .send(.view(.showPolicyPopUp))
             } else if role == .manager {
               return .send(.navigation(.presentStaffMain))
