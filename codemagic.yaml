@@ -75,9 +75,10 @@ workflows:
           python3 - <<'PY'
           import os, json, urllib.request
           msg = "@hoker9494 @loveyourfamily\n"
-          msg += f"✅ **DDDAttendance** TestFlight 배포 완료 · #{os.environ.get('BUILD_NUMBER','')}"
+          msg += f"✅ **attendance-iOS** TestFlight 배포 완료 · #{os.environ.get('BUILD_NUMBER','')}"
           notes = os.environ.get('RELEASE_NOTES','').strip()
           if notes: msg += "\n" + notes
+          msg += "\n🔗 TestFlight: https://testflight.apple.com/join/WbTjTcmF"
           url = os.environ.get('CM_BUILD_URL','')
           if url: msg += "\n" + url
           wh = os.environ.get('DISCORD_WEBHOOK','')
