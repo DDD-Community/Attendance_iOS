@@ -203,11 +203,13 @@ extension Login {
         switch result {
           case .success(let loginEntity):
             state.loginEntity = loginEntity
-            state.$staffRole.withLock { $0 = loginEntity.role}
+            let role = loginEntity.role ?? .member
+            state.$staffRole.withLock { $0 = loginEntity.isNewUser ? nil : role }
+            state.$userSession.withLock { $0.userRole = role }
 
             if loginEntity.isNewUser  {
               return .send(.view(.showPolicyPopUp))
-            } else if state.userSession.userRole == .manager {
+            } else if role == .manager {
               return .send(.navigation(.presentStaffMain))
             } else  {
               return .send(.navigation(.presentMemberMain))

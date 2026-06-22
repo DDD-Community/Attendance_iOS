@@ -37,6 +37,7 @@ public struct MemberMain {
 
     var selectedHomeTab: HomeTab = .attendance
     var isExpandedDropDown: Bool = false
+    var isVoteMenuAvailable: Bool = false
 
     // 투표 탭
     var vote: MemberVote.State = .init()
@@ -82,12 +83,14 @@ public struct MemberMain {
     case fetchCurrentUser
     case fetchAttendances
     case fetchSchedule
+    case fetchActiveVote
   }
 
   public enum InnerAction: Equatable {
     case onFetchUserResponse(Result<ProfileEntity, ProfileError>)
     case onFetchAttendanceSummaryResponse(Result<AttendanceSummaryResponse, AttendanceError>)
     case onFetchSchedulesResponse(Result<[ScheduleModel], ScheduleError>)
+    case onFetchActiveVoteResponse(Result<ActiveVote, VoteError>)
     case onResume
   }
 
@@ -105,6 +108,7 @@ public struct MemberMain {
   @Dependency(AttendanceUseCaseImpl.self) var attendanceUseCase
   @Dependency(\.fetchMyAttendancesUseCase) var fetchMyAttendancesUseCase
   @Dependency(\.fetchMySchedulesUseCase) var fetchMySchedulesUseCase
+  @Dependency(\.voteUseCase) var voteUseCase
 
   public var body: some Reducer<State, Action> {
     BindingReducer()
@@ -134,6 +138,14 @@ public struct MemberMain {
         state.selectedHomeTab = .attendance
         state.isExpandedDropDown = false
         state.vote = .init()
+        return .none
+
+      case .vote(.inner(.activeVoteResponse(.failure))):
+        state.isVoteMenuAvailable = false
+        if state.selectedHomeTab == .vote {
+          state.selectedHomeTab = .attendance
+        }
+        state.isExpandedDropDown = false
         return .none
 
       case .vote:
@@ -175,7 +187,8 @@ extension MemberMain {
 
       return .merge(
         .run { await $0(.async(.fetchCurrentUser)) },
-        .run { await $0(.async(.fetchSchedule)) }
+        .run { await $0(.async(.fetchSchedule)) },
+        .run { await $0(.async(.fetchActiveVote)) }
       )
 
     case .didTapAbesentButton:
@@ -195,6 +208,10 @@ extension MemberMain {
       return .none
 
     case let .selectHomeTab(tab):
+      guard tab != .vote || state.isVoteMenuAvailable else {
+        state.isExpandedDropDown = false
+        return .none
+      }
       state.selectedHomeTab = tab
       state.isExpandedDropDown = false
       return .none
@@ -256,10 +273,28 @@ extension MemberMain {
         return .none
       }
 
+    case let .onFetchActiveVoteResponse(result):
+      switch result {
+      case .success:
+        state.isVoteMenuAvailable = true
+        return .none
+
+      case let .failure(error):
+        state.isVoteMenuAvailable = false
+        if state.selectedHomeTab == .vote {
+          state.selectedHomeTab = .attendance
+          state.vote = .init()
+        }
+        state.isExpandedDropDown = false
+        #logError("Failed Fetch Active Vote", error)
+        return .none
+      }
+
     case .onResume:
       return .concatenate(
         .run { await $0(.async(.fetchCurrentUser)) },
-        .run { await $0(.async(.fetchSchedule)) }
+        .run { await $0(.async(.fetchSchedule)) },
+        .run { await $0(.async(.fetchActiveVote)) }
       )
     }
   }
@@ -317,6 +352,15 @@ extension MemberMain {
           let error = ScheduleError.from(error)
           await send(.inner(.onFetchSchedulesResponse(.failure(error))))
         }
+      }
+
+    case .fetchActiveVote:
+      return .run { send in
+        let result = await Result {
+          try await voteUseCase.fetchActiveVote()
+        }
+        .mapError(VoteError.from)
+        await send(.inner(.onFetchActiveVoteResponse(result)))
       }
     }
   }
