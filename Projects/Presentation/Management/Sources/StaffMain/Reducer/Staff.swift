@@ -58,6 +58,9 @@ public struct Staff {
   public enum View: Equatable {
     case presentQrcode
     case closeModal
+    case toggleDropDown
+    case closeDropDown
+    case selectDropDownItem(SelectDropDownItem)
   }
   
   // MARK: - 비동기 처리 액션
@@ -137,11 +140,25 @@ extension Staff {
   ) -> Effect<Action> {
     switch action {
     case .presentQrcode:
+      state.isExpandedDropDown = false
       state.destination = .qrcode(.init())
       return .none
 
     case .closeModal:
       state.destination = nil
+      return .none
+
+    case .toggleDropDown:
+      state.isExpandedDropDown.toggle()
+      return .none
+
+    case .closeDropDown:
+      state.isExpandedDropDown = false
+      return .none
+
+    case let .selectDropDownItem(item):
+      state.selectDropDownItem = item
+      state.isExpandedDropDown = false
       return .none
     }
   }
@@ -171,8 +188,8 @@ extension Staff {
       }
 
     case .presentManagerProfile:
+      state.isExpandedDropDown = false
       return .none
     }
   }
 }
-

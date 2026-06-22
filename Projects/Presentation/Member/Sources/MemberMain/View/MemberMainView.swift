@@ -16,6 +16,7 @@ import Entity
 @ViewAction(for: MemberMain.self)
 struct MemberMainView: View {
   @Bindable var store: StoreOf<MemberMain>
+  @State private var isDropDownClosing = false
 
   init(store: StoreOf<MemberMain>) {
     self.store = store
@@ -46,6 +47,9 @@ struct MemberMainView: View {
     .overlay {
       dropDownOverlay()
     }
+    .overlay {
+      dropDownInteractionBlocker
+    }
     .customAlert(
       isPresented: store.isPresentAttendanceWarningAlert,
       title: "주의해주세요!",
@@ -75,8 +79,10 @@ struct MemberMainView: View {
   private var navigationBar: some View {
     HStack(spacing: .zero) {
       Button {
-        withAnimation {
-          _ = send(.toggleDropDown)
+        if store.isExpandedDropDown {
+          closeDropDown()
+        } else {
+          openDropDown()
         }
       } label: {
         HStack(spacing: 6) {
@@ -159,9 +165,7 @@ struct MemberMainView: View {
           .fill(Color.black.opacity(0.6))
           .ignoresSafeArea()
           .onTapGesture {
-            withAnimation {
-              _ = send(.toggleDropDown)
-            }
+            closeDropDown()
           }
 
         HomeDropdownMenu(
@@ -176,19 +180,28 @@ struct MemberMainView: View {
                 isSelected: tab == store.selectedHomeTab,
                 showsNewBadge: tab == .vote
               )
-            },
+          },
           onSelect: { entry in
             if let tab = MemberMain.HomeTab(rawValue: entry.id) {
-              withAnimation {
-                send(.selectHomeTab(tab))
-              }
+              closeDropDown(.selectHomeTab(tab))
             }
           }
         )
         .padding(.leading, 24)
         .padding(.top, 52)
       }
+      .transition(.opacity)
       .zIndex(1)
+    }
+  }
+
+  @ViewBuilder
+  private var dropDownInteractionBlocker: some View {
+    if isDropDownClosing {
+      Color.clear
+        .contentShape(Rectangle())
+        .ignoresSafeArea()
+        .zIndex(2)
     }
   }
 
@@ -258,6 +271,26 @@ struct MemberMainView: View {
         )
         .id(schedule.id) // SwiftUI 뷰 재사용 최적화
       }
+    }
+  }
+}
+
+private extension MemberMainView {
+  func openDropDown() {
+    guard !isDropDownClosing else { return }
+    withAnimation(.appQuick) {
+      send(.toggleDropDown)
+    }
+  }
+
+  func closeDropDown(_ action: MemberMain.View = .closeDropDown) {
+    guard store.isExpandedDropDown, !isDropDownClosing else { return }
+    isDropDownClosing = true
+
+    withAnimation(.appQuick) {
+      send(action)
+    } completion: {
+      isDropDownClosing = false
     }
   }
 }

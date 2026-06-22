@@ -75,6 +75,7 @@ public struct MemberMain {
     case didTapAbesentButton
     case didTapDismissAlertButton
     case toggleDropDown
+    case closeDropDown
     case selectHomeTab(HomeTab)
     case didTapVoteBackButton
   }
@@ -205,6 +206,10 @@ extension MemberMain {
 
     case .toggleDropDown:
       state.isExpandedDropDown.toggle()
+      return .none
+
+    case .closeDropDown:
+      state.isExpandedDropDown = false
       return .none
 
     case let .selectHomeTab(tab):
@@ -366,14 +371,16 @@ extension MemberMain {
   }
 
   private func handleNavigationAction(
-    state _: inout State,
+    state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
     case .routeToQRCode:
+      state.isExpandedDropDown = false
       return .none
 
     case .routeToProfile:
+      state.isExpandedDropDown = false
       return .none
     }
   }

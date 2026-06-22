@@ -16,6 +16,7 @@ import SDWebImageSwiftUI
 struct StaffView: View {
   @Bindable var store: StoreOf<Staff>
   @State var isExpanded: Bool = false
+  @State private var isDropDownClosing = false
 
   init(store: StoreOf<Staff>) {
     self.store = store
@@ -41,6 +42,9 @@ struct StaffView: View {
       dropDownView()
     }
     .overlay {
+      dropDownInteractionBlocker
+    }
+    .overlay {
       if shouldShowSkeleton {
         skeletonView
       }
@@ -48,9 +52,7 @@ struct StaffView: View {
     .allowsHitTesting(!shouldShowSkeleton)
     .onTapGesture {
       if store.isExpandedDropDown {
-        withAnimation {
-          store.isExpandedDropDown = false
-        }
+        closeDropDown()
       }
     }
 
@@ -96,8 +98,10 @@ private extension StaffView {
 
       HStack(spacing: .zero) {
         Button {
-          withAnimation {
-            store.isExpandedDropDown.toggle()
+          if store.isExpandedDropDown {
+            closeDropDown()
+          } else {
+            openDropDown()
           }
         } label: {
           HStack {
@@ -176,9 +180,7 @@ private extension StaffView {
         Color.black.opacity(0.6)
           .ignoresSafeArea()
           .onTapGesture {
-            withAnimation {
-              store.isExpandedDropDown = false
-            }
+            closeDropDown()
           }
 
         HomeDropdownMenu(
@@ -192,22 +194,48 @@ private extension StaffView {
           },
           onSelect: { entry in
             if let matched = SelectDropDownItem.allCases.first(where: { $0.rawValue == entry.id }) {
-              store.selectDropDownItem = matched
-            }
-            withAnimation {
-              store.isExpandedDropDown = false
+              closeDropDown(.selectDropDownItem(matched))
             }
           }
         )
         .padding(.leading, 24)
         .padding(.top, 52)
       }
+      .transition(.opacity)
       .zIndex(1)
+    }
+  }
+
+  @ViewBuilder
+  var dropDownInteractionBlocker: some View {
+    if isDropDownClosing {
+      Color.clear
+        .contentShape(Rectangle())
+        .ignoresSafeArea()
+        .zIndex(2)
     }
   }
 }
 
 private extension StaffView {
+  func openDropDown() {
+    guard !isDropDownClosing else { return }
+    withAnimation(.appQuick) {
+      store.send(.view(.toggleDropDown))
+    }
+  }
+
+  func closeDropDown(_ action: Staff.View = .closeDropDown) {
+    guard store.isExpandedDropDown, !isDropDownClosing else { return }
+    isDropDownClosing = true
+
+    withAnimation(.appQuick) {
+      store.send(.view(action))
+    } completion: {
+      isDropDownClosing = false
+    }
+  }
+
   var shouldShowSkeleton: Bool {
     switch store.selectDropDownItem {
     case .attandance:
