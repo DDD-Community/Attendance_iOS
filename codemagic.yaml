@@ -28,6 +28,7 @@ workflows:
           mkdir -p Config fastlane
           cp /tmp/cfg/Config/*.xcconfig Config/
           cp /tmp/cfg/fastlane/.env       fastlane/.env
+          mkdir -p Projects/App/Resources && cp /tmp/cfg/App/GoogleService-Info.plist Projects/App/Resources/GoogleService-Info.plist
           # match 인증서 레포를 SSH 대신 토큰 HTTPS로 clone (Codemagic엔 SSH키 없음)
           echo "MATCH_GIT_URL=https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/Roy-wonji/FastlaneMatch.git" >> "$CM_ENV"
           # 빌드번호는 Fastfile QA 레인이 App Store 최신 빌드+1로 자동 증가시킴
@@ -149,6 +150,7 @@ workflows:
           mkdir -p Config fastlane
           cp /tmp/cfg/Config/*.xcconfig Config/
           cp /tmp/cfg/fastlane/.env       fastlane/.env
+          mkdir -p Projects/App/Resources && cp /tmp/cfg/App/GoogleService-Info.plist Projects/App/Resources/GoogleService-Info.plist
           echo "MATCH_GIT_URL=https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/Roy-wonji/FastlaneMatch.git" >> "$CM_ENV"
           # 릴리스 버전: 태그(v1.2.3)에서 추출, 없으면 appVersion에서 (빌드번호는 Fastfile이 자동 증가)
           EXT="Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
