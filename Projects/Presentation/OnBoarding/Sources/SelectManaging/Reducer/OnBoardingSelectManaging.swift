@@ -31,6 +31,7 @@ public struct SelectManagingReducer {
 
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
     @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
+    @Shared(.appStorage("staffRole")) var staffRole: Staff?
     @Presents var alert: AlertState<AlertAction>?
 
 
@@ -259,6 +260,7 @@ extension SelectManagingReducer {
         switch result {
           case .success(let data):
             state.signUpUser = data
+            state.$staffRole.withLock { $0 = state.userSession.userRole }
 
             return .send(.navigation(.presentManager))
 
@@ -281,6 +283,7 @@ extension SelectManagingReducer {
           case .success(let data):
             state.editProfile = data
             state.$editGeneration.withLock { $0 = false }
+            state.$staffRole.withLock { $0 = state.userSession.userRole }
 
             return .send(.navigation(.presentProfile))
 
