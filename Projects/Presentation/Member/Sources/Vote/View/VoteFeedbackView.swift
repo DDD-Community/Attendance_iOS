@@ -42,29 +42,39 @@ struct VoteFeedbackView: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      ScrollView {
-        VStack(alignment: .leading, spacing: 28) {
-          StepProgressBar(currentStep: 2, totalSteps: 2)
+      ScrollViewReader { proxy in
+        ScrollView {
+          VStack(alignment: .leading, spacing: 28) {
+            StepProgressBar(currentStep: 2, totalSteps: 2)
 
-          headerView
+            headerView
 
-          ForEach(answers.indices, id: \.self) { index in
-            FeedbackQuestionView(
-              index: index,
-              question: answers[index].question,
-              textMinLength: textMinLength,
-              selectedOptionIds: $answers[index].selectedOptionIds,
-              textValue: $answers[index].textValue,
-              boolAnswer: $answers[index].boolAnswer,
-              followUpTexts: $answers[index].followUpTexts
-            )
+            ForEach(answers.indices, id: \.self) { index in
+              FeedbackQuestionView(
+                index: index,
+                question: answers[index].question,
+                textMinLength: textMinLength,
+                selectedOptionIds: $answers[index].selectedOptionIds,
+                textValue: $answers[index].textValue,
+                boolAnswer: $answers[index].boolAnswer,
+                followUpTexts: $answers[index].followUpTexts
+              )
+              .id(index)
+            }
+          }
+          .padding(.horizontal, 24)
+          .padding(.top, 8)
+          .padding(.bottom, 24)
+        }
+        .scrollIndicators(.hidden)
+        // 마지막 문항 선택 시 해당 문항이 시야에서 벗어나지 않도록 다시 보이게 스크롤 (선택 확인 가능)
+        .onChange(of: lastQuestionAnswerID) { _, _ in
+          guard let lastIndex = answers.indices.last else { return }
+          withAnimation(.easeInOut(duration: 0.25)) {
+            proxy.scrollTo(lastIndex, anchor: .bottom)
           }
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 8)
-        .padding(.bottom, 24)
       }
-      .scrollIndicators(.hidden)
 
       submitButton
         .padding(.horizontal, 24)
@@ -156,6 +166,11 @@ struct VoteFeedbackView: View {
       }
     }
     return result
+  }
+
+  private var lastQuestionAnswerID: String {
+    guard let last = answers.last else { return "" }
+    return "\(String(describing: last.boolAnswer))|\(last.selectedOptionIds.sorted().joined(separator: ","))"
   }
 
   private var isSubmitEnabled: Bool {

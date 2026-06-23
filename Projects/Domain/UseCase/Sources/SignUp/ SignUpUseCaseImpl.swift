@@ -1,12 +1,14 @@
 //
-//  SignUpUseCaseImpl.swift
+//     SignUpUseCaseImpl.swift
 //  UseCase
 //
 //  Created by Wonji Suh  on 7/23/25.
 //
 
+import ComposableArchitecture
 import DomainInterface
 import Entity
+import LogMacro
 
 import WeaveDI
 
@@ -22,9 +24,10 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
   @Dependency(\.keychainManager) private var keychainManager
   @Dependency(\.profileUseCase) private var profileUseCase
 
-  public init() { }
+  public init() {}
 
   // MARK: - 회원가입 API
+
   public func registerUser(
     userSession: UserSession
   ) async throws -> SignUpUser {
@@ -44,34 +47,42 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
       invitationCode: userSession.inviteCode
     )
 
+    // 진짜 회원가입(POST /users). 이 단계 실패만 "회원가입 실패"로 처리.
     let signUpUser = try await repository.registerUser(input: input)
 
-    let loginEntity = try await authUseCase.login(
-      provider: userSession.provider,
-      token: userSession.provider == .apple ? userSession.accessToken : userSession.token
-    )
+    // 회원가입 이후 토큰 재발급은 best-effort: 실패해도 회원가입 자체는 성공이므로 에러로 막지 않음.
+    let loginResult = await Result {
+      try await authUseCase.login(
+        provider: userSession.provider,
+        token: userSession.provider == .apple ? userSession.accessToken : userSession.token
+      )
+    }
 
-    keychainManager.save(
-      accessToken: loginEntity.token.accessToken,
-      refreshToken: loginEntity.token.refreshToken
-    )
+    switch loginResult {
+    case let .success(loginEntity):
+      keychainManager.save(
+        accessToken: loginEntity.token.accessToken,
+        refreshToken: loginEntity.token.refreshToken
+      )
+      authUseCase.updateSessionCredential(with: loginEntity.token)
 
-    
-    authUseCase.updateSessionCredential(with: loginEntity.token)
+    case let .failure(error):
+      #logError("회원가입 후 토큰 재발급 실패(회원가입 자체는 성공)", error)
+    }
 
     return signUpUser
   }
 }
 
 extension SignUpUseCaseImpl: DependencyKey {
-  static public var liveValue: SignUpUseCaseInterface = SignUpUseCaseImpl()
-  static public var testValue: SignUpUseCaseInterface = SignUpUseCaseImpl()
-  static public var previewValue: SignUpUseCaseInterface = liveValue
+  public static var liveValue: SignUpUseCaseInterface = SignUpUseCaseImpl()
+  public static var testValue: SignUpUseCaseInterface = SignUpUseCaseImpl()
+  public static var previewValue: SignUpUseCaseInterface = liveValue
 }
 
 public extension DependencyValues {
   var signUpUseCase: SignUpUseCaseInterface {
     get { self[SignUpUseCaseImpl.self] }
-    set { self[SignUpUseCaseImpl.self] = newValue  }
+    set { self[SignUpUseCaseImpl.self] = newValue }
   }
 }
