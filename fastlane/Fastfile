@@ -134,48 +134,34 @@ def build_ipa(scheme)
     workspace_path = File.expand_path(workspace_files.first)
     puts "✅ Using workspace: #{workspace_path}"
 
-    # Xcode 26 + SPM 매크로(swift-syntax) 모듈의 clean-archive flaky 빌드 대응:
-    # 첫 archive에서 매크로 모듈/Clang 스캐너 실패가 나도 동일 DerivedData로 재시도하면 성공한다.
-    build_attempts = 0
-    begin
-      build_attempts += 1
-      ipa_path = build_app(
-        workspace: workspace_path,
-        scheme: scheme,
-        configuration: "Release",
-        export_method: "app-store",
-        output_directory: File.expand_path(OUTPUT_DIR),
-        output_name: IPA_FILENAME,
-        clean: false,
-        silent: false,
-        build_timing_summary: true,
-        disable_package_automatic_updates: true,
-        skip_package_dependencies_resolution: true,
-        use_system_scm: true,
-        xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
-                "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
-                "ONLY_ACTIVE_ARCH=YES " +
-                "SWIFT_COMPILATION_MODE=wholemodule " +
-                "DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES " +
-                "FRAMEWORK_SEARCH_PATHS='$(inherited)' LIBRARY_SEARCH_PATHS='$(inherited)' " +
-                "-allowProvisioningUpdates",
-        export_options: {
-          signingStyle: "manual",
-          uploadBitcode: false,
-          teamID: TEAM_ID,
-          provisioningProfiles: {
-            "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
-          }
+    ipa_path = build_app(
+      workspace: workspace_path,
+      scheme: scheme,
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: File.expand_path(OUTPUT_DIR),
+      output_name: IPA_FILENAME,
+      clean: false,
+      silent: false,
+      build_timing_summary: true,
+      disable_package_automatic_updates: true,
+      skip_package_dependencies_resolution: true,
+      use_system_scm: true,
+      xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
+              "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
+              "SWIFT_COMPILATION_MODE=incremental -parallelizeTargets " +
+              "ENABLE_PARALLEL_SIGNING=YES DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES " +
+              "FRAMEWORK_SEARCH_PATHS='$(inherited)' LIBRARY_SEARCH_PATHS='$(inherited)' " +
+              "-allowProvisioningUpdates",
+      export_options: {
+        signingStyle: "manual",
+        uploadBitcode: false,
+        teamID: TEAM_ID,
+        provisioningProfiles: {
+          "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
         }
-      )
-    rescue => e
-      if build_attempts < 3
-        UI.important("⚠️ archive 실패 (#{build_attempts}/3) — 동일 DerivedData로 재시도합니다")
-        retry
-      else
-        raise e
-      end
-    end
+      }
+    )
   end
   ipa_path
 end
