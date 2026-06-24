@@ -49,7 +49,9 @@ let packageSettings = PackageSettings(
       // Xcode 26 explicit modules의 매크로(CasePathsMacrosSupport) Clang 스캐너 레이스 방지.
       // 모든 SPM 의존성 타깃에 적용 (xcargs로는 swift-navigation 등 외부 패키지에 전파 안 됨).
       "SWIFT_ENABLE_EXPLICIT_MODULES": "NO",
-      "_EXPERIMENTAL_SWIFT_EXPLICIT_MODULES": "NO"
+      "_EXPERIMENTAL_SWIFT_EXPLICIT_MODULES": "NO",
+      // 매크로 지원 모듈(CasePathsMacrosSupport)의 modulemap이 -Swift.h를 참조하므로 헤더 생성 강제
+      "SWIFT_INSTALL_OBJC_HEADER": "YES"
     ],
     configurations: [
       .debug(name: "Debug"),
