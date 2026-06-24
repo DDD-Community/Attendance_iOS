@@ -149,6 +149,7 @@ def build_ipa(scheme)
       use_system_scm: true,
       xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
               "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
+              "SWIFT_ENABLE_EXPLICIT_MODULES=NO SWIFT_INSTALL_OBJC_HEADER=YES " +
               "SWIFT_COMPILATION_MODE=incremental -parallelizeTargets " +
               "ENABLE_PARALLEL_SIGNING=YES DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES " +
               "FRAMEWORK_SEARCH_PATHS='$(inherited)' LIBRARY_SEARCH_PATHS='$(inherited)' " +
