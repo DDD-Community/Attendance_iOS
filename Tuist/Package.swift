@@ -43,23 +43,9 @@ let packageSettings = PackageSettings(
     "GoogleSignIn": .staticFramework,
     "GoogleSignInSwift": .staticFramework,
     "GTMSessionFetcher": .staticFramework
-  ],
-  baseSettings: .settings(
-    base: [
-      // Xcode 26 explicit modules의 매크로(CasePathsMacrosSupport) Clang 스캐너 레이스 방지.
-      // 모든 SPM 의존성 타깃에 적용 (xcargs로는 swift-navigation 등 외부 패키지에 전파 안 됨).
-      "SWIFT_ENABLE_EXPLICIT_MODULES": "NO",
-      "_EXPERIMENTAL_SWIFT_EXPLICIT_MODULES": "NO",
-      // 매크로 지원 모듈(CasePathsMacrosSupport)의 modulemap이 -Swift.h를 참조하므로 헤더 생성 강제
-      "SWIFT_INSTALL_OBJC_HEADER": "YES"
-    ],
-    configurations: [
-      .debug(name: "Debug"),
-      .debug(name: "Stage"),
-      .release(name: "Release"),
-      .release(name: "Prod")
-    ]
-  )
+  ]
+  // Picke-iOS처럼 baseSettings 미지정 — SPM 패키지에 Prod/Stage 커스텀 config를 만들지 않아야
+  // Prod scheme archive 시 매크로(CasePathsMacrosSupport) 빌드가 정상 동작한다.
 )
 #endif
 let package = Package(
