@@ -6,14 +6,6 @@
 
 let packageSettings = PackageSettings(
   productTypes: [
-    // swift-navigation 매크로 지원 모듈: framework modulemap의 -Swift.h 미생성 문제 회피 → static library
-    "CasePathsMacrosSupport": .staticLibrary,
-    "CasePathsCore": .staticLibrary,
-    "CasePaths": .staticLibrary,
-    "SwiftNavigation": .staticLibrary,
-    "SwiftUINavigation": .staticLibrary,
-    "UIKitNavigation": .staticLibrary,
-
     // Firebase 관련 패키지들을 정적 프레임워크로 설정
     "FirebaseCore": .staticFramework,
     "FirebaseCoreExtension": .staticFramework,
