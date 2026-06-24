@@ -134,34 +134,47 @@ def build_ipa(scheme)
     workspace_path = File.expand_path(workspace_files.first)
     puts "✅ Using workspace: #{workspace_path}"
 
-    ipa_path = build_app(
-      workspace: workspace_path,
-      scheme: scheme,
-      configuration: "Release",
-      export_method: "app-store",
-      output_directory: File.expand_path(OUTPUT_DIR),
-      output_name: IPA_FILENAME,
-      clean: false,
-      silent: false,
-      build_timing_summary: true,
-      disable_package_automatic_updates: true,
-      skip_package_dependencies_resolution: true,
-      use_system_scm: true,
-      xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
-              "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
-              "SWIFT_COMPILATION_MODE=incremental -parallelizeTargets " +
-              "ENABLE_PARALLEL_SIGNING=YES DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES " +
-              "FRAMEWORK_SEARCH_PATHS='$(inherited)' LIBRARY_SEARCH_PATHS='$(inherited)' " +
-              "-allowProvisioningUpdates",
-      export_options: {
-        signingStyle: "manual",
-        uploadBitcode: false,
-        teamID: TEAM_ID,
-        provisioningProfiles: {
-          "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
+    # Xcode 26 + pointfree 매크로(CasePathsMacrosSupport)의 clean-archive 레이스:
+    # 1차에서 매크로 지원 프레임워크가 생성되고, 동일 DerivedData로 재시도하면 2차부터 통과한다.
+    build_attempts = 0
+    begin
+      build_attempts += 1
+      ipa_path = build_app(
+        workspace: workspace_path,
+        scheme: scheme,
+        configuration: "Release",
+        export_method: "app-store",
+        output_directory: File.expand_path(OUTPUT_DIR),
+        output_name: IPA_FILENAME,
+        clean: false,
+        silent: false,
+        build_timing_summary: true,
+        disable_package_automatic_updates: true,
+        skip_package_dependencies_resolution: true,
+        use_system_scm: true,
+        xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
+                "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
+                "SWIFT_COMPILATION_MODE=incremental -parallelizeTargets " +
+                "ENABLE_PARALLEL_SIGNING=YES DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES " +
+                "FRAMEWORK_SEARCH_PATHS='$(inherited)' LIBRARY_SEARCH_PATHS='$(inherited)' " +
+                "-allowProvisioningUpdates",
+        export_options: {
+          signingStyle: "manual",
+          uploadBitcode: false,
+          teamID: TEAM_ID,
+          provisioningProfiles: {
+            "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
+          }
         }
-      }
-    )
+      )
+    rescue => e
+      if build_attempts < 5
+        UI.important("⚠️ archive 실패 (#{build_attempts}/5) — 매크로 워밍업 후 동일 DerivedData로 재시도")
+        retry
+      else
+        raise e
+      end
+    end
   end
   ipa_path
 end
