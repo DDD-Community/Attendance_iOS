@@ -7,13 +7,14 @@ workflows:
         - $HOME/Library/Caches/org.swift.swiftpm
         - $HOME/.cache/tuist
         - $CM_BUILD_DIR/Tuist/.build
+        - $HOME/Library/Developer/Xcode/DerivedData
     instance_type: mac_mini_m2
     max_build_duration: 90
     environment:
       xcode: "26.3"
       vars:
         CONFIG_REPO: "Roy-wonji/Attendance-iOS-Config"
-        TUIST_VERSION: "4.154.0"
+        TUIST_VERSION: "4.180.0"
       groups:
         - attendance   # Codemagic에 CONFIG_REPO_TOKEN, DISCORD_WEBHOOK 등록
     triggering:
@@ -42,10 +43,9 @@ workflows:
           curl -fsSL https://mise.run | sh
           export PATH="$HOME/.local/bin:$PATH"
           eval "$(mise activate bash)"
-          rm -rf ~/Library/Developer/Xcode/DerivedData 2>/dev/null || true
           mise install "tuist@${TUIST_VERSION}"
           chmod +x ./make
-          mise exec "tuist@${TUIST_VERSION}" -- bash -c 'tuist clean && ./make install && ./make generate'
+          mise exec "tuist@${TUIST_VERSION}" -- bash -c './make install && ./make generate'
           ls -d *.xcworkspace
       - name: 릴리스 노트 수집 ([v버전] 코드 추출 + ko metadata 본문)
         script: |
@@ -106,13 +106,14 @@ workflows:
         - $HOME/Library/Caches/org.swift.swiftpm
         - $HOME/.cache/tuist
         - $CM_BUILD_DIR/Tuist/.build
+        - $HOME/Library/Developer/Xcode/DerivedData
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
       xcode: "26.3"
       vars:
         CONFIG_REPO: "Roy-wonji/Attendance-iOS-Config"
-        TUIST_VERSION: "4.154.0"
+        TUIST_VERSION: "4.180.0"
       groups:
         - attendance
     triggering:
@@ -129,10 +130,9 @@ workflows:
           curl -fsSL https://mise.run | sh
           export PATH="$HOME/.local/bin:$PATH"
           eval "$(mise activate bash)"
-          rm -rf ~/Library/Developer/Xcode/DerivedData 2>/dev/null || true
           mise install "tuist@${TUIST_VERSION}"
           chmod +x ./make
-          mise exec "tuist@${TUIST_VERSION}" -- bash -c 'tuist clean && ./make install && ./make generate'
+          mise exec "tuist@${TUIST_VERSION}" -- bash -c './make install && ./make generate'
           mise exec "tuist@${TUIST_VERSION}" -- tuist test
 
   deploy-prod:
@@ -143,13 +143,14 @@ workflows:
         - $HOME/Library/Caches/org.swift.swiftpm
         - $HOME/.cache/tuist
         - $CM_BUILD_DIR/Tuist/.build
+        - $HOME/Library/Developer/Xcode/DerivedData
     instance_type: mac_mini_m2
     max_build_duration: 90
     environment:
       xcode: "26.3"
       vars:
         CONFIG_REPO: "Roy-wonji/Attendance-iOS-Config"
-        TUIST_VERSION: "4.154.0"
+        TUIST_VERSION: "4.180.0"
       groups:
         - attendance
     triggering:
@@ -186,10 +187,9 @@ workflows:
           curl -fsSL https://mise.run | sh
           export PATH="$HOME/.local/bin:$PATH"
           eval "$(mise activate bash)"
-          rm -rf ~/Library/Developer/Xcode/DerivedData 2>/dev/null || true
           mise install "tuist@${TUIST_VERSION}"
           chmod +x ./make
-          mise exec "tuist@${TUIST_VERSION}" -- bash -c 'tuist clean && ./make install && ./make generate'
+          mise exec "tuist@${TUIST_VERSION}" -- bash -c './make install && ./make generate'
           ls -d *.xcworkspace
       - name: Discord 빌드 시작 알림
         script: |
