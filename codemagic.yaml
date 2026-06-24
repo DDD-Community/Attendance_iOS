@@ -14,7 +14,7 @@ workflows:
       xcode: "26.3"
       vars:
         CONFIG_REPO: "Roy-wonji/Attendance-iOS-Config"
-        TUIST_VERSION: "4.180.0"
+        TUIST_VERSION: "4.200.0"
       groups:
         - attendance   # Codemagic에 CONFIG_REPO_TOKEN, DISCORD_WEBHOOK 등록
     triggering:
@@ -113,7 +113,7 @@ workflows:
       xcode: "26.3"
       vars:
         CONFIG_REPO: "Roy-wonji/Attendance-iOS-Config"
-        TUIST_VERSION: "4.180.0"
+        TUIST_VERSION: "4.200.0"
       groups:
         - attendance
     triggering:
@@ -150,7 +150,7 @@ workflows:
       xcode: "26.3"
       vars:
         CONFIG_REPO: "Roy-wonji/Attendance-iOS-Config"
-        TUIST_VERSION: "4.180.0"
+        TUIST_VERSION: "4.200.0"
       groups:
         - attendance
     triggering:
