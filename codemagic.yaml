@@ -7,7 +7,6 @@ workflows:
         - $HOME/Library/Caches/org.swift.swiftpm
         - $HOME/.cache/tuist
         - $CM_BUILD_DIR/Tuist/.build
-        - $HOME/Library/Developer/Xcode/DerivedData
     instance_type: mac_mini_m2
     max_build_duration: 90
     environment:
@@ -106,7 +105,6 @@ workflows:
         - $HOME/Library/Caches/org.swift.swiftpm
         - $HOME/.cache/tuist
         - $CM_BUILD_DIR/Tuist/.build
-        - $HOME/Library/Developer/Xcode/DerivedData
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
@@ -143,7 +141,6 @@ workflows:
         - $HOME/Library/Caches/org.swift.swiftpm
         - $HOME/.cache/tuist
         - $CM_BUILD_DIR/Tuist/.build
-        - $HOME/Library/Developer/Xcode/DerivedData
     instance_type: mac_mini_m2
     max_build_duration: 90
     environment:
