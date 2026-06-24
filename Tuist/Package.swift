@@ -45,6 +45,12 @@ let packageSettings = PackageSettings(
     "GTMSessionFetcher": .staticFramework
   ],
   baseSettings: .settings(
+    base: [
+      // Xcode 26 explicit modules의 매크로(CasePathsMacrosSupport) Clang 스캐너 레이스 방지.
+      // 모든 SPM 의존성 타깃에 적용 (xcargs로는 swift-navigation 등 외부 패키지에 전파 안 됨).
+      "SWIFT_ENABLE_EXPLICIT_MODULES": "NO",
+      "_EXPERIMENTAL_SWIFT_EXPLICIT_MODULES": "NO"
+    ],
     configurations: [
       .debug(name: "Debug"),
       .debug(name: "Stage"),
