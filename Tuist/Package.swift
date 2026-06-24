@@ -43,9 +43,15 @@ let packageSettings = PackageSettings(
     "GoogleSignIn": .staticFramework,
     "GoogleSignInSwift": .staticFramework,
     "GTMSessionFetcher": .staticFramework
-  ]
-  // Picke-iOS처럼 baseSettings 미지정 — SPM 패키지에 Prod/Stage 커스텀 config를 만들지 않아야
-  // Prod scheme archive 시 매크로(CasePathsMacrosSupport) 빌드가 정상 동작한다.
+  ],
+  baseSettings: .settings(
+    configurations: [
+      .debug(name: "Debug"),
+      .debug(name: "Stage"),
+      .release(name: "Release"),
+      .release(name: "Prod")
+    ]
+  )
 )
 #endif
 let package = Package(
