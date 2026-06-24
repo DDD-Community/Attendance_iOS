@@ -44,7 +44,9 @@ workflows:
           eval "$(mise activate bash)"
           mise install "tuist@${TUIST_VERSION}"
           chmod +x ./make
-          mise exec "tuist@${TUIST_VERSION}" -- bash -c './make clean && ./make install && ./make generate'
+          # 캐시에 남은 깨진 매크로 모듈(CasePathsMacrosSupport) 제거 후 클린 재생성
+          rm -rf ~/Library/Developer/Xcode/DerivedData/DDDAttendance-* 2>/dev/null || true
+          mise exec "tuist@${TUIST_VERSION}" -- bash -c 'tuist clean && ./make install && ./make generate'
           ls -d *.xcworkspace
       - name: 릴리스 노트 수집 ([v버전] 코드 추출 + ko metadata 본문)
         script: |
@@ -130,7 +132,8 @@ workflows:
           eval "$(mise activate bash)"
           mise install "tuist@${TUIST_VERSION}"
           chmod +x ./make
-          mise exec "tuist@${TUIST_VERSION}" -- bash -c './make clean && ./make install && ./make generate'
+          rm -rf ~/Library/Developer/Xcode/DerivedData/DDDAttendance-* 2>/dev/null || true
+          mise exec "tuist@${TUIST_VERSION}" -- bash -c 'tuist clean && ./make install && ./make generate'
           mise exec "tuist@${TUIST_VERSION}" -- tuist test
 
   deploy-prod:
@@ -186,7 +189,9 @@ workflows:
           eval "$(mise activate bash)"
           mise install "tuist@${TUIST_VERSION}"
           chmod +x ./make
-          mise exec "tuist@${TUIST_VERSION}" -- bash -c './make clean && ./make install && ./make generate'
+          # 캐시에 남은 깨진 매크로 모듈(CasePathsMacrosSupport) 제거 후 클린 재생성
+          rm -rf ~/Library/Developer/Xcode/DerivedData/DDDAttendance-* 2>/dev/null || true
+          mise exec "tuist@${TUIST_VERSION}" -- bash -c 'tuist clean && ./make install && ./make generate'
           ls -d *.xcworkspace
       - name: Discord 빌드 시작 알림
         script: |
