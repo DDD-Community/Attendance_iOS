@@ -1,6 +1,12 @@
 workflows:
   deploy-stg:
     name: Stage → TestFlight
+    cache:
+      cache_paths:
+        - $HOME/.local/share/mise
+        - $HOME/Library/Caches/org.swift.swiftpm
+        - $HOME/.cache/tuist
+        - $CM_BUILD_DIR/Tuist/.build
     instance_type: mac_mini_m2
     max_build_duration: 90
     environment:
@@ -93,6 +99,12 @@ workflows:
 
   test:
     name: PR 유닛 테스트
+    cache:
+      cache_paths:
+        - $HOME/.local/share/mise
+        - $HOME/Library/Caches/org.swift.swiftpm
+        - $HOME/.cache/tuist
+        - $CM_BUILD_DIR/Tuist/.build
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
@@ -123,6 +135,12 @@ workflows:
 
   deploy-prod:
     name: Prod → App Store
+    cache:
+      cache_paths:
+        - $HOME/.local/share/mise
+        - $HOME/Library/Caches/org.swift.swiftpm
+        - $HOME/.cache/tuist
+        - $CM_BUILD_DIR/Tuist/.build
     instance_type: mac_mini_m2
     max_build_duration: 90
     environment:
