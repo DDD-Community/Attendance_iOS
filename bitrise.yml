@@ -30,7 +30,7 @@ pipelines:
     workflows:
       deploy-testflight: {}
   # v* 태그 → App Store
-  deploy-prod:
+  deploy-live:
     triggers:
       tag:
         - name: "v*"
