@@ -3,6 +3,10 @@ format_version: "13"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: other
 
+meta:
+  bitrise.io:
+    stack: osx-xcode-26.3.x
+
 app:
   envs:
     - CONFIG_REPO: Roy-wonji/Attendance-iOS-Config
