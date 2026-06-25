@@ -65,7 +65,7 @@ let package = Package(
     // Picke-iOS와 동일하게 1.7.2로 핀 (정상 빌드 버전)
     .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: "1.7.2"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.1.0"),
-    .package(url: "https://github.com/Roy-wonji/TCAFlow.git", exact: "1.1.2"),
+    .package(url: "https://github.com/Roy-wonji/TCAFlow.git", exact: "1.1.3"),
     .package(url: "https://github.com/Roy-wonji/AsyncMoya", exact: "1.1.8"),
     .package(url: "https://github.com/SwiftUIX/SwiftUIX.git", exact: "0.2.3"),
     .package(url: "https://github.com/openid/AppAuth-iOS.git", exact: "2.0.0"),
