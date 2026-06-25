@@ -277,7 +277,7 @@ platform :ios do
       metadata_path: "./fastlane/metadata",
       skip_screenshots: true,
       force: true,
-      submit_for_review: true,
+      submit_for_review: false,
       automatic_release: false,
       precheck_include_in_app_purchases: false,
       reject_if_possible: true
