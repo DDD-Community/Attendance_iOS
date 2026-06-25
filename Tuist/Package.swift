@@ -48,7 +48,9 @@ let packageSettings = PackageSettings(
     base: [
       // Xcode 26 explicit modules가 매크로 플러그인(LogMacroMacro 등)을 incompatible target으로
       // 빌드하는 문제 회피 — 모든 SPM 매크로를 implicit 방식으로 빌드
-      "SWIFT_ENABLE_EXPLICIT_MODULES": "NO"
+      "SWIFT_ENABLE_EXPLICIT_MODULES": "NO",
+      // 매크로 플러그인을 단일 아키(arm64)로만 빌드 — 멀티아키 swift-syntax 모듈 불일치 방지
+      "ONLY_ACTIVE_ARCH": "YES"
     ],
     configurations: [
       .debug(name: "Debug"),
