@@ -184,9 +184,12 @@ extension OnBoardingCoordinator {
   }
 }
 
-public extension OnBoardingCoordinator {
+// swiftformat:disable:next extensionAccessControl
+extension OnBoardingCoordinator {
+  // @Reducer enum 매크로는 enum 자체에 public이 있어야 State/Action을 public으로 생성함.
+  // swiftformat의 extensionAccessControl이 public을 extension으로 끌어올리면 매크로가 깨지므로 고정.
   @Reducer
-  enum OnBoardingScreen {
+  public enum OnBoardingScreen {
     case InviteCode(InviteCodeReducer)
     case onBoardingName(OnBoardingName)
     case selectPart(SelectPartReducer)
