@@ -61,6 +61,9 @@ let package = Package(
     .package(url: "https://github.com/google/GoogleSignIn-iOS", exact: "9.1.0"),
     .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", exact: "3.1.4"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.25.5"),
+    // swift-case-paths 1.7.3은 Xcode 26 archive에서 CasePathsMacrosSupport 모듈 빌드 실패 →
+    // Picke-iOS와 동일하게 1.7.2로 핀 (정상 빌드 버전)
+    .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: "1.7.2"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.1.0"),
     .package(url: "https://github.com/Roy-wonji/TCAFlow.git", exact: "1.1.2"),
     .package(url: "https://github.com/Roy-wonji/AsyncMoya", exact: "1.1.8"),
