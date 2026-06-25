@@ -209,16 +209,10 @@ workflows:
                     try: urllib.request.urlopen(req); print("discord ok")
                     except Exception as e: print("discord skip:", e)
                 PY
-      - script@1:
+      - fastlane@3:
           title: Fastlane QA — Stage → TestFlight
           inputs:
-            - content: |
-                #!/usr/bin/env bash
-                set -e
-                export PATH="$HOME/.local/bin:$PATH"
-                eval "$(mise activate bash)"
-                bundle install
-                bundle exec fastlane ios QA
+            - lane: ios QA
       - script@1:
           title: Discord 성공 알림 (멘션 + 릴리스 노트)
           inputs:
@@ -291,16 +285,10 @@ workflows:
                     try: urllib.request.urlopen(req); print("discord ok")
                     except Exception as e: print("discord skip:", e)
                 PY
-      - script@1:
+      - fastlane@3:
           title: Fastlane release — Prod → App Store
           inputs:
-            - content: |
-                #!/usr/bin/env bash
-                set -e
-                export PATH="$HOME/.local/bin:$PATH"
-                eval "$(mise activate bash)"
-                bundle install
-                bundle exec fastlane ios release version:$RELEASE_VERSION
+            - lane: ios release version:$RELEASE_VERSION
       - script@1:
           title: Discord 성공 알림
           inputs:
