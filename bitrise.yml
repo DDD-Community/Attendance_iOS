@@ -1,0 +1,216 @@
+---
+format_version: "13"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: other
+
+app:
+  envs:
+    - CONFIG_REPO: Roy-wonji/Attendance-iOS-Config
+    - TUIST_VERSION: 4.154.0
+    # CONFIG_REPO_TOKEN, DISCORD_WEBHOOK 은 Bitrise Secrets(코드 시크릿)로 등록
+
+trigger_map:
+  - push_branch: develop
+    workflow: deploy-stg
+  - push_branch: "release-stg-*"
+    workflow: deploy-stg
+  - pull_request_target_branch: "*"
+    workflow: test
+  - tag: "v*"
+    workflow: deploy-prod
+
+workflows:
+  # ── Stage → TestFlight (develop / release-stg-* push) ───────────────
+  deploy-stg:
+    meta:
+      bitrise.io:
+        stack: osx-xcode-26.3.x
+    steps:
+      - git-clone@8: {}
+      - script@1:
+          title: 비밀 자산 주입 + Tuist(make) generate
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -e
+                # 비공개 Config 레포에서 .env / Config(xcconfig) / GoogleService-Info.plist 복원
+                git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
+                mkdir -p Config fastlane
+                cp /tmp/cfg/Config/*.xcconfig Config/
+                cp /tmp/cfg/fastlane/.env       fastlane/.env
+                mkdir -p Projects/App/Resources && cp /tmp/cfg/App/GoogleService-Info.plist Projects/App/Resources/GoogleService-Info.plist
+                # match 인증서 레포를 토큰 HTTPS로 clone
+                envman add --key MATCH_GIT_URL --value "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/Roy-wonji/FastlaneMatch.git"
+                # mise + tuist + make generate
+                curl -fsSL https://mise.run | sh
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                mise install "tuist@${TUIST_VERSION}"
+                chmod +x ./make
+                mise exec "tuist@${TUIST_VERSION}" -- bash -c './make install && ./make generate'
+                ls -d *.xcworkspace
+      - script@1:
+          title: 릴리스 노트 수집 ([v버전] + ko metadata 본문)
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -e
+                EXT="Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
+                VER=$(grep -oE 'appVersion\(version: String = "[0-9.]+"' "$EXT" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+                BODY=$(sed -E '/^\[v ?[0-9.]+\]/d' fastlane/metadata/ko/release_notes.txt 2>/dev/null | sed '/./,$!d')
+                [ -z "$BODY" ] && BODY="- 버그 수정"
+                NOTES="[v${VER}]
+                ${BODY}"
+                envman add --key RELEASE_NOTES --value "$NOTES"
+                echo "릴리스 노트:"; echo "$NOTES"
+      - script@1:
+          title: Discord 빌드 시작 알림
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                python3 - <<'PY'
+                import os, json, urllib.request
+                msg = f"🛠️ **DDDAttendance** TestFlight(QA) 빌드 시작 · #{os.environ.get('BITRISE_BUILD_NUMBER','')}\n{os.environ.get('BITRISE_BUILD_URL','')}"
+                wh = os.environ.get('DISCORD_WEBHOOK','')
+                if wh:
+                    req = urllib.request.Request(wh, data=json.dumps({"content": msg}).encode(),
+                                                 headers={"Content-Type":"application/json","User-Agent":"DDDAttendance-CI/1.0"})
+                    try: urllib.request.urlopen(req); print("discord ok")
+                    except Exception as e: print("discord skip:", e)
+                PY
+      - script@1:
+          title: Fastlane QA — Stage → TestFlight
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -e
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                bundle install
+                bundle exec fastlane ios QA
+      - script@1:
+          title: Discord 성공 알림 (멘션 + 릴리스 노트)
+          is_always_run: false
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                python3 - <<'PY'
+                import os, json, urllib.request
+                msg = "@hoker9494 @loveyourfamily\n"
+                msg += f"✅ **attendance-iOS** TestFlight 배포 완료 · #{os.environ.get('BITRISE_BUILD_NUMBER','')}"
+                notes = os.environ.get('RELEASE_NOTES','').strip()
+                if notes: msg += "\n" + notes
+                msg += "\n🔗 TestFlight: https://testflight.apple.com/join/WbTjTcmF"
+                url = os.environ.get('BITRISE_BUILD_URL','')
+                if url: msg += "\n" + url
+                wh = os.environ.get('DISCORD_WEBHOOK','')
+                if wh:
+                    req = urllib.request.Request(wh, data=json.dumps({"content": msg}).encode(),
+                                                 headers={"Content-Type":"application/json","User-Agent":"DDDAttendance-CI/1.0"})
+                    try: urllib.request.urlopen(req); print("discord ok")
+                    except Exception as e: print("discord skip:", e)
+                PY
+      - deploy-to-bitrise-io@2: {}
+
+  # ── PR 유닛 테스트 ─────────────────────────────────────────────────
+  test:
+    meta:
+      bitrise.io:
+        stack: osx-xcode-26.3.x
+    steps:
+      - git-clone@8: {}
+      - script@1:
+          title: 자산 주입 + generate + 유닛 테스트
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -e
+                git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
+                mkdir -p Config fastlane
+                cp /tmp/cfg/Config/*.xcconfig Config/
+                cp /tmp/cfg/fastlane/.env fastlane/.env
+                curl -fsSL https://mise.run | sh
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                mise install "tuist@${TUIST_VERSION}"
+                chmod +x ./make
+                mise exec "tuist@${TUIST_VERSION}" -- bash -c './make install && ./make generate'
+                mise exec "tuist@${TUIST_VERSION}" -- tuist test
+
+  # ── Prod → App Store (v* 태그) ─────────────────────────────────────
+  deploy-prod:
+    meta:
+      bitrise.io:
+        stack: osx-xcode-26.3.x
+    steps:
+      - git-clone@8: {}
+      - script@1:
+          title: 비밀 자산 주입 + 릴리스 버전 + Tuist(make) generate
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -e
+                git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
+                mkdir -p Config fastlane
+                cp /tmp/cfg/Config/*.xcconfig Config/
+                cp /tmp/cfg/fastlane/.env       fastlane/.env
+                mkdir -p Projects/App/Resources && cp /tmp/cfg/App/GoogleService-Info.plist Projects/App/Resources/GoogleService-Info.plist
+                envman add --key MATCH_GIT_URL --value "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/Roy-wonji/FastlaneMatch.git"
+                EXT="Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
+                VER="${BITRISE_GIT_TAG#v}"
+                if [ -z "$VER" ]; then
+                  VER=$(grep -oE 'appVersion\(version: String = "[0-9.]+"' "$EXT" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+                fi
+                envman add --key RELEASE_VERSION --value "$VER"
+                echo "📦 릴리스 버전: ${VER}"
+                curl -fsSL https://mise.run | sh
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                mise install "tuist@${TUIST_VERSION}"
+                chmod +x ./make
+                mise exec "tuist@${TUIST_VERSION}" -- bash -c './make install && ./make generate'
+                ls -d *.xcworkspace
+      - script@1:
+          title: Discord 빌드 시작 알림
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                python3 - <<'PY'
+                import os, json, urllib.request
+                msg = f"🚀 **DDDAttendance** App Store(Prod) 빌드 시작 · {os.environ.get('RELEASE_VERSION','')} · #{os.environ.get('BITRISE_BUILD_NUMBER','')}\n{os.environ.get('BITRISE_BUILD_URL','')}"
+                wh = os.environ.get('DISCORD_WEBHOOK','')
+                if wh:
+                    req = urllib.request.Request(wh, data=json.dumps({"content": msg}).encode(),
+                                                 headers={"Content-Type":"application/json","User-Agent":"DDDAttendance-CI/1.0"})
+                    try: urllib.request.urlopen(req); print("discord ok")
+                    except Exception as e: print("discord skip:", e)
+                PY
+      - script@1:
+          title: Fastlane release — Prod → App Store
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -e
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                bundle install
+                bundle exec fastlane ios release version:$RELEASE_VERSION
+      - script@1:
+          title: Discord 성공 알림
+          is_always_run: false
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                python3 - <<'PY'
+                import os, json, urllib.request
+                msg = f"🚀 **DDDAttendance** {os.environ.get('RELEASE_VERSION','')} App Store 제출 완료 · #{os.environ.get('BITRISE_BUILD_NUMBER','')}"
+                url = os.environ.get('BITRISE_BUILD_URL','')
+                if url: msg += "\n" + url
+                wh = os.environ.get('DISCORD_WEBHOOK','')
+                if wh:
+                    req = urllib.request.Request(wh, data=json.dumps({"content": msg}).encode(),
+                                                 headers={"Content-Type":"application/json","User-Agent":"DDDAttendance-CI/1.0"})
+                    try: urllib.request.urlopen(req); print("discord ok")
+                    except Exception as e: print("discord skip:", e)
+                PY
+      - deploy-to-bitrise-io@2: {}
