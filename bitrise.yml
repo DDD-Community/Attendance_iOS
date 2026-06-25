@@ -1,7 +1,7 @@
 ---
-format_version: "13"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
-project_type: other
+format_version: "26"
+project_type: ios
 
 meta:
   bitrise.io:
@@ -11,47 +11,174 @@ app:
   envs:
     - CONFIG_REPO: Roy-wonji/Attendance-iOS-Config
     - TUIST_VERSION: 4.154.0
-    # CONFIG_REPO_TOKEN, DISCORD_WEBHOOK 은 Bitrise Secrets(코드 시크릿)로 등록
+    - REPO: DDD-Community/Attendance_iOS
 
-trigger_map:
-  - push_branch: develop
-    workflow: deploy-stg
-  - push_branch: "release-stg-*"
-    workflow: deploy-stg
-  - pull_request_target_branch: "*"
-    workflow: test
-  - tag: "v*"
-    workflow: deploy-prod
+pipelines:
+  # PR → 유닛 테스트 + 커버리지/실패 PR 코멘트
+  run-tests:
+    triggers:
+      pull_request:
+        - target_branch: "*"
+    workflows:
+      ios-run-tests: {}
+  # develop / release-stg-* push → TestFlight
+  deploy-stg:
+    triggers:
+      push:
+        - branch: develop
+        - branch: "release-stg-*"
+    workflows:
+      deploy-testflight: {}
+  # v* 태그 → App Store
+  deploy-prod:
+    triggers:
+      tag:
+        - name: "v*"
+    workflows:
+      deploy-appstore: {}
 
 workflows:
-  # ── Stage → TestFlight (develop / release-stg-* push) ───────────────
-  deploy-stg:
-    meta:
-      bitrise.io:
-        stack: osx-xcode-26.3.x
+  # ── PR 유닛 테스트 ─────────────────────────────────────────────────
+  ios-run-tests:
+    summary: >-
+      자산 주입 → (캐시 복원) → make install/generate → tuist test →
+      PR이면 커버리지·실패목록을 PR sticky 코멘트로 게시. restore-cache@3.
     steps:
+      - activate-ssh-key@4:
+          run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+      - git-clone@8: {}
+      - script@1:
+          title: 비밀 자산 주입 (Config repo)
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -euo pipefail
+                git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
+                mkdir -p Config fastlane
+                cp /tmp/cfg/Config/*.xcconfig Config/
+                cp /tmp/cfg/fastlane/.env fastlane/.env
+                mkdir -p Projects/App/Resources && cp /tmp/cfg/App/GoogleService-Info.plist Projects/App/Resources/GoogleService-Info.plist
+      - restore-cache@3:
+          inputs:
+            - key: |-
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}
+                deps-{{ .OS }}-{{ .Arch }}
+      - script@1:
+          title: make install/generate (mise + tuist)
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -euxo pipefail
+                curl -fsSL https://mise.run | sh
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                mise install "tuist@${TUIST_VERSION}"
+                # 커밋된 make 바이너리 대신 TuistTool.swift 소스를 직접 실행
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
+      - save-cache@1:
+          inputs:
+            - key: deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+            - paths: |-
+                $HOME/.local/bin
+                $HOME/.local/share/mise
+                $HOME/.cache/mise
+                $HOME/.cache/tuist
+                $HOME/Library/Caches/org.swift.swiftpm
+                $HOME/Library/Developer/Xcode/DerivedData/**/SourcePackages
+      - script@1:
+          title: Tuist test
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -euxo pipefail
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift test --result-bundle-path TestResults.xcresult
+      - script@1:
+          title: PR 테스트 결과 코멘트 (커버리지 + 실패목록)
+          is_always_run: true
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -uo pipefail
+                PR="${BITRISE_PULL_REQUEST:-}"
+                if [ -z "$PR" ]; then echo "PR 빌드 아님 → 코멘트 스킵"; exit 0; fi
+                TOKEN="${CONFIG_REPO_TOKEN:-}"
+                if [ -z "$TOKEN" ]; then echo "토큰 없음 → 코멘트 스킵"; exit 0; fi
+                export XR="TestResults.xcresult"
+                export MARKER="<!-- ios-test-bot -->"
+
+                COV="N/A"
+                if [ -d "$XR" ]; then
+                  COV=$(xcrun xccov view --report --json "$XR" 2>/dev/null | python3 -c "import sys,json;print('%.1f%%'%(json.load(sys.stdin)['lineCoverage']*100))" 2>/dev/null || echo "N/A")
+                fi
+
+                FAILS=""
+                if [ -d "$XR" ]; then
+                  printf '%s\n' 'import sys,json' 'bt=chr(96)' 'd=json.load(sys.stdin)' 'o=[]' 'st=list(d.get("testNodes",[]))' 'while st:' ' n=st.pop()' ' st+=(n.get("children",[]) or [])' ' if n.get("nodeType")=="Test Case" and n.get("result")=="Failed":' '  m=[c.get("name","") for c in n.get("children",[]) if c.get("nodeType")=="Failure Message"]' '  o.append("- "+bt+n.get("name","")+bt+((" — "+" / ".join(m))[:300] if m else ""))' 'print(chr(10).join(o[:20]))' > /tmp/fails.py
+                  FAILS=$(xcrun xcresulttool get test-results tests --path "$XR" 2>/dev/null | python3 /tmp/fails.py 2>/dev/null || echo "")
+                fi
+
+                if [ -z "$FAILS" ]; then STATUS="**✅ 전체 통과**"; else STATUS="**❌ 실패 있음**"; fi
+                BODY="$MARKER
+                ## 🧪 iOS 테스트 · Build #${BITRISE_BUILD_NUMBER}
+                $STATUS · 📊 라인 커버리지 **$COV**"
+                if [ -n "$FAILS" ]; then BODY="$BODY
+
+                ### 실패
+                $FAILS"; fi
+                BODY="$BODY
+
+                [🔗 빌드 로그]($BITRISE_BUILD_URL)"
+                export BODY
+                JSON=$(python3 -c "import json,os;print(json.dumps({'body':os.environ['BODY']}))")
+
+                API="https://api.github.com/repos/$REPO"
+                AUTH="Authorization: Bearer $TOKEN"
+                ACC="Accept: application/vnd.github+json"
+                echo "[diag] repo GET=$(curl -s -o /dev/null -w '%{http_code}' -H "$AUTH" -H "$ACC" "$API")"
+                ID=$(curl -s -H "$AUTH" -H "$ACC" "$API/issues/$PR/comments?per_page=100" | python3 -c "import sys,json,os;m=os.environ['MARKER'];d=json.load(sys.stdin);cs=d if isinstance(d,list) else [];print(next((str(c['id']) for c in cs if m in (c.get('body') or '')),''))" 2>/dev/null || echo "")
+                if [ -n "$ID" ]; then
+                  CODE=$(curl -s -o /tmp/ghresp.json -w "%{http_code}" -X PATCH -H "$AUTH" -H "$ACC" "$API/issues/comments/$ID" -d "$JSON")
+                  echo "PATCH status=$CODE (comment #$ID)"
+                else
+                  CODE=$(curl -s -o /tmp/ghresp.json -w "%{http_code}" -X POST -H "$AUTH" -H "$ACC" "$API/issues/$PR/comments" -d "$JSON")
+                  echo "POST status=$CODE (PR #$PR)"
+                fi
+                case "$CODE" in
+                  200|201) echo "✅ 코멘트 반영 완료";;
+                  *) echo "❌ 코멘트 실패(HTTP $CODE): $(cat /tmp/ghresp.json 2>/dev/null | head -c 500)";;
+                esac
+      - deploy-to-bitrise-io@2: {}
+
+  # ── Stage → TestFlight ─────────────────────────────────────────────
+  deploy-testflight:
+    summary: 자산 주입 → make generate → fastlane QA(TestFlight) → Discord 알림
+    steps:
+      - activate-ssh-key@4:
+          run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
       - git-clone@8: {}
       - script@1:
           title: 비밀 자산 주입 + Tuist(make) generate
           inputs:
             - content: |
                 #!/usr/bin/env bash
-                set -e
-                # 비공개 Config 레포에서 .env / Config(xcconfig) / GoogleService-Info.plist 복원
+                set -euo pipefail
                 git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
                 mkdir -p Config fastlane
                 cp /tmp/cfg/Config/*.xcconfig Config/
                 cp /tmp/cfg/fastlane/.env       fastlane/.env
                 mkdir -p Projects/App/Resources && cp /tmp/cfg/App/GoogleService-Info.plist Projects/App/Resources/GoogleService-Info.plist
-                # match 인증서 레포를 토큰 HTTPS로 clone
                 envman add --key MATCH_GIT_URL --value "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/Roy-wonji/FastlaneMatch.git"
-                # mise + tuist + make generate
                 curl -fsSL https://mise.run | sh
                 export PATH="$HOME/.local/bin:$PATH"
                 eval "$(mise activate bash)"
                 mise install "tuist@${TUIST_VERSION}"
-                chmod +x ./make
-                mise exec "tuist@${TUIST_VERSION}" -- bash -c './make install && ./make generate'
+                # 커밋된 make 바이너리 대신 TuistTool.swift 소스를 직접 실행
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
                 ls -d *.xcworkspace
       - script@1:
           title: 릴리스 노트 수집 ([v버전] + ko metadata 본문)
@@ -94,7 +221,6 @@ workflows:
                 bundle exec fastlane ios QA
       - script@1:
           title: Discord 성공 알림 (멘션 + 릴리스 노트)
-          is_always_run: false
           inputs:
             - content: |
                 #!/usr/bin/env bash
@@ -116,44 +242,19 @@ workflows:
                 PY
       - deploy-to-bitrise-io@2: {}
 
-  # ── PR 유닛 테스트 ─────────────────────────────────────────────────
-  test:
-    meta:
-      bitrise.io:
-        stack: osx-xcode-26.3.x
+  # ── Prod → App Store ───────────────────────────────────────────────
+  deploy-appstore:
+    summary: 자산 주입 → 릴리스 버전 → make generate → fastlane release(App Store) → Discord 알림
     steps:
-      - git-clone@8: {}
-      - script@1:
-          title: 자산 주입 + generate + 유닛 테스트
-          inputs:
-            - content: |
-                #!/usr/bin/env bash
-                set -e
-                git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
-                mkdir -p Config fastlane
-                cp /tmp/cfg/Config/*.xcconfig Config/
-                cp /tmp/cfg/fastlane/.env fastlane/.env
-                curl -fsSL https://mise.run | sh
-                export PATH="$HOME/.local/bin:$PATH"
-                eval "$(mise activate bash)"
-                mise install "tuist@${TUIST_VERSION}"
-                chmod +x ./make
-                mise exec "tuist@${TUIST_VERSION}" -- bash -c './make install && ./make generate'
-                mise exec "tuist@${TUIST_VERSION}" -- tuist test
-
-  # ── Prod → App Store (v* 태그) ─────────────────────────────────────
-  deploy-prod:
-    meta:
-      bitrise.io:
-        stack: osx-xcode-26.3.x
-    steps:
+      - activate-ssh-key@4:
+          run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
       - git-clone@8: {}
       - script@1:
           title: 비밀 자산 주입 + 릴리스 버전 + Tuist(make) generate
           inputs:
             - content: |
                 #!/usr/bin/env bash
-                set -e
+                set -euo pipefail
                 git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
                 mkdir -p Config fastlane
                 cp /tmp/cfg/Config/*.xcconfig Config/
@@ -171,8 +272,9 @@ workflows:
                 export PATH="$HOME/.local/bin:$PATH"
                 eval "$(mise activate bash)"
                 mise install "tuist@${TUIST_VERSION}"
-                chmod +x ./make
-                mise exec "tuist@${TUIST_VERSION}" -- bash -c './make install && ./make generate'
+                # 커밋된 make 바이너리 대신 TuistTool.swift 소스를 직접 실행
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
                 ls -d *.xcworkspace
       - script@1:
           title: Discord 빌드 시작 알림
@@ -201,7 +303,6 @@ workflows:
                 bundle exec fastlane ios release version:$RELEASE_VERSION
       - script@1:
           title: Discord 성공 알림
-          is_always_run: false
           inputs:
             - content: |
                 #!/usr/bin/env bash
