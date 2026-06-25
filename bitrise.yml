@@ -262,6 +262,25 @@ workflows:
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
                 ls -d *.xcworkspace
+      - restore-cache@3:
+          title: Gem 캐시 복원
+          inputs:
+            - key: |-
+                gems-{{ .OS }}-{{ .Arch }}-{{ checksum "Gemfile.lock" }}
+                gems-{{ .OS }}-{{ .Arch }}
+      - script@1:
+          title: Gem 설치 (bundle install)
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -euo pipefail
+                bundle config set --local path vendor/bundle
+                bundle install
+      - save-cache@1:
+          title: Gem 캐시 저장
+          inputs:
+            - key: gems-{{ .OS }}-{{ .Arch }}-{{ checksum "Gemfile.lock" }}
+            - paths: vendor/bundle
       - script@1:
           title: Fastlane QA — Stage → TestFlight
           inputs:
@@ -271,7 +290,6 @@ workflows:
                 export PATH="$HOME/.local/bin:$PATH"
                 eval "$(mise activate bash)"
                 # Fastfile 내부에서 'tuist generate'를 호출하므로 mise(tuist) 활성화 필수
-                bundle install
                 bundle exec fastlane ios QA
       - deploy-to-bitrise-io@2: {}
 
@@ -374,6 +392,25 @@ workflows:
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
                 ls -d *.xcworkspace
+      - restore-cache@3:
+          title: Gem 캐시 복원
+          inputs:
+            - key: |-
+                gems-{{ .OS }}-{{ .Arch }}-{{ checksum "Gemfile.lock" }}
+                gems-{{ .OS }}-{{ .Arch }}
+      - script@1:
+          title: Gem 설치 (bundle install)
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -euo pipefail
+                bundle config set --local path vendor/bundle
+                bundle install
+      - save-cache@1:
+          title: Gem 캐시 저장
+          inputs:
+            - key: gems-{{ .OS }}-{{ .Arch }}-{{ checksum "Gemfile.lock" }}
+            - paths: vendor/bundle
       - script@1:
           title: Fastlane release — Prod → App Store
           inputs:
@@ -383,7 +420,6 @@ workflows:
                 export PATH="$HOME/.local/bin:$PATH"
                 eval "$(mise activate bash)"
                 # Fastfile 내부에서 'tuist generate'를 호출하므로 mise(tuist) 활성화 필수
-                bundle install
                 bundle exec fastlane ios release version:$RELEASE_VERSION
       - deploy-to-bitrise-io@2: {}
 
