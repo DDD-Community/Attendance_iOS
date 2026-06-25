@@ -22,8 +22,7 @@ pipelines:
     workflows:
       ios-run-tests: {}
 
-  # develop / release-stg-* push → TestFlight
-  # discord-start 는 빌드와 병렬로 즉시 발송, discord-success 는 배포 성공 후 발송
+  # develop / release-stg-* push → 빌드 → TestFlight
   deploy-stg:
     triggers:
       push:
@@ -33,14 +32,17 @@ pipelines:
       discord-start:
         environments:
           - NOTIFY_KIND: stg
-      deploy-testflight: {}
+      build-stg: {}
+      fastlane-qa:
+        depends_on:
+          - build-stg
       discord-success:
         depends_on:
-          - deploy-testflight
+          - fastlane-qa
         environments:
           - NOTIFY_KIND: stg
 
-  # v* 태그 → App Store
+  # v* 태그 → 빌드 → App Store
   deploy-live:
     triggers:
       tag:
@@ -49,10 +51,13 @@ pipelines:
       discord-start:
         environments:
           - NOTIFY_KIND: live
-      deploy-appstore: {}
+      build-prod: {}
+      fastlane-release:
+        depends_on:
+          - build-prod
       discord-success:
         depends_on:
-          - deploy-appstore
+          - fastlane-release
         environments:
           - NOTIFY_KIND: live
 
@@ -93,7 +98,6 @@ workflows:
                 export PATH="$HOME/.local/bin:$PATH"
                 eval "$(mise activate bash)"
                 mise install "tuist@${TUIST_VERSION}"
-                # 커밋된 make 바이너리 대신 TuistTool.swift 소스를 직접 실행
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
       - save-cache@1:
@@ -172,9 +176,57 @@ workflows:
                 esac
       - deploy-to-bitrise-io@2: {}
 
-  # ── Stage → TestFlight ─────────────────────────────────────────────
-  deploy-testflight:
-    summary: 자산 주입 → Tuist generate → fastlane QA(TestFlight). Discord 알림은 파이프라인의 별도 워크플로가 담당.
+  # ── 빌드 (Stage): 자산 주입 + Tuist generate + 의존성 캐시 워밍업 ──────
+  build-stg:
+    summary: 자산 주입 → Tuist 설치/generate → 의존성 캐시 저장 (fastlane-qa 가 캐시 재사용)
+    steps:
+      - activate-ssh-key@4:
+          run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+      - git-clone@8: {}
+      - script@1:
+          title: 비밀 자산 주입 (Config repo)
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -euo pipefail
+                git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
+                mkdir -p Config fastlane
+                cp /tmp/cfg/Config/*.xcconfig Config/
+                cp /tmp/cfg/fastlane/.env fastlane/.env
+                mkdir -p Projects/App/Resources && cp /tmp/cfg/App/GoogleService-Info.plist Projects/App/Resources/GoogleService-Info.plist
+      - restore-cache@3:
+          inputs:
+            - key: |-
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}
+                deps-{{ .OS }}-{{ .Arch }}
+      - script@1:
+          title: Tuist 설치 + 프로젝트 생성
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -euxo pipefail
+                curl -fsSL https://mise.run | sh
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                mise install "tuist@${TUIST_VERSION}"
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
+                ls -d *.xcworkspace
+      - save-cache@1:
+          inputs:
+            - key: deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+            - paths: |-
+                $HOME/.local/bin
+                $HOME/.local/share/mise
+                $HOME/.cache/mise
+                $HOME/.cache/tuist
+                $HOME/Library/Caches/org.swift.swiftpm
+                $HOME/Library/Developer/Xcode/DerivedData/**/SourcePackages
+
+  # ── 배포 (Stage → TestFlight): fastlane QA ──────────────────────────
+  fastlane-qa:
+    summary: 자산 주입(+Match) → Tuist generate(캐시 재사용) → fastlane QA(TestFlight)
     steps:
       - activate-ssh-key@4:
           run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
@@ -210,16 +262,6 @@ workflows:
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
                 ls -d *.xcworkspace
-      - save-cache@1:
-          inputs:
-            - key: deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
-            - paths: |-
-                $HOME/.local/bin
-                $HOME/.local/share/mise
-                $HOME/.cache/mise
-                $HOME/.cache/tuist
-                $HOME/Library/Caches/org.swift.swiftpm
-                $HOME/Library/Developer/Xcode/DerivedData/**/SourcePackages
       - script@1:
           title: Fastlane QA — Stage → TestFlight
           inputs:
@@ -233,9 +275,57 @@ workflows:
                 bundle exec fastlane ios QA
       - deploy-to-bitrise-io@2: {}
 
-  # ── Prod → App Store ───────────────────────────────────────────────
-  deploy-appstore:
-    summary: 자산 주입 → 릴리스 버전 → Tuist generate → fastlane release(App Store). Discord 알림은 별도 워크플로.
+  # ── 빌드 (Prod): 릴리스 버전 + 자산 주입 + Tuist generate + 캐시 ───────
+  build-prod:
+    summary: 릴리스 버전 추출 → 자산 주입 → Tuist 설치/generate → 의존성 캐시 저장
+    steps:
+      - activate-ssh-key@4:
+          run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+      - git-clone@8: {}
+      - script@1:
+          title: 비밀 자산 주입 (Config repo)
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -euo pipefail
+                git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
+                mkdir -p Config fastlane
+                cp /tmp/cfg/Config/*.xcconfig Config/
+                cp /tmp/cfg/fastlane/.env       fastlane/.env
+                mkdir -p Projects/App/Resources && cp /tmp/cfg/App/GoogleService-Info.plist Projects/App/Resources/GoogleService-Info.plist
+      - restore-cache@3:
+          inputs:
+            - key: |-
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}
+                deps-{{ .OS }}-{{ .Arch }}
+      - script@1:
+          title: Tuist 설치 + 프로젝트 생성
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -euxo pipefail
+                curl -fsSL https://mise.run | sh
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                mise install "tuist@${TUIST_VERSION}"
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
+                ls -d *.xcworkspace
+      - save-cache@1:
+          inputs:
+            - key: deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+            - paths: |-
+                $HOME/.local/bin
+                $HOME/.local/share/mise
+                $HOME/.cache/mise
+                $HOME/.cache/tuist
+                $HOME/Library/Caches/org.swift.swiftpm
+                $HOME/Library/Developer/Xcode/DerivedData/**/SourcePackages
+
+  # ── 배포 (Prod → App Store): fastlane release ───────────────────────
+  fastlane-release:
+    summary: 자산 주입(+Match) → 릴리스 버전 → Tuist generate(캐시) → fastlane release(App Store)
     steps:
       - activate-ssh-key@4:
           run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
@@ -284,16 +374,6 @@ workflows:
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
                 ls -d *.xcworkspace
-      - save-cache@1:
-          inputs:
-            - key: deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
-            - paths: |-
-                $HOME/.local/bin
-                $HOME/.local/share/mise
-                $HOME/.cache/mise
-                $HOME/.cache/tuist
-                $HOME/Library/Caches/org.swift.swiftpm
-                $HOME/Library/Developer/Xcode/DerivedData/**/SourcePackages
       - script@1:
           title: Fastlane release — Prod → App Store
           inputs:
