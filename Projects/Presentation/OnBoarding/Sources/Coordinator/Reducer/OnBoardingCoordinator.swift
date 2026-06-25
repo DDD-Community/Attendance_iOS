@@ -40,13 +40,9 @@ public struct OnBoardingCoordinator {
     case backToRootAction
   }
 
-  public enum AsyncAction: Equatable {
+  public enum AsyncAction: Equatable {}
 
-  }
-
-  public enum InnerAction: Equatable {
-
-  }
+  public enum InnerAction: Equatable {}
 
   public enum NavigationAction: Equatable {
     case backToRoot
@@ -58,20 +54,20 @@ public struct OnBoardingCoordinator {
 
   func handleRoute(state: inout State, action: Action) -> Effect<Action> {
     switch action {
-      case .router(let routeAction):
-        return routerAction(state: &state, action: routeAction)
+    case let .router(routeAction):
+      return routerAction(state: &state, action: routeAction)
 
-      case .view(let viewAction):
-        return handleViewAction(state: &state, action: viewAction)
+    case let .view(viewAction):
+      return handleViewAction(state: &state, action: viewAction)
 
-      case .inner(let innerAction):
-        return handleInnerAction(state: &state, action: innerAction)
+    case let .inner(innerAction):
+      return handleInnerAction(state: &state, action: innerAction)
 
-      case .async(let asyncAction):
-        return handleAsyncAction(state: &state, action: asyncAction)
+    case let .async(asyncAction):
+      return handleAsyncAction(state: &state, action: asyncAction)
 
-      case .navigation(let navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+    case let .navigation(navigationAction):
+      return handleNavigationAction(state: &state, action: navigationAction)
     }
   }
 }
@@ -82,48 +78,54 @@ extension OnBoardingCoordinator {
     action: IndexedRouterActionOf<OnBoardingScreen>
   ) -> Effect<Action> {
     switch action {
-        // MARK: - 이름 입력
-      case .routeAction(id: _, action: .InviteCode(.navigation(.presentSignUpName))):
-        state.routes.push(.onBoardingName(.init()))
-        return .none
+    // MARK: - 이름 입력
 
-      case .routeAction(id: _, action: .onBoardingName(.navigation(.presentSignUpPart))):
-        state.routes.push(.selectPart(.init()))
-        return .none
+    case .routeAction(id: _, action: .InviteCode(.navigation(.presentSignUpName))):
+      state.routes.push(.onBoardingName(.init()))
+      return .none
+
+    case .routeAction(id: _, action: .onBoardingName(.navigation(.presentSignUpPart))):
+      state.routes.push(.selectPart(.init()))
+      return .none
 
         // MARK: - 운영진 담당업무 선택
 
-      case .routeAction(id: _, action: .selectPart(.navigation(.presentManaging))):
-        state.routes.push(.selectManaging(.init()))
-        return .none
+    case .routeAction(id: _, action: .selectPart(.navigation(.presentManaging))):
+      state.routes.push(.selectManaging(.init()))
+      return .none
 
-        // MARK: -  운영진 매니징 업무선택시  팀매니징 선택시 팀선택
-      case .routeAction(id: _, action: .selectManaging(.navigation(.presentSelectTeam))):
-        state.routes.push(.selectTeam(.init()))
-        return .none
+    // MARK: -  운영진 매니징 업무선택시  팀매니징 선택시 팀선택
 
-      case .routeAction(id: _, action: .selectManaging(.navigation(.presentManager))):
-        return .send(.navigation(.presentStaff))
+    case .routeAction(id: _, action: .selectManaging(.navigation(.presentSelectTeam))):
+      state.routes.push(.selectTeam(.init()))
+      return .none
 
-      case .routeAction(id: _, action: .selectManaging(.navigation(.presentProfile))):
-        return .send(.navigation(.presentProfile))
+    case .routeAction(id: _, action: .selectManaging(.navigation(.presentManager))):
+      return .send(.navigation(.presentStaff))
 
-      case .routeAction(id: _, action: .selectTeam(.navigation(.presentManager))):
-        return .send(.navigation(.presentStaff))
+    case .routeAction(id: _, action: .selectManaging(.navigation(.presentMember))):
+      return .send(.navigation(.presentMember))
 
-        // MARK: - 멤버 선택 할팀 선택
-      case .routeAction(id: _, action: .selectPart(.navigation(.presentSelectTeam))):
-        state.routes.push(.selectTeam(.init()))
-        return .none
+    case .routeAction(id: _, action: .selectManaging(.navigation(.presentProfile))):
+      return .send(.navigation(.presentProfile))
 
-      case .routeAction(id: _, action: .selectTeam(.navigation(.presentMember))):
-        return .send(.navigation(.presentMember))
+    case .routeAction(id: _, action: .selectTeam(.navigation(.presentManager))):
+      return .send(.navigation(.presentStaff))
 
-      case .routeAction(id: _, action: .selectTeam(.navigation(.presentLogin))):
-        return .send(.navigation(.presentLogin))
+    // MARK: - 멤버 선택 할팀 선택
 
-      case .routeAction(id: _, action: .selectTeam(.navigation(.presentProfile))):
-        return .send(.navigation(.presentProfile))
+    case .routeAction(id: _, action: .selectPart(.navigation(.presentSelectTeam))):
+      state.routes.push(.selectTeam(.init()))
+      return .none
+
+    case .routeAction(id: _, action: .selectTeam(.navigation(.presentMember))):
+      return .send(.navigation(.presentMember))
+
+    case .routeAction(id: _, action: .selectTeam(.navigation(.presentLogin))):
+      return .send(.navigation(.presentLogin))
+
+    case .routeAction(id: _, action: .selectTeam(.navigation(.presentProfile))):
+      return .send(.navigation(.presentProfile))
 
     default:
       return .none
@@ -131,8 +133,8 @@ extension OnBoardingCoordinator {
   }
 
   private func handleViewAction(
-      state: inout State,
-      action: View
+    state: inout State,
+    action: View
   ) -> Effect<Action> {
     switch action {
     case .backAction:
@@ -146,45 +148,45 @@ extension OnBoardingCoordinator {
   }
 
   private func handleInnerAction(
-    state: inout State,
-    action: InnerAction
+    state _: inout State,
+    action _: InnerAction
   ) -> Effect<Action> {
     return .none
   }
 
   private func handleAsyncAction(
-    state: inout State,
-    action: AsyncAction
+    state _: inout State,
+    action _: AsyncAction
   ) -> Effect<Action> {
     return .none
   }
 
   private func handleNavigationAction(
-    state: inout State,
+    state _: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
     switch action {
     case .presentStaff:
       return .none
 
-      case .presentMember:
-        return .none
+    case .presentMember:
+      return .none
 
-      case .presentLogin:
-        return .none
+    case .presentLogin:
+      return .none
 
-      case .backToRoot:
-        return .none
+    case .backToRoot:
+      return .none
 
-      case .presentProfile:
-        return .none
+    case .presentProfile:
+      return .none
     }
   }
 }
 
-extension OnBoardingCoordinator {
+public extension OnBoardingCoordinator {
   @Reducer
-  public enum OnBoardingScreen {
+  enum OnBoardingScreen {
     case InviteCode(InviteCodeReducer)
     case onBoardingName(OnBoardingName)
     case selectPart(SelectPartReducer)

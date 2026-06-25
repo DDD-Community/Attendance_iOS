@@ -7,8 +7,8 @@
 
 import Foundation
 
-import UseCase
 import Entity
+import UseCase
 import Utill
 
 import AsyncMoya
@@ -33,8 +33,6 @@ public struct SelectManagingReducer {
     @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
     @Shared(.appStorage("staffRole")) var staffRole: Staff?
     @Presents var alert: AlertState<AlertAction>?
-
-
   }
 
   public enum Action: ViewAction, BindableAction, FeatureAction {
@@ -57,14 +55,13 @@ public struct SelectManagingReducer {
 
   @CasePathable
   public enum ScopeAction {
-      case alert(PresentationAction<AlertAction>)
+    case alert(PresentationAction<AlertAction>)
   }
 
   @CasePathable
   public enum AlertAction {
     case confirmTapped
   }
-
 
   // MARK: - AsyncAction 비동기 처리 액션
 
@@ -86,6 +83,7 @@ public struct SelectManagingReducer {
 
   public enum NavigationAction: Equatable {
     case presentManager
+    case presentMember
     case presentSelectTeam
     case presentProfile
   }
@@ -106,23 +104,23 @@ public struct SelectManagingReducer {
     BindingReducer()
     Reduce { state, action in
       switch action {
-        case .binding(_):
-          return .none
+      case .binding:
+        return .none
 
-        case .view(let viewAction):
-          return handleViewAction(state: &state, action: viewAction)
+      case let .view(viewAction):
+        return handleViewAction(state: &state, action: viewAction)
 
-        case .async(let asyncAction):
-          return handleAsyncAction(state: &state, action: asyncAction)
+      case let .async(asyncAction):
+        return handleAsyncAction(state: &state, action: asyncAction)
 
-        case .inner(let innerAction):
-          return handleInnerAction(state: &state, action: innerAction)
+      case let .inner(innerAction):
+        return handleInnerAction(state: &state, action: innerAction)
 
-        case .navigation(let navigationAction):
-          return handleNavigationAction(state: &state, action: navigationAction)
+      case let .navigation(navigationAction):
+        return handleNavigationAction(state: &state, action: navigationAction)
 
-        case .scope:
-          return .none
+      case .scope:
+        return .none
       }
     }
     .ifLet(\.$alert, action: \.scope.alert)
@@ -135,47 +133,46 @@ extension SelectManagingReducer {
     action: View
   ) -> Effect<Action> {
     switch action {
-      case .onAppear:
-        // 이미 데이터가 있다면 다시 fetch하지 않음
-        if !state.selectMangers.isEmpty {
-          return .none
-        }
-        return .send(.async(.fetchMangerList))
-
-      case .selectManagingButton(let selectManaging):
-        let selectedManaging = selectManaging.managing
-        var updatedManaging: [StaffManaging] = []
-
-        state.$userSession.withLock {
-          var current = $0.managing
-          if let index = current.firstIndex(of: selectedManaging) {
-            current.remove(at: index)
-          } else {
-            current.append(selectedManaging)
-          }
-          $0.managing = current
-          updatedManaging = current
-        }
-
-        state.activeButton = !updatedManaging.isEmpty
+    case .onAppear:
+      // 이미 데이터가 있다면 다시 fetch하지 않음
+      if !state.selectMangers.isEmpty {
         return .none
+      }
+      return .send(.async(.fetchMangerList))
 
+    case let .selectManagingButton(selectManaging):
+      let selectedManaging = selectManaging.managing
+      var updatedManaging: [StaffManaging] = []
 
-      case .signUp:
-        return .run { [
-          editGeneration = state.editGeneration
-        ] send in
-          if editGeneration == true {
-            await send(.async(.editProfile))
-          } else {
-            await send(.async(.signUpUser))
-          }
+      state.$userSession.withLock {
+        var current = $0.managing
+        if let index = current.firstIndex(of: selectedManaging) {
+          current.remove(at: index)
+        } else {
+          current.append(selectedManaging)
         }
+        $0.managing = current
+        updatedManaging = current
+      }
+
+      state.activeButton = !updatedManaging.isEmpty
+      return .none
+
+    case .signUp:
+      return .run { [
+        editGeneration = state.editGeneration
+      ] send in
+        if editGeneration == true {
+          await send(.async(.editProfile))
+        } else {
+          await send(.async(.signUpUser))
+        }
+      }
     }
   }
 
   private func handleNavigationAction(
-    state: inout State,
+    state _: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
     // 모든 navigation에서 진행 중인 effect를 cancel
@@ -184,14 +181,17 @@ extension SelectManagingReducer {
 //    )
 
     switch action {
-      case .presentManager:
-        return .none
+    case .presentManager:
+      return .none
 
-      case .presentSelectTeam:
-        return .none
+    case .presentMember:
+      return .none
 
-      case .presentProfile:
-        return .none
+    case .presentSelectTeam:
+      return .none
+
+    case .presentProfile:
+      return .none
     }
   }
 
@@ -200,42 +200,40 @@ extension SelectManagingReducer {
     action: AsyncAction
   ) -> Effect<Action> {
     switch action {
-      case .fetchMangerList:
-        state.loading = true
-        return .run { send in
-          let mangerResult = await Result {
-            try await onBoardingUseCase.fetchManaging()
-          }
-            .mapError(SignUpError.from)
-          return await send(.inner(.mangerListResponse(mangerResult)))
+    case .fetchMangerList:
+      state.loading = true
+      return .run { send in
+        let mangerResult = await Result {
+          try await onBoardingUseCase.fetchManaging()
         }
-        .cancellable(id: CancelID.fetchMangerList, cancelInFlight: true)
+        .mapError(SignUpError.from)
+        return await send(.inner(.mangerListResponse(mangerResult)))
+      }
+      .cancellable(id: CancelID.fetchMangerList, cancelInFlight: true)
 
-      case .signUpUser:
-        return .run { [
-          userSession = state.userSession
-        ] send in
-          let signUpUserResult = await Result {
-            return try await signUpUseCase.registerUser(userSession: userSession)
-          }
-          .mapError(SignUpError.from)
-          return await send(.inner(.signUpUserResponse(signUpUserResult)))
+    case .signUpUser:
+      return .run { [
+        userSession = state.userSession
+      ] send in
+        let signUpUserResult = await Result {
+          try await signUpUseCase.registerUser(userSession: userSession)
         }
-        .cancellable(id: CancelID.signUpUser, cancelInFlight: true)
+        .mapError(SignUpError.from)
+        return await send(.inner(.signUpUserResponse(signUpUserResult)))
+      }
+      .cancellable(id: CancelID.signUpUser, cancelInFlight: true)
 
-
-      case .editProfile:
-        return .run { [
-          userSession = state.userSession
-        ] send in
-          let editProfileResult = await Result {
-            return try await profileUseCase.editUser(userSession: userSession)
-          }
-          .mapError(ProfileError.from)
-          return await send(.inner(.editProfileResponse(editProfileResult)))
+    case .editProfile:
+      return .run { [
+        userSession = state.userSession
+      ] send in
+        let editProfileResult = await Result {
+          try await profileUseCase.editUser(userSession: userSession)
         }
-        .cancellable(id: CancelID.editProfile, cancelInFlight: true)
-
+        .mapError(ProfileError.from)
+        return await send(.inner(.editProfileResponse(editProfileResult)))
+      }
+      .cancellable(id: CancelID.editProfile, cancelInFlight: true)
     }
   }
 
@@ -244,68 +242,66 @@ extension SelectManagingReducer {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-      case .mangerListResponse(let result):
-        switch result {
-          case .success(let data):
-            state.loading = false
-            state.selectMangers = .init(uniqueElements: data)
+    case let .mangerListResponse(result):
+      switch result {
+      case let .success(data):
+        state.loading = false
+        state.selectMangers = .init(uniqueElements: data)
 
-          case .failure(let error):
-            state.errorMessage =  error.errorDescription
+      case let .failure(error):
+        state.errorMessage = error.errorDescription
+      }
+      return .none
 
+    case let .signUpUserResponse(result):
+      switch result {
+      case let .success(data):
+        state.signUpUser = data
+        state.$staffRole.withLock { $0 = state.userSession.userRole }
+
+        return .send(.navigation(.presentManager))
+
+      case let .failure(error):
+        state.errorMessage = error.errorDescription
+        state.alert = AlertState {
+          TextState("회원가입 실패")
+        } actions: {
+          ButtonState(action: .confirmTapped) {
+            TextState("확인")
+          }
+        } message: {
+          TextState(error.errorDescription ?? "알 수 없는 오류가 발생했습니다.")
         }
         return .none
+      }
 
-      case .signUpUserResponse(let result):
-        switch result {
-          case .success(let data):
-            state.signUpUser = data
-            state.$staffRole.withLock { $0 = state.userSession.userRole }
+    case let .editProfileResponse(result):
+      switch result {
+      case let .success(data):
+        state.editProfile = data
+        state.$editGeneration.withLock { $0 = false }
+        state.$staffRole.withLock { $0 = state.userSession.userRole }
 
-            return .send(.navigation(.presentManager))
-
-          case .failure(let error):
-            state.errorMessage = error.errorDescription
-            state.alert = AlertState {
-              TextState("회원가입 실패")
-            } actions: {
-              ButtonState(action: .confirmTapped) {
-                TextState("확인")
-              }
-            } message: {
-              TextState(error.errorDescription ?? "알 수 없는 오류가 발생했습니다.")
-            }
-            return .none
+        if state.userSession.userRole == .manager {
+          return .send(.navigation(.presentManager))
+        } else {
+          return .send(.navigation(.presentMember))
         }
 
-      case .editProfileResponse(let result):
-        switch result {
-          case .success(let data):
-            state.editProfile = data
-            state.$editGeneration.withLock { $0 = false }
-            state.$staffRole.withLock { $0 = state.userSession.userRole }
-
-            if state.userSession.userRole == .manager {
-              return .send(.navigation(.presentManager))
-            } else {
-              return .send(.navigation(.presentMember))
-            }
-
-          case .failure(let error):
-            state.errorMessage = error.errorDescription
-            state.$editGeneration.withLock { $0 = false }
-            state.alert = AlertState {
-              TextState("프로필 수정 실패")
-            } actions: {
-              ButtonState(action: .confirmTapped) {
-                TextState("확인")
-              }
-            } message: {
-              TextState(error.errorDescription ?? "알 수 없는 오류가 발생했습니다.")
-            }
-            return .none
+      case let .failure(error):
+        state.errorMessage = error.errorDescription
+        state.$editGeneration.withLock { $0 = false }
+        state.alert = AlertState {
+          TextState("프로필 수정 실패")
+        } actions: {
+          ButtonState(action: .confirmTapped) {
+            TextState("확인")
+          }
+        } message: {
+          TextState(error.errorDescription ?? "알 수 없는 오류가 발생했습니다.")
         }
+        return .none
+      }
     }
-
   }
 }
