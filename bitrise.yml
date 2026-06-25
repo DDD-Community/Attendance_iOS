@@ -23,18 +23,18 @@ pipelines:
       ios-run-tests: {}
 
   # develop / release-stg-* push → TestFlight
-  # _discord-start 는 빌드와 병렬로 즉시 발송, _discord-success 는 배포 성공 후 발송
+  # discord-start 는 빌드와 병렬로 즉시 발송, discord-success 는 배포 성공 후 발송
   deploy-stg:
     triggers:
       push:
         - branch: develop
         - branch: "release-stg-*"
     workflows:
-      _discord-start:
+      discord-start:
         environments:
           - NOTIFY_KIND: stg
       deploy-testflight: {}
-      _discord-success:
+      discord-success:
         depends_on:
           - deploy-testflight
         environments:
@@ -46,11 +46,11 @@ pipelines:
       tag:
         - name: "v*"
     workflows:
-      _discord-start:
+      discord-start:
         environments:
           - NOTIFY_KIND: live
       deploy-appstore: {}
-      _discord-success:
+      discord-success:
         depends_on:
           - deploy-appstore
         environments:
@@ -308,7 +308,7 @@ workflows:
       - deploy-to-bitrise-io@2: {}
 
   # ── Discord 알림 (배포 워크플로와 분리, 파이프라인이 오케스트레이션) ──────────
-  _discord-start:
+  discord-start:
     summary: 빌드 시작 Discord 알림. NOTIFY_KIND(stg/live)로 메시지 분기.
     steps:
       - script@1:
@@ -335,7 +335,7 @@ workflows:
                     except Exception as e: print("discord skip:", e)
                 PY
 
-  _discord-success:
+  discord-success:
     summary: 배포 성공 Discord 알림. 릴리스 노트는 레포에서 직접 계산. NOTIFY_KIND로 분기.
     steps:
       - git-clone@8: {}
