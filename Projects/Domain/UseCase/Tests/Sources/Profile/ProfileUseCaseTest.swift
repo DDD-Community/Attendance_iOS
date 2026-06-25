@@ -191,6 +191,48 @@ struct ProfileUseCaseTest {
     #expect(mockProfileRepository.lastEditInput?.managerRoles == nil, "Manager 역할이 전달되지 않아야 함")
   }
 
+  @Test("TC-005-1: 운영진에서 멤버로 기수 변경 시 managerRoles 제외")
+  func edit_profile_demote_to_member_omits_manager_roles() async throws {
+    // Given: 이전 운영진 권한이 세션에 남아 있지만 초대코드 검증 결과가 Member인 경우
+    let userSession = UserSession(
+      userID: 202,
+      name: "멤버 전환자",
+      selectPart: Entity.SelectParts.ios,
+      userRole: Entity.Staff.member,
+      managing: [Entity.StaffManaging.teamManaging, Entity.StaffManaging.attendanceCheck],
+      selectTeam: Entity.SelectTeams.ios1,
+      selectTeamId: 1,
+      generationId: 19,
+      inviteCode: "MEMBER999",
+      generation: "19기"
+    )
+
+    let expectedUpdatedProfile = ProfileEntity(
+      userID: 202,
+      name: "멤버 전환자",
+      generation: "19기",
+      team: Entity.SelectTeams.ios1,
+      jobRole: Entity.SelectParts.ios,
+      role: Entity.Staff.member,
+      manger: nil
+    )
+    mockProfileRepository.configureEditProfileSuccess(expectedUpdatedProfile)
+
+    // When: Member 초대코드 기준 프로필 수정 실행
+    let result = try await withDependencies {
+      $0.profileRepository = mockProfileRepository
+    } operation: {
+      let useCase = ProfileUseCaseImpl()
+      return try await useCase.editUser(userSession: userSession)
+    }
+
+    // Then: 기존 운영진 업무가 남아 있어도 Member 요청에는 managerRoles가 없어야 함
+    #expect(result.role == Entity.Staff.member, "Member로 변경되어야 함")
+    #expect(result.manger == nil, "Member 응답에는 관리 권한이 없어야 함")
+    #expect(mockProfileRepository.lastEditInput?.managerRoles == nil, "Member 변경 요청에는 managerRoles가 전달되지 않아야 함")
+    #expect(mockProfileRepository.editProfileCallCount == 1, "Repository가 한 번 호출되어야 함")
+  }
+
   @Test("TC-006: 프로필 수정 실패 (권한 없음)")
   func edit_profile_failure_unauthorized() async throws {
     // Given: 권한 없음 에러 설정

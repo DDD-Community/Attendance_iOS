@@ -280,9 +280,18 @@ extension SelectManagingReducer {
       case let .success(data):
         state.editProfile = data
         state.$editGeneration.withLock { $0 = false }
-        state.$staffRole.withLock { $0 = state.userSession.userRole }
+        state.$staffRole.withLock { $0 = data.role }
+        state.$userSession.withLock {
+          $0.userID = data.userID
+          $0.name = data.name
+          $0.generation = data.generation
+          $0.selectTeam = data.team ?? .unknown
+          $0.selectPart = data.jobRole
+          $0.userRole = data.role
+          $0.managing = data.manger ?? []
+        }
 
-        if state.userSession.userRole == .manager {
+        if data.role == .manager {
           return .send(.navigation(.presentManager))
         } else {
           return .send(.navigation(.presentMember))

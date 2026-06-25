@@ -298,10 +298,19 @@ extension SelectTeam {
           case .success(let data):
             state.editProfile = data
             state.$editGeneration.withLock { $0 = false }
-            state.$staffRole.withLock { $0 = state.userSession.userRole }
+            state.$staffRole.withLock { $0 = data.role }
+            state.$userSession.withLock {
+              $0.userID = data.userID
+              $0.name = data.name
+              $0.generation = data.generation
+              $0.selectTeam = data.team ?? .unknown
+              $0.selectPart = data.jobRole
+              $0.userRole = data.role
+              $0.managing = data.manger ?? []
+            }
 
             // 기수변경 완료 후 변경된 역할에 맞는 홈으로 이동 (운영진/멤버)
-            if state.userSession.userRole == .manager {
+            if data.role == .manager {
               return .send(.navigation(.presentManager))
             } else {
               return .send(.navigation(.presentMember))

@@ -195,25 +195,30 @@ extension InviteCodeReducer {
       switch result {
       case .success(let data):
         state.verifyInviteCodeModel = data
-          state.$userSession.withLock {
-            $0.userRole = state.verifyInviteCodeModel?.type ?? .member
-            $0.generationId = state.verifyInviteCodeModel?.generationID ?? .zero
-            $0.inviteCode = state.totalInviteCode
-          }
-          return .send(.navigation(.presentSignUpName))
+        state.isNotAvailableCode = false
+        let inviteCode = state.totalInviteCode
+        state.$userSession.withLock {
+          $0.userRole = data.type
+          $0.generationId = data.generationID
+          $0.inviteCode = inviteCode
+          $0.managing = []
+          $0.selectTeam = .unknown
+          $0.selectTeamId = nil
+        }
+        return .send(.navigation(.presentSignUpName))
 
       case .failure(let error):
         #logError("코드에러", error)
-        state.isNotAvailableCode.toggle()
-          state.alert = AlertState {
-              TextState("오류")
-          } actions: {
-            ButtonState(action: .confirmTapped) {
-                  TextState("확인")
-              }
-          } message: {
-            TextState("잘못된 초대 코드입니다. 다시 입력해 주세요.\n\(SignUpError.invalidInviteCode.errorDescription ?? "")")
+        state.isNotAvailableCode = true
+        state.alert = AlertState {
+          TextState("오류")
+        } actions: {
+          ButtonState(action: .confirmTapped) {
+            TextState("확인")
           }
+        } message: {
+          TextState("잘못된 초대 코드입니다. 다시 입력해 주세요.\n\(SignUpError.invalidInviteCode.errorDescription ?? "")")
+        }
       }
       return .none
     }

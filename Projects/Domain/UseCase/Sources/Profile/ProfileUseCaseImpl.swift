@@ -39,16 +39,7 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
 
   public func refreshProfile() async throws -> ProfileEntity {
     let profile = try await repository.refreshProfile()
-    $staffRole.withLock { $0 = profile.role }
-    $userSession.withLock {
-      $0.userID = profile.userID
-      $0.name = profile.name
-      $0.generation = profile.generation
-      $0.selectTeam = profile.team ?? .unknown
-      $0.selectPart = profile.jobRole
-      $0.userRole = profile.role
-      $0.managing = profile.manger ?? []
-    }
+    syncProfileSession(with: profile)
     return profile
   }
 
@@ -56,18 +47,7 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
 
   public func getProfile() async throws -> ProfileEntity {
     let profileResult = try await repository.getProfile()
-    $staffRole.withLock {
-      $0 = profileResult.role
-    }
-    $userSession.withLock {
-      $0.userID = profileResult.userID
-      $0.name = profileResult.name
-      $0.generation = profileResult.generation
-      $0.selectTeam = profileResult.team ?? .unknown
-      $0.selectPart = profileResult.jobRole
-      $0.userRole = profileResult.role
-      $0.managing = profileResult.manger ?? []
-    }
+    syncProfileSession(with: profileResult)
     return profileResult
   }
 
@@ -88,10 +68,39 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
 
   public func editProfile(input: EditProfileInput) async throws -> ProfileEntity {
     let editProfile = try await repository.editProfile(input: input)
-    $staffRole.withLock {
-      $0 = editProfile.role
-    }
+    syncProfileSession(
+      with: editProfile,
+      generationId: input.generationId,
+      inviteCode: input.inviteCode
+    )
     return editProfile
+  }
+
+  private func syncProfileSession(
+    with profile: ProfileEntity,
+    generationId: Int? = nil,
+    inviteCode: String? = nil
+  ) {
+    $staffRole.withLock {
+      $0 = profile.role
+    }
+    $userSession.withLock {
+      $0.userID = profile.userID
+      $0.name = profile.name
+      $0.generation = profile.generation
+      $0.selectTeam = profile.team ?? .unknown
+      $0.selectPart = profile.jobRole
+      $0.userRole = profile.role
+      $0.managing = profile.manger ?? []
+
+      if let generationId {
+        $0.generationId = generationId
+      }
+
+      if let inviteCode {
+        $0.inviteCode = inviteCode
+      }
+    }
   }
 }
 
