@@ -160,6 +160,12 @@ workflows:
       - activate-ssh-key@4:
           run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
       - git-clone@8: {}
+      - restore-cache@3:
+          inputs:
+            - key: |-
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}
+                deps-{{ .OS }}-{{ .Arch }}
       - script@1:
           title: 비밀 자산 주입 + Tuist(make) generate
           inputs:
@@ -180,6 +186,16 @@ workflows:
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
                 ls -d *.xcworkspace
+      - save-cache@1:
+          inputs:
+            - key: deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+            - paths: |-
+                $HOME/.local/bin
+                $HOME/.local/share/mise
+                $HOME/.cache/mise
+                $HOME/.cache/tuist
+                $HOME/Library/Caches/org.swift.swiftpm
+                $HOME/Library/Developer/Xcode/DerivedData/**/SourcePackages
       - script@1:
           title: 릴리스 노트 수집 ([v버전] + ko metadata 본문)
           inputs:
@@ -243,6 +259,12 @@ workflows:
       - activate-ssh-key@4:
           run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
       - git-clone@8: {}
+      - restore-cache@3:
+          inputs:
+            - key: |-
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}
+                deps-{{ .OS }}-{{ .Arch }}
       - script@1:
           title: 비밀 자산 주입 + 릴리스 버전 + Tuist(make) generate
           inputs:
@@ -270,6 +292,16 @@ workflows:
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
                 ls -d *.xcworkspace
+      - save-cache@1:
+          inputs:
+            - key: deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+            - paths: |-
+                $HOME/.local/bin
+                $HOME/.local/share/mise
+                $HOME/.cache/mise
+                $HOME/.cache/tuist
+                $HOME/Library/Caches/org.swift.swiftpm
+                $HOME/Library/Developer/Xcode/DerivedData/**/SourcePackages
       - script@1:
           title: Discord 빌드 시작 알림
           inputs:
