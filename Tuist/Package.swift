@@ -45,6 +45,11 @@ let packageSettings = PackageSettings(
     "GTMSessionFetcher": .staticFramework
   ],
   baseSettings: .settings(
+    base: [
+      // Xcode 26 explicit modules가 매크로 플러그인(LogMacroMacro 등)을 incompatible target으로
+      // 빌드하는 문제 회피 — 모든 SPM 매크로를 implicit 방식으로 빌드
+      "SWIFT_ENABLE_EXPLICIT_MODULES": "NO"
+    ],
     configurations: [
       .debug(name: "Debug"),
       .debug(name: "Stage"),
