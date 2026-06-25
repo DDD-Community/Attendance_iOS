@@ -285,7 +285,11 @@ extension SelectManagingReducer {
             state.$editGeneration.withLock { $0 = false }
             state.$staffRole.withLock { $0 = state.userSession.userRole }
 
-            return .send(.navigation(.presentProfile))
+            if state.userSession.userRole == .manager {
+              return .send(.navigation(.presentManager))
+            } else {
+              return .send(.navigation(.presentMember))
+            }
 
           case .failure(let error):
             state.errorMessage = error.errorDescription

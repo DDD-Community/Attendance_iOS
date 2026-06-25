@@ -124,6 +124,13 @@ extension ProfileCoordinator {
         state.routes.goBackTo(\.profile)
         return .none
 
+      // 기수변경으로 역할이 바뀐 경우 상위(Member/Staff)로 전파해 홈 전환
+      case .routeAction(id: _, action: .onBoarding(.navigation(.presentStaff))):
+        return .send(.navigation(.presentStaff))
+
+      case .routeAction(id: _, action: .onBoarding(.navigation(.presentMember))):
+        return .send(.navigation(.presentMember))
+
     default:
       return .none
     }

@@ -300,7 +300,12 @@ extension SelectTeam {
             state.$editGeneration.withLock { $0 = false }
             state.$staffRole.withLock { $0 = state.userSession.userRole }
 
-            return .send(.navigation(.presentProfile))
+            // 기수변경 완료 후 변경된 역할에 맞는 홈으로 이동 (운영진/멤버)
+            if state.userSession.userRole == .manager {
+              return .send(.navigation(.presentManager))
+            } else {
+              return .send(.navigation(.presentMember))
+            }
 
           case .failure(let error):
             state.errorMessage = error.errorDescription
