@@ -13,20 +13,60 @@ app:
     - TUIST_VERSION: 4.154.0
     - REPO: DDD-Community/Attendance_iOS
 
-# Starter 플랜은 Pipelines 미지원 → trigger_map + 단일 workflow 구조
-trigger_map:
-  - push_branch: develop
-    workflow: deploy-stg
-  - push_branch: "release-stg-*"
-    workflow: deploy-stg
-  - tag: "v*"
-    workflow: deploy-live
-  - pull_request_target_branch: "*"
-    workflow: run-tests
+pipelines:
+  # PR → 유닛 테스트 + 커버리지/실패 PR 코멘트
+  run-tests:
+    triggers:
+      pull_request:
+        - target_branch: "*"
+    workflows:
+      ios-run-tests: {}
+
+  # develop / release-stg-* push → 빌드 → TestFlight
+  deploy-stg:
+    triggers:
+      push:
+        - branch: develop
+        - branch: "release-stg-*"
+    workflows:
+      discord-start:
+        environments:
+          - NOTIFY_KIND: stg
+      build-stg: {}
+      fastlane-qa:
+        depends_on:
+          - build-stg
+      discord-success:
+        depends_on:
+          - fastlane-qa
+        environments:
+          - NOTIFY_KIND: stg
+
+  # v* 태그 → 빌드 → App Store
+  deploy-live:
+    triggers:
+      tag:
+        - name: "v*"
+    workflows:
+      discord-start:
+        environments:
+          - NOTIFY_KIND: live
+      build-prod: {}
+      fastlane-release:
+        depends_on:
+          - build-prod
+      discord-success:
+        depends_on:
+          - fastlane-release
+        environments:
+          - NOTIFY_KIND: live
 
 workflows:
   # ── PR 유닛 테스트 ─────────────────────────────────────────────────
-  run-tests:
+  ios-run-tests:
+    summary: >-
+      자산 주입 → (캐시 복원) → Tuist 설치/generate → tuist test →
+      PR이면 커버리지·실패목록을 PR sticky 코멘트로 게시.
     steps:
       - activate-ssh-key@4:
           run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
@@ -117,20 +157,76 @@ workflows:
                 [🔗 빌드 로그]($BITRISE_BUILD_URL)"
                 export BODY
                 JSON=$(python3 -c "import json,os;print(json.dumps({'body':os.environ['BODY']}))")
+
                 API="https://api.github.com/repos/$REPO"
                 AUTH="Authorization: Bearer $TOKEN"
                 ACC="Accept: application/vnd.github+json"
+                echo "[diag] repo GET=$(curl -s -o /dev/null -w '%{http_code}' -H "$AUTH" -H "$ACC" "$API")"
                 ID=$(curl -s -H "$AUTH" -H "$ACC" "$API/issues/$PR/comments?per_page=100" | python3 -c "import sys,json,os;m=os.environ['MARKER'];d=json.load(sys.stdin);cs=d if isinstance(d,list) else [];print(next((str(c['id']) for c in cs if m in (c.get('body') or '')),''))" 2>/dev/null || echo "")
                 if [ -n "$ID" ]; then
-                  CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH -H "$AUTH" -H "$ACC" "$API/issues/comments/$ID" -d "$JSON")
+                  CODE=$(curl -s -o /tmp/ghresp.json -w "%{http_code}" -X PATCH -H "$AUTH" -H "$ACC" "$API/issues/comments/$ID" -d "$JSON")
+                  echo "PATCH status=$CODE (comment #$ID)"
                 else
-                  CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "$AUTH" -H "$ACC" "$API/issues/$PR/comments" -d "$JSON")
+                  CODE=$(curl -s -o /tmp/ghresp.json -w "%{http_code}" -X POST -H "$AUTH" -H "$ACC" "$API/issues/$PR/comments" -d "$JSON")
+                  echo "POST status=$CODE (PR #$PR)"
                 fi
-                echo "PR 코멘트 status=$CODE"
+                case "$CODE" in
+                  200|201) echo "✅ 코멘트 반영 완료";;
+                  *) echo "❌ 코멘트 실패(HTTP $CODE): $(cat /tmp/ghresp.json 2>/dev/null | head -c 500)";;
+                esac
       - deploy-to-bitrise-io@2: {}
 
-  # ── Stage → TestFlight (develop / release-stg-* push) ───────────────
-  deploy-stg:
+  # ── 빌드 (Stage): 자산 주입 + Tuist generate + 의존성 캐시 워밍업 ──────
+  build-stg:
+    summary: 자산 주입 → Tuist 설치/generate → 의존성 캐시 저장 (fastlane-qa 가 캐시 재사용)
+    steps:
+      - activate-ssh-key@4:
+          run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+      - git-clone@8: {}
+      - script@1:
+          title: 비밀 자산 주입 (Config repo)
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -euo pipefail
+                git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
+                mkdir -p Config fastlane
+                cp /tmp/cfg/Config/*.xcconfig Config/
+                cp /tmp/cfg/fastlane/.env fastlane/.env
+                mkdir -p Projects/App/Resources && cp /tmp/cfg/App/GoogleService-Info.plist Projects/App/Resources/GoogleService-Info.plist
+      - restore-cache@3:
+          inputs:
+            - key: |-
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}
+                deps-{{ .OS }}-{{ .Arch }}
+      - script@1:
+          title: Tuist 설치 + 프로젝트 생성
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -euxo pipefail
+                curl -fsSL https://mise.run | sh
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                mise install "tuist@${TUIST_VERSION}"
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
+                ls -d *.xcworkspace
+      - save-cache@1:
+          inputs:
+            - key: deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+            - paths: |-
+                $HOME/.local/bin
+                $HOME/.local/share/mise
+                $HOME/.cache/mise
+                $HOME/.cache/tuist
+                $HOME/Library/Caches/org.swift.swiftpm
+                $HOME/Library/Developer/Xcode/DerivedData/**/SourcePackages
+
+  # ── 배포 (Stage → TestFlight): fastlane QA ──────────────────────────
+  fastlane-qa:
+    summary: 자산 주입(+Match) → Tuist generate(캐시 재사용) → fastlane QA(TestFlight)
     steps:
       - activate-ssh-key@4:
           run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
@@ -166,42 +262,6 @@ workflows:
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
                 ls -d *.xcworkspace
-      - save-cache@1:
-          inputs:
-            - key: deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
-            - paths: |-
-                $HOME/.local/bin
-                $HOME/.local/share/mise
-                $HOME/.cache/mise
-                $HOME/.cache/tuist
-                $HOME/Library/Caches/org.swift.swiftpm
-                $HOME/Library/Developer/Xcode/DerivedData/**/SourcePackages
-      - script@1:
-          title: 릴리스 노트 수집
-          inputs:
-            - content: |
-                #!/usr/bin/env bash
-                set -e
-                EXT="Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
-                VER=$(grep -oE 'appVersion\(version: String = "[0-9.]+"' "$EXT" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
-                BODY=$(sed -E '/^\[[vV] ?[0-9.]+\]/d' fastlane/metadata/ko/release_notes.txt 2>/dev/null | sed '/./,$!d')
-                [ -z "$BODY" ] && BODY="- 버그 수정"
-                envman add --key RELEASE_NOTES --value "[v${VER}]
-                ${BODY}"
-      - script@1:
-          title: Discord 빌드 시작 알림
-          inputs:
-            - content: |
-                #!/usr/bin/env bash
-                python3 - <<'PY'
-                import os, json, urllib.request
-                msg = f"🛠️ **DDDAttendance** TestFlight(QA) 빌드 시작 · #{os.environ.get('BITRISE_BUILD_NUMBER','')}\n{os.environ.get('BITRISE_BUILD_URL','')}"
-                wh = os.environ.get('DISCORD_WEBHOOK','')
-                if wh:
-                    req = urllib.request.Request(wh, data=json.dumps({"content": msg}).encode(), headers={"Content-Type":"application/json","User-Agent":"DDDAttendance-CI/1.0"})
-                    try: urllib.request.urlopen(req); print("discord ok")
-                    except Exception as e: print("discord skip:", e)
-                PY
       - restore-cache@3:
           title: Gem 캐시 복원
           inputs:
@@ -216,6 +276,7 @@ workflows:
                 set -euo pipefail
                 export PATH="$HOME/.local/bin:$PATH"
                 eval "$(mise activate bash)"
+                # fastlane 스텝과 동일한 ruby(mise)로 설치해야 bundle exec가 gem을 찾음
                 bundle config set --local path vendor/bundle
                 bundle install
       - save-cache@1:
@@ -231,33 +292,64 @@ workflows:
                 set -euo pipefail
                 export PATH="$HOME/.local/bin:$PATH"
                 eval "$(mise activate bash)"
+                # Fastfile 내부에서 'tuist generate'를 호출하므로 mise(tuist) 활성화 필수
                 bundle exec fastlane ios QA
+                # 빌드된 IPA를 Bitrise 배포 디렉토리로 복사 → Installable artifacts 노출
                 mkdir -p "$BITRISE_DEPLOY_DIR"
                 cp -f fastlane/output/*.ipa "$BITRISE_DEPLOY_DIR/" 2>/dev/null || true
+      - deploy-to-bitrise-io@2: {}
+
+  # ── 빌드 (Prod): 릴리스 버전 + 자산 주입 + Tuist generate + 캐시 ───────
+  build-prod:
+    summary: 릴리스 버전 추출 → 자산 주입 → Tuist 설치/generate → 의존성 캐시 저장
+    steps:
+      - activate-ssh-key@4:
+          run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+      - git-clone@8: {}
       - script@1:
-          title: Discord 성공 알림 (멘션 + 릴리스 노트)
+          title: 비밀 자산 주입 (Config repo)
           inputs:
             - content: |
                 #!/usr/bin/env bash
-                python3 - <<'PY'
-                import os, json, urllib.request
-                msg = "@hoker9494 @loveyourfamily\n"
-                msg += f"✅ **attendance-iOS** TestFlight 배포 완료 · #{os.environ.get('BITRISE_BUILD_NUMBER','')}"
-                notes = os.environ.get('RELEASE_NOTES','').strip()
-                if notes: msg += "\n" + notes
-                msg += "\n🔗 TestFlight: https://testflight.apple.com/join/WbTjTcmF"
-                url = os.environ.get('BITRISE_BUILD_URL','')
-                if url: msg += "\n" + url
-                wh = os.environ.get('DISCORD_WEBHOOK','')
-                if wh:
-                    req = urllib.request.Request(wh, data=json.dumps({"content": msg}).encode(), headers={"Content-Type":"application/json","User-Agent":"DDDAttendance-CI/1.0"})
-                    try: urllib.request.urlopen(req); print("discord ok")
-                    except Exception as e: print("discord skip:", e)
-                PY
-      - deploy-to-bitrise-io@2: {}
+                set -euo pipefail
+                git clone --depth 1 "https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${CONFIG_REPO}.git" /tmp/cfg
+                mkdir -p Config fastlane
+                cp /tmp/cfg/Config/*.xcconfig Config/
+                cp /tmp/cfg/fastlane/.env       fastlane/.env
+                mkdir -p Projects/App/Resources && cp /tmp/cfg/App/GoogleService-Info.plist Projects/App/Resources/GoogleService-Info.plist
+      - restore-cache@3:
+          inputs:
+            - key: |-
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+                deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}
+                deps-{{ .OS }}-{{ .Arch }}
+      - script@1:
+          title: Tuist 설치 + 프로젝트 생성
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -euxo pipefail
+                curl -fsSL https://mise.run | sh
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                mise install "tuist@${TUIST_VERSION}"
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
+                mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
+                ls -d *.xcworkspace
+      - save-cache@1:
+          inputs:
+            - key: deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
+            - paths: |-
+                $HOME/.local/bin
+                $HOME/.local/share/mise
+                $HOME/.cache/mise
+                $HOME/.cache/tuist
+                $HOME/Library/Caches/org.swift.swiftpm
+                $HOME/Library/Developer/Xcode/DerivedData/**/SourcePackages
 
-  # ── Prod → App Store (v* 태그) ─────────────────────────────────────
-  deploy-live:
+  # ── 배포 (Prod → App Store): fastlane release ───────────────────────
+  fastlane-release:
+    summary: 자산 주입(+Match) → 릴리스 버전 → Tuist generate(캐시) → fastlane release(App Store)
     steps:
       - activate-ssh-key@4:
           run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
@@ -306,30 +398,6 @@ workflows:
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift install
                 mise exec "tuist@${TUIST_VERSION}" -- swift TuistTool.swift generate
                 ls -d *.xcworkspace
-      - save-cache@1:
-          inputs:
-            - key: deps-{{ .OS }}-{{ .Arch }}-{{ checksum ".mise.toml" }}-{{ checksum "Tuist/Package.resolved" }}
-            - paths: |-
-                $HOME/.local/bin
-                $HOME/.local/share/mise
-                $HOME/.cache/mise
-                $HOME/.cache/tuist
-                $HOME/Library/Caches/org.swift.swiftpm
-                $HOME/Library/Developer/Xcode/DerivedData/**/SourcePackages
-      - script@1:
-          title: Discord 빌드 시작 알림
-          inputs:
-            - content: |
-                #!/usr/bin/env bash
-                python3 - <<'PY'
-                import os, json, urllib.request
-                msg = f"🚀 **DDDAttendance** App Store(Prod) 빌드 시작 · {os.environ.get('RELEASE_VERSION','')} · #{os.environ.get('BITRISE_BUILD_NUMBER','')}\n{os.environ.get('BITRISE_BUILD_URL','')}"
-                wh = os.environ.get('DISCORD_WEBHOOK','')
-                if wh:
-                    req = urllib.request.Request(wh, data=json.dumps({"content": msg}).encode(), headers={"Content-Type":"application/json","User-Agent":"DDDAttendance-CI/1.0"})
-                    try: urllib.request.urlopen(req); print("discord ok")
-                    except Exception as e: print("discord skip:", e)
-                PY
       - restore-cache@3:
           title: Gem 캐시 복원
           inputs:
@@ -344,6 +412,7 @@ workflows:
                 set -euo pipefail
                 export PATH="$HOME/.local/bin:$PATH"
                 eval "$(mise activate bash)"
+                # fastlane 스텝과 동일한 ruby(mise)로 설치해야 bundle exec가 gem을 찾음
                 bundle config set --local path vendor/bundle
                 bundle install
       - save-cache@1:
@@ -359,23 +428,79 @@ workflows:
                 set -euo pipefail
                 export PATH="$HOME/.local/bin:$PATH"
                 eval "$(mise activate bash)"
+                # Fastfile 내부에서 'tuist generate'를 호출하므로 mise(tuist) 활성화 필수
                 bundle exec fastlane ios release version:$RELEASE_VERSION
+                # 빌드된 IPA를 Bitrise 배포 디렉토리로 복사 → Installable artifacts 노출
                 mkdir -p "$BITRISE_DEPLOY_DIR"
                 cp -f fastlane/output/*.ipa "$BITRISE_DEPLOY_DIR/" 2>/dev/null || true
+      - deploy-to-bitrise-io@2: {}
+
+  # ── Discord 알림 (배포 워크플로와 분리, 파이프라인이 오케스트레이션) ──────────
+  discord-start:
+    summary: 빌드 시작 Discord 알림. NOTIFY_KIND(stg/live)로 메시지 분기.
+    steps:
       - script@1:
-          title: Discord 성공 알림
+          title: Discord 빌드 시작 알림
           inputs:
             - content: |
                 #!/usr/bin/env bash
                 python3 - <<'PY'
                 import os, json, urllib.request
-                msg = f"🚀 **DDDAttendance** {os.environ.get('RELEASE_VERSION','')} App Store 제출 완료 · #{os.environ.get('BITRISE_BUILD_NUMBER','')}"
+                kind = os.environ.get('NOTIFY_KIND','stg')
+                bn = os.environ.get('BITRISE_BUILD_NUMBER','')
                 url = os.environ.get('BITRISE_BUILD_URL','')
-                if url: msg += "\n" + url
+                if kind == 'live':
+                    tag = os.environ.get('BITRISE_GIT_TAG','')
+                    ver = tag[1:] if tag.startswith('v') else tag
+                    msg = f"🚀 **DDDAttendance** App Store(Prod) 빌드 시작 · {ver} · #{bn}\n{url}"
+                else:
+                    msg = f"🛠️ **DDDAttendance** TestFlight(QA) 빌드 시작 · #{bn}\n{url}"
                 wh = os.environ.get('DISCORD_WEBHOOK','')
                 if wh:
-                    req = urllib.request.Request(wh, data=json.dumps({"content": msg}).encode(), headers={"Content-Type":"application/json","User-Agent":"DDDAttendance-CI/1.0"})
+                    req = urllib.request.Request(wh, data=json.dumps({"content": msg}).encode(),
+                                                 headers={"Content-Type":"application/json","User-Agent":"DDDAttendance-CI/1.0"})
                     try: urllib.request.urlopen(req); print("discord ok")
                     except Exception as e: print("discord skip:", e)
                 PY
-      - deploy-to-bitrise-io@2: {}
+
+  discord-success:
+    summary: 배포 성공 Discord 알림. 릴리스 노트는 레포에서 직접 계산. NOTIFY_KIND로 분기.
+    steps:
+      - git-clone@8: {}
+      - script@1:
+          title: Discord 성공 알림 (멘션 + 릴리스 노트)
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -uo pipefail
+                EXT="Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
+                VER=$(grep -oE 'appVersion\(version: String = "[0-9.]+"' "$EXT" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+                BODY=$(sed -E '/^\[v ?[0-9.]+\]/d' fastlane/metadata/ko/release_notes.txt 2>/dev/null | sed '/./,$!d')
+                [ -z "$BODY" ] && BODY="- 버그 수정"
+                NOTES="[v${VER}]
+                ${BODY}"
+                export NOTES
+                python3 - <<'PY'
+                import os, json, urllib.request
+                kind = os.environ.get('NOTIFY_KIND','stg')
+                bn = os.environ.get('BITRISE_BUILD_NUMBER','')
+                url = os.environ.get('BITRISE_BUILD_URL','')
+                notes = os.environ.get('NOTES','').strip()
+                if kind == 'live':
+                    tag = os.environ.get('BITRISE_GIT_TAG','')
+                    ver = tag[1:] if tag.startswith('v') else tag
+                    msg = f"🚀 **DDDAttendance** {ver} App Store 제출 완료 · #{bn}"
+                    if url: msg += "\n" + url
+                else:
+                    msg = "@hoker9494 @loveyourfamily\n"
+                    msg += f"✅ **attendance-iOS** TestFlight 배포 완료 · #{bn}"
+                    if notes: msg += "\n" + notes
+                    msg += "\n🔗 TestFlight: https://testflight.apple.com/join/WbTjTcmF"
+                    if url: msg += "\n" + url
+                wh = os.environ.get('DISCORD_WEBHOOK','')
+                if wh:
+                    req = urllib.request.Request(wh, data=json.dumps({"content": msg}).encode(),
+                                                 headers={"Content-Type":"application/json","User-Agent":"DDDAttendance-CI/1.0"})
+                    try: urllib.request.urlopen(req); print("discord ok")
+                    except Exception as e: print("discord skip:", e)
+                PY
