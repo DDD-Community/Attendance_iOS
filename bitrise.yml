@@ -274,6 +274,9 @@ workflows:
             - content: |
                 #!/usr/bin/env bash
                 set -euo pipefail
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                # fastlane 스텝과 동일한 ruby(mise)로 설치해야 bundle exec가 gem을 찾음
                 bundle config set --local path vendor/bundle
                 bundle install
       - save-cache@1:
@@ -291,6 +294,9 @@ workflows:
                 eval "$(mise activate bash)"
                 # Fastfile 내부에서 'tuist generate'를 호출하므로 mise(tuist) 활성화 필수
                 bundle exec fastlane ios QA
+                # 빌드된 IPA를 Bitrise 배포 디렉토리로 복사 → Installable artifacts 노출
+                mkdir -p "$BITRISE_DEPLOY_DIR"
+                cp -f fastlane/output/*.ipa "$BITRISE_DEPLOY_DIR/" 2>/dev/null || true
       - deploy-to-bitrise-io@2: {}
 
   # ── 빌드 (Prod): 릴리스 버전 + 자산 주입 + Tuist generate + 캐시 ───────
@@ -404,6 +410,9 @@ workflows:
             - content: |
                 #!/usr/bin/env bash
                 set -euo pipefail
+                export PATH="$HOME/.local/bin:$PATH"
+                eval "$(mise activate bash)"
+                # fastlane 스텝과 동일한 ruby(mise)로 설치해야 bundle exec가 gem을 찾음
                 bundle config set --local path vendor/bundle
                 bundle install
       - save-cache@1:
@@ -421,6 +430,9 @@ workflows:
                 eval "$(mise activate bash)"
                 # Fastfile 내부에서 'tuist generate'를 호출하므로 mise(tuist) 활성화 필수
                 bundle exec fastlane ios release version:$RELEASE_VERSION
+                # 빌드된 IPA를 Bitrise 배포 디렉토리로 복사 → Installable artifacts 노출
+                mkdir -p "$BITRISE_DEPLOY_DIR"
+                cp -f fastlane/output/*.ipa "$BITRISE_DEPLOY_DIR/" 2>/dev/null || true
       - deploy-to-bitrise-io@2: {}
 
   # ── Discord 알림 (배포 워크플로와 분리, 파이프라인이 오케스트레이션) ──────────
