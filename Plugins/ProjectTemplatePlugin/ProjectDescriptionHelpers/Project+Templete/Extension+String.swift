@@ -8,21 +8,20 @@
 import Foundation
 import ProjectDescription
 
-extension String {
-  public static func appVersion(version: String = "1.0.9") -> String {
+public extension String {
+  static func appVersion(version: String = "1.1.0") -> String {
     return version
   }
-  
-  public static func mainBundleID() -> String {
+
+  static func mainBundleID() -> String {
     return Project.Environment.bundlePrefix
   }
-  
-  public static func appBuildVersion(buildVersion: String = "79") -> String {
+
+  static func appBuildVersion(buildVersion: String = "79") -> String {
     return buildVersion
   }
-  
-  public static func appBundleID(name: String) -> String {
-    return Project.Environment.bundlePrefix+name
+
+  static func appBundleID(name: String) -> String {
+    return Project.Environment.bundlePrefix + name
   }
-  
 }
