@@ -62,7 +62,7 @@ end
 def current_app_version
   extension_file_path = "../Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
   content = File.read(extension_file_path)
-  if content =~ /public static func appVersion\(version: String = "([0-9.]+)"\)/
+  if content =~ /static func appVersion\(version: String = "([0-9.]+)"\)/
     Regexp.last_match(1)
   end
 end
@@ -72,8 +72,8 @@ def apply_build_number(new_build_number)
   extension_file_path = "../Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
   content = File.read(extension_file_path)
   updated_content = content.gsub(
-    /public static func appBuildVersion\(buildVersion: String = "\d+"\) -> String \{/,
-    "public static func appBuildVersion(buildVersion: String = \"#{new_build_number}\") -> String {"
+    /static func appBuildVersion\(buildVersion: String = "\d+"\) -> String \{/,
+    "static func appBuildVersion(buildVersion: String = \"#{new_build_number}\") -> String {"
   )
   File.write(extension_file_path, updated_content)
   puts "✅ 빌드 번호를 #{new_build_number}로 업데이트 완료"
