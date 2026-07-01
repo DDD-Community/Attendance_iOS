@@ -363,6 +363,34 @@ workflows:
                 mkdir -p "$BITRISE_DEPLOY_DIR"
                 cp -f fastlane/output/*.ipa "$BITRISE_DEPLOY_DIR/" 2>/dev/null || true
       - script@1:
+          title: GitHub Release 생성/갱신 (latest)
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                set -uo pipefail
+                TOKEN="${CONFIG_REPO_TOKEN:-}"
+                TAG="${BITRISE_GIT_TAG:-}"
+                if [ -z "$TOKEN" ] || [ -z "$TAG" ]; then echo "토큰/태그 없음 → GitHub Release 스킵"; exit 0; fi
+
+                # 릴리스 노트 본문: [v x.y.z] 헤더 줄 제거, 없으면 기본 문구
+                BODY=$(sed -E '/^\[[vV] ?[0-9.]+\]/d' fastlane/metadata/ko/release_notes.txt 2>/dev/null | sed '/./,$!d')
+                [ -z "$BODY" ] && BODY="- 버그 수정 및 안정성 개선"
+                export TAG BODY
+                export RELEASE_VERSION="${RELEASE_VERSION:-$TAG}"
+                JSON=$(python3 -c "import json,os;print(json.dumps({'tag_name':os.environ['TAG'],'name':'v'+os.environ['RELEASE_VERSION'],'body':os.environ['BODY'],'draft':False,'prerelease':False,'make_latest':'true'}))")
+                API="https://api.github.com/repos/$REPO"
+                AUTH="Authorization: Bearer $TOKEN"
+                ACC="Accept: application/vnd.github+json"
+
+                # 기존 태그 릴리스 있으면 PATCH, 없으면 POST
+                ID=$(curl -s -H "$AUTH" -H "$ACC" "$API/releases/tags/$TAG" | python3 -c "import sys,json;d=json.load(sys.stdin);print(d.get('id','') if isinstance(d,dict) else '')" 2>/dev/null || echo "")
+                if [ -n "$ID" ]; then
+                  CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH -H "$AUTH" -H "$ACC" "$API/releases/$ID" -d "$JSON")
+                else
+                  CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "$AUTH" -H "$ACC" "$API/releases" -d "$JSON")
+                fi
+                echo "GitHub Release status=$CODE (tag=$TAG)"
+      - script@1:
           title: Discord 성공 알림
           inputs:
             - content: |
