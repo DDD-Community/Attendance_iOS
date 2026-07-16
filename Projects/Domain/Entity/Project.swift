@@ -9,7 +9,7 @@ let project = Project.makeModule(
   name: "Entity",
   bundleId: .appBundleID(name: ".Entity"),
   product: .staticFramework,
-  settings:  .settings(),
+  settings:  .moduleSettings,
   dependencies: [
   ],
   sources: ["Sources/**"],

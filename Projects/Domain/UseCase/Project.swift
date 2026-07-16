@@ -9,7 +9,7 @@ let project = Project.makeModule(
   name: "UseCase",
   bundleId: .appBundleID(name: ".UseCase"),
   product: .staticFramework,
-  settings:  .settings(),
+  settings:  .moduleSettings,
   dependencies: [
     .Domain(implements: .DomainInterface)
     

@@ -9,7 +9,7 @@ let project = Project.makeModule(
   name: "Model",
   bundleId: .appBundleID(name: ".Model"),
   product: .staticFramework,
-  settings:  .settings(),
+  settings:  .moduleSettings,
   dependencies: [
     .Domain(implements: .Entity)
   ],

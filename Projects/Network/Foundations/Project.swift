@@ -7,7 +7,7 @@ let project = Project.makeModule(
   name: "Foundations",
   bundleId: .appBundleID(name: ".Foundations"),
   product: .staticFramework,
-  settings:  .settings(),
+  settings:  .moduleSettings,
   dependencies: [
     .Network(implements: .ThirdPartys),
     .Domain(implements: .UseCase)

@@ -9,7 +9,7 @@ let project = Project.makeModule(
   name: "Profile",
   bundleId: .appBundleID(name: ".Profile"),
   product: Project.Environment.presentationProduct,
-  settings:  .settings(),
+  settings:  .moduleSettings,
   dependencies: [
     .Shared(implements: .Shareds),
     .Domain(implements: .UseCase),

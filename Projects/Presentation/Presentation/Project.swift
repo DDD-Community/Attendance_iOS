@@ -7,7 +7,7 @@ let project = Project.makeModule(
   name: "Presentation",
   bundleId: .appBundleID(name: ".Presentation"),
   product: Project.Environment.presentationProduct,
-  settings:  .settings(),
+  settings:  .moduleSettings,
   dependencies: [
     .Presentation(implements: .Auth),
     .Presentation(implements: .Splash),

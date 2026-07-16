@@ -9,7 +9,7 @@ let project = Project.makeModule(
   name: "Web",
   bundleId: .appBundleID(name: ".Web"),
   product: .staticFramework,
-  settings:  .settings(),
+  settings:  .moduleSettings,
   dependencies: [
     .Domain(implements: .UseCase),
     .Shared(implements: .Shareds)  

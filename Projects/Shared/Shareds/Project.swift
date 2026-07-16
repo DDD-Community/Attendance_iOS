@@ -7,7 +7,7 @@ let project = Project.makeModule(
     name: "Shareds",
     bundleId: .appBundleID(name: ".Shareds"),
     product: .staticFramework,
-    settings: .settings(),
+    settings: .moduleSettings,
     dependencies: [
         .Shared(implements: .ThirdParty),
         .Shared(implements: .Utill),

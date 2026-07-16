@@ -8,7 +8,7 @@ let project = Project.makeModule(
   name: "ThirdPartys",
   bundleId: .appBundleID(name: ".ThirdPartys"),
   product: .staticFramework,
-  settings:  .settings(),
+  settings:  .moduleSettings,
   dependencies: [
     .SPM.asyncMoya,
     .SPM.weaveDI

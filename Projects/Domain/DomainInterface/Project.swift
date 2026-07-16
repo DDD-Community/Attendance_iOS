@@ -9,7 +9,7 @@ let project = Project.makeModule(
   name: "DomainInterface",
   bundleId: .appBundleID(name: ".DomainInterface"),
   product: .staticFramework,
-  settings:  .settings(),
+  settings:  .moduleSettings,
   dependencies: [
 
     .Data(implements: .Model),

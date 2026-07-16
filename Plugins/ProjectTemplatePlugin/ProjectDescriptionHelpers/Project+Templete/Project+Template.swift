@@ -46,49 +46,10 @@ public extension Project {
       settings: suppressWarningsSettings
     )
 
-    let appProdTarget: Target = .target(
-      name: "\(name)-Prod",
-      destinations: destinations,
-      product: product,
-      bundleId: "\(bundleId)",
-      deploymentTargets: deploymentTarget,
-      infoPlist: infoPlist,
-      buildableFolders: resources != nil ? ["Sources", "Resources"] : ["Sources"],
-      entitlements: entitlements,
-      scripts: scripts,
-      dependencies: dependencies,
-      settings: suppressWarningsSettings
-    )
-
-    let appStageTarget: Target = .target(
-      name: "\(name)-Stage",
-      destinations: destinations,
-      product: product,
-      bundleId: "\(bundleId)",
-      deploymentTargets: deploymentTarget,
-      infoPlist: infoPlist,
-      buildableFolders: resources != nil ? ["Sources", "Resources"] : ["Sources"],
-      entitlements: entitlements,
-      scripts: scripts,
-      dependencies: dependencies,
-      settings: suppressWarningsSettings
-    )
-
-    let appDevTarget: Target = .target(
-      name: "\(name)-Debug",
-      destinations: destinations,
-      product: product,
-      bundleId: "\(bundleId)",
-      deploymentTargets: deploymentTarget,
-      infoPlist: infoPlist,
-      buildableFolders: resources != nil ? ["Sources", "Resources"] : ["Sources"],
-      entitlements: entitlements,
-      scripts: scripts,
-      dependencies: dependencies,
-      settings: suppressWarningsSettings
-    )
-
-    var targets: [Target] = [appTarget, appDevTarget, appStageTarget, appProdTarget]
+    // 단일 타깃 + 다중 config 구조.
+    // 예전에는 -Debug/-Stage/-Prod 타깃을 복제했지만, 네 타깃이 name 만 다르고
+    // 나머지가 전부 동일해 불필요했다. 환경 분기는 config(xcconfig)와 스킴으로만 한다.
+    var targets: [Target] = [appTarget]
 
     if hasTests {
       let appTestTarget: Target = .target(
@@ -114,8 +75,31 @@ public extension Project {
       packages: packages,
       settings: settings,
       targets: targets,
-      schemes: schemes
+      schemes: schemes.isEmpty ? appEnvironmentSchemes(name: name) : schemes
     )
+  }
+
+  /// 단일 앱 타깃을 환경별 config 로 빌드하는 스킴들.
+  /// 스킴 이름은 기존 CI(fastlane STAGE_SCHEME/PROD_SCHEME)와 호환되도록 유지한다.
+  private static func appEnvironmentSchemes(name: String) -> [Scheme] {
+    func envScheme(_ schemeName: String, config: ConfigurationName) -> Scheme {
+      .scheme(
+        name: schemeName,
+        shared: true,
+        buildAction: .buildAction(targets: [.target(name)]),
+        runAction: .runAction(configuration: config),
+        archiveAction: .archiveAction(configuration: config),
+        profileAction: .profileAction(configuration: config),
+        analyzeAction: .analyzeAction(configuration: config)
+      )
+    }
+    return [
+      // 프로젝트 config 이름은 Debug/Stage/Prod/Release (Dev.xcconfig 는 Debug config 에 연결됨).
+      envScheme(name, config: .release),
+      envScheme("\(name)-Debug", config: .debug),
+      envScheme("\(name)-Stage", config: .stage),
+      envScheme("\(name)-Prod", config: .prod)
+    ]
   }
 
   static func makeModule(

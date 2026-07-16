@@ -8,7 +8,7 @@ let project = Project.makeModule(
   name: "ThirdParty",
   bundleId: .appBundleID(name: ".ThirdParty"),
   product: Project.Environment.sharedProduct,
-  settings: .settings(),
+  settings: .moduleSettings,
   dependencies: [
     .SPM.asyncMoya,
     .SPM.composableArchitecture,

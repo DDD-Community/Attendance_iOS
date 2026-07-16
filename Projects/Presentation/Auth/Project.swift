@@ -10,7 +10,7 @@ let project = Project.makeModule(
   name: "Auth",
   bundleId: .appBundleID(name: ".Auth"),
   product: Project.Environment.presentationProduct,
-  settings:  .settings(),
+  settings:  .moduleSettings,
   dependencies: [
     .Shared(implements: .Shareds),
     .Domain(implements: .UseCase),

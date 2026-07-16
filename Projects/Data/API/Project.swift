@@ -1,8 +1,8 @@
+import DependencyPackagePlugin
+import DependencyPlugin
 import Foundation
 import ProjectDescription
-import DependencyPlugin
 import ProjectTemplatePlugin
-import DependencyPackagePlugin
 
 let project = Project.makeModule(
   name: "API",
@@ -11,11 +11,12 @@ let project = Project.makeModule(
   settings: .settings(
     base: [
       "SWIFT_ENABLE_EXPLICIT_MODULES": "NO"
-    ]
+    ],
+    configurations: .moduleDefault
   ),
   dependencies: [
     .Network(implements: .ThirdPartys),
-    .SPM.asyncMoya  // 직접 의존성 추가
+    .SPM.asyncMoya // 직접 의존성 추가
   ],
   sources: ["Sources/**"],
   hasTests: false

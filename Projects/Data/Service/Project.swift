@@ -7,7 +7,7 @@ let project = Project.makeModule(
     name: "Service",
     bundleId: .appBundleID(name: ".Service"),
     product: .staticFramework,
-    settings:  .settings(),
+    settings:  .moduleSettings,
     dependencies: [
       .Network(implements: .ThirdPartys),
       .Data(implements: .API),

@@ -8,7 +8,7 @@ let project = Project.makeModule(
   name: "Networks",
   bundleId: .appBundleID(name: ".Networks"),
   product: .staticFramework,
-  settings:  .settings(),
+  settings:  .moduleSettings,
   dependencies: [
     .Network(implements: .Foundations),
   ],

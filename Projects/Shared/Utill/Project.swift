@@ -8,7 +8,7 @@ let project = Project.makeModule(
     name: "Utill",
     bundleId: .appBundleID(name: ".Utill"),
     product: .staticFramework,
-    settings: .settings(),
+    settings: .moduleSettings,
     dependencies: [
         .SPM.composableArchitecture,
     ],

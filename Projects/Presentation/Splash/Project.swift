@@ -9,7 +9,7 @@ let project = Project.makeModule(
   name: "Splash",
   bundleId: .appBundleID(name: ".Splash"),
   product: Project.Environment.presentationProduct,
-  settings:  .settings(),
+  settings:  .moduleSettings,
   dependencies: [
     .Shared(implements: .Shareds),
     .Shared(implements: .DesignSystem),
