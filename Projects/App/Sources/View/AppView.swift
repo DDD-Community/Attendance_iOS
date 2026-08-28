@@ -11,7 +11,7 @@ import Presentation
 import Profile
 
 import ComposableArchitecture
-import DesignSystem
+import DDDDesignKit
 
 struct AppView: View {
   @Bindable var store: StoreOf<AppReducer>

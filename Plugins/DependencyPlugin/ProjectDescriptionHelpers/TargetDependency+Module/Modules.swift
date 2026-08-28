@@ -15,20 +15,22 @@ public enum ModulePath {
   case Interface(Interfaces)
   case Domain(Domains)
   case Data(Datas)
-  case Shared(Shareds)
+  case UI(UIs)
 }
 
-//MARK: -  앱  모듈
+// MARK: -  앱  모듈
+
 public extension ModulePath {
   enum App: String, CaseIterable {
     case iOS
     case iPad
-    
+
     public static let name: String = "App"
   }
 }
 
 // MARK: FeatureModule
+
 public extension ModulePath {
   enum Presentations: String, CaseIterable {
     case Presentation
@@ -41,32 +43,35 @@ public extension ModulePath {
     case Web
 
     public static let name: String = "Presentation"
-
   }
 }
 
-//MARK: -  CoreMoudule
+// MARK: -  CoreMoudule
+
 public extension ModulePath {
   enum Cores: String, CaseIterable {
-    case Core
-    
+    case DDDCoreUI
+    case DDDCoreUtility
+    case DDDThirdParty
+
     public static let name: String = "Core"
   }
 }
 
-//MARK: -  CoreDomainModule
+// MARK: -  CoreDomainModule
+
 public extension ModulePath {
   enum Networks: String, CaseIterable {
     case Networks
     case Foundations
     case ThirdPartys
-    
-    
+
     public static let name: String = "Network"
   }
 }
 
-//MARK: -  CoreMoudule
+// MARK: -  CoreMoudule
+
 public extension ModulePath {
   enum Datas: String, CaseIterable {
     case Model
@@ -78,40 +83,34 @@ public extension ModulePath {
   }
 }
 
+// MARK: -  CoreMoudule
 
-//MARK: -  CoreMoudule
 public extension ModulePath {
   enum Domains: String, CaseIterable {
     case UseCase
     case DomainInterface
     case QRCode
 
-
     public static let name: String = "Domain"
-      case Entity
+    case Entity
   }
 }
 
-//MARK: -  CoreMoudule
+// MARK: -  CoreMoudule
+
 public extension ModulePath {
   enum Interfaces: String, CaseIterable {
     case Interface
-
 
     public static let name: String = "Interface"
   }
 }
 
-
 public extension ModulePath {
-  enum Shareds: String, CaseIterable {
-    case Shareds
-    case DesignSystem
-    case Utill
-    case ThirdParty
-    
-    public static let name: String = "Shared"
+  enum UIs: String, CaseIterable {
+    case DDDDesignKit
+    case DDDSharedUI
+
+    public static let name: String = "UI"
   }
 }
-
-

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import DesignSystem
+import DDDDesignKit
 
 import AsyncMoya
 import ComposableArchitecture

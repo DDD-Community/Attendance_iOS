@@ -6,7 +6,7 @@
 //
 
 @_exported import ComposableArchitecture
-@_exported import Shareds
+@_exported import DDDSharedUI
 @_exported import SwiftUIX
 @_exported import Splash
 @_exported import Auth

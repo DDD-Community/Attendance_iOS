@@ -7,11 +7,11 @@
 
 import Foundation
 
-import DesignSystem
+import DDDDesignKit
 import Entity
-import Shareds
+import DDDSharedUI
 import UseCase
-import Utill
+import DDDCoreUtility
 
 import ComposableArchitecture
 import LogMacro

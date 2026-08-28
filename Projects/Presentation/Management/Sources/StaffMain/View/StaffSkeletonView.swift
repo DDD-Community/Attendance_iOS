@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import DesignSystem
+import DDDDesignKit
 
 public struct StaffSkeletonView: View {
   @State private var isAnimating = false

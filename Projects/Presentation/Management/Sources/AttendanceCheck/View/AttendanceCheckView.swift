@@ -5,11 +5,12 @@
 //  Created by Wonji Suh  on 1/16/25.
 //
 
+import DDDCoreUI
 import SwiftUI
 
-import DesignSystem
+import DDDDesignKit
 import Entity
-import Shareds
+import DDDSharedUI
 
 import ComposableArchitecture
 
@@ -59,7 +60,7 @@ private extension AttendanceCheckView {
         Spacer()
           .frame(width: 4)
 
-        Text(store.selectAttendanceDate.formattedDateTimeText(date: store.selectAttendanceDate))
+        Text(store.selectAttendanceDate.formatted(.yearMonthDayDotted))
           .pretendardCustomFont(textStyle: .body1NormalMedium)
           .foregroundStyle(.staticWhite)
 
@@ -78,7 +79,7 @@ private extension AttendanceCheckView {
       Spacer()
         .frame(height: 14)
 
-      DesignSystem.AttendanceCard(
+      DDDSharedUI.AttendanceCard(
         attendanceCount: store.attendanceCount,
         lateCount: store.lateCount,
         absentCount: store.absentCount,

@@ -8,7 +8,7 @@
 
 import Foundation
 
-import Shareds
+import DDDSharedUI
 
 import ComposableArchitecture
 import TCAFlow

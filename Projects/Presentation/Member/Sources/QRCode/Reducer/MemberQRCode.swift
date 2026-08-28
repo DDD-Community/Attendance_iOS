@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 import Entity
-import Shareds
+import DDDSharedUI
 
 import ComposableArchitecture
 import LogMacro

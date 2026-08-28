@@ -7,12 +7,12 @@
 
 import Foundation
 
-import Shareds
+import DDDSharedUI
 import UseCase
 
 import AsyncMoya
 import ComposableArchitecture
-import DesignSystem
+import DDDDesignKit
 import Entity
 
 @Reducer

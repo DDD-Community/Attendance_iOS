@@ -5,9 +5,10 @@
 //  Created by Wonji Suh  on 11/3/24.
 //
 
+import DDDSharedUI
 import SwiftUI
 
-import DesignSystem
+import DDDDesignKit
 
 import SwiftUIX
 import ComposableArchitecture

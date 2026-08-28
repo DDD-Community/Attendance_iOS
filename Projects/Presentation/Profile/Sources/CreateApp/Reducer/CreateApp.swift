@@ -8,7 +8,7 @@
 import Foundation
 import ComposableArchitecture
 
-import Shareds
+import DDDSharedUI
 
 @Reducer
 public struct CreateApp {

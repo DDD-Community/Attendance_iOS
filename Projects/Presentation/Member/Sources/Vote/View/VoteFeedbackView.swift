@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import DesignSystem
+import DDDDesignKit
 import Entity
 
 /// [멤버] 투표 2단계 — 참여 경험 피드백 화면 (Figma: iOS/투표_2단계(피드백))

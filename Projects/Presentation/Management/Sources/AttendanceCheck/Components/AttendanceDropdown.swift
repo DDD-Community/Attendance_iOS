@@ -1,13 +1,13 @@
 //
 //  AttendanceDropdown.swift
-//  DesignSystem
+//  Management
 //
 //  Created by Wonji Suh on 1/13/26.
 //
 
 import SwiftUI
 import Entity
-import DesignSystem
+import DDDDesignKit
 
 struct AttendanceDropdown: View {
   @State private var isExpanded = false

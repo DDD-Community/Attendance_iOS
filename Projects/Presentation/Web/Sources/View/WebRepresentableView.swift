@@ -8,7 +8,7 @@
 import SwiftUI
 import WebKit
 
-import DesignSystem
+import DDDDesignKit
 
 import SDWebImageSwiftUI
 

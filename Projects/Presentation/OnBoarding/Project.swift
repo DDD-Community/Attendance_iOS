@@ -11,8 +11,10 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings:  .moduleSettings,
   dependencies: [
+    .Core(implements: .DDDCoreUtility),
+    .Core(implements: .DDDCoreUI),
     .Domain(implements: .UseCase),
-    .Shared(implements: .Shareds)  
+    .UI(implements: .DDDSharedUI)  
   ],
   sources: ["Sources/**"],
   hasTests: true

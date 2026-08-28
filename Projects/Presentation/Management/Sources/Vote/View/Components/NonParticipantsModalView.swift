@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import DesignSystem
+import DDDDesignKit
 import Entity
 
 extension View {

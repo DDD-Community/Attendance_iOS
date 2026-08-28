@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-import DesignSystem
-import Shareds
+import DDDDesignKit
+import DDDSharedUI
 
 import ComposableArchitecture
 import SDWebImageSwiftUI

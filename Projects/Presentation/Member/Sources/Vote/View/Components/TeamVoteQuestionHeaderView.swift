@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import DesignSystem
+import DDDDesignKit
 
 /// 팀 투표 부문 헤더. 질문 제목 + 최대 선택 수 + 현재 선택 수로 구성된다.
 struct TeamVoteQuestionHeaderView: View {

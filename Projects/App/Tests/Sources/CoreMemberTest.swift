@@ -5,6 +5,7 @@
 //  Created by 서원지 on 6/27/24.
 //
 
+import DDDCoreUtility
 import Foundation
 import Testing
 
@@ -204,7 +205,7 @@ struct CoreMemberTest {
             testStore.exhaustivity = .off
             
             let filterAttendanceData = mockAttendanceData.filter {
-                $0.updatedAt.formattedDateToString() == selectDate.formattedDateToString()
+                $0.updatedAt.formatted(.fullKoreanDate) == selectDate.formatted(.fullKoreanDate)
             }
             await testStore.send(.async(.fetchAttendanceDataResponse(.success(filterAttendanceData)))) {
                 $0.attendanceCheckInModel = filterAttendanceData
@@ -242,7 +243,7 @@ struct CoreMemberTest {
             date = selectDateSecond
             
             let filterAttendanceData = mockAttendanceData.filter {
-                $0.updatedAt.formattedDateToString() == date.formattedDateToString()
+                $0.updatedAt.formatted(.fullKoreanDate) == date.formatted(.fullKoreanDate)
             }
             
             await testStore.send(.selectDate(date: date)) {

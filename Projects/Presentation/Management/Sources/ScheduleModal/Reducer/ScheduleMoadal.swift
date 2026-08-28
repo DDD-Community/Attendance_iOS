@@ -7,7 +7,7 @@
 
 import Foundation
 
-import Shareds
+import DDDSharedUI
 import UseCase
 
 import ComposableArchitecture

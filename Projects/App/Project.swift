@@ -16,7 +16,8 @@ let project = Project.makeAppModule(
   settings: .appMainSetting,
   scripts: [],
   dependencies: [
-    .Shared(implements: .Shareds),
+    .Core(implements: .DDDCoreUtility),
+    .UI(implements: .DDDSharedUI),
     .Presentation(implements: .Presentation),
     .Data(implements: .Repository),
     .Domain(implements: .DomainInterface),

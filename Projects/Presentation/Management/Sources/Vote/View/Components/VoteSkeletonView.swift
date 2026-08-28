@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import DesignSystem
+import DDDDesignKit
 
 public struct VoteSkeletonView: View {
   @State private var isAnimating = false

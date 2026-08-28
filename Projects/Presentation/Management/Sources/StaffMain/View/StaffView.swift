@@ -5,9 +5,10 @@
 //  Created by 서원지 on 6/6/24.
 //
 
+import DDDCoreUI
 import SwiftUI
 
-import DesignSystem
+import DDDDesignKit
 import Model
 
 import ComposableArchitecture

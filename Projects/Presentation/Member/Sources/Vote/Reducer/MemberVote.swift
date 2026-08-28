@@ -6,7 +6,7 @@
 //
 
 import ComposableArchitecture
-import DesignSystem
+import DDDDesignKit
 import Entity
 import Foundation
 import LogMacro

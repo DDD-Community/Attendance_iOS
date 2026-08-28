@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Entity
-import DesignSystem
+import DDDDesignKit
 import ComposableArchitecture
 
 public extension View {

@@ -12,7 +12,9 @@ let project = Project.makeModule(
   product: Project.Environment.presentationProduct,
   settings:  .moduleSettings,
   dependencies: [
-    .Shared(implements: .Shareds),
+    .Core(implements: .DDDCoreUtility),
+    .Core(implements: .DDDCoreUI),
+    .UI(implements: .DDDSharedUI),
     .Domain(implements: .UseCase),
     .Presentation(implements: .OnBoarding),
     .Presentation(implements: .Web)
