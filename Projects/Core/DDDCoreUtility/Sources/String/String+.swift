@@ -14,9 +14,9 @@ public extension String {
     startTime: Date,
     endTime: Date
   ) -> String {
-    let startTimeString = startTime.formattedString()
+    let startTimeString = startTime.formatted(.dateTime)
     let setEndTime = endTime.addingTimeInterval(1800)
-    let endTimeString = setEndTime.formattedString()
+    let endTimeString = setEndTime.formatted(.dateTime)
     return "\(userID)+\(eventID)+\(startTimeString)+\(endTimeString)"
   }
   

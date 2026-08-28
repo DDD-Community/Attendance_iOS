@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import DesignSystem
+import DDDDesignKit
 
 public struct ScheduleHeaderView: View {
   @State private var selectedPeriod: String = "일정"

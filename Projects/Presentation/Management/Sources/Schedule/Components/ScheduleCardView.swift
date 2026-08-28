@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import DesignSystem
+import DDDDesignKit
 
 public struct ScheduleCardView: View {
   private let month: String

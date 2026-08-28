@@ -1,0 +1,38 @@
+//
+//  UIImage+.swift
+//  DDDCoreUI
+//
+//  Created by 서원지 on 7/13/24.
+//
+
+import SwiftUI
+
+public extension UIImage {
+  convenience init?(_ asset: ImageAsset) {
+    self.init(named: asset.rawValue, in: Bundle.module, with: nil)
+  }
+  
+  convenience init?(assetName: String) {
+    self.init(named: assetName, in: Bundle.module, with: nil)
+  }
+}
+
+public extension Image {
+  init(asset: ImageAsset) {
+    if let uiImage = UIImage(asset) {
+      self.init(uiImage: uiImage)
+    } else {
+      self = Image(systemName: "questionmark")
+        .renderingMode(.template) // Fallback 이미지 템플릿 모드 최적화
+    }
+  }
+
+  init(assetName: String) {
+    if let uiImage = UIImage(assetName: assetName) {
+      self.init(uiImage: uiImage)
+    } else {
+      self = Image(systemName: "questionmark")
+        .renderingMode(.template) // Fallback 이미지 템플릿 모드 최적화
+    }
+  }
+}

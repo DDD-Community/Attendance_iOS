@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-import Shareds
+import DDDSharedUI
 import Entity
 
 import ComposableArchitecture

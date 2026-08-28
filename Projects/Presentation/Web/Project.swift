@@ -12,7 +12,7 @@ let project = Project.makeModule(
   settings:  .moduleSettings,
   dependencies: [
     .Domain(implements: .UseCase),
-    .Shared(implements: .Shareds)  
+    .UI(implements: .DDDSharedUI)  
 
   ],
   sources: ["Sources/**"]

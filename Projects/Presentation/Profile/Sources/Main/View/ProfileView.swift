@@ -5,10 +5,11 @@
 //  Created by 서원지 on 7/17/24.
 //
 
+import DDDCoreUI
 import SwiftUI
 
 import ComposableArchitecture
-import DesignSystem
+import DDDDesignKit
 
 @ViewAction(for: ProfileReducer.self)
 public struct ProfileView: View {

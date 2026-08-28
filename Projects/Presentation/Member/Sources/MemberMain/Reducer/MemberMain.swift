@@ -9,7 +9,7 @@ import Foundation
 
 import Entity
 import LogMacro
-import Shareds
+import DDDSharedUI
 import UseCase
 
 import ComposableArchitecture

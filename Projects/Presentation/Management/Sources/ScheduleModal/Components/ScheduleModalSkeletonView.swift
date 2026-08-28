@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import DesignSystem
+import DDDDesignKit
 
 public struct ScheduleModalSkeletonView: View {
   @State private var isShimmering = false

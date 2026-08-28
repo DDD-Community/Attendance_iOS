@@ -7,7 +7,7 @@
 
 import SwiftUI
 import ComposableArchitecture
-import Shareds
+import DDDSharedUI
 import SDWebImageSwiftUI
 import Entity
 

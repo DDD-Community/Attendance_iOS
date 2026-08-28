@@ -5,9 +5,11 @@
 //  Created by Wonji Suh  on 11/4/24.
 //
 
+import DDDSharedUI
+import DDDCoreUI
 import SwiftUI
 
-import DesignSystem
+import DDDDesignKit
 
 import ComposableArchitecture
 import SDWebImageSwiftUI

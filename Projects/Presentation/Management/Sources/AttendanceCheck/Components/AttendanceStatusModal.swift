@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Entity
-import DesignSystem
+import DDDDesignKit
 
 public struct AttendanceStatusModal: View {
   @State private var selectedStatus: AttendanceStatus

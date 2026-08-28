@@ -75,7 +75,8 @@ public extension Project {
       packages: packages,
       settings: settings,
       targets: targets,
-      schemes: schemes.isEmpty ? appEnvironmentSchemes(name: name) : schemes
+      schemes: schemes.isEmpty ? appEnvironmentSchemes(name: name) : schemes,
+      fileHeaderTemplate: .default
     )
   }
 
@@ -156,7 +157,8 @@ public extension Project {
       packages: packages,
       settings: settings,
       targets: targets,
-      schemes: schemes
+      schemes: schemes,
+      fileHeaderTemplate: .default
     )
   }
 }

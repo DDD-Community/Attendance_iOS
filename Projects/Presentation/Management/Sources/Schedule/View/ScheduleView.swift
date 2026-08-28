@@ -8,7 +8,7 @@
 import SwiftUI
 
 import SwiftUIX
-import DesignSystem
+import DDDDesignKit
 import ComposableArchitecture
 
 @ViewAction(for: ScheduleReducer.self)

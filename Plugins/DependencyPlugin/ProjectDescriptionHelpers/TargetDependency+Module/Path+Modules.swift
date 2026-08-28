@@ -31,14 +31,14 @@ public extension ProjectDescription.Path {
 }
 
 
-// MARK: ProjectDescription.Path + DesignSystem
+// MARK: - UI
 public extension ProjectDescription.Path {
-  static var Shared: Self {
-    return .relativeToRoot("Projects/\(ModulePath.Shareds.name)")
+  static var UI: Self {
+    return .relativeToRoot("Projects/\(ModulePath.UIs.name)")
   }
-  
-  static func Shared(implementation module: ModulePath.Shareds) -> Self {
-    return .relativeToRoot("Projects/\(ModulePath.Shareds .name)/\(module.rawValue)")
+
+  static func UI(implementation module: ModulePath.UIs) -> Self {
+    return .relativeToRoot("Projects/\(ModulePath.UIs.name)/\(module.rawValue)")
   }
 }
 

@@ -22,10 +22,10 @@ public extension TargetDependency {
   }
 }
 
-// Shared
+// UI
 public extension TargetDependency {
-  static func Shared(implements module: ModulePath.Shareds) -> Self {
-    projectTarget(module.rawValue, path: .Shared(implementation: module))
+  static func UI(implements module: ModulePath.UIs) -> Self {
+    projectTarget(module.rawValue, path: .UI(implementation: module))
   }
 }
 

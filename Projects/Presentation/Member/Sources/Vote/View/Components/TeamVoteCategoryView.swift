@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import DesignSystem
+import DDDDesignKit
 import Entity
 
 /// 팀 투표 1단계의 부문(질문) 한 개 블록.

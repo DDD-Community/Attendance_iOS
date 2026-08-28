@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import DesignSystem
+import DDDDesignKit
 
 /// 팀 투표 화면 상단 헤더. 제목 + 설명 + 안내 문구로 구성된다.
 struct TeamVoteHeaderView: View {

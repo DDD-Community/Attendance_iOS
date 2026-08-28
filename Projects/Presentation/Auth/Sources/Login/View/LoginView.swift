@@ -5,10 +5,11 @@
 //  Created by Wonji Suh  on 10/29/24.
 //
 
+import DDDCoreUI
 import AuthenticationServices
 import SwiftUI
 
-import DesignSystem
+import DDDDesignKit
 import Entity
 
 import ComposableArchitecture

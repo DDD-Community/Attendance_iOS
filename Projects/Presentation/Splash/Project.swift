@@ -11,8 +11,9 @@ let project = Project.makeModule(
   product: Project.Environment.presentationProduct,
   settings:  .moduleSettings,
   dependencies: [
-    .Shared(implements: .Shareds),
-    .Shared(implements: .DesignSystem),
+    .Core(implements: .DDDCoreUtility),
+    .UI(implements: .DDDSharedUI),
+    .UI(implements: .DDDDesignKit),
     .Domain(implements: .UseCase)
   ],
   sources: ["Sources/**"],

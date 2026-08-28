@@ -5,8 +5,9 @@
 //  Created by Wonji Suh on 1/5/26.
 //
 
+import DDDCoreUI
 import SwiftUI
-import DesignSystem
+import DDDDesignKit
 
 public struct ProfileSkeletonView: View {
   @State private var isAnimating = false
