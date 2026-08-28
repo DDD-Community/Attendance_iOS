@@ -2,7 +2,7 @@
 //  CustomTriangleShape.swift
 //  DDDDesignKit
 //
-//  Created by 서원지 on 7/14/24.
+//  Created by DDD on 7/14/24.
 //
 
 import SwiftUI

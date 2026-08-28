@@ -2,7 +2,7 @@
 //  SelectDropDownItem.swift
 //  Presentation
 //
-//  Created by Wonji Suh  on 1/16/25.
+//  Created by DDD on 1/16/25.
 //
 
 import Foundation

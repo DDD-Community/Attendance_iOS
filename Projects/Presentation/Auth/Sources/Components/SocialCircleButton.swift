@@ -2,7 +2,7 @@
 //  SocialCircleButton.swift
 //  Auth
 //
-//  Created by Wonji Suh  on 12/19/25.
+//  Created by DDD on 12/19/25.
 //
 
 

@@ -2,7 +2,7 @@
 //  ProfileSkeletonView.swift
 //  Profile
 //
-//  Created by Wonji Suh on 1/5/26.
+//  Created by DDD on 1/5/26.
 //
 
 import DDDCoreUI

@@ -2,7 +2,7 @@
 //  AttendanceDTO+.swift
 //  DDDSharedUI
 //
-//  Created by Wonji Suh  on 11/4/24.
+//  Created by DDD on 11/4/24.
 //
 
 import DDDDesignKit

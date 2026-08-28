@@ -2,7 +2,7 @@
 //  base.swift
 //  BeatMaster
 //
-//  Created by 서원지 on 2024/06/07
+//  Created by DDD on 2024/06/07
 //  Copyright © 2024 Team.hae.jo, All rights reserved.
 //
 

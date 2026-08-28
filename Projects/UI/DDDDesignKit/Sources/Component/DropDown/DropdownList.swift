@@ -2,7 +2,7 @@
 //  DropdownList.swift
 //  DDDDesignKit
 //
-//  Created by Wonji Suh  on 1/16/25.
+//  Created by DDD on 1/16/25.
 //
 
 import SwiftUI

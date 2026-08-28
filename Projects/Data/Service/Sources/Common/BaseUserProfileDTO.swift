@@ -2,7 +2,7 @@
 //  BaseUserProfileDTO.swift
 //  Service
 //
-//  Created by Claude on 1/6/26.
+//  Created by DDD on 1/6/26.
 //
 
 import Foundation

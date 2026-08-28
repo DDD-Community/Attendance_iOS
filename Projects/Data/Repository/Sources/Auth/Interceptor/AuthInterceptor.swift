@@ -2,7 +2,7 @@
 //  AuthInterceptor.swift
 //  Repository
 //
-//  Created by Wonji Suh on 1/8/26.
+//  Created by DDD on 1/8/26.
 //
 
 import Foundation

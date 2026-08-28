@@ -2,7 +2,7 @@
 //  UserDTO+.swift
 //  Model
 //
-//  Created by Wonji Suh on 5/12/26.
+//  Created by DDD on 5/12/26.
 //
 
 import Entity

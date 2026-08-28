@@ -2,7 +2,7 @@
 //  ProfileResponseDTO+.swift
 //  Model
 //
-//  Created by eunpyo on 5/14/25.
+//  Created by DDD on 5/14/25.
 //
 
 import Foundation

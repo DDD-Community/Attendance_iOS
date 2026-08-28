@@ -2,7 +2,7 @@
 //  AuthUseCaseTest.swift
 //  UseCaseTests
 //
-//  Created by TDD AI Automation on 2026-01-31
+//  Created by DDD on 2026-01-31
 //
 
 import Testing

@@ -2,7 +2,7 @@
 //  Module.swift
 //  Manifests
 //
-//  Created by 서원지 on 10/31/23.
+//  Created by DDD on 10/31/23.
 //
 
 import ProjectDescription

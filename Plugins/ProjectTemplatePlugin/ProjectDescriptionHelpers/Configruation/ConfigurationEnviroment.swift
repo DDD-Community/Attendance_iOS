@@ -2,7 +2,7 @@
 //  ConfiguratuonEnviroment.swift
 //  DependencyPackagePlugin
 //
-//  Created by Wonji Suh  on 7/31/25.
+//  Created by DDD on 7/31/25.
 //
 
 import Foundation

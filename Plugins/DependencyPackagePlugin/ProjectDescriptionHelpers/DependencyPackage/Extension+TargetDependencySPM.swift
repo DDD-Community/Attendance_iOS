@@ -2,7 +2,7 @@
 //  Extension+TargetDependencySPM.swift
 //  DependencyPackagePlugin
 //
-//  Created by 서원지 on 4/19/24.
+//  Created by DDD on 4/19/24.
 //
 
 import ProjectDescription

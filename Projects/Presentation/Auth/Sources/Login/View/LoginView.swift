@@ -2,7 +2,7 @@
 //  LoginView.swift
 //  Presentation
 //
-//  Created by Wonji Suh  on 10/29/24.
+//  Created by DDD on 10/29/24.
 //
 
 import DDDCoreUI

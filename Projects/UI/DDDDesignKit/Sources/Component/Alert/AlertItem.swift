@@ -2,7 +2,7 @@
 //  AlertItem.swift
 //  DDDDesignKit
 //
-//  Created by Wonji Suh on 1/4/26.
+//  Created by DDD on 1/4/26.
 //
 
 import SwiftUI

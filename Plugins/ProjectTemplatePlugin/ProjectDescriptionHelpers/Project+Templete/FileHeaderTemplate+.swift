@@ -16,7 +16,7 @@ public extension FileHeaderTemplate {
     //  ___FILENAME___
     //  ___PACKAGENAME___
     //
-    //  Created by ___FULLUSERNAME___ on ___DATE___.
+    //  Created by DDD on ___DATE___.
     //  Copyright © ___YEAR___ DDD. All rights reserved.
     //
     """

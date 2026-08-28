@@ -2,7 +2,7 @@
 //  ProfileReducer.swift
 //  DDDAttendance
 //
-//  Created by 서원지 on 7/17/24.
+//  Created by DDD on 7/17/24.
 //
 
 import Foundation

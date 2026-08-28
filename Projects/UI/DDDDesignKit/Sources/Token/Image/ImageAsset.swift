@@ -2,7 +2,7 @@
 //  ImageAsset.swift
 //  DDDDesignKit
 //
-//  Created by 서원지 on 7/13/24.
+//  Created by DDD on 7/13/24.
 //
 
 import Foundation

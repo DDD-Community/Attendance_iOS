@@ -2,7 +2,7 @@
 //  InfoPlistDictionary.swift
 //  Plugins
 //
-//  Created by Wonji Suh  on 3/22/25.
+//  Created by DDD on 3/22/25.
 //
 
 import Foundation

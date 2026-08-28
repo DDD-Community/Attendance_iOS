@@ -2,7 +2,7 @@
 //  ChipItem.swift
 //  DDDDesignKit
 //
-//  Created by Roy on 6/10/26.
+//  Created by DDD on 6/10/26.
 //
 
 import Foundation

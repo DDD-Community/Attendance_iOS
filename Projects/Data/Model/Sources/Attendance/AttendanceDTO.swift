@@ -2,7 +2,7 @@
 //  AttendanceDTO.swift
 //  DDDAttendance
 //
-//  Created by 서원지 on 9/23/24.
+//  Created by DDD on 9/23/24.
 //
 
 import Foundation

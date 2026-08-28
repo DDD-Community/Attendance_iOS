@@ -2,7 +2,7 @@
 //  DefaultMyPageRepository.swift
 //  DomainInterface
 //
-//  Created by 홍은표 on 1/12/26.
+//  Created by DDD on 1/12/26.
 //
 
 import Foundation

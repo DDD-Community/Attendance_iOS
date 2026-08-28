@@ -2,7 +2,7 @@
 //  Tuist.swift
 //  Manifests
 //
-//  Created by Wonji Suh  on 2/4/25.
+//  Created by DDD on 2/4/25.
 //
 
 import ProjectDescription

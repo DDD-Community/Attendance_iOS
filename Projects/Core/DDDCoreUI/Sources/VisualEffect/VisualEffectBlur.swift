@@ -2,7 +2,7 @@
 //  VisualEffectBlur.swift
 //  DDDCoreUI
 //
-//  Created by Wonji Suh  on 4/6/25.
+//  Created by DDD on 4/6/25.
 //
 
 import SwiftUI

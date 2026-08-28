@@ -2,7 +2,7 @@
 //  TokenDTO+.swift
 //  Model
 //
-//  Created by Wonji Suh  on 1/2/26.
+//  Created by DDD on 1/2/26.
 //
 
 import Foundation

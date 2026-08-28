@@ -2,7 +2,7 @@
 //  QRService.swift
 //  Service
 //
-//  Created by Wonji Suh  on 5/20/25.
+//  Created by DDD on 5/20/25.
 //
 
 import Foundation

@@ -2,7 +2,7 @@
 //  ScheduleModalView.swift
 //  Management
 //
-//  Created by Wonji Suh  on 12/27/25.
+//  Created by DDD on 12/27/25.
 //
 
 import SwiftUI

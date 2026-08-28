@@ -2,7 +2,7 @@
 //  TextSelectTeamWidthPreferenceKey.swift
 //  DDDSharedUI
 //
-//  Created by Wonji Suh  on 1/27/25.
+//  Created by DDD on 1/27/25.
 //
 
 import DDDDesignKit

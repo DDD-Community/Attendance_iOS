@@ -2,7 +2,7 @@
 //  MemberCoordinator.swift
 //  Presentation
 //
-//  Created by 홍은표 on 1/2/25.
+//  Created by DDD on 1/2/25.
 //
 
 import Foundation
