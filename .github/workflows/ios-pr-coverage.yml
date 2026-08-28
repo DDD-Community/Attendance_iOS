@@ -1,0 +1,147 @@
+name: PR Test Coverage
+
+on:
+  pull_request:
+    branches: [develop, main]
+
+# 같은 PR 에 새 커밋이 오면 이전 실행은 취소한다(러너가 한 대뿐이라 대기열을 줄인다).
+concurrency:
+  group: pr-coverage-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    runs-on: [self-hosted, macOS, ARM64, xcode]
+    timeout-minutes: 90
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    env:
+      TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PATH
+        run: |
+          echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
+          echo "$HOME/.rbenv/shims" >> "$GITHUB_PATH"
+
+      - name: Restore gitignored build config
+        env:
+          CONFIG_TAR: ${{ secrets.CONFIG_DIR_TAR_BASE64 }}
+          GOOGLE_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        run: |
+          printf '%s' "$CONFIG_TAR" | base64 --decode | tar xzf -
+          mkdir -p Projects/App/Resources
+          printf '%s' "$GOOGLE_PLIST" | base64 --decode > Projects/App/Resources/GoogleService-Info.plist
+          git check-ignore -q Config/base.xcconfig
+          git check-ignore -q Projects/App/Resources/GoogleService-Info.plist
+
+      - name: Install toolchain
+        run: |
+          mise install tuist
+          bundle install
+
+      - name: Generate Xcode workspace
+        run: |
+          tuist install
+          tuist generate --no-open
+
+      # 러너에 실제 존재하는 최신 iPhone 시뮬레이터를 고른다(이름 하드코딩은 Xcode 업데이트마다 깨진다).
+      - name: Select simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available --json | python3 -c "
+          import json, sys, re
+          d = json.load(sys.stdin)['devices']
+          best = None
+          for rt, devs in d.items():
+              m = re.search(r'iOS-(\d+)-(\d+)', rt)
+              if not m:
+                  continue
+              ver = (int(m.group(1)), int(m.group(2)))
+              for dev in devs:
+                  if not dev.get('isAvailable'):
+                      continue
+                  if not dev['name'].startswith('iPhone'):
+                      continue
+                  key = (ver, dev['name'])
+                  if best is None or key > best[0]:
+                      best = (key, dev)
+          print(best[1]['udid'] if best else '')
+          ")
+          test -n "$UDID" || { echo "사용 가능한 iPhone 시뮬레이터가 없습니다"; exit 1; }
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+
+      - name: Run tests with coverage
+        run: |
+          xcodebuild test \
+            -workspace DDDAttendance.xcworkspace \
+            -scheme DDDAttendance \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -enableCodeCoverage YES \
+            -resultBundlePath TestResults.xcresult \
+            -derivedDataPath .build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO
+
+      # 테스트가 실패해도 남은 결과에서 커버리지를 뽑아 코멘트한다.
+      - name: Build coverage report
+        if: always()
+        run: |
+          test -d TestResults.xcresult || { echo "xcresult 없음 - 리포트 생략"; exit 0; }
+          xcrun xccov view --report --json TestResults.xcresult > coverage.json
+          python3 - <<'PY' > coverage.md
+          import json
+          r = json.load(open("coverage.json"))
+          total = r.get("lineCoverage", 0) * 100
+          rows = []
+          for t in r.get("targets", []):
+              name = t.get("name", "")
+              if name.endswith(".xctest"):
+                  continue
+              rows.append((name, t.get("lineCoverage", 0) * 100,
+                           t.get("coveredLines", 0), t.get("executableLines", 0)))
+          rows.sort(key=lambda x: x[1])
+          print("<!-- ios-pr-coverage -->")
+          print(f"## 테스트 커버리지 - 전체 **{total:.2f}%**\n")
+          print("| 모듈 | 커버리지 | 커버된 줄 / 전체 |")
+          print("|---|---:|---:|")
+          for name, pct, cov, exe in rows:
+              mark = "🔴" if pct < 40 else ("🟡" if pct < 70 else "🟢")
+              print(f"| {name} | {mark} {pct:.2f}% | {cov} / {exe} |")
+          PY
+          echo "커버리지 리포트 생성 완료"
+
+      - name: Post coverage comment
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          test -f coverage.md || exit 0
+          # 마커로 기존 코멘트를 찾아 갱신한다(PR 이 코멘트로 도배되지 않게).
+          ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" \
+                --jq '.[] | select(.body | startswith("<!-- ios-pr-coverage -->")) | .id' | head -1)
+          if [ -n "$ID" ]; then
+            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${ID}" -F body=@coverage.md
+          else
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" -F body=@coverage.md
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}
+          path: |
+            TestResults.xcresult
+            coverage.json
+          if-no-files-found: ignore
+          retention-days: 7
