@@ -84,7 +84,7 @@ jobs:
         run: |
           xcodebuild test \
             -workspace DDDAttendance.xcworkspace \
-            -scheme DDDAttendance \
+            -scheme DDDAttendance-Workspace \
             -destination "id=${{ steps.sim.outputs.udid }}" \
             -enableCodeCoverage YES \
             -resultBundlePath TestResults.xcresult \
@@ -96,7 +96,9 @@ jobs:
         if: always()
         run: |
           test -d TestResults.xcresult || { echo "xcresult 없음 - 리포트 생략"; exit 0; }
-          xcrun xccov view --report --json TestResults.xcresult > coverage.json
+          # 테스트가 한 건도 못 돌면 번들에 커버리지가 없다. 그때는 잡을 죽이지 않고 건너뛴다.
+          xcrun xccov view --report --json TestResults.xcresult > coverage.json 2>/dev/null \
+            || { echo "커버리지 데이터 없음 - 리포트 생략"; exit 0; }
           python3 - <<'PY' > coverage.md
           import json
           r = json.load(open("coverage.json"))
