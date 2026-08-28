@@ -62,7 +62,9 @@ jobs:
 
       - name: Install toolchain
         run: |
-          mise install
+          # .tool-versions 의 python/node 는 이 빌드에 불필요하고
+          # python-precompiled 다운로드가 404 로 실패하므로 tuist 만 설치한다.
+          mise install tuist
           bundle install
 
       - name: Generate Xcode workspace
