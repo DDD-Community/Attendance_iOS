@@ -2,7 +2,7 @@
 //  Modules.swift
 //  Plugins
 //
-//  Created by 서원지 on 2/21/24.
+//  Created by DDD on 2/21/24.
 //
 
 import Foundation
@@ -50,6 +50,7 @@ public extension ModulePath {
 
 public extension ModulePath {
   enum Cores: String, CaseIterable {
+    case DDDCoreLogger
     case DDDCoreUI
     case DDDCoreUtility
     case DDDThirdParty

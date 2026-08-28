@@ -2,7 +2,7 @@
 //  AttendanceCheck.swift
 //  Presentation
 //
-//  Created by Wonji Suh  on 1/16/25.
+//  Created by DDD on 1/16/25.
 //
 
 import Foundation
@@ -225,42 +225,28 @@ extension AttendanceCheck {
       
     case .swipeNext:
       let orderedTeams = orderedAttendanceTeams(from: state.attendanceTeam)
-      print("🔄 swipeNext 액션 처리 시작")
-      print("🔄 전체 팀 수: \(orderedTeams.count)")
-      print("🔄 현재 팀 ID: \(state.selectTeamID), 현재 직군: \(state.selectPart?.rawValue ?? "nil")")
       
       guard !orderedTeams.isEmpty else {
-        print("❌ 팀 목록이 비어있음")
         return .none
       }
       
       let currentIndex = orderedTeams.firstIndex { $0.teamId == state.selectTeamID } ?? 0
       let nextIndex = (currentIndex + 1) % orderedTeams.count
-      print("🔄 현재 인덱스: \(currentIndex) → 다음 인덱스: \(nextIndex)")
-      print("🔄 다음 팀: \(orderedTeams[nextIndex].teams.rawValue)")
       
       updateSelectedTeam(state: &state, team: orderedTeams[nextIndex])
-      print("✅ swipeNext 완료")
       return .send(.async(.fetchAttendance))
       
     case .swipePrevious:
       let orderedTeams = orderedAttendanceTeams(from: state.attendanceTeam)
-      print("🔄 swipePrevious 액션 처리 시작")
-      print("🔄 전체 팀 수: \(orderedTeams.count)")
-      print("🔄 현재 팀 ID: \(state.selectTeamID), 현재 직군: \(state.selectPart?.rawValue ?? "nil")")
       
       guard !orderedTeams.isEmpty else {
-        print("❌ 팀 목록이 비어있음")
         return .none
       }
       
       let currentIndex = orderedTeams.firstIndex { $0.teamId == state.selectTeamID } ?? 0
       let prevIndex = (currentIndex - 1 + orderedTeams.count) % orderedTeams.count
-      print("🔄 현재 인덱스: \(currentIndex) → 이전 인덱스: \(prevIndex)")
-      print("🔄 이전 팀: \(orderedTeams[prevIndex].teams.rawValue)")
       
       updateSelectedTeam(state: &state, team: orderedTeams[prevIndex])
-      print("✅ swipePrevious 완료")
       return .send(.async(.fetchAttendance))
       
       

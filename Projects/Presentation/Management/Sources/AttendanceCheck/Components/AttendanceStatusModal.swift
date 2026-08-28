@@ -2,7 +2,7 @@
 //  AttendanceStatusModal.swift
 //  Management
 //
-//  Created by Wonji Suh on 1/13/26.
+//  Created by DDD on 1/13/26.
 //
 
 import SwiftUI
@@ -150,10 +150,8 @@ public extension AttendanceModalItem {
       initialStatus: .attended,
       availableStatuses: [.attended, .late, .absent], // API 시뮬레이션
       onConfirm: { status in
-        print("Confirmed: \(status)") // 예: AttendanceStatus.attended
       },
       onCancel: {
-        print("Cancelled")
       }
     )
   }
