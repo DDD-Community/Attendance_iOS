@@ -11,18 +11,18 @@ keychain_name(ENV["MATCH_KEYCHAIN_NAME"] || "match_keychain")
 keychain_password(ENV["MATCH_KEYCHAIN_PASSWORD"])
 
 # .env 파일에서 API 키가 있으면 임시 JSON 파일 생성 후 사용 완료시 자동 삭제
-if ENV["APP_STORE_CONNECT_API_KEY_ID"] && ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"] && ENV["APP_STORE_CONNECT_API_KEY_KEY_CONTENT"]
+if ENV["APP_STORE_CONNECT_API_KEY_ID"] && ENV["APP_STORE_CONNECT_ISSUER_ID"] && ENV["APP_STORE_CONNECT_API_KEY_CONTENT"]
   require 'json'
   require 'base64'
 
   api_key_path = "fastlane/AuthKey_#{ENV['APP_STORE_CONNECT_API_KEY_ID']}.json"
 
   # 임시 JSON 파일 생성
-  decoded_key = Base64.decode64(ENV["APP_STORE_CONNECT_API_KEY_KEY_CONTENT"])
+  decoded_key = Base64.decode64(ENV["APP_STORE_CONNECT_API_KEY_CONTENT"])
 
   api_key_data = {
     "key_id" => ENV["APP_STORE_CONNECT_API_KEY_ID"],
-    "issuer_id" => ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+    "issuer_id" => ENV["APP_STORE_CONNECT_ISSUER_ID"],
     "key" => decoded_key,
     "duration" => 1200,
     "in_house" => false
