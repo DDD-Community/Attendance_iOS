@@ -2,7 +2,7 @@
 //  AppleOAuthPayload.swift
 //  Entity
 //
-//  Created by Wonji Suh  on 12/29/25.
+//  Created by DDD on 12/29/25.
 //
 
 import Foundation

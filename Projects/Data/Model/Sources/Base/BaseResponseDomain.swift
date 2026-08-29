@@ -2,7 +2,7 @@
 //  BaseResponseDomain.swift
 //  Model
 //
-//  Created by Wonji Suh  on 8/5/25.
+//  Created by DDD on 8/5/25.
 //
 
 import Foundation

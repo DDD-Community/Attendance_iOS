@@ -2,7 +2,7 @@
 //  ManagerUseCaseTest.swift
 //  UseCaseTests
 //
-//  Created by TDD AI Automation on 2026-04-16
+//  Created by DDD on 2026-04-16
 //
 
 import Testing

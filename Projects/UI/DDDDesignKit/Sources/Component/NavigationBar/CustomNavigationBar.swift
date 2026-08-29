@@ -2,7 +2,7 @@
 //  CustomNavigationBar.swift
 //  DDDAttendance
 //
-//  Created by 서원지 on 6/22/24.
+//  Created by DDD on 6/22/24.
 //
 
 import SwiftUI

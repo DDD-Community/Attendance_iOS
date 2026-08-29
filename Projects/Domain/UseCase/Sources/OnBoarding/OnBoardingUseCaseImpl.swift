@@ -2,7 +2,7 @@
 //  OnBoardingUseCaseImpl.swift
 //  UseCase
 //
-//  Created by Wonji Suh  on 12/30/25.
+//  Created by DDD on 12/30/25.
 //
 
 import DomainInterface

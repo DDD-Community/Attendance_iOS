@@ -2,7 +2,7 @@
 //  AttendanceCard.swift
 //  DDDSharedUI
 //
-//  Created by 홍은표 on 1/5/25.
+//  Created by DDD on 1/5/25.
 //
 
 import DDDDesignKit

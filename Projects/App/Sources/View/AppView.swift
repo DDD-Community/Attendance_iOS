@@ -2,7 +2,7 @@
 //  AppView.swift
 //  DDDAttendance
 //
-//  Created by Wonji Suh  on 10/29/24.
+//  Created by DDD on 10/29/24.
 //
 
 import SwiftUI

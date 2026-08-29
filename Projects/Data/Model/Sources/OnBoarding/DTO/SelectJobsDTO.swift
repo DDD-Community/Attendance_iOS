@@ -2,7 +2,7 @@
 //  SelectJobsDTO.swift
 //  Model
 //
-//  Created by Wonji Suh  on 12/30/25.
+//  Created by DDD on 12/30/25.
 //
 
 //public typealias SelectJobsDTO = [SelectJobsDTOResponse]

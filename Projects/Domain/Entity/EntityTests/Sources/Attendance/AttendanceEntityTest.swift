@@ -2,7 +2,7 @@
 //  AttendanceEntityTest.swift
 //  EntityTests
 //
-//  Created by TDD Automation on 2026-01-30
+//  Created by DDD on 2026-01-30
 //
 
 import Testing

@@ -2,7 +2,7 @@
 //  AttendanceCount.swift
 //  Entity
 //
-//  Created by Wonji Suh  on 1/11/26.
+//  Created by DDD on 1/11/26.
 //
 
 import Foundation

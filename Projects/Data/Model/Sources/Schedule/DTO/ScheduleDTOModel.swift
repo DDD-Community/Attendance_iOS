@@ -2,7 +2,7 @@
 //  ScheduleDTOModel.swift
 //  Model
 //
-//  Created by Wonji Suh  on 5/9/25.
+//  Created by DDD on 5/9/25.
 //
 
 import Foundation

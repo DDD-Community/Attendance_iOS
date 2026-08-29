@@ -2,7 +2,7 @@
 //  ShapeStyle+.swift
 //  DDDDesignKit
 //
-//  Created by Wonji Suh  on 12/5/24.
+//  Created by DDD on 12/5/24.
 //
 
 import SwiftUI

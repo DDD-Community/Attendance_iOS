@@ -2,7 +2,7 @@
 //  CustomAlert.swift
 //  DDDDesignKit
 //
-//  Created by 홍은표 on 2/7/25.
+//  Created by DDD on 2/7/25.
 //
 
 import SwiftUI

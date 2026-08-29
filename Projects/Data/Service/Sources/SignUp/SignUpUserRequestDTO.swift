@@ -2,7 +2,7 @@
 //  SignUpUserRequestDTO.swift
 //  Service
 //
-//  Created by Wonji Suh  on 1/1/26.
+//  Created by DDD on 1/1/26.
 //
 
 public struct SignUpUserRequestDTO: Encodable {

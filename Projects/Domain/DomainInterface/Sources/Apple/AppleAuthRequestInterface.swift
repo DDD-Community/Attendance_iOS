@@ -2,7 +2,7 @@
 //  AppleAuthRequestInterface.swift
 //  DomainInterface
 //
-//  Created by Wonji Suh  on 12/26/25.
+//  Created by DDD on 12/26/25.
 //
 
 import Foundation

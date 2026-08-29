@@ -2,7 +2,7 @@
 //  CustomModalModifier.swift
 //  DDDDesignKit
 //
-//  Created by Wonji Suh  on 1/15/26.
+//  Created by DDD on 1/15/26.
 //
 
 import SwiftUI

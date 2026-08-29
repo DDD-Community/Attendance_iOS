@@ -2,7 +2,7 @@
 //  SignUpUserDTO+.swift
 //  Model
 //
-//  Created by Wonji Suh  on 1/1/26.
+//  Created by DDD on 1/1/26.
 //
 
 import Foundation

@@ -2,7 +2,7 @@
 //  TeamVoteHeaderView.swift
 //  Member
 //
-//  Created by Codex on 6/16/26.
+//  Created by DDD on 6/16/26.
 //
 
 import SwiftUI

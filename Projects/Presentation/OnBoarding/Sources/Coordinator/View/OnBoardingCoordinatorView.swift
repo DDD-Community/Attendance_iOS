@@ -2,7 +2,7 @@
 //  OnBoardingCoordinatorView.swift
 //  OnBoarding
 //
-//  Created by Wonji Suh  on 1/6/26.
+//  Created by DDD on 1/6/26.
 //
 
 import SwiftUI

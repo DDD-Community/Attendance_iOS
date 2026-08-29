@@ -2,7 +2,7 @@
 //  ScheduleCell.swift
 //  DDDSharedUI
 //
-//  Created by eunpyo on 4/22/25.
+//  Created by DDD on 4/22/25.
 //
 
 import DDDDesignKit

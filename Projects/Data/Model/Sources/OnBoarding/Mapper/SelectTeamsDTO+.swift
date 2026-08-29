@@ -2,7 +2,7 @@
 //  SelectTeamsDTO+.swift
 //  Model
 //
-//  Created by Wonji Suh  on 12/31/25.
+//  Created by DDD on 12/31/25.
 //
 
 import Foundation

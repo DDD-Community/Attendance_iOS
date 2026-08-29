@@ -2,7 +2,7 @@
 //  AppleLoginRepositoryImpl.swift
 //  Repository
 //
-//  Created by Wonji Suh  on 12/26/25.
+//  Created by DDD on 12/26/25.
 //
 
 

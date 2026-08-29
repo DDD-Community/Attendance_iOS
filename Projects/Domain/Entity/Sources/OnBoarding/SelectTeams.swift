@@ -2,7 +2,7 @@
 //  SelectTeams.swift
 //  Entity
 //
-//  Created by Wonji Suh  on 12/31/25.
+//  Created by DDD on 12/31/25.
 //
 
 public enum SelectTeams: String, CaseIterable, Equatable, CustomStringConvertible {

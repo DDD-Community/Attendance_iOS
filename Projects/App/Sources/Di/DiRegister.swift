@@ -2,7 +2,7 @@
 //  DiRegister.swift
 //  DDDAttendance
 //
-//  Created by Wonji Suh  on 11/24/25.
+//  Created by DDD on 11/24/25.
 //
 
 import Foundation

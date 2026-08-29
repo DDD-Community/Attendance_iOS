@@ -2,7 +2,7 @@
 //  TeamVoteCategory.swift
 //  Entity
 //
-//  Created by Roy on 6/11/26.
+//  Created by DDD on 6/11/26.
 //
 
 import Foundation

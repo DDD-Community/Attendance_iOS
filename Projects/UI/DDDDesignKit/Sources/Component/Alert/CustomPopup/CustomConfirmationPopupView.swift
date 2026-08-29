@@ -2,7 +2,7 @@
 //  CustomConfirmationPopupView.swift
 //  DDDDesignKit
 //
-//  Created by Wonji Suh on 1/4/26.
+//  Created by DDD on 1/4/26.
 //
 
 import SwiftUI
@@ -262,10 +262,8 @@ struct CustomConfirmationPopup: View {
   .customConfirmationPopup(
     item: .withdrawAccount(
       onConfirm: {
-        print("탈퇴하기 선택")
       },
       onCancel: {
-        print("취소 선택")
       }
     )
   )
@@ -285,10 +283,8 @@ struct CustomConfirmationPopup: View {
     cancelTitle: "취소",
     isDestructive: true,
     onConfirm: {
-      print("탈퇴하기 선택")
     },
     onCancel: {
-      print("취소 선택")
     }
   )
 }

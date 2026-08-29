@@ -2,7 +2,7 @@
 //  AttendanceModalModifiers.swift
 //  Management
 //
-//  Created by Wonji Suh on 1/13/26.
+//  Created by DDD on 1/13/26.
 //
 
 import SwiftUI

@@ -2,7 +2,7 @@
 //  ScheduleModel.swift
 //  Member
 //
-//  Created by 홍은표 on 1/15/26.
+//  Created by DDD on 1/15/26.
 //
 
 import Foundation

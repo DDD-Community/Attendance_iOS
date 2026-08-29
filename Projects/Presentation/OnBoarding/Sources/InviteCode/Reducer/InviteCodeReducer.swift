@@ -2,7 +2,7 @@
 //  InviteCodeReducer.swift
 //  Presentation
 //
-//  Created by Wonji Suh  on 11/2/24.
+//  Created by DDD on 11/2/24.
 //
 
 import Foundation

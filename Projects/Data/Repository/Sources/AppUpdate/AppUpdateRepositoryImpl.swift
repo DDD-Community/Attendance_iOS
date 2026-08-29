@@ -2,7 +2,7 @@
 //  AppUpdateRepositoryImpl.swift
 //  Repository
 //
-//  Created by Wonji Suh on 3/9/26.
+//  Created by DDD on 3/9/26.
 //
 
 import Foundation
