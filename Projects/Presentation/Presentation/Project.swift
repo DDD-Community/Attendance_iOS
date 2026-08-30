@@ -9,13 +9,13 @@ let project = Project.makeModule(
   product: Project.Environment.presentationProduct,
   settings:  .moduleSettings,
   dependencies: [
-    .Presentation(implements: .Auth),
-    .Presentation(implements: .Splash),
-    .Presentation(implements: .Management),
-    .Presentation(implements: .Member),
-    .Presentation(implements: .OnBoarding),
-    .Presentation(implements: .Profile),
-    .Presentation(implements: .Web)
+    .presentation(.auth),
+    .presentation(.splash),
+    .presentation(.management),
+    .presentation(.member),
+    .presentation(.onBoarding),
+    .presentation(.profile),
+    .presentation(.web)
   ],
   sources: ["Sources/**"]
 )

@@ -11,7 +11,7 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings:  .moduleSettings,
   dependencies: [
-    .Domain(implements: .Entity)
+    .domain(.entity)
   ],
   sources: ["Sources/**"]
 )

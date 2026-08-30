@@ -10,11 +10,11 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings: .moduleSettings,
   dependencies: [
-    .UI(implements: .DDDDesignKit),
-    .Core(implements: .DDDCoreUI),
-    .Core(implements: .DDDCoreUtility),
-    .Domain(implements: .Entity),
-    .Data(implements: .Model),
+    .ui(.designKit),
+    .core(.coreUI),
+    .core(.coreUtility),
+    .domain(.entity),
+    .data(.model),
   ],
   sources: ["Sources/**"]
 )

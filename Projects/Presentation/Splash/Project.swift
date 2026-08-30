@@ -11,11 +11,11 @@ let project = Project.makeModule(
   product: Project.Environment.presentationProduct,
   settings:  .moduleSettings,
   dependencies: [
-    .Core(implements: .DDDCoreUtility),
-    .UI(implements: .DDDSharedUI),
-    .Core(implements: .DDDCoreLogger),
-    .UI(implements: .DDDDesignKit),
-    .Domain(implements: .UseCase)
+    .core(.coreUtility),
+    .ui(.sharedUI),
+    .core(.logger),
+    .ui(.designKit),
+    .domain(.useCase)
   ],
   sources: ["Sources/**"],
   hasTests: true

@@ -11,8 +11,8 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings:  .moduleSettings,
   dependencies: [
-    .Domain(implements: .UseCase),
-    .UI(implements: .DDDSharedUI)  
+    .domain(.useCase),
+    .ui(.sharedUI)  
 
   ],
   sources: ["Sources/**"]

@@ -11,12 +11,12 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings: .repositoryBaseSettings(),
   dependencies: [
-    .Core(implements: .DDDCoreLogger),
-    .Data(implements: .Service),
-    .Data(implements: .Model),
-    .Domain(implements: .DomainInterface),
-    .Domain(implements: .Entity),
-    .Network(implements: .Foundations),
+    .core(.logger),
+    .data(.service),
+    .data(.model),
+    .domain(.domainInterface),
+    .domain(.entity),
+    .network(.foundations),
     .SPM.asyncMoya,
     .SPM.composableArchitecture,
     .SPM.googleSignIn

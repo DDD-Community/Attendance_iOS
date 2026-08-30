@@ -10,8 +10,8 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings: .moduleSettings,
   dependencies: [
-    .Core(implements: .DDDCoreUI),
-    .Core(implements: .DDDThirdParty),
+    .core(.coreUI),
+    .core(.thirdParty),
   ],
   sources: ["Sources/**"],
   resources: ["Resources/**"]

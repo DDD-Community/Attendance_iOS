@@ -9,9 +9,9 @@ let project = Project.makeModule(
     product: .staticFramework,
     settings:  .moduleSettings,
     dependencies: [
-      .Network(implements: .ThirdPartys),
-      .Data(implements: .API),
-      .Network(implements: .Foundations),
+      .network(.thirdPartys),
+      .data(.api),
+      .network(.foundations),
     ],
     sources: ["Sources/**"]
 )

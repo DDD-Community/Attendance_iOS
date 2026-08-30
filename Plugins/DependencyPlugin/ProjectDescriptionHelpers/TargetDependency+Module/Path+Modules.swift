@@ -2,75 +2,34 @@
 //  Path+Modules.swift
 //  Plugins
 //
-//  Created by DDD on 2/21/24.
+//  레이어 루트 경로. 카탈로그가 rawValue 만 넘겨 재사용한다.
 //
 
 import Foundation
 import ProjectDescription
 
-
-// MARK: - Presentation
 public extension ProjectDescription.Path {
-  static var Presentation: Self {
-      return .relativeToRoot("Projects/\(ModulePath.Presentations.name)")
-  }
-  static func Presentation(implementation module: ModulePath.Presentations) -> Self {
-      return .relativeToRoot("Projects/\(ModulePath.Presentations.name)/\(module.rawValue)")
-  }
-}
-
-// MARK: - Core
-public extension ProjectDescription.Path {
-  static var Core: Self {
-    return .relativeToRoot("Projects/\(ModulePath.Cores.name)")
-  }
-  
-  static func Core(implementation module: ModulePath.Cores) -> Self {
-    return .relativeToRoot("Projects/\(ModulePath.Cores.name)/\(module.rawValue)")
-  }
-}
-
-
-// MARK: - UI
-public extension ProjectDescription.Path {
-  static var UI: Self {
-    return .relativeToRoot("Projects/\(ModulePath.UIs.name)")
+  static func relativeToPresentation(_ name: String) -> Self {
+    .relativeToRoot("Projects/Presentation/\(name)")
   }
 
-  static func UI(implementation module: ModulePath.UIs) -> Self {
-    return .relativeToRoot("Projects/\(ModulePath.UIs.name)/\(module.rawValue)")
-  }
-}
-
-// MARK: - Network
-public extension ProjectDescription.Path {
-  static var Networking: Self {
-    return .relativeToRoot("Projects/\(ModulePath.Networks.name)")
-  }
-  
-  static func Network(implementation module: ModulePath.Networks) -> Self {
-    return .relativeToRoot("Projects/\(ModulePath.Networks.name)/\(module.rawValue)")
-  }
-}
-
-// MARK: - Domain
-public extension ProjectDescription.Path {
-  static var Domain: Self {
-    return .relativeToRoot("Projects/\(ModulePath.Domains.name)")
+  static func relativeToCore(_ name: String) -> Self {
+    .relativeToRoot("Projects/Core/\(name)")
   }
 
-  static func Domain(implementation module: ModulePath.Domains) -> Self {
-    return .relativeToRoot("Projects/\(ModulePath.Domains.name)/\(module.rawValue)")
-  }
-}
-
-// MARK: - Data
-public extension ProjectDescription.Path {
-  static var Data: Self {
-    return .relativeToRoot("Projects/\(ModulePath.Datas.name)")
+  static func relativeToNetwork(_ name: String) -> Self {
+    .relativeToRoot("Projects/Network/\(name)")
   }
 
-  static func Data(implementation module: ModulePath.Datas) -> Self {
-    return .relativeToRoot("Projects/\(ModulePath.Datas.name)/\(module.rawValue)")
+  static func relativeToData(_ name: String) -> Self {
+    .relativeToRoot("Projects/Data/\(name)")
+  }
+
+  static func relativeToDomain(_ name: String) -> Self {
+    .relativeToRoot("Projects/Domain/\(name)")
+  }
+
+  static func relativeToUI(_ name: String) -> Self {
+    .relativeToRoot("Projects/UI/\(name)")
   }
 }

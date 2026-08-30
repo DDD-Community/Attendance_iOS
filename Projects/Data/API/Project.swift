@@ -15,7 +15,7 @@ let project = Project.makeModule(
     configurations: .moduleDefault
   ),
   dependencies: [
-    .Network(implements: .ThirdPartys),
+    .network(.thirdPartys),
     .SPM.asyncMoya // 직접 의존성 추가
   ],
   sources: ["Sources/**"],

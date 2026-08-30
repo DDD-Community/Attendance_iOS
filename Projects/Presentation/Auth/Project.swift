@@ -12,13 +12,13 @@ let project = Project.makeModule(
   product: Project.Environment.presentationProduct,
   settings:  .moduleSettings,
   dependencies: [
-    .Core(implements: .DDDCoreLogger),
-    .Core(implements: .DDDCoreUtility),
-    .Core(implements: .DDDCoreUI),
-    .UI(implements: .DDDSharedUI),
-    .Domain(implements: .UseCase),
-    .Presentation(implements: .OnBoarding),
-    .Presentation(implements: .Web)
+    .core(.logger),
+    .core(.coreUtility),
+    .core(.coreUI),
+    .ui(.sharedUI),
+    .domain(.useCase),
+    .presentation(.onBoarding),
+    .presentation(.web)
   ],
   sources: ["Sources/**"],
   hasTests: true
