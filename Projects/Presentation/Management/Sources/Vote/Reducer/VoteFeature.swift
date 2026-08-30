@@ -5,11 +5,11 @@
 //  Created by DDD on 6/11/26.
 //
 
+import DDDCoreLogger
 import ComposableArchitecture
 import DDDDesignKit
 import Entity
 import Foundation
-import LogMacro
 import UseCase
 
 @Reducer
@@ -321,7 +321,7 @@ extension VoteFeature {
     retry: AsyncAction
   ) -> Effect<Action> {
     state.loading = false
-    #logNetwork("투표 API 오류", error.localizedDescription)
+    DDDLogger.error("투표 API 오류: \(error.localizedDescription)", category: .network)
     state.alert = AlertState {
       TextState("요청을 처리하지 못했어요")
     } actions: {

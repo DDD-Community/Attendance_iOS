@@ -245,7 +245,7 @@ Network/Service → Data (API 통신)
 ### 🛠 개발 도구 & 유틸리티
 
 #### 📊 로깅 & 디버깅
-- **LogMacro**: 커스텀 로깅 매크로
+- **DDDCoreLogger**: os.Logger 기반 자체 로거 (값은 `.private` 로 기록)
 - **IssueReporting**: 개발 단계 이슈 추적
 - **XCTestDynamicOverlay**: 테스트 환경 오버레이
 

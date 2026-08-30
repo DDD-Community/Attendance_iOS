@@ -11,7 +11,6 @@ import DDDSharedUI
 
 import ComposableArchitecture
 import TCAFlow
-import LogMacro
 import Profile
 
 @FlowCoordinator(screen: "MemberScreen", navigation: true)

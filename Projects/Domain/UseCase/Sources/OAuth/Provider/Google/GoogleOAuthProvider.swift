@@ -7,7 +7,7 @@
 
 import Foundation
 import Dependencies
-import LogMacro
+import DDDCoreLogger
 @preconcurrency import Entity
 import DomainInterface
 import Sharing
@@ -20,10 +20,10 @@ public final class GoogleOAuthProvider: GoogleOAuthProviderInterface, @unchecked
   public func signInWithToken(
     token: String
   ) async throws -> String {
-    Log.info("Starting Google OAuth flow")
+    DDDLogger.info("Starting Google OAuth flow", category: .auth)
     let payload = try await googleRepository.signIn()
     self.$userSession.withLock { $0.accessToken = payload.accessToken ?? "" }
-    Log.debug("gooogle access", payload.accessToken)
+    DDDLogger.debug("gooogle access: \(payload.accessToken ?? "none")", category: .auth)
     return payload.idToken
   }
 }

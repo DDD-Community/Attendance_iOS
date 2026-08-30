@@ -5,10 +5,10 @@
 //  Created by DDD on 7/23/25.
 //
 
+import DDDCoreLogger
 import ComposableArchitecture
 import DomainInterface
 import Entity
-import LogMacro
 
 import WeaveDI
 
@@ -67,7 +67,7 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
       authUseCase.updateSessionCredential(with: loginEntity.token)
 
     case let .failure(error):
-      #logError("회원가입 후 토큰 재발급 실패(회원가입 자체는 성공)", error)
+      DDDLogger.error("회원가입 후 토큰 재발급 실패(회원가입 자체는 성공): \(error)", category: .auth)
     }
 
     return signUpUser

@@ -5,12 +5,12 @@
 //  Created by DDD on 1/16/25.
 //
 
+import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
 
 import ComposableArchitecture
-import LogMacro
 import UseCase
 import Entity
 
@@ -292,7 +292,7 @@ extension AttendanceCheck {
       
       // scheduleId가 유효한지 확인
       guard scheduleID > 0 else {
-        #logDebug("fetchAttendanceCount 건너뜀", "scheduleId: \(scheduleID)")
+        DDDLogger.debug("fetchAttendanceCount 건너뜀: scheduleId: \(scheduleID)", category: .attendance)
         return .none
       }
       
@@ -322,7 +322,7 @@ extension AttendanceCheck {
       
       // scheduleId와 teamId가 유효한지 확인
       guard scheduleId > 0, teamId > 0 else {
-        #logDebug("fetchAttendance 건너뜀", "scheduleId: \(scheduleId), teamId: \(teamId)")
+        DDDLogger.debug("fetchAttendance 건너뜀: scheduleId: \(scheduleId), teamId: \(teamId)", category: .attendance)
         return .none
       }
       
@@ -396,7 +396,7 @@ extension AttendanceCheck {
         )
         
       case .failure(let error):
-        #logNetwork("스케줄 조회 실패", error.localizedDescription)
+        DDDLogger.error("스케줄 조회 실패: \(error.localizedDescription)", category: .network)
         state.loading = false
         return .none
       }
@@ -410,7 +410,7 @@ extension AttendanceCheck {
         state.absentCount = data.absentCount
         
       case .failure(let error):
-        #logNetwork("기수 출석 현황 조회 실패", error.localizedDescription)
+        DDDLogger.error("기수 출석 현황 조회 실패: \(error.localizedDescription)", category: .network)
         
       }
       return .none
@@ -443,7 +443,7 @@ extension AttendanceCheck {
         }
         
       case .failure(let error):
-        #logNetwork("기수 팀 조회 실패", error.localizedDescription)
+        DDDLogger.error("기수 팀 조회 실패: \(error.localizedDescription)", category: .network)
         return .none
       }
       
@@ -458,11 +458,11 @@ extension AttendanceCheck {
            let teamEntity = firstAttendance.selectTeamEntity,
            teamEntity != .unknown {
           state.selectPart = teamEntity
-          #logDebug("[AttendanceCheck] Updated selectPart to: \(teamEntity.rawValue)")
+          DDDLogger.debug("[AttendanceCheck] Updated selectPart to: \(teamEntity.rawValue)", category: .attendance)
         }
         
       case .failure(let error):
-        #logNetwork("기수 출석 현황 조회 실패", error.localizedDescription)
+        DDDLogger.error("기수 출석 현황 조회 실패: \(error.localizedDescription)", category: .network)
       }
       return .none
       
@@ -471,7 +471,7 @@ extension AttendanceCheck {
       case .success(let data):
         state.attendanceStatus = .init(uniqueElements: data)
       case .failure(let error):
-        #logError("출석 현황 조회 실패", error.localizedDescription)
+        DDDLogger.error("출석 현황 조회 실패: \(error.localizedDescription)", category: .attendance)
       }
       return .none
       
@@ -484,7 +484,7 @@ extension AttendanceCheck {
           .run { await $0(.async(.fetchAttendance)) }
         )
       case .failure(let error):
-        #logError("출석 현황 수정 실패", error.localizedDescription)
+        DDDLogger.error("출석 현황 수정 실패: \(error.localizedDescription)", category: .attendance)
         
         // 서버에서 온 사용자 친화적 메시지 사용
         let alertTitle: String
@@ -533,12 +533,9 @@ extension AttendanceCheck {
       if let selectedDate = selectedSchedule.toDate() {
         state.selectAttendanceDate = selectedDate
         state.selectScheduleID = selectedSchedule.id
-        #logDebug("날짜 업데이트됨", "새로운 날짜: \( state.selectScheduleID)")
+        DDDLogger.debug("날짜 업데이트됨: 새로운 날짜: \( state.selectScheduleID)", category: .attendance)
       } else {
-        #logError(
-          "날짜 변환 실패",
-          "입력: year=\(selectedSchedule.year), month=\(selectedSchedule.month), day=\(selectedSchedule.day)"
-        )
+        DDDLogger.error("날짜 변환 실패: 입력: year=\(selectedSchedule.year), month=\(selectedSchedule.month), day=\(selectedSchedule.day)", category: .attendance)
       }
       
       state.destination = nil

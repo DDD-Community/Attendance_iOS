@@ -5,6 +5,7 @@
 //  Created by DDD on 12/27/25.
 //
 
+import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
@@ -12,7 +13,6 @@ import UseCase
 
 import ComposableArchitecture
 import Entity
-import LogMacro
 
 @Reducer
 public struct ScheduleModal {
@@ -155,13 +155,13 @@ extension ScheduleModal {
   ) -> Effect<Action> {
     switch action {
     case let .scheduleResponse(result):
-      #logDebug("스케줄 응답 처리", "로딩 완료")
+      DDDLogger.debug("스케줄 응답 처리: 로딩 완료", category: .network)
       state.loading = false
       switch result {
       case let .success(data):
         state.scheduleModel = .init(uniqueElements: data)
       case let .failure(error):
-        #logNetwork("네트워크 에러", error.localizedDescription)
+        DDDLogger.error("네트워크 에러: \(error.localizedDescription)", category: .network)
       }
       return .none
     }

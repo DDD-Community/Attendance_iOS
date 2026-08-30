@@ -12,7 +12,7 @@ import DomainInterface
 import Entity
 
 import GoogleSignIn
-import LogMacro
+import DDDCoreLogger
 
 public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface, @unchecked Sendable {
     private let configuration: GoogleOAuthConfiguration
@@ -50,7 +50,7 @@ public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface, @unchecked S
         do {
             return try await GIDSignIn.sharedInstance.signIn(withPresenting: presenting)
         } catch let error as NSError where error.domain == "RBSServiceErrorDomain" && error.code == 1 {
-            Log.error("RBSServiceErrorDomain detected, retrying Google sign-in...")
+            DDDLogger.error("RBSServiceErrorDomain detected, retrying Google sign-in...", category: .auth)
             try await Task.sleep(for: .seconds(0.5))
             return try await GIDSignIn.sharedInstance.signIn(withPresenting: presenting)
         }
@@ -68,18 +68,18 @@ public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface, @unchecked S
             displayName: result.user.profile?.name
         )
 
-        Log.info("Google serverAuthCode present: \(payload.authorizationCode != nil ? "yes" : "no")")
+        DDDLogger.info("Google serverAuthCode present: \(payload.authorizationCode != nil ? "yes" : "no")", category: .auth)
         return payload
     }
 
     private func mapSignInError(_ error: NSError) -> Error {
         if error.domain == "com.google.GIDSignIn",
            error.code == GIDSignInError.canceled.rawValue {
-            Log.info("Google sign-in cancelled by user.")
+            DDDLogger.info("Google sign-in cancelled by user.", category: .auth)
             return AuthError.userCancelled
         }
 
-        Log.error("Google sign-in failed: \(error.localizedDescription)")
+        DDDLogger.error("Google sign-in failed: \(error.localizedDescription)", category: .auth)
         return AuthError.unknownError(error.localizedDescription)
     }
 

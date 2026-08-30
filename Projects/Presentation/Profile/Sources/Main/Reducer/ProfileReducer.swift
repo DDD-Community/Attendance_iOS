@@ -5,6 +5,7 @@
 //  Created by DDD on 7/17/24.
 //
 
+import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
@@ -225,7 +226,7 @@ extension ProfileReducer {
 
           await send(.inner(.fetchUserResponse(fetchUserResult)))
         } catch is CancellationError {
-          #logInfo("ProfileReducer.fetchUser Effect가 취소됨")
+          DDDLogger.info("ProfileReducer.fetchUser Effect가 취소됨", category: .network)
         }
       }
       .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
@@ -271,7 +272,7 @@ extension ProfileReducer {
         state.profileModel = profileDTOData
 
       case let .failure(error):
-        #logError("유저 정보 가져오기", error.localizedDescription)
+        DDDLogger.error("유저 정보 가져오기: \(error.localizedDescription)", category: .network)
       }
       return .none
 

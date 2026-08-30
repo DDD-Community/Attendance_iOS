@@ -5,6 +5,7 @@
 //  Created by DDD on 11/4/24.
 //
 
+import DDDCoreLogger
 import Foundation
 
 import DDDCoreUtility
@@ -12,7 +13,6 @@ import UseCase
 import Entity
 
 import ComposableArchitecture
-import LogMacro
 
 @Reducer
 public struct SelectTeam {
@@ -157,7 +157,7 @@ extension SelectTeam {
         }
 
         state.activeButton = true
-  //      #logDebug("selectPart", state.userEntity.role)
+  //      DDDLogger.debug("selectPart: \(state.userEntity.role)", category: .auth)
         return .none
 
         case .onAppear:
@@ -263,7 +263,7 @@ extension SelectTeam {
             state.teams = .init(uniqueElements: data)
             state.loading = false
           case .failure(let error):
-            #logError("네트워크 에러 ", error.errorDescription ?? "알 수 없음")
+            DDDLogger.error("네트워크 에러: \(error.errorDescription ?? "알 수 없음")", category: .auth)
         }
         return .none
 

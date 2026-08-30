@@ -10,7 +10,6 @@ import DDDCoreUtility
 import Profile
 import ComposableArchitecture
 import TCAFlow
-import LogMacro
 
 @FlowCoordinator(screen: "CoreMemberScreen", navigation: true)
 public struct StaffCoordinator {

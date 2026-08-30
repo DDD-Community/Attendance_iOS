@@ -5,10 +5,10 @@
 //  Created by DDD on 1/2/25.
 //
 
+import DDDCoreLogger
 import Foundation
 
 import Entity
-import LogMacro
 import DDDSharedUI
 import UseCase
 
@@ -235,12 +235,12 @@ extension MemberMain {
       switch result {
       case let .success(member):
         state.member = member
-        #logDebug("Succeed Fetch User Profile", member)
+        DDDLogger.debug("Succeed Fetch User Profile: \(member)", category: .attendance)
         return .none
 
       case let .failure(error):
         state.member = nil
-        #logError("Failed Fetch User Profile", error)
+        DDDLogger.error("Failed Fetch User Profile: \(error)", category: .attendance)
         return .none
       }
 
@@ -251,11 +251,11 @@ extension MemberMain {
         state.lateCount = counts.totalLate
         state.absentCount = counts.totalAbsent
         state.showAttendanceWarningIcon = state.absentCount > 0
-        #logDebug("Succeed Fetch Attendance Counts", counts)
+        DDDLogger.debug("Succeed Fetch Attendance Counts: \(counts)", category: .attendance)
         return .none
 
       case let .failure(error):
-        #logError("Failed Fetch Count: ", error)
+        DDDLogger.error("Failed Fetch Count: \(error)", category: .attendance)
         return .none
       }
 
@@ -270,11 +270,11 @@ extension MemberMain {
           state.endDate = "2026.\(end.month).\(end.day)"
         }
 
-        #logDebug("Succeed Fetch Schedules: ", schedules)
+        DDDLogger.debug("Succeed Fetch Schedules: \(schedules)", category: .attendance)
         return .none
 
       case let .failure(error):
-        #logError("Failed Fetch Schedules", error)
+        DDDLogger.error("Failed Fetch Schedules: \(error)", category: .attendance)
         return .none
       }
 
@@ -291,7 +291,7 @@ extension MemberMain {
           state.vote = .init()
         }
         state.isExpandedDropDown = false
-        #logError("Failed Fetch Active Vote", error)
+        DDDLogger.error("Failed Fetch Active Vote: \(error)", category: .attendance)
         return .none
       }
 

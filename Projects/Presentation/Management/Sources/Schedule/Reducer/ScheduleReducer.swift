@@ -5,6 +5,7 @@
 //  Created by DDD on 5/9/25.
 //
 
+import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
@@ -12,7 +13,6 @@ import DDDSharedUI
 import ComposableArchitecture
 import UseCase
 import Entity
-import LogMacro
 
 @Reducer
 public struct ScheduleReducer {
@@ -155,7 +155,7 @@ extension ScheduleReducer {
           state.loading = false
 
       case .failure(let error):
-        #logNetwork("스케줄 조회 실패", error.localizedDescription ?? "알 수 없는 오류")
+        DDDLogger.error("스케줄 조회 실패: \(error.localizedDescription ?? "알 수 없는 오류")", category: .network)
         state.loading = false
       }
       return .none

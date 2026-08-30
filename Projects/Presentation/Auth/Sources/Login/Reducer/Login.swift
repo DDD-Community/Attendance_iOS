@@ -5,6 +5,7 @@
 //  Created by DDD on 10/29/24.
 //
 
+import DDDCoreLogger
 import Foundation
 
 import DDDCoreUtility
@@ -219,7 +220,7 @@ extension Login {
             }
 
           case .failure(let error):
-            #logNetwork("로그인 실패", error.localizedDescription)
+            DDDLogger.error("로그인 실패: \(error.localizedDescription)", category: .network)
             let socialType = state.currentSocialType
             return .run { _ in
               await MainActor.run {

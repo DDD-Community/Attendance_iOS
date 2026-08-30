@@ -5,11 +5,11 @@
 //  Created by DDD on 6/11/26.
 //
 
+import DDDCoreLogger
 import ComposableArchitecture
 import DDDDesignKit
 import Entity
 import Foundation
-import LogMacro
 import UseCase
 
 /// [멤버] 투표 참여 플로우 리듀서.
@@ -287,7 +287,7 @@ extension MemberVote {
     error: VoteError,
     retry: AsyncAction
   ) -> Effect<Action> {
-    #logNetwork("멤버 투표 API 오류", error.localizedDescription)
+    DDDLogger.error("멤버 투표 API 오류: \(error.localizedDescription)", category: .network)
     state.alert = AlertState {
       TextState("요청을 처리하지 못했어요")
     } actions: {

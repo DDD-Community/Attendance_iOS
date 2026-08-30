@@ -5,6 +5,7 @@
 //  Created by DDD on 11/2/24.
 //
 
+import DDDCoreLogger
 import Foundation
 
 import DDDCoreUtility
@@ -208,7 +209,7 @@ extension InviteCodeReducer {
         return .send(.navigation(.presentSignUpName))
 
       case .failure(let error):
-        #logError("코드에러", error)
+        DDDLogger.error("코드에러: \(error)", category: .auth)
         state.isNotAvailableCode = true
         state.alert = AlertState {
           TextState("오류")

@@ -5,13 +5,13 @@
 //  Created by DDD on 6/11/24.
 //
 
+import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
 import Entity
 
 import ComposableArchitecture
-import LogMacro
 import Vision
 import UIKit
 
@@ -172,7 +172,7 @@ extension QRCode {
 
 
       case .failure(let error):
-        #logNetwork("qr 검증 실패", error.localizedDescription)
+        DDDLogger.error("qr 검증 실패: \(error.localizedDescription)", category: .network)
         state.isUseQRCode = true
           // 서버에서 온 사용자 친화적 메시지 사용
           let alertTitle: String
@@ -278,7 +278,7 @@ extension QRCode {
       guard let imageData = Data(base64Encoded: cleanBase64),
             let uiImage = UIImage(data: imageData),
             let cgImage = uiImage.cgImage else {
-        #logNetwork("Base64 이미지 변환 실패", base64String.prefix(50))
+        DDDLogger.error("Base64 이미지 변환 실패: \(base64String.prefix(50))", category: .network)
         continuation.resume(returning: nil)
         return
       }
@@ -286,7 +286,7 @@ extension QRCode {
       // Vision을 사용해서 QR 코드 감지
       let request = VNDetectBarcodesRequest { request, error in
         if let error = error {
-          #logNetwork("QR 디코딩 에러", error.localizedDescription)
+          DDDLogger.error("QR 디코딩 에러: \(error.localizedDescription)", category: .network)
           continuation.resume(returning: nil)
           return
         }
@@ -294,12 +294,12 @@ extension QRCode {
         guard let observations = request.results as? [VNBarcodeObservation],
               let firstBarcode = observations.first,
               let qrCodeContent = firstBarcode.payloadStringValue else {
-          #logNetwork("QR 코드를 찾을 수 없음", "")
+          DDDLogger.error("QR 코드를 찾을 수 없음", category: .network)
           continuation.resume(returning: nil)
           return
         }
 
-        #logNetwork("QR 디코딩 성공", qrCodeContent)
+        DDDLogger.info("QR 디코딩 성공: \(qrCodeContent)", category: .network)
         continuation.resume(returning: qrCodeContent)
       }
 
@@ -311,7 +311,7 @@ extension QRCode {
       do {
         try handler.perform([request])
       } catch {
-        #logNetwork("Vision 처리 실패", error.localizedDescription)
+        DDDLogger.error("Vision 처리 실패: \(error.localizedDescription)", category: .network)
         continuation.resume(returning: nil)
       }
     }

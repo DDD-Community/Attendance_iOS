@@ -13,6 +13,7 @@ let project = Project.makeModule(
   dependencies: [
     .Core(implements: .DDDCoreUtility),
     .UI(implements: .DDDSharedUI),
+    .Core(implements: .DDDCoreLogger),
     .UI(implements: .DDDDesignKit),
     .Domain(implements: .UseCase)
   ],

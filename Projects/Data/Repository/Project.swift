@@ -11,6 +11,7 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings: .repositoryBaseSettings(),
   dependencies: [
+    .Core(implements: .DDDCoreLogger),
     .Data(implements: .Service),
     .Data(implements: .Model),
     .Domain(implements: .DomainInterface),

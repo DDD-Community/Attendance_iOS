@@ -5,13 +5,13 @@
 //  Created by DDD on 11/3/24.
 //
 
+import DDDCoreLogger
 import Foundation
 
 import DDDCoreUtility
 import Entity
 
 import ComposableArchitecture
-import LogMacro
 
 @Reducer
 public struct SelectPartReducer {
@@ -117,7 +117,7 @@ extension SelectPartReducer {
       state.selectPart = selectedPart
         state.$userSession.withLock { $0.selectPart = selectedPart }
       state.activeSelectPart = true
-//      #logDebug("selectPart", state.userEntity.role)
+//      DDDLogger.debug("selectPart: \(state.userEntity.role)", category: .auth)
       return .none
 
       case .onAppear:
@@ -177,7 +177,7 @@ extension SelectPartReducer {
 
           case .failure(let error):
             state.errorMessage = error.errorDescription
-            #logError("네트워크 통신 실패", error.errorDescription)
+            DDDLogger.error("네트워크 통신 실패: \(error.errorDescription)", category: .auth)
         }
         return .none
 

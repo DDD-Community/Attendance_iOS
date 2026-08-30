@@ -5,10 +5,10 @@
 //  Created by DDD on 4/6/25.
 //
 
+import DDDCoreLogger
 import SwiftUI
 import VisionKit
 
-import LogMacro
 
 struct QRScannerRepresentable: UIViewControllerRepresentable {
   @Binding var shouldStartScanning: Bool
@@ -44,7 +44,7 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
       case .barcode(let barcode):
         parent.scannedText = barcode.payloadStringValue ?? "Unable to decode the scanned code"
       default:
-        #logDebug("Unexpected item")
+        DDDLogger.debug("Unexpected item", category: .attendance)
       }
     }
 
@@ -62,7 +62,7 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
              Date().timeIntervalSince(lastTime) < 30 {
             // 30초 이내에는 무시
 
-            #logDebug("30초 이내 같은 QR 무시: \(text)")
+            DDDLogger.debug("30초 이내 같은 QR 무시: \(text)", category: .attendance)
 
             continue
           }
@@ -110,7 +110,7 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
       do {
         try uiViewController.startScanning()
       } catch {
-        #logDebug("Failed to start scanning: \(error)")
+        DDDLogger.debug("Failed to start scanning: \(error)", category: .attendance)
       }
     } else if !shouldStartScanning, isScanning {
       uiViewController.stopScanning()

@@ -5,6 +5,7 @@
 //  Created by DDD on 5/18/25.
 //
 
+import DDDCoreLogger
 import Foundation
 import SwiftUI
 
@@ -12,7 +13,6 @@ import Entity
 import DDDSharedUI
 
 import ComposableArchitecture
-import LogMacro
 
 @Reducer
 public struct MemberQRCode {
@@ -108,25 +108,25 @@ extension MemberQRCode {
     case let .onCreateQRCodeResponse(result):
       switch result {
       case let .success(qrCodeString):
-        #logDebug("succeed create QRCode:", qrCodeString)
+        DDDLogger.debug("succeed create QRCode: \(qrCodeString)", category: .attendance)
         return .run { send in
           await send(.async(.generateQRCodeImage(qrCodeString)))
         }
 
       case let .failure(error):
-        #logDebug("failed create QRCode:", error)
+        DDDLogger.debug("failed create QRCode: \(error)", category: .attendance)
         return .none
       }
 
     case let .onGenerateQRCodeImage(result):
       switch result {
       case let .success(image):
-        #logDebug("succeed generate QRCodeImage")
+        DDDLogger.debug("succeed generate QRCodeImage", category: .attendance)
         state.qrCodeImage = image
         return .none
 
       case let .failure(error):
-        #logDebug("failed generate QRCodeImage:", error)
+        DDDLogger.debug("failed generate QRCodeImage: \(error)", category: .attendance)
         return .none
       }
     }

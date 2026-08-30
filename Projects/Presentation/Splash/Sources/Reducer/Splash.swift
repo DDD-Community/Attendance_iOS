@@ -5,6 +5,7 @@
 //  Created by DDD on 10/29/24.
 //
 
+import DDDCoreLogger
 import Foundation
 
 import DDDDesignKit
@@ -14,7 +15,6 @@ import UseCase
 import DDDCoreUtility
 
 import ComposableArchitecture
-import LogMacro
 
 @Reducer
 public struct Splash {
@@ -155,13 +155,13 @@ extension Splash {
         await send(.async(.checkAppUpdate))
         
         if staffRole == .manager {
-          #logDebug("👔 [Splash] Redirecting to staff")
+          DDDLogger.debug("👔 [Splash] Redirecting to staff", category: .app)
           await send(.async(.fetchUser))
         } else if staffRole == .member {
-          #logDebug("👤 [Splash] Redirecting to member")
+          DDDLogger.debug("👤 [Splash] Redirecting to member", category: .app)
           await send(.async(.fetchUser))
         } else {
-          #logDebug("❓ [Splash] No staff role - redirecting to login")
+          DDDLogger.debug("❓ [Splash] No staff role - redirecting to login", category: .app)
           await send(.navigation(.presentLogin))
         }
       }
@@ -205,7 +205,7 @@ extension Splash {
     case let .fetchUserResponse(result):
       switch result {
       case let .success(profileDTOData):
-        #logDebug("[Splash] User profile fetched successfully")
+        DDDLogger.debug("[Splash] User profile fetched successfully", category: .app)
         state.profileModel = profileDTOData
         state.profileFetchCompleted = true
         
@@ -217,7 +217,7 @@ extension Splash {
         return .none
         
       case let .failure(error):
-        #logError("❌ [Splash] Failed to fetch user profile", error.localizedDescription)
+        DDDLogger.error("❌ [Splash] Failed to fetch user profile: \(error.localizedDescription)", category: .app)
         
         // 토큰 만료나 인증 에러의 경우 로그인으로 이동
         // 다른 네트워크 에러의 경우에도 안전하게 로그인으로 이동
@@ -234,7 +234,7 @@ extension Splash {
       case let .success(updateInfo):
         // 업데이트가 필요한 경우에만 Alert 표시
         if let updateInfo = updateInfo {
-          #logDebug("[Splash] App update available: \(updateInfo.latestVersion)")
+          DDDLogger.debug("[Splash] App update available: \(updateInfo.latestVersion)", category: .app)
           state.appStoreUrl = updateInfo.appStoreUrl
           
           // 릴리즈 노트에서 실제 버전 추출
@@ -253,7 +253,7 @@ extension Splash {
             isDestructive: false
           )
         } else {
-          #logDebug("[Splash] App is up to date")
+          DDDLogger.debug("[Splash] App is up to date", category: .app)
           
           // 업데이트가 없고 프로필 fetch가 완료되었다면 화면 이동
           if state.profileFetchCompleted {
@@ -263,7 +263,7 @@ extension Splash {
         return .none
         
       case let .failure(error):
-        #logError("[Splash] Failed to check app update", error.localizedDescription)
+        DDDLogger.error("[Splash] Failed to check app update: \(error.localizedDescription)", category: .app)
         
         // 에러가 발생해도 프로필 fetch가 완료되었다면 화면 이동
         if state.profileFetchCompleted {
@@ -294,13 +294,13 @@ extension Splash {
     let staffRole = state.staffRole
     
     if staffRole == .manager {
-      #logDebug("[Splash] Navigation to staff after checks completed")
+      DDDLogger.debug("[Splash] Navigation to staff after checks completed", category: .app)
       return .send(.navigation(.presentStaff))
     } else if staffRole == .member {
-      #logDebug("[Splash] Navigation to member after checks completed")
+      DDDLogger.debug("[Splash] Navigation to member after checks completed", category: .app)
       return .send(.navigation(.presentMember))
     } else {
-      #logDebug("[Splash] No staff role after checks completed - redirecting to login")
+      DDDLogger.debug("[Splash] No staff role after checks completed - redirecting to login", category: .app)
       return .send(.navigation(.presentLogin))
     }
   }
