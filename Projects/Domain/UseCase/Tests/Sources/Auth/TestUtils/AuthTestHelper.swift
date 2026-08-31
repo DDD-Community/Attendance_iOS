@@ -26,7 +26,7 @@ struct AuthTestHelper {
 
         return try await withDependencies {
             $0.authRepository = mockAuthRepository
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
+            $0.keychainManager = mockKeychainManager
         } operation: {
             try await operation()
         }
@@ -43,7 +43,7 @@ struct AuthTestHelper {
 
         return withDependencies {
             $0.authRepository = mockRepository
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychain
+            $0.keychainManager = mockKeychain
         } operation: {
             let useCase = AuthUseCaseImpl()
             return (useCase, mockRepository, mockKeychain)
