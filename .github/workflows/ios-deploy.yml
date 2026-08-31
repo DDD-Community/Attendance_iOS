@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, macOS, ARM64, xcode]
+    runs-on: self-hosted
     # main 머지 시 태그를 푸시하려면 쓰기 권한이 필요하다.
     permissions:
       contents: write

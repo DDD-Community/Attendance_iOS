@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   coverage:
-    runs-on: [self-hosted, macOS, ARM64, xcode]
+    runs-on: self-hosted
     timeout-minutes: 90
 
     permissions:
@@ -54,6 +54,20 @@ jobs:
           tuist install
           tuist generate --no-open
 
+      # self-hosted 러너는 실행 간 디스크가 유지되므로 이전 빌드 산출물을 비운다.
+      - name: Prepare runner disk
+        run: |
+          DERIVED_DATA="$HOME/ci-derived-data/DDDAttendance"
+          rm -rf "$DERIVED_DATA" TestResults.xcresult
+          mkdir -p "$DERIVED_DATA"
+
+          AVAILABLE_KB=$(df -Pk "$HOME" | awk 'NR == 2 { print $4 }')
+          REQUIRED_KB=$((15 * 1024 * 1024))
+          if [ "$AVAILABLE_KB" -lt "$REQUIRED_KB" ]; then
+            echo "::error::테스트에 필요한 디스크 여유 공간이 부족합니다. 필요: 15GB, 현재: $((AVAILABLE_KB / 1024 / 1024))GB"
+            exit 1
+          fi
+
       # 러너에 실제 존재하는 최신 iPhone 시뮬레이터를 고른다(이름 하드코딩은 Xcode 업데이트마다 깨진다).
       - name: Select simulator
         id: sim
@@ -82,9 +96,8 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          # checkout 의 git clean 이 워크스페이스 안 캐시를 지우므로 DerivedData 는 러너 홈에 둔다.
+          # DerivedData 는 러너 홈의 CI 전용 경로만 사용한다.
           DERIVED_DATA="$HOME/ci-derived-data/DDDAttendance"
-          mkdir -p "$DERIVED_DATA"
           xcodebuild test \
             -workspace DDDAttendance.xcworkspace \
             -scheme DDDAttendance-Workspace \
