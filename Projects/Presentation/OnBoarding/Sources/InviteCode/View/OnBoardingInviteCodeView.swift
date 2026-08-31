@@ -102,9 +102,9 @@ extension InviteCodeView {
           store.send(.async(.verifyInviteCode(code: store.totalInviteCode)))
         },
         title: "다음",
-        config: CustomButtonConfig.create(),
-        isEnable: store.enableButton
+        config: CustomButtonConfig.create()
       )
+      .isEnable(store.enableButton)
     }
     .padding(.horizontal, 24)
     .fixedSize(horizontal: false, vertical: true)
@@ -192,7 +192,7 @@ extension InviteCodeView {
       .frame(width: 64, height: 64)
       .overlay {
         TextField("", text: text)
-          .pretendardCustomFont(textStyle: .headline7Semibold)
+          .dddFont(.headline7Semibold)
           .foregroundStyle(.gray90)
           .multilineTextAlignment(.center)
           .frame(maxWidth: .infinity)
@@ -232,7 +232,7 @@ extension InviteCodeView {
           
           
           Text("코드가 유효하지 않습니다.")
-            .pretendardCustomFont(textStyle: .body1NormalMedium)
+            .dddFont(.body1NormalMedium)
             .foregroundStyle(Color.statusError)
           
           Spacer()

@@ -33,7 +33,7 @@ public struct SelectPartItem: View {
         .overlay {
           HStack {
             Text(content)
-              .pretendardCustomFont(textStyle: .body1NormalMedium)
+              .dddFont(.body1NormalMedium)
               .foregroundStyle(Color.grayWhite)
             
             Spacer()

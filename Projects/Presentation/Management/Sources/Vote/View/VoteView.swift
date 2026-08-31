@@ -57,14 +57,14 @@ extension VoteView {
     VStack(alignment: .leading, spacing: 6) {
       HStack {
         Text("투표 관리")
-          .pretendardCustomFont(textStyle: .tilte1NormalBold)
+          .dddFont(.tilte1NormalBold)
           .foregroundStyle(.staticWhite)
 
         Spacer()
       }
 
       Text("운영진 전용 화면이에요. 투표 진행을 관리할 수 있어요.")
-        .pretendardCustomFont(textStyle: .body3NormalMedium)
+        .dddFont(.body3NormalMedium)
         .foregroundStyle(.textCaption)
     }
   }
@@ -74,7 +74,7 @@ extension VoteView {
     VStack(spacing: 0) {
       HStack(spacing: 0) {
         Text("투표 상태")
-          .pretendardCustomFont(textStyle: .body3NormalMedium)
+          .dddFont(.body3NormalMedium)
           .foregroundStyle(.textCaption)
 
         Spacer()
@@ -89,13 +89,13 @@ extension VoteView {
 
       HStack(spacing: 0) {
         Text("참여 현황")
-          .pretendardCustomFont(textStyle: .body3NormalMedium)
+          .dddFont(.body3NormalMedium)
           .foregroundStyle(.textCaption)
 
         Spacer()
 
         Text(participationText)
-          .pretendardCustomFont(textStyle: .body3NormalMedium)
+          .dddFont(.body3NormalMedium)
           .foregroundStyle(store.voteStatus == .before ? Color.textCaption : Color.staticWhite)
           .multilineTextAlignment(.trailing)
       }
@@ -166,9 +166,9 @@ extension VoteView {
         send(.tappedStartVoteButton)
       },
       title: "투표 시작하기",
-      config: CustomButtonConfig.createVoteButton(),
-      isEnable: true
+      config: CustomButtonConfig.createVoteButton()
     )
+    .isEnable(true)
   }
 
   @ViewBuilder
@@ -202,9 +202,9 @@ extension VoteView {
         send(.tappedEndVoteButton)
       },
       title: "투표 종료하기",
-      config: CustomButtonConfig.createEndVoteButton(),
-      isEnable: true
+      config: CustomButtonConfig.createEndVoteButton()
     )
+    .isEnable(true)
   }
 
   @ViewBuilder

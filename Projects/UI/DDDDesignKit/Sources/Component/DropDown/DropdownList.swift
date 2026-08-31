@@ -8,7 +8,7 @@
 import SwiftUI
 
 public struct DropdownList: View {
-  private let items: [String]
+  private var items: [String]
   @Binding var selectedItem: SelectDropDownItem
   @Binding var isExpanded: Bool
   
@@ -29,7 +29,7 @@ public struct DropdownList: View {
           HStack {
             Text(item) // item은 이미 desc 값임
               .foregroundColor(selectedItem.desc == item ? .staticWhite : .borderInactive)
-              .pretendardCustomFont(textStyle: .title3NormalBold)
+              .dddFont(.title3NormalBold)
               .padding()
             
             Spacer()
@@ -61,4 +61,17 @@ public struct DropdownList: View {
 
 func solution(_ income: [Int], _outlay: [Int], cash: Int) -> Int {
   return 0
+}
+
+// MARK: - 체이닝 설정
+//
+// 값 타입 사본을 돌려주므로 호출 순서에 영향받지 않는다.
+// 기존 init 은 그대로 두어, 체이닝은 선택지로만 더한다.
+public extension DropdownList {
+  /// `items` 을 바꾼 사본을 돌려준다.
+  func items(_ items: [String]) -> Self {
+    var copy = self
+    copy.items = items
+    return copy
+  }
 }

@@ -52,12 +52,12 @@ struct TeamVoteCategoryView: View {
 
   private var reasonEditor: some View {
     FeedbackTextEditor(
-      description: reasonDescription,
       placeholder: "해당 팀을 선택하신 이유를 적어주세요. 실현 가능성, 사용자 편의성, 독창성 등을 종합적으로 고려하여 작성해 주세요.",
-      text: $reason,
-      minLength: category.reasonRequired ? category.reasonMinLength : 0,
-      maxLength: category.reasonMaxLength
+      text: $reason
     )
+    .description(reasonDescription)
+    .minLength(category.reasonRequired ? category.reasonMinLength : 0)
+    .maxLength(category.reasonMaxLength)
   }
 
   private var reasonDescription: String {

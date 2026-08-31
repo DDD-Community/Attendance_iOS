@@ -31,11 +31,11 @@ public struct ScheduleCardView: View {
       // 왼쪽 날짜 박스
       VStack(spacing: 2) {
         Text("\(month)월")
-          .pretendardCustomFont(textStyle: .body2NormalMedium)
+          .dddFont(.body2NormalMedium)
           .foregroundStyle(.staticBlack)
 
         Text(day)
-          .pretendardCustomFont(textStyle: .title3NormalBold)
+          .dddFont(.title3NormalBold)
           .foregroundStyle(.staticBlack)
       }
       .frame(width: 60, height: 60)
@@ -45,12 +45,12 @@ public struct ScheduleCardView: View {
       // 오른쪽 콘텐츠
       VStack(alignment: .leading, spacing: 4) {
         Text(title)
-          .pretendardCustomFont(textStyle: .body1NormalBold)
+          .dddFont(.body1NormalBold)
           .foregroundStyle(.staticWhite)
           .lineLimit(1)
 
         Text(description)
-          .pretendardCustomFont(textStyle: .body3NormalRegular)
+          .dddFont(.body3NormalRegular)
           .foregroundStyle(.textSecondary)
           .lineLimit(2)
       }

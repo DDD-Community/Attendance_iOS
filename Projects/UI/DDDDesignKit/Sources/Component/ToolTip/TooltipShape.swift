@@ -8,7 +8,7 @@
 import SwiftUI
 
 public struct TooltipShape: View {
-  private let tooltipText: String
+  private var tooltipText: String
   
   public init(tooltipText: String) {
     self.tooltipText = tooltipText
@@ -26,5 +26,18 @@ public struct TooltipShape: View {
       }
       .frame(width: 202, height: 50)
     }
+  }
+}
+
+// MARK: - 체이닝 설정
+//
+// 값 타입 사본을 돌려주므로 호출 순서에 영향받지 않는다.
+// 기존 init 은 그대로 두어, 체이닝은 선택지로만 더한다.
+public extension TooltipShape {
+  /// `tooltipText` 을 바꾼 사본을 돌려준다.
+  func tooltipText(_ tooltipText: String) -> Self {
+    var copy = self
+    copy.tooltipText = tooltipText
+    return copy
   }
 }

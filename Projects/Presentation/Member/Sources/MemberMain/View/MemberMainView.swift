@@ -51,7 +51,7 @@ struct MemberMainView: View {
     .overlay {
       dropDownInteractionBlocker
     }
-    .customAlert(
+    .dddAlert(
       isPresented: store.isPresentAttendanceWarningAlert,
       title: "주의해주세요!",
       message: "2번 지각 시 노쇼비를 돌려받을 수 없습니다.",
@@ -59,7 +59,7 @@ struct MemberMainView: View {
         send(.didTapDismissAlertButton)
       }
     )
-    .customAlert($store.scope(state: \.vote.exitAlert, action: \.vote.scope.exitAlert))
+    .dddAlert($store.scope(state: \.vote.exitAlert, action: \.vote.scope.exitAlert))
     .onAppear {
       send(.onAppear)
     }
@@ -254,7 +254,7 @@ struct MemberMainView: View {
         .frame(width: 100, height: 100)
 
       Text("아직 일정이 없어요.")
-        .pretendardCustomFont(textStyle: .body1NormalMedium)
+        .dddFont(.body1NormalMedium)
         .foregroundStyle(.textSecondary)
     }
     .padding(.vertical, 64)

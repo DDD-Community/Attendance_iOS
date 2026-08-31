@@ -115,9 +115,9 @@ extension SelectManagingView {
           }
         },
         title: (store.userSession.managing.contains(.teamManaging) || store.userSession.userRole == .manager) ? "다음" : "가입완료",
-        config: CustomButtonConfig.create(),
-        isEnable: !store.userSession.managing.isEmpty
+        config: CustomButtonConfig.create()
       )
+      .isEnable(!store.userSession.managing.isEmpty)
       
       Spacer()
       

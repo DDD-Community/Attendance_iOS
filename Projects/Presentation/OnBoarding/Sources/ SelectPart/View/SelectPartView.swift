@@ -117,9 +117,9 @@ extension SelectPartView {
           store.send(.navigation(.presentNextStep))
         },
         title: "다음",
-        config: CustomButtonConfig.create(),
-        isEnable: store.activeSelectPart
+        config: CustomButtonConfig.create()
       )
+      .isEnable(store.activeSelectPart)
       
       Spacer()
         .frame(height: 20)

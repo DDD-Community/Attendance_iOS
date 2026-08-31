@@ -36,8 +36,8 @@ public struct LoginView: View {
         socialLoginButton()
       }
     }
-    .toastOverlay()
-    .customAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
+    .dddToast()
+    .dddAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
   }
 }
 

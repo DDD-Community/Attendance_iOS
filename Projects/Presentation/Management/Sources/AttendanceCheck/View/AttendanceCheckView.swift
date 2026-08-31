@@ -55,13 +55,13 @@ private extension AttendanceCheckView {
 
       HStack {
         Text("🗓️")
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
+          .dddFont(.body1NormalMedium)
 
         Spacer()
           .frame(width: 4)
 
         Text(store.selectAttendanceDate.formatted(.yearMonthDayDotted))
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
+          .dddFont(.body1NormalMedium)
           .foregroundStyle(.staticWhite)
 
         Spacer()
@@ -314,7 +314,7 @@ private extension AttendanceCheckView {
           .frame(height: 12)
 
         Text("아직 출석 인원이 없어요.")
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
+          .dddFont(.body1NormalMedium)
           .foregroundStyle(.textSecondary)
 
         Spacer()

@@ -10,10 +10,10 @@ import SwiftUI
 /// 서버에서 내려온 칩 목록을 받아 자동 줄바꿈으로 배치하는 다중 선택 그룹.
 /// `items`만 갈아끼우면 칩 개수/내용이 그대로 반영된다.
 public struct FeedbackChipGroup: View {
-  private let items: [ChipItem]
+  private var items: [ChipItem]
   @Binding private var selectedIDs: Set<String>
-  private let horizontalSpacing: CGFloat
-  private let verticalSpacing: CGFloat
+  private var horizontalSpacing: CGFloat
+  private var verticalSpacing: CGFloat
 
   public init(
     items: [ChipItem],
@@ -70,4 +70,29 @@ public struct FeedbackChipGroup: View {
     }
   }
   return PreviewContainer()
+}
+
+// MARK: - 체이닝 설정
+//
+// 값 타입 사본을 돌려주므로 호출 순서에 영향받지 않는다.
+// 기존 init 은 그대로 두어, 체이닝은 선택지로만 더한다.
+public extension FeedbackChipGroup {
+  /// `items` 을 바꾼 사본을 돌려준다.
+  func items(_ items: [ChipItem]) -> Self {
+    var copy = self
+    copy.items = items
+    return copy
+  }
+  /// `horizontalSpacing` 을 바꾼 사본을 돌려준다.
+  func horizontalSpacing(_ horizontalSpacing: CGFloat) -> Self {
+    var copy = self
+    copy.horizontalSpacing = horizontalSpacing
+    return copy
+  }
+  /// `verticalSpacing` 을 바꾼 사본을 돌려준다.
+  func verticalSpacing(_ verticalSpacing: CGFloat) -> Self {
+    var copy = self
+    copy.verticalSpacing = verticalSpacing
+    return copy
+  }
 }

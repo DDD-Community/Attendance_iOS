@@ -54,11 +54,11 @@ struct MemberQRCodeView: View {
     VStack(alignment: .center, spacing: 32) {
       VStack(alignment: .center, spacing: 6) {
         Text("QR 코드를 스캔해 주세요.")
-          .pretendardCustomFont(textStyle: .title2NormalBold)
+          .dddFont(.title2NormalBold)
           .foregroundStyle(.textPrimary)
 
         Text("스캔 시 자동으로 출석이 인정됩니다.")
-          .pretendardCustomFont(textStyle: .body3NormalMedium)
+          .dddFont(.body3NormalMedium)
           .foregroundStyle(.textSecondary)
       }
 

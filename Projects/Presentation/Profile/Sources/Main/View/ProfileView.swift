@@ -33,7 +33,7 @@ public struct ProfileView: View {
         mangerProfileLoadingData()
       }
       .alert($store.scope(state: \.alert, action: \.scope.alert))
-      .customAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
+      .dddAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
       .onAppear {
         store.send(.async(.fetchUser))
       }
@@ -141,7 +141,7 @@ extension ProfileView {
 
   private var profileRoleBadge: some View {
     Text(store.profileModel?.role == .manager ? "매니저" : "멤버")
-      .pretendardCustomFont(textStyle: .body3NormalBold)
+      .dddFont(.body3NormalBold)
       .foregroundStyle(.statusFocus)
       .padding(.horizontal, 14)
       .padding(.vertical, 5)
@@ -164,7 +164,7 @@ extension ProfileView {
         .frame(width: 7)
 
       Text("기수 변경")
-        .pretendardCustomFont(textStyle: .body3NormalMedium)
+        .dddFont(.body3NormalMedium)
         .foregroundStyle(.staticWhite)
     }
     .padding(.horizontal, 18)
@@ -180,7 +180,7 @@ extension ProfileView {
 
   private var profileName: some View {
     Text("\(store.profileModel?.name ?? "")님")
-      .pretendardCustomFont(textStyle: .headline5Bold)
+      .dddFont(.headline5Bold)
       .foregroundStyle(.borderInverse)
   }
 
@@ -286,7 +286,7 @@ extension ProfileView {
     HStack {
       Spacer()
       Text("Dynamic Developer Designers")
-        .pretendardCustomFont(textStyle: .body3NormalMedium)
+        .dddFont(.body3NormalMedium)
         .foregroundStyle(.textSecondary100)
       Spacer()
     }
@@ -310,7 +310,7 @@ extension ProfileView {
     LazyVStack(spacing: .zero) {
       HStack {
         Text(title)
-          .pretendardCustomFont(textStyle: .body2NormalMedium)
+          .dddFont(.body2NormalMedium)
           .foregroundStyle(.textSecondary100)
 
         Spacer()
@@ -322,7 +322,7 @@ extension ProfileView {
       if isManaging {
         HStack {
           Text("\(subTitle) / \(managingTeam)")
-            .pretendardCustomFont(textStyle: .title2NormalMedium)
+            .dddFont(.title2NormalMedium)
             .foregroundStyle(.borderInverse)
 
           Spacer()
@@ -330,7 +330,7 @@ extension ProfileView {
       } else if isGeneration {
         HStack {
           Text("\(subTitle)")
-            .pretendardCustomFont(textStyle: .title2NormalMedium)
+            .dddFont(.title2NormalMedium)
             .foregroundStyle(.borderInverse)
 
           Spacer()
@@ -344,7 +344,7 @@ extension ProfileView {
 
           } else {
             Text(subTitle)
-              .pretendardCustomFont(textStyle: .title2NormalMedium)
+              .dddFont(.title2NormalMedium)
               .foregroundStyle(.borderInverse)
           }
 
@@ -364,7 +364,7 @@ extension ProfileView {
       HStack(alignment: .center) {
 
         Text("탈퇴하기")
-          .pretendardCustomFont(textStyle: .body2NormalMedium)
+          .dddFont(.body2NormalMedium)
           .foregroundStyle(.mediumGray)
           .underline(true, color: .mediumGray)
           .onTapGesture {
@@ -375,7 +375,7 @@ extension ProfileView {
           .frame(width: 64)
 
         Text(store.logoutText)
-          .pretendardCustomFont(textStyle: .body2NormalMedium)
+          .dddFont(.body2NormalMedium)
           .foregroundStyle(.staticWhite)
           .underline(true, color: .staticWhite)
           .onTapGesture {
@@ -394,14 +394,14 @@ extension ProfileView {
 
 
       Text("Version \(store.appVersion)")
-        .pretendardCustomFont(textStyle: .body3NormalRegular)
+        .dddFont(.body3NormalRegular)
         .foregroundStyle(.mediumGray100)
 
       Spacer()
         .frame(height: 4)
 
       Text("개인정보처리방침 보기")
-        .pretendardCustomFont(textStyle: .body3NormalRegular)
+        .dddFont(.body3NormalRegular)
         .foregroundStyle(.mediumGray)
         .underline(true, color: .mediumGray)
         .onTapGesture {

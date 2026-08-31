@@ -77,7 +77,7 @@ struct StaffView: View {
       .presentationDragIndicator(.hidden)
     }
     // 투표 모달 — 전체 화면(상단바 포함)을 덮도록 루트에 부착
-    .customAlert($store.scope(state: \.vote.customAlert, action: \.vote.scope.customAlert))
+    .dddAlert($store.scope(state: \.vote.customAlert, action: \.vote.scope.customAlert))
     .alert($store.scope(state: \.vote.alert, action: \.vote.scope.alert))
     .nonParticipantsModal(
       isPresented: store.vote.isNonParticipantsPresented,
@@ -107,7 +107,7 @@ private extension StaffView {
         } label: {
           HStack {
             Text(store.selectDropDownItem.desc)
-              .pretendardCustomFont(textStyle: .title2NormalBold)
+              .dddFont(.title2NormalBold)
               .foregroundColor(.staticWhite)
 
             Spacer()

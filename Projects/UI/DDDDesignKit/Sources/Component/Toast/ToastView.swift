@@ -8,7 +8,7 @@
 import SwiftUI
 
 public struct ToastView: View {
-  let toast: ToastType
+  var toast: ToastType
 
   public init(toast: ToastType) {
     self.toast = toast
@@ -20,7 +20,7 @@ public struct ToastView: View {
 
       // 메시지
       Text(toast.message)
-        .pretendardCustomFont(textStyle: .body1NormalBold)
+        .dddFont(.body1NormalBold)
         .foregroundColor(.white)
         .multilineTextAlignment(.leading)
         .fixedSize(horizontal: false, vertical: true)
@@ -107,7 +107,7 @@ public enum ToastPosition: Equatable {
 
 // MARK: - View Extension
 public extension View {
-  func toastOverlay(
+  func dddToast(
     position: ToastPosition = .top,
     horizontalPadding: CGFloat = 20,
     topPadding: CGFloat = 30,
@@ -165,5 +165,18 @@ private extension ToastView {
     }
   }
   .padding()
-  .toastOverlay()
+  .dddToast()
+}
+
+// MARK: - 체이닝 설정
+//
+// 값 타입 사본을 돌려주므로 호출 순서에 영향받지 않는다.
+// 기존 init 은 그대로 두어, 체이닝은 선택지로만 더한다.
+public extension ToastView {
+  /// `toast` 을 바꾼 사본을 돌려준다.
+  func toast(_ toast: ToastType) -> Self {
+    var copy = self
+    copy.toast = toast
+    return copy
+  }
 }

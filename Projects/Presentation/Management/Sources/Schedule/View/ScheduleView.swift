@@ -31,7 +31,7 @@ struct ScheduleView: View {
           // 타이틀
           HStack {
             Text("\(store.userSession.generation) 일정표")
-              .pretendardCustomFont(textStyle: .title2NormalBold)
+              .dddFont(.title2NormalBold)
               .foregroundStyle(.staticWhite)
 
             Spacer()

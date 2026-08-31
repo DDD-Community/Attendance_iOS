@@ -50,7 +50,7 @@ extension CreateAppView {
         .frame(height: 16)
       
       Text("만든 사람들")
-        .pretendardCustomFont(textStyle: .title2NormalBold)
+        .dddFont(.title2NormalBold)
         .foregroundStyle(.staticWhite)
       
     }
@@ -97,14 +97,14 @@ extension CreateAppView {
         .frame(height: 24)
       
       Text(selectPart.attendanceListDesc)
-        .pretendardCustomFont(textStyle: .body3NormalRegular)
+        .dddFont(.body3NormalRegular)
         .foregroundStyle(.staticWhite)
       
       Spacer()
         .frame(height: 2)
       
       Text(creators)
-        .pretendardCustomFont(textStyle: .title3NormalMedium)
+        .dddFont(.title3NormalMedium)
         .foregroundStyle(.staticWhite)
       
     }
@@ -122,7 +122,7 @@ extension CreateAppView {
         .frame(height: 58)
         .overlay {
           Text("앱 피드백 남기기")
-            .pretendardCustomFont(textStyle: .body1NormalMedium)
+            .dddFont(.body1NormalMedium)
             .foregroundStyle(.staticWhite)
         }
         .contentShape(Capsule())
@@ -134,9 +134,9 @@ extension CreateAppView {
       CustomButton(
         action: closeAction,
         title: "닫기",
-        config: CustomButtonConfig.createDateButton(),
-        isEnable: true
+        config: CustomButtonConfig.createDateButton()
       )
+      .isEnable(true)
     }
     .padding(.horizontal, 24)
 

@@ -45,7 +45,7 @@ public struct AttendanceStatusModal: View {
 
       VStack(alignment: .center, spacing: 24) {
         Text(title)
-          .pretendardCustomFont(textStyle: .title3NormalBold)
+          .dddFont(.title3NormalBold)
           .foregroundStyle(.staticWhite)
           .multilineTextAlignment(.center)
 

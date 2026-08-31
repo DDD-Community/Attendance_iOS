@@ -58,26 +58,26 @@ struct FeedbackQuestionView: View {
 
       ForEach(question.followUp) { followUp in
         FeedbackTextEditor(
-          title: followUp.title,
-          titleStyle: .secondary,
           placeholder: defaultPlaceholder,
-          text: followUpBinding(for: followUp.id),
-          minLength: textMinLength,
-          maxLength: followUp.maxLength ?? 300
+          text: followUpBinding(for: followUp.id)
         )
+        .title(followUp.title)
+        .titleStyle(.secondary)
+        .minLength(textMinLength)
+        .maxLength(followUp.maxLength ?? 300)
       }
     }
   }
 
   private var longTextView: some View {
     FeedbackTextEditor(
-      title: titleText,
-      description: question.helpText,
       placeholder: defaultPlaceholder,
-      text: $textValue,
-      minLength: textMinLength,
-      maxLength: question.maxLength ?? 300
+      text: $textValue
     )
+    .title(titleText)
+    .description(question.helpText)
+    .minLength(textMinLength)
+    .maxLength(question.maxLength ?? 300)
   }
 
   private var booleanView: some View {

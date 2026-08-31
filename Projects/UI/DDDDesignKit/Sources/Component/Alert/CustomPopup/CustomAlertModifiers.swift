@@ -9,7 +9,7 @@ import SwiftUI
 import ComposableArchitecture
 
 public extension View {
-  func customConfirmationPopup(
+  func dddConfirmationPopup(
     item: AlertItem?
   ) -> some View {
     self.modifier(
@@ -17,7 +17,7 @@ public extension View {
     )
   }
 
-  func customAlert(
+  func dddAlert(
     _ store: Binding<Store<CustomAlertState<CustomAlertAction>, CustomAlertAction>?>
   ) -> some View {
     self.overlay {
@@ -46,7 +46,7 @@ public extension View {
     }
   }
 
-  func customConfirmationPopup(
+  func dddConfirmationPopup(
     isPresented: Bool,
     title: String,
     message: String,

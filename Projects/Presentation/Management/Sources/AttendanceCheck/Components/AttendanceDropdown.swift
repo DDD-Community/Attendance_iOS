@@ -46,7 +46,7 @@ struct AttendanceDropdown: View {
   private var headerContent: some View {
     HStack {
       Text(selectedStatus.desc)
-        .pretendardCustomFont(textStyle: .body2NormalMedium)
+        .dddFont(.body2NormalMedium)
         .foregroundStyle(.staticWhite)
 
       Spacer()
@@ -112,7 +112,7 @@ struct AttendanceDropdown: View {
   private func optionRowContent(for status: AttendanceStatus) -> some View {
     HStack {
       Text(status.desc)
-        .pretendardCustomFont(textStyle: .body2NormalMedium)
+        .dddFont(.body2NormalMedium)
         .foregroundStyle(status == selectedStatus ? .blue40 : .staticWhite)
 
       Spacer()

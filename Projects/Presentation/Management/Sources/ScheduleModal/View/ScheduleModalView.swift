@@ -64,7 +64,7 @@ extension ScheduleModalView {
         .frame(height: 32)
 
       Text("일정 선택")
-        .pretendardCustomFont(textStyle: .title2NormalBold)
+        .dddFont(.title2NormalBold)
         .foregroundStyle(.borderInverse)
     }
   }
@@ -103,11 +103,11 @@ extension ScheduleModalView {
      HStack(spacing: 12) {
        VStack(spacing: 2) {
          Text("\(item.month)월")
-           .pretendardCustomFont(textStyle: .body2NormalMedium)
+           .dddFont(.body2NormalMedium)
            .foregroundColor(.staticBlack)
 
          Text("\(item.day)")
-           .pretendardCustomFont(textStyle: .title3NormalMedium)
+           .dddFont(.title3NormalMedium)
            .foregroundColor(.staticBlack)
        }
        .frame(width: 54, height: 54)
@@ -116,11 +116,11 @@ extension ScheduleModalView {
 
        VStack(alignment: .leading, spacing: 4) {
          Text(item.name)
-           .pretendardCustomFont(textStyle: .body1NormalBold)
+           .dddFont(.body1NormalBold)
            .foregroundStyle(.borderInverse)
 
          Text(item.description)
-           .pretendardCustomFont(textStyle: .body3NormalRegular)
+           .dddFont(.body3NormalRegular)
            .foregroundStyle(.textSecondary100)
        }
 
@@ -147,8 +147,8 @@ extension ScheduleModalView {
         send(.confirmSelection)
       },
       title: "확인",
-      config: CustomButtonConfig.create(),
-      isEnable: store.enableButton
+      config: CustomButtonConfig.create()
     )
+    .isEnable(store.enableButton)
   }
 }

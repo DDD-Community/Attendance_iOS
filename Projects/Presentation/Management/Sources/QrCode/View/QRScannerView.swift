@@ -156,7 +156,7 @@ extension QRScannerView {
           .frame(width: 4)
         
         Text("출석이 완료됐어요!")
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
+          .dddFont(.body1NormalMedium)
           .foregroundColor(.staticWhite)
 
 
@@ -174,9 +174,9 @@ extension QRScannerView {
           .frame(width: 4)
         
         Text("10분 초과로 지각이에요")
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
+          .dddFont(.body1NormalMedium)
           .foregroundColor(.staticWhite)
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
+          .dddFont(.body1NormalMedium)
         
         
         Spacer()
@@ -193,14 +193,14 @@ extension QRScannerView {
           .frame(width: 4)
         
         Text("30분 초과로 결석이에요")
-          .pretendardCustomFont(textStyle: .body1NormalMedium)
+          .dddFont(.body1NormalMedium)
           .foregroundColor(.staticWhite)
         
         Spacer()
       }
     default:
       Text(store.isUseQRCode ? "이미 사용된 QR 코드입니다.":  "QR 코드를 스캔해 주세요")
-        .pretendardCustomFont(textStyle: .body1NormalMedium)
+        .dddFont(.body1NormalMedium)
         .foregroundColor(.staticWhite)
     }
   }

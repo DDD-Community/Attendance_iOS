@@ -107,7 +107,7 @@ extension  OnBoardingNameView {
                 .font(.pretendardFontFamily(family: .Medium, size: 16))
                 .foregroundColor(.white.opacity(0.6))   // placeholder 색
             )
-            .pretendardCustomFont(textStyle: .body2NormalMedium)  // 입력 글자 스타일
+            .dddFont(.body2NormalMedium)  // 입력 글자 스타일
             .foregroundStyle(.staticWhite)                        // 입력 글자 색
             .frame(maxWidth: .infinity)
             .onChange(of: store.userSession.name) { new, _ in
@@ -151,7 +151,7 @@ extension  OnBoardingNameView {
               .frame(width: 20, height: 20)
           } icon: {
             Text("5자 이내의 본명을 입력해주세요")
-              .pretendardCustomFont(textStyle: .body3NormalMedium)
+              .dddFont(.body3NormalMedium)
               .foregroundStyle(.statusError)
           }
         }
@@ -172,9 +172,9 @@ extension  OnBoardingNameView {
           send(.checkIsAvailableName)
         },
         title: "다음",
-        config: CustomButtonConfig.create(),
-        isEnable: store.enableButton
+        config: CustomButtonConfig.create()
       )
+      .isEnable(store.enableButton)
     }
     .padding(.horizontal, 24)
   }

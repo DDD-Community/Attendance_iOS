@@ -88,13 +88,13 @@ struct CustomConfirmationPopup: View {
     VStack(alignment: .center, spacing: 24) {
       VStack(alignment: .center, spacing: 8) {
         Text(title)
-          .pretendardCustomFont(textStyle: .title3NormalBold)
+          .dddFont(.title3NormalBold)
           .foregroundStyle(.staticWhite)
           .multilineTextAlignment(.center)
 
         if !message.isEmpty {
           Text(message)
-            .pretendardCustomFont(textStyle: .body3NormalRegular)
+            .dddFont(.body3NormalRegular)
             .foregroundStyle(.textSecondary)
             .multilineTextAlignment(.center)
         }
@@ -200,13 +200,13 @@ struct CustomConfirmationPopup: View {
   private var consentContent: some View {
     VStack(alignment: .center, spacing: 16) {
       Text(title)
-        .pretendardCustomFont(textStyle: .title3NormalBold)
+        .dddFont(.title3NormalBold)
         .foregroundStyle(.staticWhite)
         .multilineTextAlignment(.center)
 
       if !message.isEmpty {
         Text(message)
-          .pretendardCustomFont(textStyle: .body3NormalRegular)
+          .dddFont(.body3NormalRegular)
           .foregroundStyle(.textSecondary)
           .multilineTextAlignment(.center)
       }
@@ -234,7 +234,7 @@ struct CustomConfirmationPopup: View {
         .buttonStyle(.plain)
 
         Text(checkboxTitle)
-          .pretendardCustomFont(textStyle: .body3NormalRegular)
+          .dddFont(.body3NormalRegular)
           .foregroundStyle(.staticWhite)
           .underline(true, color: .mediumGray)
           .onTapGesture {
@@ -259,7 +259,7 @@ struct CustomConfirmationPopup: View {
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .background(.gray.opacity(0.2))
   }
-  .customConfirmationPopup(
+  .dddConfirmationPopup(
     item: .withdrawAccount(
       onConfirm: {
       },
@@ -275,7 +275,7 @@ struct CustomConfirmationPopup: View {
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .background(.gray.opacity(0.2))
   }
-  .customConfirmationPopup(
+  .dddConfirmationPopup(
     isPresented: true,
     title: "정말 탈퇴하시겠습니까?",
     message: "탈퇴 시, 등록된 모든 출석 데이터가 삭제됩니다.",

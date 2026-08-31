@@ -18,7 +18,7 @@ public struct ScheduleHeaderView: View {
       // 왼쪽 제목 및 드롭다운
       HStack(spacing: 4) {
         Text(selectedPeriod)
-          .pretendardCustomFont(textStyle: .tilte1NormalBold)
+          .dddFont(.tilte1NormalBold)
           .foregroundStyle(.staticWhite)
 
         Image(systemName: "chevron.down")

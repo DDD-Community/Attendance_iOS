@@ -17,14 +17,14 @@ public struct FeedbackTextEditor: View {
     case secondary // #EAEAEA, Medium, 15
   }
 
-  private let title: String?
-  private let titleStyle: TitleStyle
-  private let description: String?
-  private let placeholder: String
+  private var title: String?
+  private var titleStyle: TitleStyle
+  private var description: String?
+  private var placeholder: String
   @Binding private var text: String
-  private let minLength: Int
-  private let maxLength: Int
-  private let height: CGFloat
+  private var minLength: Int
+  private var maxLength: Int
+  private var height: CGFloat
 
   /// 입력된 텍스트가 입력창 안에 다 들어가는 동안에는 내부 스크롤을 끈다.
   /// 짧은 글에서 첫 글자를 입력할 때 텍스트가 위로 튀어 잘리는 현상을 막고,
@@ -211,4 +211,53 @@ private extension String {
     }
   }
   return PreviewContainer()
+}
+
+// MARK: - 체이닝 설정
+//
+// 값 타입 사본을 돌려주므로 호출 순서에 영향받지 않는다.
+// 기존 init 은 그대로 두어, 체이닝은 선택지로만 더한다.
+public extension FeedbackTextEditor {
+  /// `title` 을 바꾼 사본을 돌려준다.
+  func title(_ title: String?) -> Self {
+    var copy = self
+    copy.title = title
+    return copy
+  }
+  /// `titleStyle` 을 바꾼 사본을 돌려준다.
+  func titleStyle(_ titleStyle: TitleStyle) -> Self {
+    var copy = self
+    copy.titleStyle = titleStyle
+    return copy
+  }
+  /// `description` 을 바꾼 사본을 돌려준다.
+  func description(_ description: String?) -> Self {
+    var copy = self
+    copy.description = description
+    return copy
+  }
+  /// `placeholder` 을 바꾼 사본을 돌려준다.
+  func placeholder(_ placeholder: String) -> Self {
+    var copy = self
+    copy.placeholder = placeholder
+    return copy
+  }
+  /// `minLength` 을 바꾼 사본을 돌려준다.
+  func minLength(_ minLength: Int) -> Self {
+    var copy = self
+    copy.minLength = minLength
+    return copy
+  }
+  /// `maxLength` 을 바꾼 사본을 돌려준다.
+  func maxLength(_ maxLength: Int) -> Self {
+    var copy = self
+    copy.maxLength = maxLength
+    return copy
+  }
+  /// `height` 을 바꾼 사본을 돌려준다.
+  func height(_ height: CGFloat) -> Self {
+    var copy = self
+    copy.height = height
+    return copy
+  }
 }

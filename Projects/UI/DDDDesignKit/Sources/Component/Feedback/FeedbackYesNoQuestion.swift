@@ -10,7 +10,7 @@ import SwiftUI
 /// "질문 + 예/아니오" 단일 선택 문항 컴포넌트.
 /// 피드백 5·6번처럼 구조가 같은 문항을 `question`/`answer`만 바꿔 재사용한다.
 public struct FeedbackYesNoQuestion: View {
-  private let question: String
+  private var question: String
   @Binding private var answer: YesNoAnswer?
 
   public init(
@@ -85,4 +85,17 @@ public struct FeedbackYesNoQuestion: View {
     }
   }
   return PreviewContainer()
+}
+
+// MARK: - 체이닝 설정
+//
+// 값 타입 사본을 돌려주므로 호출 순서에 영향받지 않는다.
+// 기존 init 은 그대로 두어, 체이닝은 선택지로만 더한다.
+public extension FeedbackYesNoQuestion {
+  /// `question` 을 바꾼 사본을 돌려준다.
+  func question(_ question: String) -> Self {
+    var copy = self
+    copy.question = question
+    return copy
+  }
 }
