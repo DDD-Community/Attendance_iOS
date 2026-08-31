@@ -8,7 +8,6 @@
 import DomainInterface
 import Entity
 
-import WeaveDI
 
 public struct OnBoardingUseCaseImpl: OnBoardingInterface {
   @Dependency(\.onBoardingRepository) var repository

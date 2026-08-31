@@ -10,7 +10,6 @@ import SwiftUI
 import DomainInterface
 import Entity
 
-import WeaveDI
 
 public struct QRCodeUseCaseImpl: QRCodeInterface {
   @Dependency(\.qrCodeRepository) var repository

@@ -13,7 +13,6 @@ import Model
 import Dependencies
 import Moya
 import Service
-import WeaveDI
 
 @preconcurrency import AsyncMoya
 

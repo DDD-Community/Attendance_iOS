@@ -3,12 +3,12 @@
 //  DomainInterface
 //
 //  Created by DDD on 7/23/25.
-//  Updated for WeaveDI v4.0 - Protocol-based DI Registration
 //
 
 import Foundation
+
+import Dependencies
 import Entity
-import WeaveDI
 
 public protocol SignUpInterface: Sendable {
   func registerUser(
@@ -17,10 +17,7 @@ public protocol SignUpInterface: Sendable {
 }
 
 /// SignUp Repository의 DependencyKey 구조체
-public struct SignUpRepositoryDependency: DependencyKey {
-  public static var liveValue: SignUpInterface {
-    UnifiedDI.resolve(SignUpInterface.self) ?? DefaultSignUpRepositoryImpl()
-  }
+public enum SignUpRepositoryDependency: TestDependencyKey {
 
   public static var testValue: SignUpInterface {
     DefaultSignUpRepositoryImpl.success()

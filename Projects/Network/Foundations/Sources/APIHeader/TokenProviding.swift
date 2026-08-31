@@ -8,16 +8,16 @@
 import Foundation
 
 import Dependencies
-import WeaveDI
 
 public protocol TokenProviding: Sendable {
   func accessToken() -> String?
   func saveAccessToken(_ token: String)
 }
 
-private enum TokenProviderKey: DependencyKey {
-  static var liveValue: TokenProviding {
-    UnifiedDI.resolve(TokenProviding.self) ?? InMemoryTokenProvider()
+/// 구현(liveValue)은 KeychainTokenProvider 를 소유한 Repository 모듈에서 등록한다.
+public enum TokenProviderKey: TestDependencyKey {
+  public static var testValue: TokenProviding {
+    InMemoryTokenProvider()
   }
 }
 

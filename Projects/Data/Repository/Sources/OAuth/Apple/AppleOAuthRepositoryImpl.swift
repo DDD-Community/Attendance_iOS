@@ -12,7 +12,6 @@ import DomainInterface
 @preconcurrency import Entity
 
 import DDDCoreLogger
-import WeaveDI
 import ComposableArchitecture
 
 #if canImport(UIKit)

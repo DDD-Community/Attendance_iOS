@@ -9,7 +9,6 @@ import Foundation
 import UIKit
 import DomainInterface
 import Entity
-import WeaveDI
 import Alamofire
 
 final class AuthSessionManager {

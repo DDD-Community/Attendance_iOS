@@ -6,8 +6,9 @@
 //
 
 import Foundation
+
+import Dependencies
 import AuthenticationServices
-import WeaveDI
 
 public protocol AppleAuthRequestInterface: Sendable {
   func prepare(_ request: ASAuthorizationAppleIDRequest) -> String
@@ -15,15 +16,12 @@ public protocol AppleAuthRequestInterface: Sendable {
 
 ///// OAuth Repository의 DependencyKey 구조체
 public struct  AppleAuthRequestDependency: DependencyKey {
-  public static var liveValue: AppleAuthRequestInterface {
-    UnifiedDI.resolve(AppleAuthRequestInterface.self) ?? DefaultAppleAuthRequestImpl()
-  }
 
   public static var testValue: AppleAuthRequestInterface {
-    UnifiedDI.resolve(AppleAuthRequestInterface.self) ?? DefaultAppleAuthRequestImpl()
+    DefaultAppleAuthRequestImpl()
   }
 
-  public static var previewValue: AppleAuthRequestInterface = liveValue
+  public static var previewValue: AppleAuthRequestInterface = testValue
 }
 
 /// DependencyValues extension으로 간편한 접근 제공

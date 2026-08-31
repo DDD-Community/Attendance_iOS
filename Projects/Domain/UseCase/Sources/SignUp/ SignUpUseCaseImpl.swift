@@ -10,7 +10,6 @@ import ComposableArchitecture
 import DomainInterface
 import Entity
 
-import WeaveDI
 
 public protocol SignUpUseCaseInterface: Sendable {
   func registerUser(

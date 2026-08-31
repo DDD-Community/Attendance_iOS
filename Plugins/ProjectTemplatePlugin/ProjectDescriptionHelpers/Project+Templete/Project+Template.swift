@@ -119,8 +119,23 @@ public extension Project {
     infoPlist: ProjectDescription.InfoPlist = .default,
     entitlements: ProjectDescription.Entitlements? = nil,
     schemes: [ProjectDescription.Scheme] = [],
-    hasTests: Bool = false
+    hasTests: Bool = false,
+    hasInterface: Bool = false,
+    interfaceDependencies: [ProjectDescription.TargetDependency] = []
   ) -> Project {
+    // Interface 타깃은 Interface/ 폴더가 실제로 있을 때만 만든다(buildableFolders 는 폴더가 없으면 generate 실패).
+    let interfaceTarget: Target? = hasInterface ? .target(
+      name: "\(name)Interface",
+      destinations: destinations,
+      product: product,
+      bundleId: "\(bundleId)Interface",
+      deploymentTargets: deploymentTarget,
+      infoPlist: .default,
+      buildableFolders: ["Interface"],
+      dependencies: interfaceDependencies,
+      settings: suppressWarningsSettings
+    ) : nil
+
     let appTarget: Target = .target(
       name: name,
       destinations: destinations,
@@ -131,11 +146,12 @@ public extension Project {
       buildableFolders: resources != nil ? ["Sources", "Resources"] : ["Sources"],
       entitlements: entitlements,
       scripts: scripts,
-      dependencies: dependencies,
+      // 구현은 자기 Interface 를 항상 의존한다.
+      dependencies: (hasInterface ? [.target(name: "\(name)Interface")] : []) + dependencies,
       settings: suppressWarningsSettings
     )
 
-    var targets: [Target] = [appTarget]
+    var targets: [Target] = interfaceTarget.map { [$0, appTarget] } ?? [appTarget]
 
     if hasTests {
       let appTestTarget: Target = .target(

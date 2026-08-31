@@ -12,4 +12,7 @@
 @_exported import Auth
 @_exported import Member
 @_exported import Management
+@_exported import OnBoarding
+@_exported import Profile
+@_exported import Web
 

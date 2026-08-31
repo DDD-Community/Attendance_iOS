@@ -7,10 +7,11 @@
 
 import Foundation
 
+import Dependencies
+
 import DomainInterface
 import Entity
 
-import WeaveDI
 
 public protocol FetchMySchedulesUseCase: Sendable {
   func execute() async throws -> [AttendanceMyScheduleResponse]

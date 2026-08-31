@@ -3,13 +3,13 @@
 //  DomainInterface
 //
 //  Created by DDD on 7/23/25.
-//  Updated for WeaveDI v4.0 - Protocol-based DI Registration
 //
 
 import Foundation
+
+import Dependencies
 import SwiftUI
 import Entity
-import WeaveDI
 
 /// QRCode 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol QRCodeInterface: Sendable {
@@ -19,16 +19,13 @@ public protocol QRCodeInterface: Sendable {
 }
 
 /// QRCode Repository의 DependencyKey 구조체
-public struct QRCodeRepositoryDependency: DependencyKey {
-  public static var liveValue: QRCodeInterface {
-    UnifiedDI.resolve(QRCodeInterface.self) ?? DefaultQRCodeRepositoryImpl()
-  }
+public enum QRCodeRepositoryDependency: TestDependencyKey {
 
   public static var testValue: QRCodeInterface {
-    UnifiedDI.resolve(QRCodeInterface.self) ?? DefaultQRCodeRepositoryImpl()
+    DefaultQRCodeRepositoryImpl()
   }
 
-  public static var previewValue: QRCodeInterface = liveValue
+  public static var previewValue: QRCodeInterface = testValue
 }
 
 /// DependencyValues extension으로 간편한 접근 제공

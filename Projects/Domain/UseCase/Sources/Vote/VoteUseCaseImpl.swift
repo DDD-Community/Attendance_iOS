@@ -7,7 +7,6 @@
 
 import DomainInterface
 import Entity
-import WeaveDI
 
 public struct VoteUseCaseImpl: VoteInterface {
   @Dependency(\.voteRepository) var repository

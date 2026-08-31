@@ -3,12 +3,12 @@
 //  DomainInterface
 //
 //  Created by DDD on 7/23/25.
-//  Updated for WeaveDI v4.0 - Protocol-based DI Registration
 //
 
 import Entity
 import Foundation
-import WeaveDI
+
+import Dependencies
 
 /// Schedule 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol ScheduleInterface: Sendable {
@@ -17,16 +17,13 @@ public protocol ScheduleInterface: Sendable {
 }
 
 /// Schedule Repository의 DependencyKey 구조체
-public struct ScheduleRepositoryDependency: DependencyKey {
-  public static var liveValue: ScheduleInterface {
-    UnifiedDI.resolve(ScheduleInterface.self) ?? DefaultScheduleRepositoryImpl()
-  }
+public enum ScheduleRepositoryDependency: TestDependencyKey {
 
   public static var testValue: ScheduleInterface {
-    UnifiedDI.resolve(ScheduleInterface.self) ?? DefaultScheduleRepositoryImpl()
+    DefaultScheduleRepositoryImpl()
   }
 
-  public static var previewValue: ScheduleInterface = liveValue
+  public static var previewValue: ScheduleInterface = testValue
 }
 
 /// DependencyValues extension으로 간편한 접근 제공

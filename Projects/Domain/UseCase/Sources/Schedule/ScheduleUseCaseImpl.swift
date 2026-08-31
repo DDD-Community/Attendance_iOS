@@ -8,7 +8,6 @@
 import DomainInterface
 import Entity
 import Model
-import WeaveDI
 
 public struct ScheduleUseCaseImpl: ScheduleInterface {
   @Dependency(\.scheduleRepository) var repository

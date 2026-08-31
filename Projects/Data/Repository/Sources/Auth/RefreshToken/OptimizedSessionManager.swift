@@ -9,7 +9,6 @@ import Foundation
 import Alamofire
 import DomainInterface
 import Entity
-import WeaveDI
 
 /// 네트워킹 성능 최적화된 세션 매니저
 final class OptimizedSessionManager {

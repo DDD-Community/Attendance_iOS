@@ -6,8 +6,9 @@
 //
 
 import Foundation
+
+import Dependencies
 import Entity
-import WeaveDI
 
 /// Attendance 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol AttendanceInterface: Sendable {
@@ -19,16 +20,13 @@ public protocol AttendanceInterface: Sendable {
 }
 
 /// Attendance Repository의 DependencyKey 구조체
-public struct AttendanceRepositoryDependency: DependencyKey {
-  public static var liveValue: AttendanceInterface {
-    UnifiedDI.resolve(AttendanceInterface.self) ?? DefaultAttendanceRepositoryImpl()
-  }
+public enum AttendanceRepositoryDependency: TestDependencyKey {
   
   public static var testValue: AttendanceInterface {
-    UnifiedDI.resolve(AttendanceInterface.self) ?? DefaultAttendanceRepositoryImpl()
+    DefaultAttendanceRepositoryImpl()
   }
   
-  public static var previewValue: AttendanceInterface = liveValue
+  public static var previewValue: AttendanceInterface = testValue
 }
 
 /// DependencyValues extension으로 간편한 접근 제공

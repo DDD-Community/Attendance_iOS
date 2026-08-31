@@ -9,7 +9,6 @@ import DomainInterface
 import Model
 import Entity
 
-import WeaveDI
 
 public struct AttendanceUseCaseImpl: AttendanceInterface {
   @Dependency(\.attendanceRepository) var repository

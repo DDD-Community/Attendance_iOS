@@ -9,7 +9,6 @@ import Model
 
 import ComposableArchitecture
 import Entity
-import WeaveDI
 
 public protocol ProfileUseCaseInterface: Sendable {
   func getProfile() async throws -> ProfileEntity

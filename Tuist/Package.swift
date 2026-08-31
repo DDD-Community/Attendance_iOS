@@ -37,7 +37,6 @@ let packageSettings = PackageSettings(
     "SDWebImageSwiftUI": .staticFramework,
     "SDWebImage": .staticFramework,
     "SwiftUIX": .staticFramework,
-    "WeaveDI": .staticFramework,
 
     // GoogleSignIn 관련
     "GoogleSignIn": .staticFramework,
@@ -69,6 +68,5 @@ let package = Package(
     .package(url: "https://github.com/Roy-wonji/AsyncMoya", exact: "1.1.8"),
     .package(url: "https://github.com/SwiftUIX/SwiftUIX.git", exact: "0.2.3"),
     .package(url: "https://github.com/openid/AppAuth-iOS.git", exact: "2.0.0"),
-    .package(url: "https://github.com/Roy-wonji/WeaveDI.git", exact: "3.4.1")
   ]
 )

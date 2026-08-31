@@ -23,8 +23,7 @@ let project = Project.makeAppModule(
     .data(.repository),
     .domain(.domainInterface),
     .domain(.useCase),
-    .network(.foundations),
-    .presentation(.auth)
+    .network(.foundations)
   ],
   sources: ["Sources/**"],
   resources: ["Resources/**"],

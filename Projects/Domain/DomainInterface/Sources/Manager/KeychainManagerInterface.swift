@@ -6,7 +6,8 @@
 //
 
 import Foundation
-import WeaveDI
+
+import Dependencies
 
 public protocol KeychainManaging: Sendable {
   func save(accessToken: String, refreshToken: String)
@@ -17,10 +18,7 @@ public protocol KeychainManaging: Sendable {
   func clear()
 }
 
-public struct KeychainManagerDependency: DependencyKey {
-  public static var liveValue: KeychainManaging {
-    UnifiedDI.resolve(KeychainManaging.self) ?? InMemoryKeychainManager()
-  }
+public enum KeychainManagerDependency: TestDependencyKey {
 
   public static var testValue: KeychainManaging {
     InMemoryKeychainManager()

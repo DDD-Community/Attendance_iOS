@@ -8,7 +8,6 @@
 import SwiftUI
 
 import Presentation
-import Profile
 
 import ComposableArchitecture
 import DDDDesignKit

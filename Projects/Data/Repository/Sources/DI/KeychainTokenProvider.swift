@@ -1,21 +1,17 @@
 //
 //  KeychainTokenProvider.swift
-//  DDDAttendance
+//  Repository
 //
-//  Created by DDD on 1/2/26.
+//  Foundations 의 TokenProviding 구현. 키체인에서 액세스 토큰을 읽고 쓴다.
+//  KeychainManaging 은 DomainInterface 의 의존성 키로 주입받는다.
 //
 
-import Foundation
-// 필요 모듈만 사용
+import Dependencies
 import DomainInterface
 import Foundations
 
 struct KeychainTokenProvider: TokenProviding {
-  private let keychainManager: KeychainManaging
-
-  init(keychainManager: KeychainManaging) {
-    self.keychainManager = keychainManager
-  }
+  @Dependency(\.keychainManager) private var keychainManager
 
   func accessToken() -> String? {
     keychainManager.accessToken()

@@ -18,7 +18,6 @@ let project = Project.makeModule(
     .SPM.swiftUIX,
     .SPM.googleSignIn,
     .SPM.firebaseCrashlytics,
-    .SPM.weaveDI,
   ],
   sources: ["Sources/**"]
 )
