@@ -61,13 +61,6 @@ jobs:
           rm -rf "$DERIVED_DATA" TestResults.xcresult
           mkdir -p "$DERIVED_DATA"
 
-          AVAILABLE_KB=$(df -Pk "$HOME" | awk 'NR == 2 { print $4 }')
-          REQUIRED_KB=$((15 * 1024 * 1024))
-          if [ "$AVAILABLE_KB" -lt "$REQUIRED_KB" ]; then
-            echo "::error::테스트에 필요한 디스크 여유 공간이 부족합니다. 필요: 15GB, 현재: $((AVAILABLE_KB / 1024 / 1024))GB"
-            exit 1
-          fi
-
       # 러너에 실제 존재하는 최신 iPhone 시뮬레이터를 고른다(이름 하드코딩은 Xcode 업데이트마다 깨진다).
       - name: Select simulator
         id: sim
@@ -114,7 +107,8 @@ jobs:
         run: |
           test -d TestResults.xcresult || { echo "xcresult 없음 - 리포트 생략"; exit 0; }
           # 테스트가 한 건도 못 돌면 번들에 커버리지가 없다. 그때는 잡을 죽이지 않고 건너뛴다.
-          xcrun xccov view --report --json TestResults.xcresult > coverage.json 2>/dev/null \
+          # 리포트에는 모듈별 합계만 필요하므로 파일/함수 분석은 제외한다.
+          xcrun xccov view --report --only-targets --json TestResults.xcresult > coverage.json 2>/dev/null \
             || { echo "커버리지 데이터 없음 - 리포트 생략"; exit 0; }
           python3 - <<'PY' > coverage.md
           import json

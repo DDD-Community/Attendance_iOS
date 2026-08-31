@@ -5,6 +5,7 @@
 //  Created by DDD on 1/10/26.
 //
 
+import Dependencies
 import Foundation
 import Alamofire
 import DomainInterface

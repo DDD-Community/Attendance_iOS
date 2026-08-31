@@ -5,6 +5,7 @@
 //  Created by DDD on 7/23/25.
 //
 
+import Dependencies
 import SwiftUI
 
 import DomainInterface

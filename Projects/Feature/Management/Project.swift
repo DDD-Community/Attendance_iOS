@@ -15,7 +15,6 @@ let project = Project.makeModule(
     .core(.coreUtility),
     .core(.coreUI),
     .ui(.sharedUI),
-    .feature(.profile),
     .domain(.useCase)
   ],
   sources: ["Sources/**"],

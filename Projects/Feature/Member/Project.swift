@@ -13,7 +13,6 @@ let project = Project.makeModule(
   dependencies: [
     .core(.logger),
     .ui(.sharedUI),
-    .feature(.profile),
     .domain(.useCase)
 
   ],

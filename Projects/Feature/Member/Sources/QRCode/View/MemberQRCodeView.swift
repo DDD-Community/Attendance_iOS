@@ -11,16 +11,16 @@ import DDDDesignKit
 
 import ComposableArchitecture
 
-struct MemberQRCodeView: View {
+public struct MemberQRCodeView: View {
   @Bindable private var store: StoreOf<MemberQRCode>
   private var backAction: () -> Void
 
-  init(store: StoreOf<MemberQRCode>, backAction: @escaping () -> Void) {
+  public init(store: StoreOf<MemberQRCode>, backAction: @escaping () -> Void) {
     self.store = store
     self.backAction = backAction
   }
 
-  var body: some View {
+  public var body: some View {
     VStack(alignment: .leading, spacing: .zero) {
       navigationBar
 

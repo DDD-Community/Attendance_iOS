@@ -20,6 +20,8 @@ public struct MemberQRCode {
 
   @ObservableState
   public struct State: Equatable {
+    public init() {}
+
     @ObservationStateIgnored
     var didAppear: Bool = false
 

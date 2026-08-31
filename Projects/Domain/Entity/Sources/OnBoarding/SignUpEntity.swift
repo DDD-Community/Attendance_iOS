@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct UserSession: Equatable {
+public struct UserSession: Equatable, Sendable {
   public var userID: Int
   public var name: String
   public var selectPart: SelectParts

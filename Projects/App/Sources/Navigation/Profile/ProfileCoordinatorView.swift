@@ -5,6 +5,7 @@
 //  Created by DDD on 1/4/26.
 //
 
+import Profile
 import SwiftUI
 
 import ComposableArchitecture

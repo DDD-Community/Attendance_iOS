@@ -5,6 +5,7 @@
 //  Created by DDD on 1/2/26.
 //
 
+import Dependencies
 import Foundation
 import UIKit
 import DomainInterface

@@ -15,15 +15,15 @@ import ComposableArchitecture
 import Entity
 
 @ViewAction(for: MemberMain.self)
-struct MemberMainView: View {
-  @Bindable var store: StoreOf<MemberMain>
+public struct MemberMainView: View {
+  @Bindable public var store: StoreOf<MemberMain>
   @State private var isDropDownClosing = false
 
-  init(store: StoreOf<MemberMain>) {
+  public init(store: StoreOf<MemberMain>) {
     self.store = store
   }
 
-  var body: some View {
+  public var body: some View {
     VStack(alignment: .leading, spacing: .zero) {
       topNavigationBar
 

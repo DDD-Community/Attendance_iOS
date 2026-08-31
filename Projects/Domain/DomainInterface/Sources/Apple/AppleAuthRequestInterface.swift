@@ -15,7 +15,7 @@ public protocol AppleAuthRequestInterface: Sendable {
 }
 
 ///// OAuth Repository의 DependencyKey 구조체
-public struct  AppleAuthRequestDependency: DependencyKey {
+public enum AppleAuthRequestDependency: TestDependencyKey {
 
   public static var testValue: AppleAuthRequestInterface {
     DefaultAppleAuthRequestImpl()

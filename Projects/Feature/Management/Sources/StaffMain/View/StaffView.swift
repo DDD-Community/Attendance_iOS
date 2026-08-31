@@ -14,16 +14,16 @@ import Model
 import ComposableArchitecture
 import SDWebImageSwiftUI
 
-struct StaffView: View {
+public struct StaffView: View {
   @Bindable var store: StoreOf<Staff>
   @State var isExpanded: Bool = false
   @State private var isDropDownClosing = false
 
-  init(store: StoreOf<Staff>) {
+  public init(store: StoreOf<Staff>) {
     self.store = store
   }
 
-  var body: some View {
+  public var body: some View {
     ZStack {
       Color.basicBlack
         .edgesIgnoringSafeArea(.all)

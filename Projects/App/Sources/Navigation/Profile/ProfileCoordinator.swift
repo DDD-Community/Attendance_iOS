@@ -6,6 +6,7 @@
 //
 
 
+import Profile
 import Foundation
 
 import DDDSharedUI
