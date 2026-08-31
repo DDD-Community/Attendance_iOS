@@ -19,7 +19,7 @@ let project = Project.makeAppModule(
     .core(.logger),
     .core(.coreUtility),
     .ui(.sharedUI),
-    .presentation(.presentation),
+    .featureAssembly,
     .data(.repository),
     .domain(.domainInterface),
     .domain(.useCase),

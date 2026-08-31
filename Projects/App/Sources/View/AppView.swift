@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import Presentation
+import FeatureAssembly
 
 import ComposableArchitecture
 import DDDDesignKit

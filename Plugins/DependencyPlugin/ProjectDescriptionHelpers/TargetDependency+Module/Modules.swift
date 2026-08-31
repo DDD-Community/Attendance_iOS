@@ -9,8 +9,7 @@
 import Foundation
 import ProjectDescription
 
-public enum PresentationModule: String, CaseIterable {
-  case presentation = "Presentation"
+public enum FeatureModule: String, CaseIterable {
   case splash = "Splash"
   case auth = "Auth"
   case management = "Management"
@@ -19,8 +18,8 @@ public enum PresentationModule: String, CaseIterable {
   case onBoarding = "OnBoarding"
   case web = "Web"
 
-  /// Projects/Presentation/<name>
-  var path: Path { .relativeToPresentation(rawValue) }
+  /// Projects/Feature/<name>
+  var path: Path { .relativeToFeature(rawValue) }
 }
 
 public enum CoreModule: String, CaseIterable {

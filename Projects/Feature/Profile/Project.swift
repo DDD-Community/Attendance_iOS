@@ -6,16 +6,17 @@ import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
 let project = Project.makeModule(
-  name: "Member",
-  bundleId: .appBundleID(name: ".Member"),
+  name: "Profile",
+  bundleId: .appBundleID(name: ".Profile"),
   product: Project.Environment.presentationProduct,
   settings:  .moduleSettings,
   dependencies: [
     .core(.logger),
+    .core(.coreUI),
     .ui(.sharedUI),
-    .presentation(.profile),
-    .domain(.useCase)
-
+    .domain(.useCase),
+    .feature(.onBoarding),
+    .feature(.web)
   ],
   sources: ["Sources/**"],
   hasTests: true

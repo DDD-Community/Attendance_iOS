@@ -5,10 +5,9 @@ import ProjectTemplatePlugin
 import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
-
 let project = Project.makeModule(
-  name: "Auth",
-  bundleId: .appBundleID(name: ".Auth"),
+  name: "Management",
+  bundleId: .appBundleID(name: ".Management"),
   product: Project.Environment.presentationProduct,
   settings:  .moduleSettings,
   dependencies: [
@@ -16,9 +15,8 @@ let project = Project.makeModule(
     .core(.coreUtility),
     .core(.coreUI),
     .ui(.sharedUI),
-    .domain(.useCase),
-    .presentation(.onBoarding),
-    .presentation(.web)
+    .feature(.profile),
+    .domain(.useCase)
   ],
   sources: ["Sources/**"],
   hasTests: true

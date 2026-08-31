@@ -4,7 +4,7 @@
 //
 //  레이어 의존성 DSL. 카탈로그가 경로를 들고 있어 여기서는 타깃만 가리킨다.
 //  모듈이 Interface 타깃(`Project.makeModule(hasInterface: true)`)을 가지면
-//  `.presentation(.auth, .interface)` 처럼 어느 타깃에 의존할지 명시할 수 있다.
+//  `.feature(.auth, .interface)` 처럼 어느 타깃에 의존할지 명시할 수 있다.
 //  기본값은 `.implementation` — Interface 를 아직 뚫지 않은 모듈이 대부분이라
 //  레이어별로 Interface 가 갖춰지는 대로 기본값을 `.interface` 로 옮긴다.
 //
@@ -35,8 +35,15 @@ extension TargetDependency {
 // MARK: - Layer DSL
 
 public extension TargetDependency {
-  static func presentation(_ module: PresentationModule, _ target: ModuleTarget = .implementation) -> Self {
+  /// 피처 의존성. 피처끼리는 상대의 Interface 에만 의존하고,
+  /// 구현 연결은 조립 레이어(FeatureAssembly/App)에서만 `.implementation` 으로 명시한다.
+  static func feature(_ module: FeatureModule, _ target: ModuleTarget = .implementation) -> Self {
     .moduleDependency(name: module.rawValue, path: module.path, target: target)
+  }
+
+  /// 모든 피처를 묶고 구현을 등록하는 엄브렐러 모듈 (App 진입점).
+  static var featureAssembly: Self {
+    .project(target: "FeatureAssembly", path: .relativeToFeature("FeatureAssembly"))
   }
 
   static func core(_ module: CoreModule, _ target: ModuleTarget = .implementation) -> Self {

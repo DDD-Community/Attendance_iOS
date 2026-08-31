@@ -10,14 +10,16 @@ import Dependencies
 import DomainInterface
 import Foundations
 
-struct KeychainTokenProvider: TokenProviding {
+public struct KeychainTokenProvider: TokenProviding {
+  public init() {}
+
   @Dependency(\.keychainManager) private var keychainManager
 
-  func accessToken() -> String? {
+  public func accessToken() -> String? {
     keychainManager.accessToken()
   }
 
-  func saveAccessToken(_ token: String) {
+  public func saveAccessToken(_ token: String) {
     keychainManager.saveAccessToken(token)
   }
 }

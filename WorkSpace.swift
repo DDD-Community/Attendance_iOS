@@ -42,14 +42,14 @@ let workspace = Workspace(
         .project(path: "Projects/Domain/Entity", target: "Entity"),
         .project(path: "Projects/Domain/UseCase", target: "UseCase"),
 
-        .project(path: "Projects/Presentation/Auth", target: "Auth"),
-        .project(path: "Projects/Presentation/Management", target: "Management"),
-        .project(path: "Projects/Presentation/Member", target: "Member"),
-        .project(path: "Projects/Presentation/OnBoarding", target: "OnBoarding"),
-        .project(path: "Projects/Presentation/Presentation", target: "Presentation"),
-        .project(path: "Projects/Presentation/Profile", target: "Profile"),
-        .project(path: "Projects/Presentation/Splash", target: "Splash"),
-        .project(path: "Projects/Presentation/Web", target: "Web")
+        .project(path: "Projects/Feature/Auth", target: "Auth"),
+        .project(path: "Projects/Feature/Management", target: "Management"),
+        .project(path: "Projects/Feature/Member", target: "Member"),
+        .project(path: "Projects/Feature/OnBoarding", target: "OnBoarding"),
+        .project(path: "Projects/Feature/FeatureAssembly", target: "FeatureAssembly"),
+        .project(path: "Projects/Feature/Profile", target: "Profile"),
+        .project(path: "Projects/Feature/Splash", target: "Splash"),
+        .project(path: "Projects/Feature/Web", target: "Web")
       ])
     )
   )

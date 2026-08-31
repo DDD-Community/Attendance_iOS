@@ -9,8 +9,8 @@ import Foundation
 import ProjectDescription
 
 public extension ProjectDescription.Path {
-  static func relativeToPresentation(_ name: String) -> Self {
-    .relativeToRoot("Projects/Presentation/\(name)")
+  static func relativeToFeature(_ name: String) -> Self {
+    .relativeToRoot("Projects/Feature/\(name)")
   }
 
   static func relativeToCore(_ name: String) -> Self {
