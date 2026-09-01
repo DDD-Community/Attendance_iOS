@@ -24,4 +24,7 @@ public protocol DDDRequestClient: Sendable {
 
   /// 요청 타입에 선언된 `Response` 로 디코딩한다.
   func send<R: DDDDataRequest>(_ request: R) async throws(DDDNetworkError) -> R.Response
+
+  /// 상태 코드와 원시 바디를 호출부가 직접 해석해야 하는 요청에 사용한다.
+  func sendResponse<R: DDDDataRequest>(_ request: R) async throws(DDDNetworkError) -> DDDHTTPResponse
 }

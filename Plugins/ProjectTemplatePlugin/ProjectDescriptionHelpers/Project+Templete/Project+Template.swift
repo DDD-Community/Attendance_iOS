@@ -85,7 +85,7 @@ public extension Project {
   /// 스킴 이름은 기존 CI(fastlane STAGE_SCHEME/PROD_SCHEME)와 호환되도록 유지한다.
   private static func appEnvironmentSchemes(name: String) -> [Scheme] {
     func envScheme(_ schemeName: String, config: ConfigurationName) -> Scheme {
-      .scheme(
+      return .scheme(
         name: schemeName,
         shared: true,
         buildAction: .buildAction(

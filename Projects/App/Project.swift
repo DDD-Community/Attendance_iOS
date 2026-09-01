@@ -23,7 +23,6 @@ let project = Project.makeAppModule(
     .data(.repository),
     .domain(.domainInterface),
     .domain(.useCase),
-    .network(.foundations),
 
     // 조립 레이어 — Navigation 의 Coordinator 들이 각 피처 화면을 붙인다.
     .feature(.auth),

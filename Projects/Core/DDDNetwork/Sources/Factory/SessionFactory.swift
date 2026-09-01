@@ -36,7 +36,7 @@ enum SessionFactory {
 
   private static var configuration: URLSessionConfiguration {
     let configuration = URLSessionConfiguration.default
-    configuration.httpAdditionalHeaders = DefaultHeaders().headers.dictionary
+    configuration.httpAdditionalHeaders = DefaultHeaders.headers.dictionary
     return configuration
   }
 }

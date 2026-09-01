@@ -38,31 +38,35 @@ public extension TargetDependency {
   /// 피처 의존성. 피처끼리는 상대의 Interface 에만 의존하고,
   /// 구현 연결은 조립 레이어(FeatureAssembly/App)에서만 `.implementation` 으로 명시한다.
   static func feature(_ module: FeatureModule, _ target: ModuleTarget = .implementation) -> Self {
-    .moduleDependency(name: module.rawValue, path: module.path, target: target)
+    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
 
   /// 모든 피처를 묶고 구현을 등록하는 엄브렐러 모듈 (App 진입점).
   static var featureAssembly: Self {
-    .project(target: "FeatureAssembly", path: .relativeToFeature("FeatureAssembly"))
+    return .project(target: "FeatureAssembly", path: .relativeToFeature("FeatureAssembly"))
   }
 
   static func core(_ module: CoreModule, _ target: ModuleTarget = .implementation) -> Self {
-    .moduleDependency(name: module.rawValue, path: module.path, target: target)
-  }
-
-  static func network(_ module: NetworkModule, _ target: ModuleTarget = .implementation) -> Self {
-    .moduleDependency(name: module.rawValue, path: module.path, target: target)
+    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
 
   static func data(_ module: DataModule, _ target: ModuleTarget = .implementation) -> Self {
-    .moduleDependency(name: module.rawValue, path: module.path, target: target)
+    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
+  }
+
+  static func service(_ module: ServiceModule, _ target: ModuleTarget = .implementation) -> Self {
+    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
+  }
+
+  static var service: Self {
+    return .project(target: "ServiceAssembly", path: .relativeToService("ServiceAssembly"))
   }
 
   static func domain(_ module: DomainModule, _ target: ModuleTarget = .implementation) -> Self {
-    .moduleDependency(name: module.rawValue, path: module.path, target: target)
+    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
 
   static func ui(_ module: UIModule, _ target: ModuleTarget = .implementation) -> Self {
-    .moduleDependency(name: module.rawValue, path: module.path, target: target)
+    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
 }

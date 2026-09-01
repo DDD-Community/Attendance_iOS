@@ -52,6 +52,18 @@ extension NetworkClient: DDDRequestClient {
     return try await handle(dataRequest, as: R.Response.self)
   }
 
+  func sendResponse<R: DDDDataRequest>(_ request: R) async throws(DDDNetworkError) -> DDDHTTPResponse {
+    let dataRequest = try makeDataRequest(request)
+    let response = await dataRequest.serializingData(emptyResponseCodes: Self.emptyResponseCodes).response
+    if let error = response.error, response.response == nil {
+      throw Self.mapFailure(error, data: response.data, status: -1)
+    }
+    return DDDHTTPResponse(
+      statusCode: response.response?.statusCode ?? -1,
+      data: response.data ?? Data()
+    )
+  }
+
   /// 요청을 URLRequest 로 만들고 인증·재시도 인터셉터를 조립한다. 두 send 오버로드가 공유한다.
   private func makeDataRequest<R: DDDDataRequest>(_ request: R) throws(DDDNetworkError) -> DataRequest {
     // 1) DDDDataRequest → URLRequest (헤더 / 타임아웃 / 파라미터 인코딩)

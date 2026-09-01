@@ -22,10 +22,10 @@ public protocol DDDDataRequest: DDDEndpoint {
 
 public extension DDDDataRequest {
   var parameters: (any Encodable & Sendable)? {
-    nil
+    return nil
   }
 
   var parameterEncoder: ParameterEncoder? {
-    nil
+    return nil
   }
 }

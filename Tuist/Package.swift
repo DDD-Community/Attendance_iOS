@@ -4,6 +4,20 @@
 #if TUIST
 @preconcurrency import ProjectDescription
 
+private extension Settings {
+  /// 외부 패키지 타깃이 앱과 동일한 빌드 configuration을 사용하도록 맞춘다.
+  static var baseSettings: Settings {
+    return .settings(
+      configurations: [
+        .debug(name: "Debug"),
+        .debug(name: "Stage"),
+        .release(name: "Release"),
+        .release(name: "Prod")
+      ]
+    )
+  }
+}
+
 let packageSettings = PackageSettings(
   productTypes: [
     // Firebase 체인은 통째로 동적 프레임워크로 올린다.
@@ -38,9 +52,6 @@ let packageSettings = PackageSettings(
     "GoogleUtilities-UserDefaults": .framework,
 
     // 기존 설정 유지
-    "Moya": .staticFramework,
-    "LogMacro": .staticFramework,
-    "AsyncMoya": .staticFramework,
     "AppAuth": .staticFramework,
     "AppAuthCore": .staticFramework,
     "GTMAppAuth": .staticFramework,
@@ -57,6 +68,8 @@ let packageSettings = PackageSettings(
     "ConcurrencyExtras": .framework,
     "SDWebImageSwiftUI": .framework,
     "SDWebImage": .framework,
+    // 내부 타깃도 동적으로 링크해 앱/DDDDesignKit에 정적 코드가 중복 삽입되지 않게 한다.
+    "_SwiftUIX": .framework,
     "SwiftUIX": .framework,
     
     // ── 경고에 떴지만 productTypes에 없어서 기본값(static)으로 중복되던 전이 의존성 ──
@@ -75,29 +88,34 @@ let packageSettings = PackageSettings(
     "GoogleSignInSwift": .staticFramework,
     "GTMSessionFetcher": .staticFramework
   ],
-  baseSettings: .settings(
-    configurations: [
-      .debug(name: "Debug"),
-      .debug(name: "Stage"),
-      .release(name: "Release"),
-      .release(name: "Prod")
-    ]
-  )
+  baseSettings: .baseSettings,
+  targetSettings: [
+    "_SwiftUIX": .settings(
+      base: [
+        "PRODUCT_BUNDLE_IDENTIFIER": "dev.tuist.swiftuix.internal"
+      ],
+      configurations: [
+        .debug(name: "Debug"),
+        .debug(name: "Stage"),
+        .release(name: "Release"),
+        .release(name: "Prod")
+      ]
+    )
+  ]
 )
 #endif
 let package = Package(
   name: "DDDAttendance",
   dependencies: [
     .package(url: "https://github.com/firebase/firebase-ios-sdk", exact: "12.12.0"),
-    .package(url: "https://github.com/google/GoogleSignIn-iOS", exact: "9.1.0"),
+    .package(url: "https://github.com/google/GoogleSignIn-iOS", exact: "9.2.0"),
     .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", exact: "3.1.4"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.25.5"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: "1.7.2"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.1.0"),
     .package(url: "https://github.com/Roy-wonji/TCAFlow.git", exact: "1.1.3"),
-    .package(url: "https://github.com/Roy-wonji/AsyncMoya", exact: "1.1.8"),
     .package(url: "https://github.com/SwiftUIX/SwiftUIX.git", exact: "0.2.3"),
-    .package(url: "https://github.com/openid/AppAuth-iOS.git", exact: "2.0.0"),
+    .package(url: "https://github.com/openid/AppAuth-iOS.git", exact: "2.1.0"),
     .package(url: "https://github.com/Alamofire/Alamofire", exact: "5.12.0"),
   ]
 )

@@ -10,7 +10,6 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings: .moduleSettings,
   dependencies: [
-    .SPM.asyncMoya,
     .SPM.composableArchitecture,
     .SPM.concurrencyExtras,
     .SPM.tcaFlow,

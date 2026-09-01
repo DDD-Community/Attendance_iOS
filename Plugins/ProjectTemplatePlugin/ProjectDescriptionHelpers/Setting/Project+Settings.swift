@@ -155,11 +155,11 @@ public extension Settings {
   /// 모듈 기본 설정 — 워크스페이스 표준 4 config(Debug/Stage/Prod/Release)를 부여한다.
   /// App 과 config 이름/타입이 일치해야 Stage/Prod config 빌드 시 의존성 그래프가 깨지지 않는다.
   static var moduleSettings: Settings {
-    .settings(configurations: .moduleDefault)
+    return .settings(configurations: .moduleDefault)
   }
 
   static func repositoryBaseSettings() -> Settings {
-    .settings(
+    return .settings(
       base: [
         "IPHONEOS_DEPLOYMENT_TARGET": "18.0",
         "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
@@ -169,7 +169,7 @@ public extension Settings {
   }
 
   static func repositoryTestSettings() -> Settings {
-    .settings(
+    return .settings(
       base: [
         "IPHONEOS_DEPLOYMENT_TARGET": "18.0",
         "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings",
