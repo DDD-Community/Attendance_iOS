@@ -45,15 +45,30 @@ private enum AppDateFormatter {
   static subscript(format: AppDateFormat) -> DateFormatter {
     formatters[format]!
   }
+
+  /// DateFormatter가 다른 구분자까지 관대하게 허용하지 않도록 문자열 왕복 결과를 검사한다.
+  static func date(from value: String, format: AppDateFormat) -> Date? {
+    let formatter = self[format]
+    guard let date = formatter.date(from: value), formatter.string(from: date) == value else {
+      return nil
+    }
+    return date
+  }
 }
 
 public extension String {
   var date: Date? {
-    AppDateFormatter.parser.date(from: self)
+    guard
+      let date = AppDateFormatter.parser.date(from: self),
+      AppDateFormatter.parser.string(from: date) == self
+    else {
+      return nil
+    }
+    return date
   }
 
   func date(as format: AppDateFormat) -> Date? {
-    AppDateFormatter[format].date(from: self)
+    return AppDateFormatter.date(from: self, format: format)
   }
 }
 
