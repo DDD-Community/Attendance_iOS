@@ -186,6 +186,16 @@ public extension Project {
     }
 
     if hasTests {
+      let requiresTCAHost = dependencies.contains { dependency in
+        switch dependency {
+        case let .external(name, _):
+          return name == "ComposableArchitecture"
+        default:
+          return false
+        }
+      }
+      let testHostName = requiresTCAHost ? "DDDTCAHost" : "DDDTestHost"
+
       let appTestTarget: Target = .target(
         name: "\(name)Tests",
         destinations: destinations,
@@ -195,11 +205,12 @@ public extension Project {
         infoPlist: .default,
         buildableFolders: ["Tests"],
         // Xcode 26.3의 host-less XCTest는 TCA의 Sharing → SwiftUI를 로드하는 중
-        // LocalStatusKit 메타데이터 탐색에서 충돌한다. 전용 경량 앱에서 테스트를 호스팅한다.
+        // LocalStatusKit 메타데이터 탐색에서 충돌한다. TCA 모듈만 전용 호스트에서 먼저 로드하고,
+        // 나머지 모듈은 경량 호스트를 사용해 불필요한 SwiftSyntax/TCA 빌드를 피한다.
         // Testing 이 있으면 테스트가 그 목을 그대로 쓴다.
         dependencies: [
           .target(name: name),
-          .project(target: "DDDTestHost", path: .relativeToRoot("Projects/TestHost"))
+          .project(target: testHostName, path: .relativeToRoot("Projects/TestHost"))
         ] + (hasTesting ? [.target(name: "\(name)Testing")] : []),
         settings: suppressWarningsSettings
       )
