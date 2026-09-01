@@ -15,7 +15,7 @@ let project = Project.makeModule(
     .ui(.sharedUI),
     .core(.logger),
     .ui(.designKit),
-    .domain(.useCa se)
+    .domain(.useCase)
   ],
   sources: ["Sources/**"],
   hasTests: true
