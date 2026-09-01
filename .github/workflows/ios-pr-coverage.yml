@@ -24,7 +24,6 @@ jobs:
       TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
       TUIST_BUILD_TAGS: ci,pull-request
       TUIST_BUILD_VALUE_PR_URL: ${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
-      CI_DERIVED_DATA: ${{ runner.temp }}/DDDAttendance-${{ github.run_id }}
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
 
@@ -37,6 +36,7 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
           echo "$HOME/.rbenv/shims" >> "$GITHUB_PATH"
+          echo "CI_DERIVED_DATA=$RUNNER_TEMP/DDDAttendance-$GITHUB_RUN_ID" >> "$GITHUB_ENV"
 
       - name: Restore gitignored build config
         env:
