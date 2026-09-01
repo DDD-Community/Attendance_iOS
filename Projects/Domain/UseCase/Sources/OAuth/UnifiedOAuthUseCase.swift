@@ -89,16 +89,7 @@ public extension UnifiedOAuthUseCase {
       $0.oauthRefreshToken = loginEntity.token.oauthRefreshToken
     }
 
-    if loginEntity.isNewUser == true {
-
-    } else {
-      self.$userSession.withLock {
-        $0.userRole = loginEntity.role ?? .member
-      }
-      self.$staffRole.withLock {
-        $0 = loginEntity.role
-      }
-    }
+    syncRole(from: loginEntity)
     return loginEntity
   }
 
@@ -112,13 +103,7 @@ public extension UnifiedOAuthUseCase {
       provider: .google,
       token: processedToken
     )
-    if loginEntity.isNewUser == true {
-
-    } else {
-      self.$userSession.withLock {
-        $0.userRole = loginEntity.role ?? .member
-      }
-    }
+    syncRole(from: loginEntity)
 
     return loginEntity
   }
@@ -141,6 +126,21 @@ public extension UnifiedOAuthUseCase {
     } catch {
       return .failure(error)
     }
+  }
+}
+
+private extension UnifiedOAuthUseCase {
+  /// 로그인 결과를 프로필 API 선택에 사용하는 역할 저장소와 동기화한다.
+  /// 신규 사용자는 온보딩에서 역할이 확정되므로 이전 계정의 값을 반드시 제거한다.
+  func syncRole(from loginEntity: LoginEntity) {
+    guard !loginEntity.isNewUser else {
+      $staffRole.withLock { $0 = nil }
+      return
+    }
+
+    let role = loginEntity.role ?? .member
+    $userSession.withLock { $0.userRole = role }
+    $staffRole.withLock { $0 = role }
   }
 }
 
