@@ -56,6 +56,7 @@ extension Settings {
           : "match AppStore \(Project.Environment.bundlePrefix)",
         setSkipInstall: false
       )
+      .merging(environment.buildSettings) { _, environmentValue in environmentValue }
 
       return environment.isDebug
         ? .debug(

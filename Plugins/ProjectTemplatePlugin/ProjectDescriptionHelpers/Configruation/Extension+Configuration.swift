@@ -17,8 +17,16 @@ public enum XCConfig {
   /// Joonggonara처럼 환경 enum에서 모든 프로젝트의 Configuration을 파생한다.
   public static let configurations: [Configuration] = BuildEnvironment.allCases.map { environment in
     return environment.isDebug
-      ? .debug(name: environment.configurationName, xcconfig: environment.xcconfigPath)
-      : .release(name: environment.configurationName, xcconfig: environment.xcconfigPath)
+      ? .debug(
+        name: environment.configurationName,
+        settings: environment.buildSettings,
+        xcconfig: environment.xcconfigPath
+      )
+      : .release(
+        name: environment.configurationName,
+        settings: environment.buildSettings,
+        xcconfig: environment.xcconfigPath
+      )
   }
 }
 

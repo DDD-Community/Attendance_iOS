@@ -9,8 +9,8 @@ private extension Settings {
   static var baseSettings: Settings {
     return .settings(
       configurations: [
-        .debug(name: "Stage"),
-        .release(name: "Prod")
+        .debug(name: "Stage", settings: ["ONLY_ACTIVE_ARCH": "YES"]),
+        .release(name: "Prod", settings: ["ONLY_ACTIVE_ARCH": "NO"])
       ]
     )
   }
@@ -95,8 +95,8 @@ let packageSettings = PackageSettings(
         "PRODUCT_BUNDLE_IDENTIFIER": "dev.tuist.swiftuix.internal"
       ],
       configurations: [
-        .debug(name: "Stage"),
-        .release(name: "Prod")
+        .debug(name: "Stage", settings: ["ONLY_ACTIVE_ARCH": "YES"]),
+        .release(name: "Prod", settings: ["ONLY_ACTIVE_ARCH": "NO"])
       ]
     )
   ]
