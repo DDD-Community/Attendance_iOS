@@ -55,13 +55,13 @@ jobs:
       - name: Install project dependencies
         run: mise exec -- tuist install
 
-      # Tuist가 테스트를 빌드하고 서버에 샤드 계획과 테스트 산출물을 올린다.
+      # develop 변경의 영향을 받는 테스트만 빌드한다. Tuist가 저장한 의존 그래프를
+      # 사용하므로 전체 테스트 빌드를 강제하는 --no-selective-testing은 넣지 않는다.
       - name: Build and plan shards
         id: build
         run: |
           mise exec -- tuist test \
             --build-only \
-            --no-selective-testing \
             --shard-total 2 \
             --shard-granularity suite
 
