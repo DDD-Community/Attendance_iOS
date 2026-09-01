@@ -8,6 +8,7 @@
 import ProjectDescription
 
 public extension TargetDependency.SPM {
+  static let alamofire = TargetDependency.external(name: "Alamofire", condition: .none)
   static let asyncMoya = TargetDependency.external(name: "AsyncMoya", condition: .none)
 
   static let composableArchitecture = TargetDependency.external(name: "ComposableArchitecture", condition: .none)
@@ -19,5 +20,4 @@ public extension TargetDependency.SPM {
 
   static let googleSignIn = TargetDependency.external(name: "GoogleSignIn", condition: .none)
   static let firebaseCrashlytics = TargetDependency.external(name: "FirebaseCrashlytics", condition: .none)
-
 }

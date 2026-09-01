@@ -24,6 +24,7 @@ public enum FeatureModule: String, CaseIterable {
 
 public enum CoreModule: String, CaseIterable {
   case logger = "DDDCoreLogger"
+  case network = "DDDNetwork"
   case coreUI = "DDDCoreUI"
   case coreUtility = "DDDCoreUtility"
   case thirdParty = "DDDThirdParty"

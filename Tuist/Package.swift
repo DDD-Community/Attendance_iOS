@@ -68,6 +68,7 @@ let packageSettings = PackageSettings(
     "SwiftNavigation": .framework,
     "SwiftUINavigation": .framework,
     "CasePaths": .framework,
+    "Alamofire": .framework,
     
     // GoogleSignIn 관련
     "GoogleSignIn": .staticFramework,
@@ -97,5 +98,6 @@ let package = Package(
     .package(url: "https://github.com/Roy-wonji/AsyncMoya", exact: "1.1.8"),
     .package(url: "https://github.com/SwiftUIX/SwiftUIX.git", exact: "0.2.3"),
     .package(url: "https://github.com/openid/AppAuth-iOS.git", exact: "2.0.0"),
+    .package(url: "https://github.com/Alamofire/Alamofire", exact: "5.12.0"),
   ]
 )
