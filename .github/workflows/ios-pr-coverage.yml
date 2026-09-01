@@ -55,12 +55,31 @@ jobs:
           bundle install
 
       # CI 잡마다 캐시 데몬과 소켓을 빌드 전에 보장한다.
-      # 이게 없으면 컴파일마다 없는 소켓에 질의하다 타임아웃 나 빌드가 급격히 느려진다.
+      # 인증이나 daemon 기동이 실패해도 테스트 자체는 캐시 없이 계속한다.
       - name: Setup Tuist cache
+        id: tuist-cache
+        continue-on-error: true
+        timeout-minutes: 3
         run: mise exec -- tuist setup cache
 
-      # Build Insights가 빌드 중 CPU/메모리 같은 러너 메트릭도 함께 수집하게 한다.
+      - name: Configure compilation cache fallback
+        run: |
+          if [[ "${{ steps.tuist-cache.outcome }}" == "success" ]]; then
+            echo "XCODE_COMPILATION_CACHE_ENABLED=YES" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          echo "XCODE_COMPILATION_CACHE_ENABLED=NO" >> "$GITHUB_ENV"
+          echo "Tuist cache를 사용할 수 없어 이번 실행은 Xcode compilation cache 없이 진행합니다."
+          CACHE_LOG="$HOME/.local/state/tuist/tuist.cache.DDD2026_attendance.stderr.log"
+          if [[ -f "$CACHE_LOG" ]]; then
+            tail -n 80 "$CACHE_LOG"
+          fi
+
+      # 토큰 권한이 정상일 때만 러너 메트릭 수집을 활성화한다.
       - name: Setup Tuist insights
+        continue-on-error: true
+        timeout-minutes: 3
         run: mise exec -- tuist setup insights
 
       - name: Generate Xcode workspace
@@ -84,10 +103,10 @@ jobs:
         id: tests
         continue-on-error: true
         run: |
-          # Tuist wrapper가 Test Insights와 quarantine 상태를 적용한다.
-          # 실패한 테스트를 같은 실행에서 최대 3회 관찰해 flaky 여부도 수집한다.
+          # 이 workflow는 자체 xcresult 리포터를 사용하므로 Tuist 서버 업로드에 의존하지 않는다.
+          # 실패한 테스트는 같은 실행에서 최대 3회 재시도한다.
           rm -rf TestResults TestResults.xcresult
-          mise exec -- tuist xcodebuild test \
+          xcodebuild test \
             -workspace DDDAttendance.xcworkspace \
             -scheme DDDAttendance-Workspace \
             -destination "$SIMULATOR_DESTINATION" \
@@ -95,7 +114,8 @@ jobs:
             -resultBundlePath TestResults.xcresult \
             -enableCodeCoverage YES \
             -retry-tests-on-failure \
-            -test-iterations 3
+            -test-iterations 3 \
+            COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
 
       - name: Upload test results
         if: always()
@@ -122,14 +142,16 @@ jobs:
       # 테스트 빌드의 DerivedData를 재사용해 추가 컴파일을 줄이고 PR 크기 변화를 기록한다.
       - name: Build app for bundle insights
         run: |
-          mise exec -- tuist xcodebuild build \
+          xcodebuild build \
             -workspace DDDAttendance.xcworkspace \
             -scheme DDDAttendance-Debug \
             -destination "$SIMULATOR_DESTINATION" \
             -derivedDataPath "$CI_DERIVED_DATA" \
-            -resultBundlePath BundleBuildResults.xcresult
+            -resultBundlePath BundleBuildResults.xcresult \
+            COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
 
       - name: Inspect bundle size
+        continue-on-error: true
         run: |
           mise exec -- tuist inspect bundle DDDAttendance \
             --platforms ios \
