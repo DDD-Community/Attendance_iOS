@@ -62,91 +62,17 @@ jobs:
           mkdir -p "$DERIVED_DATA"
 
       # 러너에 실제 존재하는 최신 iPhone 시뮬레이터를 고른다(이름 하드코딩은 Xcode 업데이트마다 깨진다).
-      - name: Select simulator
-        id: sim
+      - name: Run tests
+        id: tests
+        continue-on-error: true
         run: |
-          UDID=$(xcrun simctl list devices available --json | python3 -c "
-          import json, sys, re
-          d = json.load(sys.stdin)['devices']
-          best = None
-          for rt, devs in d.items():
-              m = re.search(r'iOS-(\d+)-(\d+)', rt)
-              if not m:
-                  continue
-              ver = (int(m.group(1)), int(m.group(2)))
-              for dev in devs:
-                  if not dev.get('isAvailable'):
-                      continue
-                  if not dev['name'].startswith('iPhone'):
-                      continue
-                  key = (ver, dev['name'])
-                  if best is None or key > best[0]:
-                      best = (key, dev)
-          print(best[1]['udid'] if best else '')
-          ")
-          test -n "$UDID" || { echo "사용 가능한 iPhone 시뮬레이터가 없습니다"; exit 1; }
-          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
-
-      - name: Run tests with coverage
-        run: |
-          # DerivedData 는 러너 홈의 CI 전용 경로만 사용한다.
-          DERIVED_DATA="$HOME/ci-derived-data/DDDAttendance"
-          xcodebuild test \
-            -workspace DDDAttendance.xcworkspace \
-            -scheme DDDAttendance-Workspace \
-            -destination "id=${{ steps.sim.outputs.udid }}" \
-            -enableCodeCoverage YES \
-            -resultBundlePath TestResults.xcresult \
-            -derivedDataPath "$DERIVED_DATA" \
-            CODE_SIGNING_ALLOWED=NO
-
-      # 테스트가 실패해도 남은 결과에서 커버리지를 뽑아 코멘트한다.
-      - name: Build coverage report
-        if: always()
-        timeout-minutes: 5
-        run: |
-          test -d TestResults.xcresult || { echo "xcresult 없음 - 리포트 생략"; exit 0; }
-          # 테스트가 한 건도 못 돌면 번들에 커버리지가 없다. 그때는 잡을 죽이지 않고 건너뛴다.
-          # 리포트에는 모듈별 합계만 필요하므로 파일/함수 분석은 제외한다.
-          xcrun xccov view --report --only-targets --json TestResults.xcresult > coverage.json 2>/dev/null \
-            || { echo "커버리지 데이터 없음 - 리포트 생략"; exit 0; }
-          python3 - <<'PY' > coverage.md
-          import json
-          r = json.load(open("coverage.json"))
-          total = r.get("lineCoverage", 0) * 100
-          rows = []
-          for t in r.get("targets", []):
-              name = t.get("name", "")
-              if name.endswith(".xctest"):
-                  continue
-              rows.append((name, t.get("lineCoverage", 0) * 100,
-                           t.get("coveredLines", 0), t.get("executableLines", 0)))
-          rows.sort(key=lambda x: x[1])
-          print("<!-- ios-pr-coverage -->")
-          print(f"## 테스트 커버리지 - 전체 **{total:.2f}%**\n")
-          print("| 모듈 | 커버리지 | 커버된 줄 / 전체 |")
-          print("|---|---:|---:|")
-          for name, pct, cov, exe in rows:
-              mark = "🔴" if pct < 40 else ("🟡" if pct < 70 else "🟢")
-              print(f"| {name} | {mark} {pct:.2f}% | {cov} / {exe} |")
-          PY
-          echo "커버리지 리포트 생성 완료"
-
-      - name: Post coverage comment
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR: ${{ github.event.pull_request.number }}
-        run: |
-          test -f coverage.md || exit 0
-          # 마커로 기존 코멘트를 찾아 갱신한다(PR 이 코멘트로 도배되지 않게).
-          ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" \
-                --jq '.[] | select(.body | startswith("<!-- ios-pr-coverage -->")) | .id' | head -1)
-          if [ -n "$ID" ]; then
-            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${ID}" -F body=@coverage.md
-          else
-            gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" -F body=@coverage.md
-          fi
+          # xcodebuild 원본 출력은 GitHub 로그 한도를 넘겨 잘린다.
+          # tuist test 는 요약만 내보내고, 워크스페이스 전체가 아니라
+          # 우리 타깃의 테스트만 돌려 외부 SPM 패키지 테스트를 끌고 오지 않는다.
+          rm -rf TestResults TestResults.xcresult
+          tuist test \
+            --no-selective-testing \
+            --result-bundle-path TestResults
 
       - name: Upload test results
         if: always()
@@ -158,3 +84,7 @@ jobs:
             coverage.json
           if-no-files-found: ignore
           retention-days: 7
+
+      - name: Fail if tests failed
+        if: steps.tests.outcome != 'success'
+        run: exit 1
