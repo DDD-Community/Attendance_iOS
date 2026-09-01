@@ -12,16 +12,12 @@ public extension TargetDependency.SPM {
 
   static let composableArchitecture = TargetDependency.external(name: "ComposableArchitecture", condition: .none)
   static let dependencies = TargetDependency.external(name: "Dependencies", condition: .none)
-  static let identifiedCollections = TargetDependency.external(name: "IdentifiedCollections", condition: .none)
   static let tcaFlow = TargetDependency.external(name: "TCAFlow", condition: .none)
   static let concurrencyExtras = TargetDependency.external(name: "ConcurrencyExtras", condition: .none)
   static let sdwebImage = TargetDependency.external(name: "SDWebImageSwiftUI", condition: .none)
   static let swiftUIX = TargetDependency.external(name: "SwiftUIX", condition: .none)
 
   static let googleSignIn = TargetDependency.external(name: "GoogleSignIn", condition: .none)
-  static let appAuth: TargetDependency = .external(name: "AppAuth")
   static let firebaseCrashlytics = TargetDependency.external(name: "FirebaseCrashlytics", condition: .none)
-  static let firebaseMessaging = TargetDependency.external(name: "FirebaseMessaging", condition: .none)
-  static let googleUtilities = TargetDependency.external(name: "GoogleUtilities", condition: .none)
 
 }

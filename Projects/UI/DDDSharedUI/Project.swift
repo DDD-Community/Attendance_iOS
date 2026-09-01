@@ -13,8 +13,7 @@ let project = Project.makeModule(
     .ui(.designKit),
     .core(.coreUI),
     .core(.coreUtility),
-    .domain(.entity),
-    .data(.model),
+    .domain(.entity)
   ],
   sources: ["Sources/**"]
 )

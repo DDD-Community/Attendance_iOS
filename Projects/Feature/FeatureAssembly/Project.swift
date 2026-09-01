@@ -6,7 +6,7 @@ import ProjectTemplatePlugin
 let project = Project.makeModule(
   name: "FeatureAssembly",
   bundleId: .appBundleID(name: ".FeatureAssembly"),
-  product: Project.Environment.presentationProduct,
+  product: .staticFramework,
   settings:  .moduleSettings,
   dependencies: [
     .feature(.auth),

@@ -14,7 +14,7 @@ public protocol AppleAuthRequestInterface: Sendable {
   func prepare(_ request: ASAuthorizationAppleIDRequest) -> String
 }
 
-///// OAuth Repository의 DependencyKey 구조체
+///// OAuth Repository의 DependencyKey 구조체도
 public enum AppleAuthRequestDependency: TestDependencyKey {
 
   public static var testValue: AppleAuthRequestInterface {

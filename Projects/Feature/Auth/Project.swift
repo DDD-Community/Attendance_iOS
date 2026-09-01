@@ -9,7 +9,7 @@ import DependencyPackagePlugin
 let project = Project.makeModule(
   name: "Auth",
   bundleId: .appBundleID(name: ".Auth"),
-  product: Project.Environment.presentationProduct,
+  product: .staticFramework,
   settings:  .moduleSettings,
   dependencies: [
     .core(.logger),
