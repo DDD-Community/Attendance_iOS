@@ -12,7 +12,7 @@ import Testing
 
 import ComposableArchitecture
 import KeychainAccess
-import Service
+import APIEndpoint
 
 @testable import DDDAttendance
 import XCTest
