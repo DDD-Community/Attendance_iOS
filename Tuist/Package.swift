@@ -9,9 +9,7 @@ private extension Settings {
   static var baseSettings: Settings {
     return .settings(
       configurations: [
-        .debug(name: "Debug"),
         .debug(name: "Stage"),
-        .release(name: "Release"),
         .release(name: "Prod")
       ]
     )
@@ -51,11 +49,13 @@ let packageSettings = PackageSettings(
     "GoogleUtilities-Reachability": .framework,
     "GoogleUtilities-UserDefaults": .framework,
 
-    // 기존 설정 유지
-    "AppAuth": .staticFramework,
-    "AppAuthCore": .staticFramework,
-    "GTMAppAuth": .staticFramework,
-    "GTMSessionFetcherCore": .staticFramework,
+    // GoogleSignIn 전이 의존성은 하나의 동적 링크 경계로 맞춘다.
+    // 정적 프레임워크로 생성하면 GoogleSignIn 코드만 앱에 흡수되고
+    // AppAuth·GTMAppAuth·GTMSessionFetcher 심볼이 앱 링크 라인에 전파되지 않는다.
+    "AppAuth": .framework,
+    "AppAuthCore": .framework,
+    "GTMAppAuth": .framework,
+    "GTMSessionFetcherCore": .framework,
     
     "ComposableArchitecture": .framework,
     "IdentifiedCollections": .framework,
@@ -84,9 +84,9 @@ let packageSettings = PackageSettings(
     "Alamofire": .framework,
     
     // GoogleSignIn 관련
-    "GoogleSignIn": .staticFramework,
-    "GoogleSignInSwift": .staticFramework,
-    "GTMSessionFetcher": .staticFramework
+    "GoogleSignIn": .framework,
+    "GoogleSignInSwift": .framework,
+    "GTMSessionFetcher": .framework
   ],
   baseSettings: .baseSettings,
   targetSettings: [
@@ -95,9 +95,7 @@ let packageSettings = PackageSettings(
         "PRODUCT_BUNDLE_IDENTIFIER": "dev.tuist.swiftuix.internal"
       ],
       configurations: [
-        .debug(name: "Debug"),
         .debug(name: "Stage"),
-        .release(name: "Release"),
         .release(name: "Prod")
       ]
     )

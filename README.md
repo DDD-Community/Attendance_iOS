@@ -308,7 +308,7 @@ open DDDAttendance.xcworkspace
 프로젝트 실행을 위해 다음 설정이 필요합니다:
 
 ```swift
-// Config 파일에서 설정 (Dev.xcconfig, Prod.xcconfig)
+// Config 파일에서 설정 (Stage.xcconfig, Prod.xcconfig)
 BASE_URL = api.dddstudy.kr/
 GOOGLE_CLIENT_ID = YOUR_GOOGLE_CLIENT_ID
 GOOGLE_IOS_CLIENT_ID = YOUR_GOOGLE_IOS_CLIENT_ID

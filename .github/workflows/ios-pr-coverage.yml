@@ -106,7 +106,7 @@ jobs:
           # Tuist가 테스트 실행과 xcresult 업로드를 함께 관리해 Test Insights에 기록한다.
           # PR 리포터는 같은 xcresult를 재사용하고, 실패한 테스트는 최대 3회 관찰한다.
           rm -rf TestResults TestResults.xcresult TuistTestRun.json
-          mise exec -- tuist test DDDAttendance-Workspace \
+          mise exec -- tuist test DDDAttendance-Stage \
             --no-selective-testing \
             --result-bundle-path TestResults.xcresult \
             --run-report-path TuistTestRun.json \
@@ -148,7 +148,7 @@ jobs:
         run: |
           xcodebuild build \
             -workspace DDDAttendance.xcworkspace \
-            -scheme DDDAttendance-Debug \
+            -scheme DDDAttendance-Stage \
             -destination "$SIMULATOR_DESTINATION" \
             -derivedDataPath "$CI_DERIVED_DATA" \
             -resultBundlePath BundleBuildResults.xcresult \
@@ -159,7 +159,7 @@ jobs:
         run: |
           mise exec -- tuist inspect bundle DDDAttendance \
             --platforms ios \
-            --configuration Debug \
+            --configuration Stage \
             --derived-data-path "$CI_DERIVED_DATA"
 
       - name: Clean CI DerivedData

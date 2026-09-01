@@ -69,13 +69,13 @@ jobs:
           SIMULATOR_DESTINATION="$(xcrun simctl list devices available --json | python3 Scripts/select-ios-simulator.py)"
           echo "SIMULATOR_DESTINATION=$SIMULATOR_DESTINATION" >> "$GITHUB_ENV"
 
-      # 전체 테스트 scheme을 한 번 빌드하고 최근 30일 실행 시간으로 두 shard를 계획한다.
+      # Stage scheme의 전체 테스트를 한 번 빌드하고 최근 30일 실행 시간으로 두 shard를 계획한다.
       - name: Build and plan shards
         id: build
         run: |
           mise exec -- tuist xcodebuild build-for-testing \
             -workspace DDDAttendance.xcworkspace \
-            -scheme DDDAttendance-Workspace \
+            -scheme DDDAttendance-Stage \
             -destination "$SIMULATOR_DESTINATION" \
             -derivedDataPath "$CI_DERIVED_DATA" \
             -resultBundlePath ShardBuildResults.xcresult \
@@ -87,7 +87,7 @@ jobs:
         run: |
           mise exec -- tuist xcodebuild build \
             -workspace DDDAttendance.xcworkspace \
-            -scheme DDDAttendance-Debug \
+            -scheme DDDAttendance-Stage \
             -destination "$SIMULATOR_DESTINATION" \
             -derivedDataPath "$CI_DERIVED_DATA" \
             -resultBundlePath BundleBuildResults.xcresult
@@ -96,7 +96,7 @@ jobs:
         run: |
           mise exec -- tuist inspect bundle DDDAttendance \
             --platforms ios \
-            --configuration Debug \
+            --configuration Stage \
             --derived-data-path "$CI_DERIVED_DATA"
 
       - name: Clean build DerivedData
@@ -164,7 +164,7 @@ jobs:
         run: |
           mise exec -- tuist xcodebuild test \
             -workspace DDDAttendance.xcworkspace \
-            -scheme DDDAttendance-Workspace \
+            -scheme DDDAttendance-Stage \
             -destination "$SIMULATOR_DESTINATION" \
             -derivedDataPath "$CI_DERIVED_DATA" \
             -resultBundlePath "TestResults-${{ matrix.shard }}.xcresult" \

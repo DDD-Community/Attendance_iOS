@@ -10,7 +10,8 @@ import ProjectDescription
 // MARK: - Suppress Warnings Setting
 
 private let suppressWarningsSettings: ProjectDescription.Settings = .settings(
-  base: ["OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"]
+  base: ["OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"],
+  configurations: XCConfig.configurations
 )
 
 public extension Project {
@@ -47,7 +48,7 @@ public extension Project {
     )
 
     // 단일 타깃 + 다중 config 구조.
-    // 예전에는 -Debug/-Stage/-Prod 타깃을 복제했지만, 네 타깃이 name 만 다르고
+    // 예전에는 환경별 타깃을 복제했지만, 타깃은 name 만 다르고
     // 나머지가 전부 동일해 불필요했다. 환경 분기는 config(xcconfig)와 스킴으로만 한다.
     var targets: [Target] = [appTarget]
 
@@ -106,10 +107,8 @@ public extension Project {
       )
     }
     return [
-      // 프로젝트 config 이름은 Debug/Stage/Prod/Release (Dev.xcconfig 는 Debug config 에 연결됨).
-      envScheme(name, config: .release),
-      envScheme("\(name)-Debug", config: .debug),
-      envScheme("\(name)-Stage", config: .stage),
+      // Stage 는 여러 프로젝트의 테스트를 포함해야 하므로 WorkSpace.swift 에서 정의한다.
+      // 앱 프로젝트에는 배포용 Prod 스킴만 둬 같은 이름의 Stage 스킴 충돌을 막는다.
       envScheme("\(name)-Prod", config: .prod)
     ]
   }
@@ -211,44 +210,6 @@ public extension Project {
       targets: targets,
       schemes: schemes,
       fileHeaderTemplate: .default
-    )
-  }
-}
-
-public extension Scheme {
-  static func makeScheme(target: ConfigurationName, name: String) -> Scheme {
-    return Scheme.scheme(
-      name: name,
-      shared: true,
-      buildAction: .buildAction(targets: ["\(name)"]),
-      testAction: .targets(
-        ["\(name)Tests"],
-        configuration: target,
-        options: .options(coverage: true, codeCoverageTargets: ["\(name)"])
-      ),
-      runAction: .runAction(configuration: target),
-      archiveAction: .archiveAction(configuration: target),
-      profileAction: .profileAction(configuration: target),
-      analyzeAction: .analyzeAction(configuration: target)
-    )
-  }
-}
-
-public extension Scheme {
-  static func scheme(name: String, environment: ConfigurationEnvironment) -> Scheme {
-    let appName = Project.Environment.appName
-    let schemeName = switch environment {
-    case .prod: appName
-    case .dev, .stage: "\(appName)-\(environment.name)"
-    }
-
-    return .scheme(
-      name: schemeName,
-      buildAction: .buildAction(targets: [.target(name)]),
-      runAction: .runAction(configuration: .init(stringLiteral: environment.name)),
-      archiveAction: .archiveAction(configuration: .release),
-      profileAction: .profileAction(configuration: .release),
-      analyzeAction: .analyzeAction(configuration: .debug)
     )
   }
 }
