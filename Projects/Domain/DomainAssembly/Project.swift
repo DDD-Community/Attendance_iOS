@@ -16,6 +16,7 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings: .moduleSettings,
   dependencies: [
+    .dataAssembly,
     .domain(.entity),
     .domain(.domainInterface),
     .domain(.useCase)

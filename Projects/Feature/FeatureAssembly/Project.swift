@@ -16,10 +16,7 @@ let project = Project.makeModule(
     .feature(.onBoarding),
     .feature(.profile),
     .feature(.web),
-    .feature(.sharedUI),
-
-    // 구현 등록은 DataAssembly 가 끝내 놓았다. 여기서는 그걸 앱까지 실어 나르기만 한다.
-    .dataAssembly
+    .feature(.sharedUI)
   ],
   sources: ["Sources/**"]
 )
