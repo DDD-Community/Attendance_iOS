@@ -3,7 +3,7 @@
  * actions/github-script 스텝에서 require 해서 호출한다.
  *
  * 환경변수
- *   RESULT_BUNDLE_DIR — tuist test --result-bundle-path 에 넘긴 경로
+ *   RESULT_BUNDLE_DIR — xcodebuild -resultBundlePath 에 넘긴 경로
  *   TEST_OUTCOME      — 테스트 스텝의 outcome (success | failure | cancelled)
  */
 
@@ -33,8 +33,8 @@ function xcrun(args) {
 function findResultBundles(root) {
   if (!root || !fs.existsSync(root)) return [];
 
-  // tuist 는 <path>.xcresult 를 만들고 <path> 심볼릭 링크를 건다. xcresulttool 은
-  // 링크를 따라가지만 xccov 는 "unrecognized file format" 으로 거부한다.
+  // 과거 tuist test는 <path>.xcresult를 만들고 <path> 심볼릭 링크를 걸었다.
+  // 이전 실행 결과도 읽을 수 있도록 실제 경로를 해석한다.
   root = fs.realpathSync(root);
 
   const found = [];

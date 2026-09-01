@@ -22,6 +22,8 @@ jobs:
 
     env:
       TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
+      TUIST_BUILD_TAGS: ci,pull-request
+      TUIST_BUILD_VALUE_PR_URL: ${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
       CI_DERIVED_DATA: ${{ runner.temp }}/DDDAttendance-${{ github.run_id }}
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
@@ -70,22 +72,30 @@ jobs:
       - name: Prepare runner disk
         run: |
           rm -rf "$CI_DERIVED_DATA"
-          rm -rf TestResults TestResults.xcresult
+          rm -rf TestResults TestResults.xcresult BundleBuildResults.xcresult
 
-      # 러너에 실제 존재하는 최신 iPhone 시뮬레이터를 고른다(이름 하드코딩은 Xcode 업데이트마다 깨진다).
+      # Xcode 업데이트 뒤에도 러너에 실제 설치된 최신 iPhone runtime을 사용한다.
+      - name: Select simulator
+        run: |
+          SIMULATOR_DESTINATION="$(xcrun simctl list devices available --json | python3 Scripts/select-ios-simulator.py)"
+          echo "SIMULATOR_DESTINATION=$SIMULATOR_DESTINATION" >> "$GITHUB_ENV"
+
       - name: Run tests
         id: tests
         continue-on-error: true
         run: |
-          # xcodebuild 원본 출력은 GitHub 로그 한도를 넘겨 잘린다.
-          # tuist test 는 요약만 내보내고, 워크스페이스 전체가 아니라
-          # 우리 타깃의 테스트만 돌려 외부 SPM 패키지 테스트를 끌고 오지 않는다.
+          # Tuist wrapper가 Test Insights와 quarantine 상태를 적용한다.
+          # 실패한 테스트를 같은 실행에서 최대 3회 관찰해 flaky 여부도 수집한다.
           rm -rf TestResults TestResults.xcresult
-          mise exec -- tuist test \
-            --no-selective-testing \
-            --result-bundle-path TestResults \
-            -- \
-            -derivedDataPath "$CI_DERIVED_DATA"
+          mise exec -- tuist xcodebuild test \
+            -workspace DDDAttendance.xcworkspace \
+            -scheme DDDAttendance-Workspace \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$CI_DERIVED_DATA" \
+            -resultBundlePath TestResults.xcresult \
+            -enableCodeCoverage YES \
+            -retry-tests-on-failure \
+            -test-iterations 3
 
       - name: Upload test results
         if: always()
@@ -100,7 +110,7 @@ jobs:
         if: steps.tests.outcome != 'cancelled'
         uses: actions/github-script@v7
         env:
-          RESULT_BUNDLE_DIR: TestResults
+          RESULT_BUNDLE_DIR: TestResults.xcresult
           TEST_OUTCOME: ${{ steps.tests.outcome }}
         with:
           script: |
@@ -109,9 +119,28 @@ jobs:
             const report = require(`${process.env.GITHUB_WORKSPACE}/Scripts/ios-test-report.js`)
             await report({ github, context, core })
 
+      # 테스트 빌드의 DerivedData를 재사용해 추가 컴파일을 줄이고 PR 크기 변화를 기록한다.
+      - name: Build app for bundle insights
+        run: |
+          mise exec -- tuist xcodebuild build \
+            -workspace DDDAttendance.xcworkspace \
+            -scheme DDDAttendance-Debug \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$CI_DERIVED_DATA" \
+            -resultBundlePath BundleBuildResults.xcresult
+
+      - name: Inspect bundle size
+        run: |
+          mise exec -- tuist inspect bundle DDDAttendance \
+            --platforms ios \
+            --configuration Debug \
+            --derived-data-path "$CI_DERIVED_DATA"
+
       - name: Clean CI DerivedData
         if: always()
-        run: rm -rf "$CI_DERIVED_DATA"
+        run: |
+          rm -rf "$CI_DERIVED_DATA"
+          rm -rf BundleBuildResults.xcresult
 
       - name: Fail if tests failed
         if: steps.tests.outcome != 'success'

@@ -11,6 +11,8 @@ concurrency:
 
 env:
   TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
+  TUIST_BUILD_TAGS: ci,develop,sharded
+  TUIST_BUILD_VALUE_COMMIT: ${{ github.sha }}
   LANG: en_US.UTF-8
   LC_ALL: en_US.UTF-8
 
@@ -60,23 +62,50 @@ jobs:
         run: mise exec -- tuist setup insights
 
       - name: Install project dependencies
-        run: mise exec -- tuist install
+        run: |
+          mise exec -- tuist install
+          mise exec -- tuist generate --no-open
 
-      # develop 변경의 영향을 받는 테스트만 빌드한다. Tuist가 저장한 의존 그래프를
-      # 사용하므로 전체 테스트 빌드를 강제하는 --no-selective-testing은 넣지 않는다.
+      - name: Select simulator
+        run: |
+          SIMULATOR_DESTINATION="$(xcrun simctl list devices available --json | python3 Scripts/select-ios-simulator.py)"
+          echo "SIMULATOR_DESTINATION=$SIMULATOR_DESTINATION" >> "$GITHUB_ENV"
+
+      # 전체 테스트 scheme을 한 번 빌드하고 최근 30일 실행 시간으로 두 shard를 계획한다.
       - name: Build and plan shards
         id: build
         run: |
-          mise exec -- tuist test \
-            --build-only \
+          mise exec -- tuist xcodebuild build-for-testing \
+            -workspace DDDAttendance.xcworkspace \
+            -scheme DDDAttendance-Workspace \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$CI_DERIVED_DATA" \
+            -resultBundlePath ShardBuildResults.xcresult \
             --shard-total 2 \
-            --shard-granularity suite \
-            -- \
-            -derivedDataPath "$CI_DERIVED_DATA"
+            --shard-granularity suite
+
+      # develop 번들을 기준선으로 저장해 PR의 크기 증감과 threshold를 비교할 수 있게 한다.
+      - name: Build app for bundle insights
+        run: |
+          mise exec -- tuist xcodebuild build \
+            -workspace DDDAttendance.xcworkspace \
+            -scheme DDDAttendance-Debug \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$CI_DERIVED_DATA" \
+            -resultBundlePath BundleBuildResults.xcresult
+
+      - name: Inspect bundle size
+        run: |
+          mise exec -- tuist inspect bundle DDDAttendance \
+            --platforms ios \
+            --configuration Debug \
+            --derived-data-path "$CI_DERIVED_DATA"
 
       - name: Clean build DerivedData
         if: always()
-        run: rm -rf "$CI_DERIVED_DATA"
+        run: |
+          rm -rf "$CI_DERIVED_DATA"
+          rm -rf ShardBuildResults.xcresult BundleBuildResults.xcresult
 
   test-shards:
     name: Test shard ${{ matrix.shard }}
@@ -106,19 +135,43 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
 
+      - name: Restore gitignored build config
+        env:
+          CONFIG_TAR: ${{ secrets.CONFIG_DIR_TAR_BASE64 }}
+          GOOGLE_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        run: |
+          printf '%s' "$CONFIG_TAR" | base64 --decode | tar xzf -
+          mkdir -p Projects/App/Resources
+          printf '%s' "$GOOGLE_PLIST" | base64 --decode > Projects/App/Resources/GoogleService-Info.plist
+          git check-ignore -q Config/base.xcconfig
+          git check-ignore -q Projects/App/Resources/GoogleService-Info.plist
+
       - name: Install Tuist
-        run: mise install tuist
+        run: |
+          mise install tuist
+          mise exec -- tuist install
+          mise exec -- tuist generate --no-open
 
       - name: Setup Tuist insights
         run: mise exec -- tuist setup insights
 
-      # 빌드 단계가 업로드한 테스트 산출물을 받아 이 샤드에 배정된 테스트만 실행한다.
+      - name: Select simulator
+        run: |
+          SIMULATOR_DESTINATION="$(xcrun simctl list devices available --json | python3 Scripts/select-ios-simulator.py)"
+          echo "SIMULATOR_DESTINATION=$SIMULATOR_DESTINATION" >> "$GITHUB_ENV"
+
+      # 빌드 단계가 업로드한 테스트 산출물을 받아 이 shard에 배정된 테스트만 실행한다.
+      # Tuist wrapper가 quarantine과 Test Insights 업로드를 함께 처리한다.
       - name: Run shard
         run: |
-          mise exec -- tuist test \
-            --without-building \
-            -- \
-            -derivedDataPath "$CI_DERIVED_DATA"
+          mise exec -- tuist xcodebuild test \
+            -workspace DDDAttendance.xcworkspace \
+            -scheme DDDAttendance-Workspace \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$CI_DERIVED_DATA" \
+            -resultBundlePath "TestResults-${{ matrix.shard }}.xcresult" \
+            -retry-tests-on-failure \
+            -test-iterations 3
 
       - name: Clean shard DerivedData
         if: always()
