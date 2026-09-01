@@ -25,9 +25,6 @@ jobs:
     permissions:
       contents: read
 
-    env:
-      CI_DERIVED_DATA: ${{ runner.temp }}/DDDAttendance-shard-build-${{ github.run_id }}
-
     outputs:
       matrix: ${{ steps.build.outputs.matrix }}
 
@@ -39,6 +36,7 @@ jobs:
           echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
+          echo "CI_DERIVED_DATA=$RUNNER_TEMP/DDDAttendance-shard-build-$GITHUB_RUN_ID" >> "$GITHUB_ENV"
 
       - name: Restore gitignored build config
         env:
@@ -124,7 +122,6 @@ jobs:
     env:
       TUIST_SHARD_INDEX: ${{ matrix.shard }}
       TUIST_SHARD_PLAN_ID: ${{ matrix.shard_plan_id }}
-      CI_DERIVED_DATA: ${{ runner.temp }}/DDDAttendance-shard-test-${{ github.run_id }}-${{ matrix.shard }}
 
     steps:
       - uses: actions/checkout@v4
@@ -134,6 +131,7 @@ jobs:
           echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
+          echo "CI_DERIVED_DATA=$RUNNER_TEMP/DDDAttendance-shard-test-$GITHUB_RUN_ID-$TUIST_SHARD_INDEX" >> "$GITHUB_ENV"
 
       - name: Restore gitignored build config
         env:
