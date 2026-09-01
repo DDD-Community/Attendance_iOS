@@ -15,7 +15,9 @@ let project = Project.makeModule(
   bundleId: .appBundleID(name: ".DomainAssembly"),
   product: .staticFramework,
   settings: .moduleSettings,
+  // 도메인 레이어의 단일 출입구. 데이터·서비스는 보지 않는다.
   dependencies: [
+    .core(.logger),
     .domain(.entity),
     .domain(.domainInterface),
     .domain(.useCase)
