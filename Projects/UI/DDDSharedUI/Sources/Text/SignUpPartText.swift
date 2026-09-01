@@ -29,19 +29,19 @@ public struct SignUpPartText: View {
         .frame(height: 40)
       
       Text(content)
-        .pretendardCustomFont(textStyle: .tilte1NormalBold)
+        .dddFont(.tilte1NormalBold)
         .foregroundStyle(.staticWhite)
       
       Spacer()
         .frame(height: 8)
       
       Text(title)
-        .pretendardCustomFont(textStyle: .body3NormalMedium)
+        .dddFont(.body3NormalMedium)
         .foregroundStyle(.staticWhite)
       
       if !subtitle.isEmpty {
         Text(subtitle)
-          .pretendardCustomFont(textStyle: .body3NormalMedium)
+          .dddFont(.body3NormalMedium)
           .foregroundStyle(.staticWhite)
       }
     }

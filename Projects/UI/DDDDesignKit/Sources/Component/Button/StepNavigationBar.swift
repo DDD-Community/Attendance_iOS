@@ -8,8 +8,8 @@
 import SwiftUI
 
 public struct StepNavigationBar: View {
-  private let activeStep: Int
-  private let buttonAction: () -> Void
+  private var activeStep: Int
+  private var buttonAction: () -> Void
   
   public init(
     activeStep: Int,
@@ -45,5 +45,24 @@ public struct StepNavigationBar: View {
       Spacer()
     }
     .padding(.horizontal, 16)
+  }
+}
+
+// MARK: - 체이닝 설정
+//
+// 값 타입 사본을 돌려주므로 호출 순서에 영향받지 않는다.
+// 기존 init 은 그대로 두어, 체이닝은 선택지로만 더한다.
+public extension StepNavigationBar {
+  /// `activeStep` 을 바꾼 사본을 돌려준다.
+  func activeStep(_ activeStep: Int) -> Self {
+    var copy = self
+    copy.activeStep = activeStep
+    return copy
+  }
+  /// `buttonAction` 을 바꾼 사본을 돌려준다.
+  func buttonAction(_ buttonAction: @escaping () -> Void) -> Self {
+    var copy = self
+    copy.buttonAction = buttonAction
+    return copy
   }
 }

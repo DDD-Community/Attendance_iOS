@@ -15,7 +15,7 @@ public extension View {
   ///   - title: 제목
   ///   - message: 메시지
   ///   - onConfirm: 확인 버튼 터치 시 액션
-  func customAlert(
+  func dddAlert(
     isPresented: Bool,
     title: String,
     message: String,

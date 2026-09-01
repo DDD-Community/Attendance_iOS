@@ -5,9 +5,9 @@
 //  Created by DDD on 6/11/26.
 //
 
+import Dependencies
 import DomainInterface
 import Entity
-import WeaveDI
 
 public struct VoteUseCaseImpl: VoteInterface {
   @Dependency(\.voteRepository) var repository

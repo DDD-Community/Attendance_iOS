@@ -5,10 +5,10 @@
 //  Created by DDD on 7/23/25.
 //
 
+import Dependencies
 import DomainInterface
 import Entity
 import Model
-import WeaveDI
 
 public struct ScheduleUseCaseImpl: ScheduleInterface {
   @Dependency(\.scheduleRepository) var repository

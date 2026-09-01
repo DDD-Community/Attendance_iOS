@@ -7,9 +7,10 @@
 
 import Foundation
 
+import Dependencies
+
 import Entity
 
-import WeaveDI
 
 public protocol MyPageRepositoryInterface: Sendable {
   /// 출석 현황 요약 조회
@@ -18,16 +19,13 @@ public protocol MyPageRepositoryInterface: Sendable {
   func fetchSchedules() async throws -> [AttendanceMyScheduleResponse]
 }
 
-public enum MyPageRepositoryDependency: DependencyKey {
-  public static var liveValue: any MyPageRepositoryInterface {
-    UnifiedDI.resolve(MyPageRepositoryInterface.self) ?? DefaultMyPageRepository()
-  }
+public enum MyPageRepositoryDependency: TestDependencyKey {
   
   public static var testValue: any MyPageRepositoryInterface {
-    UnifiedDI.resolve(MyPageRepositoryInterface.self) ?? DefaultMyPageRepository()
+    DefaultMyPageRepository()
   }
   
-  public static let previewValue: any MyPageRepositoryInterface = liveValue
+  public static let previewValue: any MyPageRepositoryInterface = testValue
 }
 
 public extension DependencyValues {

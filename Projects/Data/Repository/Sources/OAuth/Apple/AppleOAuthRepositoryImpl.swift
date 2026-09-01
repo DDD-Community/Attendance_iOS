@@ -11,8 +11,7 @@ import AuthenticationServices
 import DomainInterface
 @preconcurrency import Entity
 
-import LogMacro
-import WeaveDI
+import DDDCoreLogger
 import ComposableArchitecture
 
 #if canImport(UIKit)
@@ -20,7 +19,6 @@ import UIKit
 #endif
 
 public final class AppleOAuthRepositoryImpl: NSObject, AppleOAuthInterface, @unchecked Sendable {
-  private let logger = LogMacro.Log.self
   @Dependency(\.appleManger) var appleLoginManger
   @Shared(.appStorage("appleUserName")) var appleUserName: String?
 
@@ -116,7 +114,7 @@ extension AppleOAuthRepositoryImpl: ASAuthorizationControllerDelegate {
 
     self.$appleUserName.withLock { $0 = displayName }
 
-    logger.info("Apple Sign In successful for user: \(displayName ?? "unknown"), \(appleUserName)")
+    DDDLogger.info("Apple Sign In successful for user: \(displayName ?? "unknown"), \(appleUserName)", category: .auth)
     signInContinuation?.resume(returning: payload)
     signInContinuation = nil
     currentNonce = nil
@@ -132,7 +130,7 @@ extension AppleOAuthRepositoryImpl: ASAuthorizationControllerDelegate {
     if nsError.code == ASAuthorizationError.canceled.rawValue {
       signInContinuation?.resume(throwing: AuthError.userCancelled)
     } else {
-      logger.error("Apple Sign In failed: \(error.localizedDescription)")
+      DDDLogger.error("Apple Sign In failed: \(error.localizedDescription)", category: .auth)
       signInContinuation?.resume(throwing: AuthError.invalidCredential(error.localizedDescription))
     }
 

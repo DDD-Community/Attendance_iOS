@@ -11,7 +11,6 @@ import SwiftData
 import Entity
 
 import Dependencies
-import WeaveDI
 
 public protocol ProfileLocalDataSourceProtocol: Actor {
   func loadUser() async throws -> ProfileEntity?
@@ -84,9 +83,9 @@ private extension ProfileLocalDataSource {
 }
 
 /// ProfileLocalDataSource의 DependencyKey 구조체
-public struct ProfileLocalDataSourceDependency: DependencyKey {
+public enum ProfileLocalDataSourceDependency: DependencyKey {
   public static var liveValue: ProfileLocalDataSourceProtocol {
-    UnifiedDI.resolve(ProfileLocalDataSourceProtocol.self) ?? ProfileLocalDataSource()
+    ProfileLocalDataSource()
   }
 
   public static var testValue: ProfileLocalDataSourceProtocol = liveValue

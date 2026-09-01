@@ -8,7 +8,6 @@
 import DomainInterface
 import Entity
 
-import WeaveDI
 import ComposableArchitecture
 import Foundation
 

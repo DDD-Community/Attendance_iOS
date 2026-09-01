@@ -7,7 +7,7 @@
 
 import Foundation
 import Dependencies
-import LogMacro
+import DDDCoreLogger
 import AuthenticationServices
 @preconcurrency import Entity
 import DomainInterface
@@ -23,13 +23,13 @@ public final class AppleOAuthProvider: AppleOAuthProviderInterface, @unchecked S
     nonce: String
   ) async throws -> AppleOAuthPayload {
     let payload = try await appleRepository.signInWithCredential(credential, nonce: nonce)
-    Log.info("Apple sign-in completed through repository with credential")
+    DDDLogger.info("Apple sign-in completed through repository with credential", category: .auth)
     return payload
   }
 
   public func signIn() async throws -> AppleOAuthPayload {
     let payload = try await appleRepository.signIn()
-    Log.info("Apple sign-in completed through repository (direct)")
+    DDDLogger.info("Apple sign-in completed through repository (direct)", category: .auth)
     return payload
   }
 

@@ -27,8 +27,8 @@ public struct HomeDropdownMenu: View {
     }
   }
 
-  private let entries: [Entry]
-  private let onSelect: (Entry) -> Void
+  private var entries: [Entry]
+  private var onSelect: (Entry) -> Void
 
   public init(
     entries: [Entry],
@@ -84,5 +84,24 @@ public struct HomeDropdownMenu: View {
       .background {
         Capsule().fill(.blue40)
       }
+  }
+}
+
+// MARK: - 체이닝 설정
+//
+// 값 타입 사본을 돌려주므로 호출 순서에 영향받지 않는다.
+// 기존 init 은 그대로 두어, 체이닝은 선택지로만 더한다.
+public extension HomeDropdownMenu {
+  /// `entries` 을 바꾼 사본을 돌려준다.
+  func entries(_ entries: [Entry]) -> Self {
+    var copy = self
+    copy.entries = entries
+    return copy
+  }
+  /// `onSelect` 을 바꾼 사본을 돌려준다.
+  func onSelect(_ onSelect: @escaping (Entry) -> Void) -> Self {
+    var copy = self
+    copy.onSelect = onSelect
+    return copy
   }
 }

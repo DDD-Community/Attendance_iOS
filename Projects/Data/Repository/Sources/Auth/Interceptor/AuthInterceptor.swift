@@ -5,6 +5,7 @@
 //  Created by DDD on 1/8/26.
 //
 
+import DDDCoreLogger
 import Foundation
 import DomainInterface
 import Entity
@@ -12,7 +13,6 @@ import Dependencies
 import Moya
 import Alamofire
 import Combine
-import LogMacro
 import ComposableArchitecture
 import UIKit
 
@@ -49,11 +49,11 @@ actor TokenRefreshManager {
   
   private func performTokenRefresh() async throws -> AccessTokenCredential {
     
-    #logDebug("🔄 Starting token refresh...")
+    DDDLogger.debug("🔄 Starting token refresh...", category: .auth)
     
     do {
       let tokens = try await authRepository.refresh()
-      #logDebug("✅ Token refresh completed successfully: \(tokens)")
+      DDDLogger.debug("✅ Token refresh completed successfully: \(tokens)", category: .auth)
       
       // 키체인에 새 토큰 저장
       keychainManager.save(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
@@ -71,16 +71,16 @@ actor TokenRefreshManager {
       
       return newCredential
     } catch {
-      #logDebug("❌ Token refresh failed: \(error)")
+      DDDLogger.debug("❌ Token refresh failed: \(error)", category: .auth)
       
       // Refresh token이 만료된 경우 자동 로그아웃 수행
       if isRefreshTokenExpiredError(error) {
-        #logDebug("🚪 [TokenRefreshManager] 401 ERROR DETECTED! Starting automatic logout...")
+        DDDLogger.debug("🚪 [TokenRefreshManager] 401 ERROR DETECTED! Starting automatic logout...", category: .auth)
         await performAutomaticLogout()
-        #logDebug("✅ [TokenRefreshManager] Automatic logout completed, throwing refresh token expired error")
+        DDDLogger.debug("✅ [TokenRefreshManager] Automatic logout completed, throwing refresh token expired error", category: .auth)
         throw AuthError.refreshTokenExpired
       } else {
-        #logDebug("⚠️ [TokenRefreshManager] Non-401 error, rethrowing: \(error)")
+        DDDLogger.debug("⚠️ [TokenRefreshManager] Non-401 error, rethrowing: \(error)", category: .auth)
         throw error
       }
     }
@@ -88,12 +88,12 @@ actor TokenRefreshManager {
   
   /// Refresh token이 만료된 에러인지 확인
   private func isRefreshTokenExpiredError(_ error: Error) -> Bool {
-    #logDebug("🔍 [TokenRefreshManager] 🚨 CHECKING IF 401 ERROR: \(error)")
+    DDDLogger.debug("🔍 [TokenRefreshManager] 🚨 CHECKING IF 401 ERROR: \(error)", category: .auth)
     
     // 1. statusCodeError(401) 직접 감지 (최우선)
     let errorString = String(describing: error)
     if errorString.contains("statusCodeError(401)") {
-      #logDebug("🎯 [TokenRefreshManager] ✅ statusCodeError(401) DETECTED!")
+      DDDLogger.debug("🎯 [TokenRefreshManager] ✅ statusCodeError(401) DETECTED!", category: .auth)
       return true
     }
     
@@ -101,27 +101,27 @@ actor TokenRefreshManager {
     if let moyaError = error as? MoyaError {
       switch moyaError {
       case .statusCode(let response):
-        #logDebug("📋 [TokenRefreshManager] MoyaError statusCode: \(response.statusCode)")
+        DDDLogger.debug("📋 [TokenRefreshManager] MoyaError statusCode: \(response.statusCode)", category: .auth)
         if response.statusCode == 401 {
-          #logDebug("🎯 [TokenRefreshManager] ✅ MoyaError 401 DETECTED!")
+          DDDLogger.debug("🎯 [TokenRefreshManager] ✅ MoyaError 401 DETECTED!", category: .auth)
           return true
         }
       case .underlying(_, let response):
-        #logDebug("📋 [TokenRefreshManager] MoyaError underlying statusCode: \(String(describing: response?.statusCode))")
+        DDDLogger.debug("📋 [TokenRefreshManager] MoyaError underlying statusCode: \(String(describing: response?.statusCode))", category: .auth)
         if response?.statusCode == 401 {
-          #logDebug("🎯 [TokenRefreshManager] ✅ MoyaError underlying 401 DETECTED!")
+          DDDLogger.debug("🎯 [TokenRefreshManager] ✅ MoyaError underlying 401 DETECTED!", category: .auth)
           return true
         }
       default:
-        #logDebug("📋 [TokenRefreshManager] Other MoyaError: \(moyaError)")
+        DDDLogger.debug("📋 [TokenRefreshManager] Other MoyaError: \(moyaError)", category: .auth)
       }
     }
     
     // 3. AuthError인 경우
     if let authError = error as? AuthError {
-      #logDebug("📋 [TokenRefreshManager] AuthError: \(authError)")
+      DDDLogger.debug("📋 [TokenRefreshManager] AuthError: \(authError)", category: .auth)
       if authError.isTokenExpiredError {
-        #logDebug("🎯 [TokenRefreshManager] ✅ AuthError TOKEN EXPIRED DETECTED!")
+        DDDLogger.debug("🎯 [TokenRefreshManager] ✅ AuthError TOKEN EXPIRED DETECTED!", category: .auth)
         return true
       }
     }
@@ -134,47 +134,47 @@ actor TokenRefreshManager {
         errorDesc.contains("invalid token") ||
         errorDesc.contains("token expired") ||
         errorDesc.contains("authentication failed") {
-      #logDebug("🎯 [TokenRefreshManager] ✅ ERROR MESSAGE 401 DETECTED: \(errorDesc)")
+      DDDLogger.debug("🎯 [TokenRefreshManager] ✅ ERROR MESSAGE 401 DETECTED: \(errorDesc)", category: .auth)
       return true
     }
     
-    #logDebug("❌ [TokenRefreshManager] Error is NOT 401 - continuing normally")
+    DDDLogger.debug("❌ [TokenRefreshManager] Error is NOT 401 - continuing normally", category: .auth)
     return false
   }
   
   /// 자동 로그아웃 수행 (로컬 상태 정리만)
   private func performAutomaticLogout() async {
-    #logDebug("🚪 [TokenRefreshManager] 🔥 PERFORMING AUTOMATIC LOGOUT - 401 ERROR DETECTED!")
+    DDDLogger.debug("🚪 [TokenRefreshManager] 🔥 PERFORMING AUTOMATIC LOGOUT - 401 ERROR DETECTED!", category: .auth)
     
     // Refresh token이 만료된 상황이므로 서버 API 호출은 불가능
     // 로컬 상태만 정리함
     
     // 1. Keychain에서 모든 토큰 제거
-    #logDebug("🔑 [TokenRefreshManager] Clearing keychain tokens...")
+    DDDLogger.debug("🔑 [TokenRefreshManager] Clearing keychain tokens...", category: .auth)
     keychainManager.clear()
     self.$staffRole.withLock { $0 = nil }
-    #logDebug("✅ [TokenRefreshManager] Keychain cleared")
+    DDDLogger.debug("✅ [TokenRefreshManager] Keychain cleared", category: .auth)
     
     // 2. AuthSessionManager credential 정리
-    #logDebug("🗂️ [TokenRefreshManager] Clearing session manager...")
+    DDDLogger.debug("🗂️ [TokenRefreshManager] Clearing session manager...", category: .auth)
     await MainActor.run {
       AuthSessionManager.shared.credential = nil
     }
-    #logDebug("✅ [TokenRefreshManager] Session manager cleared")
+    DDDLogger.debug("✅ [TokenRefreshManager] Session manager cleared", category: .auth)
     
     // 3. 전역 로그인 만료 알림 전송 - 확실하게 발송
     // ⚠️ 중요: 이 알림을 관찰하는 코드는 반드시 deinit에서 removeObserver를 호출해야 함
-    #logDebug("📢 [TokenRefreshManager] 🚨 SENDING LOGOUT NOTIFICATION...")
+    DDDLogger.debug("📢 [TokenRefreshManager] 🚨 SENDING LOGOUT NOTIFICATION...", category: .auth)
     await MainActor.run {
       NotificationCenter.default.post(
         name: .refreshTokenExpired,
         object: nil,
         userInfo: ["reason": "401_refresh_failed"] // 추가 정보
       )
-      #logDebug("✅ [TokenRefreshManager] 🎯 RefreshTokenExpired NOTIFICATION SENT!")
+      DDDLogger.debug("✅ [TokenRefreshManager] 🎯 RefreshTokenExpired NOTIFICATION SENT!", category: .auth)
     }
     
-    #logDebug("✅ [TokenRefreshManager] 🔥 AUTOMATIC LOGOUT COMPLETED!")
+    DDDLogger.debug("✅ [TokenRefreshManager] 🔥 AUTOMATIC LOGOUT COMPLETED!", category: .auth)
   }
 }
 
@@ -189,13 +189,13 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
 
     // 현재 credential 확인
     guard let credential = AuthSessionManager.shared.credential else {
-      #logDebug("⚠️ No credential available, proceeding without token")
+      DDDLogger.debug("⚠️ No credential available, proceeding without token", category: .auth)
       return urlRequest
     }
 
     // 토큰 갱신이 필요한지 확인
     if credential.requiresRefresh {
-      #logDebug("🔄 Token refresh required, refreshing...")
+      DDDLogger.debug("🔄 Token refresh required, refreshing...", category: .auth)
       let newCredential = try await tokenRefreshManager.refreshCredentialIfNeeded()
       authenticatedRequest.setValue("Bearer \(newCredential.accessToken)", forHTTPHeaderField: "Authorization")
     } else {
@@ -207,7 +207,7 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
 
   /// 401 오류 발생 시 토큰 갱신 및 재시도
   func handleUnauthorizedError() async throws -> AccessTokenCredential {
-    #logDebug("🚨 401 Unauthorized detected, attempting token refresh")
+    DDDLogger.debug("🚨 401 Unauthorized detected, attempting token refresh", category: .auth)
     return try await tokenRefreshManager.refreshCredentialIfNeeded()
   }
 
@@ -231,7 +231,7 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
           adaptedRequest.headers.update(.authorization(bearerToken: newCredential.accessToken))
           completion(.success(adaptedRequest))
         } catch {
-          #logDebug("❌ Token refresh failed in adapt: \(error)")
+          DDDLogger.debug("❌ Token refresh failed in adapt: \(error)", category: .auth)
           completion(.failure(error))
         }
       }
@@ -249,7 +249,7 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
       return
     }
 
-    #logDebug("🚨 401 Unauthorized detected, attempting token refresh for retry")
+    DDDLogger.debug("🚨 401 Unauthorized detected, attempting token refresh for retry", category: .auth)
 
     _Concurrency.Task {
       do {
@@ -258,11 +258,11 @@ final class AuthInterceptor: RequestInterceptor, @unchecked Sendable {
         // 갱신 성공 시 원래 요청 재시도
         completion(.retry)
       } catch {
-        #logDebug("❌ Token refresh failed in retry: \(error)")
+        DDDLogger.debug("❌ Token refresh failed in retry: \(error)", category: .auth)
 
         // Refresh token이 만료된 경우 특별 처리
           if let authError = error as? AuthError, authError.isTokenExpiredError {
-          #logDebug("🚪 Refresh token expired in retry - user will be automatically logged out")
+          DDDLogger.debug("🚪 Refresh token expired in retry - user will be automatically logged out", category: .auth)
           // 자동 로그아웃이 이미 TokenRefreshManager에서 수행되었으므로
           // 단순히 에러를 전달하여 UI가 적절히 대응할 수 있도록 함
           completion(.doNotRetryWithError(authError))

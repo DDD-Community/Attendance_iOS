@@ -11,7 +11,6 @@ import SwiftData
 import Entity
 
 import Dependencies
-import WeaveDI
 
 public protocol ScheduleLocalDataSourceProtocol: Actor {
   func loadAll() async throws -> [Schedule]?
@@ -84,9 +83,9 @@ private extension ScheduleLocalDataSource {
 }
 
 /// ScheduleLocalDataSource의 DependencyKey 구조체
-public struct ScheduleLocalDataSourceDependency: DependencyKey {
+public enum ScheduleLocalDataSourceDependency: DependencyKey {
   public static var liveValue: ScheduleLocalDataSourceProtocol {
-    UnifiedDI.resolve(ScheduleLocalDataSourceProtocol.self) ?? ScheduleLocalDataSource()
+    ScheduleLocalDataSource()
   }
 
   public static var testValue: ScheduleLocalDataSourceProtocol = liveValue

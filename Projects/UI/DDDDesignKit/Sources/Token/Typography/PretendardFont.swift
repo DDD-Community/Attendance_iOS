@@ -21,8 +21,9 @@ public extension View {
     return self.modifier(PretendardFont(family: family, size: size))
   }
   
-  func pretendardCustomFont(textStyle: CustomSizeFont) -> some View {
-    return self.modifier(PretendardFont(family: textStyle.fontFamily, size: textStyle.size))
+  /// 타이포 토큰 하나로 폰트를 적용한다. 체이닝의 기본 진입점.
+  func dddFont(_ style: CustomSizeFont) -> some View {
+    return self.modifier(PretendardFont(family: style.fontFamily, size: style.size))
   }
 }
 

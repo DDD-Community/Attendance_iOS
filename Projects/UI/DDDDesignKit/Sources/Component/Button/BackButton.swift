@@ -8,7 +8,7 @@
 import SwiftUI
 
 public struct NavigationBackButton: View {
-  private let buttonAction: () -> Void
+  private var buttonAction: () -> Void
   
   public init(
     buttonAction: @escaping () -> Void
@@ -31,5 +31,18 @@ public struct NavigationBackButton: View {
       
     }
     .padding(.horizontal, 16)
+  }
+}
+
+// MARK: - 체이닝 설정
+//
+// 값 타입 사본을 돌려주므로 호출 순서에 영향받지 않는다.
+// 기존 init 은 그대로 두어, 체이닝은 선택지로만 더한다.
+public extension NavigationBackButton {
+  /// `buttonAction` 을 바꾼 사본을 돌려준다.
+  func buttonAction(_ buttonAction: @escaping () -> Void) -> Self {
+    var copy = self
+    copy.buttonAction = buttonAction
+    return copy
   }
 }

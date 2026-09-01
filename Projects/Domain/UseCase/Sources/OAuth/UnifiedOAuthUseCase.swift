@@ -11,7 +11,7 @@ import AuthenticationServices
 @preconcurrency import Entity
 import DomainInterface
 import Sharing
-import LogMacro
+import DDDCoreLogger
 
 /// 통합 OAuth UseCase - 로그인/회원가입 플로우를 하나로 통합
 public struct UnifiedOAuthUseCase {
@@ -60,7 +60,7 @@ public extension UnifiedOAuthUseCase {
       credential: credential,
       nonce: nonce
     )
-    Log.debug("apple authcode", payload.authorizationCode)
+    DDDLogger.debug("apple authcode: \(payload.authorizationCode ?? "none")", category: .auth)
 
     // Apple 로그인 시 이름 저장 로직 개선
     let userName: String = {

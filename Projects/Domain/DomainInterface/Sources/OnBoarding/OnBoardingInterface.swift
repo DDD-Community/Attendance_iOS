@@ -7,7 +7,8 @@
 
 import Foundation
 
-import WeaveDI
+import Dependencies
+
 import Entity
 
 
@@ -18,16 +19,13 @@ public protocol OnBoardingInterface: Sendable {
   func fetchManaging() async throws -> [SelectManaging]
 }
 
-public struct OnBoardingRepositoryDependency: DependencyKey {
-  public static var liveValue: OnBoardingInterface {
-    UnifiedDI.resolve(OnBoardingInterface.self) ?? DefaultOnBoardingRepositoryImpl()
-  }
+public enum OnBoardingRepositoryDependency: TestDependencyKey {
 
   public static var testValue: OnBoardingInterface {
-    UnifiedDI.resolve(OnBoardingInterface.self) ?? DefaultOnBoardingRepositoryImpl()
+    DefaultOnBoardingRepositoryImpl()
   }
 
-  public static var previewValue: OnBoardingInterface = liveValue
+  public static var previewValue: OnBoardingInterface = testValue
 }
 
 public extension DependencyValues {

@@ -3,12 +3,12 @@
 //  DomainInterface
 //
 //  Created by DDD on 7/23/25.
-//  Updated for WeaveDI v4.0 - Protocol-based DI Registration
 //
 
 import Entity
 import Foundation
-import WeaveDI
+
+import Dependencies
 
 /// Profile 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol ProfileInterface: Sendable {
@@ -19,16 +19,13 @@ public protocol ProfileInterface: Sendable {
 }
 
 /// Profile Repository의 DependencyKey 구조체
-public struct ProfileRepositoryDependency: DependencyKey {
-  public static var liveValue: ProfileInterface {
-    UnifiedDI.resolve(ProfileInterface.self) ?? DefaultProfileRepositoryImpl()
-  }
+public enum ProfileRepositoryDependency: TestDependencyKey {
 
   public static var testValue: ProfileInterface {
-    UnifiedDI.resolve(ProfileInterface.self) ?? DefaultProfileRepositoryImpl()
+    DefaultProfileRepositoryImpl()
   }
 
-  public static var previewValue: ProfileInterface = liveValue
+  public static var previewValue: ProfileInterface = testValue
 }
 
 /// DependencyValues extension으로 간편한 접근 제공

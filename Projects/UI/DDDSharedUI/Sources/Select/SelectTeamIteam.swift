@@ -33,7 +33,7 @@ public struct SelectTeamIteam: View {
         .overlay {
           HStack {
             Text(content)
-              .pretendardCustomFont(textStyle: .body1NormalMedium)
+              .dddFont(.body1NormalMedium)
               .foregroundStyle(isActive ? Color.textPrimary : Color.grayWhite)
             
             Spacer()

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WeaveDI
 
 public final class MockKeychainManager: KeychainManaging, @unchecked Sendable {
     // MARK: - Configuration

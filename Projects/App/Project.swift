@@ -16,14 +16,23 @@ let project = Project.makeAppModule(
   settings: .appMainSetting,
   scripts: [],
   dependencies: [
-    .Core(implements: .DDDCoreUtility),
-    .UI(implements: .DDDSharedUI),
-    .Presentation(implements: .Presentation),
-    .Data(implements: .Repository),
-    .Domain(implements: .DomainInterface),
-    .Domain(implements: .UseCase),
-    .Network(implements: .Foundations),
-    .Presentation(implements: .Auth)
+    .core(.logger),
+    .core(.coreUtility),
+    .ui(.sharedUI),
+    .featureAssembly,
+    .data(.repository),
+    .domain(.domainInterface),
+    .domain(.useCase),
+    .network(.foundations),
+
+    // 조립 레이어 — Navigation 의 Coordinator 들이 각 피처 화면을 붙인다.
+    .feature(.auth),
+    .feature(.splash),
+    .feature(.onBoarding),
+    .feature(.management),
+    .feature(.member),
+    .feature(.profile),
+    .feature(.web)
   ],
   sources: ["Sources/**"],
   resources: ["Resources/**"],

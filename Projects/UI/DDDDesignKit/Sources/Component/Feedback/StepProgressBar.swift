@@ -10,9 +10,9 @@ import SwiftUI
 /// 투표 1·2단계 상단 스텝 진행바.
 /// `currentStep` 이 바뀌면 채움 바 너비가 애니메이션으로 이동한다.
 public struct StepProgressBar: View {
-  private let currentStep: Int
-  private let totalSteps: Int
-  private let animation: Animation
+  private var currentStep: Int
+  private var totalSteps: Int
+  private var animation: Animation
 
   public init(
     currentStep: Int,
@@ -65,4 +65,29 @@ public struct StepProgressBar: View {
     }
   }
   return PreviewContainer()
+}
+
+// MARK: - 체이닝 설정
+//
+// 값 타입 사본을 돌려주므로 호출 순서에 영향받지 않는다.
+// 기존 init 은 그대로 두어, 체이닝은 선택지로만 더한다.
+public extension StepProgressBar {
+  /// `currentStep` 을 바꾼 사본을 돌려준다.
+  func currentStep(_ currentStep: Int) -> Self {
+    var copy = self
+    copy.currentStep = currentStep
+    return copy
+  }
+  /// `totalSteps` 을 바꾼 사본을 돌려준다.
+  func totalSteps(_ totalSteps: Int) -> Self {
+    var copy = self
+    copy.totalSteps = totalSteps
+    return copy
+  }
+  /// `animation` 을 바꾼 사본을 돌려준다.
+  func animation(_ animation: Animation) -> Self {
+    var copy = self
+    copy.animation = animation
+    return copy
+  }
 }

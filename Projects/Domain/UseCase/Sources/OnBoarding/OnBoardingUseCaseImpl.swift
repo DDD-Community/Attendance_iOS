@@ -5,10 +5,10 @@
 //  Created by DDD on 12/30/25.
 //
 
+import Dependencies
 import DomainInterface
 import Entity
 
-import WeaveDI
 
 public struct OnBoardingUseCaseImpl: OnBoardingInterface {
   @Dependency(\.onBoardingRepository) var repository

@@ -6,13 +6,9 @@
 //
 
 import DDDCoreUtility
-import Presentation
+import FeatureAssembly
 import ComposableArchitecture
 import Entity
-import LogMacro
-import Profile
-import Management
-import Member
 
 @Reducer
 public struct AppReducer: Sendable {

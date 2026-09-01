@@ -5,6 +5,7 @@
 //  Created by DDD on 6/27/24.
 //
 
+import DDDCoreLogger
 import DDDCoreUtility
 import Foundation
 import Testing
@@ -178,7 +179,7 @@ struct CoreMemberTest {
       // 3. fetchAttendanceDataResponse 액션이 실패하는 상황을 시뮬레이션합니다.
       await testStore.send(.async(.fetchAttendanceDataResponse(.failure(expectedError)))) {
         $0.isLoading = true
-        Log.error("출석 정보 데이터 에러", expectedError.localizedDescription)
+        DDDLogger.error("출석 정보 데이터 에러: \(expectedError.localizedDescription)", category: .attendance)
 
         // 5. 실패했을 때 attendanceCheckInModel이 변경되지 않고 유지되는지 확인합니다.
         #expect($0.attendanceCheckInModel.isEmpty == true, "출석 데이터가 비어있어야 함")
@@ -305,7 +306,7 @@ struct CoreMemberTest {
       // 3. fetchAttendanceDataResponse 액션이 실패하는 상황을 시뮬레이션합니다.
       await testStore.send(.async(.fetchMemberDataResponse(.failure(expectedError)))) {
         $0.isLoading = true
-        Log.error("출석 정보 멤버 데이터 에러", expectedError.localizedDescription)
+        DDDLogger.error("출석 정보 멤버 데이터 에러: \(expectedError.localizedDescription)", category: .attendance)
 
         // 5. 실패했을 때 attendanceCheckInModel이 변경되지 않고 유지되는지 확인합니다.
         #expect($0.attendaceMemberModel.isEmpty == true, "출석 데이터가 비어있어야 함")

@@ -9,8 +9,8 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings:  .moduleSettings,
   dependencies: [
-    .Network(implements: .ThirdPartys),
-    .Domain(implements: .UseCase)
+    .network(.thirdPartys),
+    .domain(.useCase)
   ],
   sources: ["Sources/**"],
   hasTests: false

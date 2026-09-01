@@ -11,11 +11,13 @@ concurrency:
 
 jobs:
   coverage:
-    runs-on: [self-hosted, macOS, ARM64, xcode]
+    runs-on: self-hosted
     timeout-minutes: 90
 
     permissions:
       contents: read
+      # PR 코멘트는 issues API 를 쓴다.
+      issues: write
       pull-requests: write
 
     env:
@@ -54,100 +56,48 @@ jobs:
           tuist install
           tuist generate --no-open
 
-      # 러너에 실제 존재하는 최신 iPhone 시뮬레이터를 고른다(이름 하드코딩은 Xcode 업데이트마다 깨진다).
-      - name: Select simulator
-        id: sim
+      # self-hosted 러너는 실행 간 디스크가 유지되므로 이전 빌드 산출물을 비운다.
+      - name: Prepare runner disk
         run: |
-          UDID=$(xcrun simctl list devices available --json | python3 -c "
-          import json, sys, re
-          d = json.load(sys.stdin)['devices']
-          best = None
-          for rt, devs in d.items():
-              m = re.search(r'iOS-(\d+)-(\d+)', rt)
-              if not m:
-                  continue
-              ver = (int(m.group(1)), int(m.group(2)))
-              for dev in devs:
-                  if not dev.get('isAvailable'):
-                      continue
-                  if not dev['name'].startswith('iPhone'):
-                      continue
-                  key = (ver, dev['name'])
-                  if best is None or key > best[0]:
-                      best = (key, dev)
-          print(best[1]['udid'] if best else '')
-          ")
-          test -n "$UDID" || { echo "사용 가능한 iPhone 시뮬레이터가 없습니다"; exit 1; }
-          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
-
-      - name: Run tests with coverage
-        run: |
-          # checkout 의 git clean 이 워크스페이스 안 캐시를 지우므로 DerivedData 는 러너 홈에 둔다.
           DERIVED_DATA="$HOME/ci-derived-data/DDDAttendance"
+          rm -rf "$DERIVED_DATA" TestResults.xcresult
           mkdir -p "$DERIVED_DATA"
-          xcodebuild test \
-            -workspace DDDAttendance.xcworkspace \
-            -scheme DDDAttendance-Workspace \
-            -destination "id=${{ steps.sim.outputs.udid }}" \
-            -enableCodeCoverage YES \
-            -resultBundlePath TestResults.xcresult \
-            -derivedDataPath "$DERIVED_DATA" \
-            CODE_SIGNING_ALLOWED=NO
 
-      # 테스트가 실패해도 남은 결과에서 커버리지를 뽑아 코멘트한다.
-      - name: Build coverage report
-        if: always()
-        timeout-minutes: 5
+      # 러너에 실제 존재하는 최신 iPhone 시뮬레이터를 고른다(이름 하드코딩은 Xcode 업데이트마다 깨진다).
+      - name: Run tests
+        id: tests
+        continue-on-error: true
         run: |
-          test -d TestResults.xcresult || { echo "xcresult 없음 - 리포트 생략"; exit 0; }
-          # 테스트가 한 건도 못 돌면 번들에 커버리지가 없다. 그때는 잡을 죽이지 않고 건너뛴다.
-          xcrun xccov view --report --json TestResults.xcresult > coverage.json 2>/dev/null \
-            || { echo "커버리지 데이터 없음 - 리포트 생략"; exit 0; }
-          python3 - <<'PY' > coverage.md
-          import json
-          r = json.load(open("coverage.json"))
-          total = r.get("lineCoverage", 0) * 100
-          rows = []
-          for t in r.get("targets", []):
-              name = t.get("name", "")
-              if name.endswith(".xctest"):
-                  continue
-              rows.append((name, t.get("lineCoverage", 0) * 100,
-                           t.get("coveredLines", 0), t.get("executableLines", 0)))
-          rows.sort(key=lambda x: x[1])
-          print("<!-- ios-pr-coverage -->")
-          print(f"## 테스트 커버리지 - 전체 **{total:.2f}%**\n")
-          print("| 모듈 | 커버리지 | 커버된 줄 / 전체 |")
-          print("|---|---:|---:|")
-          for name, pct, cov, exe in rows:
-              mark = "🔴" if pct < 40 else ("🟡" if pct < 70 else "🟢")
-              print(f"| {name} | {mark} {pct:.2f}% | {cov} / {exe} |")
-          PY
-          echo "커버리지 리포트 생성 완료"
-
-      - name: Post coverage comment
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR: ${{ github.event.pull_request.number }}
-        run: |
-          test -f coverage.md || exit 0
-          # 마커로 기존 코멘트를 찾아 갱신한다(PR 이 코멘트로 도배되지 않게).
-          ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" \
-                --jq '.[] | select(.body | startswith("<!-- ios-pr-coverage -->")) | .id' | head -1)
-          if [ -n "$ID" ]; then
-            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${ID}" -F body=@coverage.md
-          else
-            gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" -F body=@coverage.md
-          fi
+          # xcodebuild 원본 출력은 GitHub 로그 한도를 넘겨 잘린다.
+          # tuist test 는 요약만 내보내고, 워크스페이스 전체가 아니라
+          # 우리 타깃의 테스트만 돌려 외부 SPM 패키지 테스트를 끌고 오지 않는다.
+          rm -rf TestResults TestResults.xcresult
+          tuist test \
+            --no-selective-testing \
+            --result-bundle-path TestResults
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ github.run_id }}
-          path: |
-            TestResults.xcresult
-            coverage.json
+          path: TestResults.xcresult
           if-no-files-found: ignore
           retention-days: 7
+
+      - name: Report to PR
+        if: steps.tests.outcome != 'cancelled'
+        uses: actions/github-script@v7
+        env:
+          RESULT_BUNDLE_DIR: TestResults
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+        with:
+          script: |
+            // github-script 의 require 는 액션 디렉토리 기준으로 경로를 풀어서
+            // 상대경로가 먹지 않는다. 워크스페이스 절대경로로 지정한다.
+            const report = require(`${process.env.GITHUB_WORKSPACE}/Scripts/ios-test-report.js`)
+            await report({ github, context, core })
+
+      - name: Fail if tests failed
+        if: steps.tests.outcome != 'success'
+        run: exit 1

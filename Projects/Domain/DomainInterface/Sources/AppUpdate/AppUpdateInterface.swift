@@ -6,7 +6,8 @@
 //
 
 import Foundation
-import WeaveDI
+
+import Dependencies
 import Entity
 
 /// App Update 관련 비즈니스 로직을 위한 Interface 프로토콜
@@ -15,16 +16,13 @@ public protocol AppUpdateInterface: Sendable {
 }
 
 /// AppUpdate Repository의 DependencyKey 구조체
-public struct AppUpdateRepositoryDependency: DependencyKey {
-  public static var liveValue: AppUpdateInterface {
-    UnifiedDI.resolve(AppUpdateInterface.self) ?? DefaultAppUpdateRepositoryImpl()
-  }
+public enum AppUpdateRepositoryDependency: TestDependencyKey {
 
   public static var testValue: AppUpdateInterface {
-    UnifiedDI.resolve(AppUpdateInterface.self) ?? DefaultAppUpdateRepositoryImpl()
+    DefaultAppUpdateRepositoryImpl()
   }
 
-  public static var previewValue: AppUpdateInterface = liveValue
+  public static var previewValue: AppUpdateInterface = testValue
 }
 
 /// DependencyValues extension으로 간편한 접근 제공

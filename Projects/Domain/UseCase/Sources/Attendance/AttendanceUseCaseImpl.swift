@@ -5,11 +5,11 @@
 //  Created by DDD on 7/23/25.
 //
 
+import Dependencies
 import DomainInterface
 import Model
 import Entity
 
-import WeaveDI
 
 public struct AttendanceUseCaseImpl: AttendanceInterface {
   @Dependency(\.attendanceRepository) var repository

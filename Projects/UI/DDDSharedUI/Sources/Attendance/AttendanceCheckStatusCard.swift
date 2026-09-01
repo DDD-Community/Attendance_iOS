@@ -40,13 +40,13 @@ public struct AttendanceCheckStatusCard: View {
           VStack(alignment: .leading, spacing: .zero) {
             HStack {
               Text(name)
-                .pretendardCustomFont(textStyle: .title3NormalBold)
+                .dddFont(.title3NormalBold)
                 .foregroundStyle(isDisabled ? .borderDisabled : .staticWhite)
               Spacer()
             }
             
             Text("\(selectTeam.attandanceCardDescription) / \(selectPart.desc) ")
-              .pretendardCustomFont(textStyle: .body2NormalBold)
+              .dddFont(.body2NormalBold)
               .foregroundStyle(isDisabled ? .borderDisabled : .staticWhite)
               .minimumScaleFactor(0.7)
           }
@@ -55,7 +55,7 @@ public struct AttendanceCheckStatusCard: View {
           
           HStack(spacing: .zero) {
             Text(attendanceStatus.desc)
-              .pretendardCustomFont(textStyle: .body2NormalMedium)
+              .dddFont(.body2NormalMedium)
               .foregroundStyle(isDisabled ? .borderDisabled : .staticWhite)
             
             Spacer()

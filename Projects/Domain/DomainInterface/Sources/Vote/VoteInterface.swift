@@ -7,7 +7,8 @@
 
 import Entity
 import Foundation
-import WeaveDI
+
+import Dependencies
 
 public protocol VoteInterface: Sendable {
   func fetchVotes() async throws -> [Vote]
@@ -54,16 +55,13 @@ public protocol VoteInterface: Sendable {
   ) async throws -> MyVoteResponse
 }
 
-public struct VoteRepositoryDependency: DependencyKey {
-  public static var liveValue: VoteInterface {
-    UnifiedDI.resolve(VoteInterface.self) ?? DefaultVoteRepositoryImpl()
-  }
+public enum VoteRepositoryDependency: TestDependencyKey {
 
   public static var testValue: VoteInterface {
-    UnifiedDI.resolve(VoteInterface.self) ?? DefaultVoteRepositoryImpl()
+    DefaultVoteRepositoryImpl()
   }
 
-  public static var previewValue: VoteInterface = liveValue
+  public static var previewValue: VoteInterface = testValue
 }
 
 public extension DependencyValues {

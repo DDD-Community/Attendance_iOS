@@ -5,11 +5,11 @@
 //  Created by DDD on 3/9/26.
 //
 
+import DDDCoreLogger
 import Foundation
 import DomainInterface
 import Entity
 import Model
-import LogMacro
 
 public final class AppUpdateRepositoryImpl: AppUpdateInterface {
     private let urlSession: URLSession
@@ -64,7 +64,7 @@ public final class AppUpdateRepositoryImpl: AppUpdateInterface {
 
     private func fetchAppStoreInfo() async throws -> AppStoreInfoDTO {
         let currentLanguage = getCurrentAppLanguage()
-        #logDebug("[AppUpdate] Current app language", currentLanguage)
+        DDDLogger.debug("[AppUpdate] Current app language: \(currentLanguage)", category: .network)
 
         // 언어에 따른 우선순위 결정
         let primaryCountry = currentLanguage == "ko" ? "kr" : "us"
@@ -72,14 +72,14 @@ public final class AppUpdateRepositoryImpl: AppUpdateInterface {
 
         // 우선 스토어 시도
         if let result = try? await fetchAppStoreInfo(country: primaryCountry) {
-            #logDebug("[AppUpdate] Using \(primaryCountry) store result")
+            DDDLogger.debug("[AppUpdate] Using \(primaryCountry) store result", category: .network)
             return result
         }
 
         // 폴백 스토어 시도
-        #logDebug("[AppUpdate] \(primaryCountry) store failed, trying \(fallbackCountry)")
+        DDDLogger.debug("[AppUpdate] \(primaryCountry) store failed, trying \(fallbackCountry)", category: .network)
         let fallbackResult = try await fetchAppStoreInfo(country: fallbackCountry)
-        #logDebug("[AppUpdate] Using \(fallbackCountry) store as fallback")
+        DDDLogger.debug("[AppUpdate] Using \(fallbackCountry) store as fallback", category: .network)
         return fallbackResult
     }
 
@@ -99,10 +99,10 @@ public final class AppUpdateRepositoryImpl: AppUpdateInterface {
 
             return appInfo
         } catch let decodingError as DecodingError {
-            #logError("[AppUpdate] Decoding error for \(country)", decodingError.localizedDescription)
+            DDDLogger.error("[AppUpdate] Decoding error for \(country): \(decodingError.localizedDescription)", category: .network)
             throw AppUpdateError.decodingError
         } catch {
-            #logError("[AppUpdate] Network error for \(country)", error.localizedDescription)
+            DDDLogger.error("[AppUpdate] Network error for \(country): \(error.localizedDescription)", category: .network)
             throw AppUpdateError.from(error)
         }
     }

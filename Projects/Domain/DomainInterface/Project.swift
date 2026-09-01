@@ -12,8 +12,8 @@ let project = Project.makeModule(
   settings:  .moduleSettings,
   dependencies: [
 
-    .Data(implements: .Model),
-    .SPM.weaveDI,
+    .data(.model),
+    .SPM.dependencies,
     .SPM.composableArchitecture,
   ],
   sources: ["Sources/**"],

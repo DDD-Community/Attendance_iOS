@@ -7,7 +7,7 @@ import ProjectTemplatePlugin
 let project = Project.makeModule(
   name: "DDDThirdParty",
   bundleId: .appBundleID(name: ".DDDThirdParty"),
-  product: Project.Environment.sharedProduct,
+  product: .staticFramework,
   settings: .moduleSettings,
   dependencies: [
     .SPM.asyncMoya,
@@ -18,7 +18,6 @@ let project = Project.makeModule(
     .SPM.swiftUIX,
     .SPM.googleSignIn,
     .SPM.firebaseCrashlytics,
-    .SPM.weaveDI,
   ],
   sources: ["Sources/**"]
 )

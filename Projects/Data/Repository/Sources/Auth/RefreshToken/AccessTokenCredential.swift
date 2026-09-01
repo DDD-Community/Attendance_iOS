@@ -5,8 +5,8 @@
 //  Created by DDD on 1/2/26.
 //
 
+import DDDCoreLogger
 import Foundation
-import LogMacro
 
 struct AccessTokenCredential: Sendable {
   let accessToken: String
@@ -34,7 +34,7 @@ struct AccessTokenCredential: Sendable {
     if let decodedExpiration = decodeExpiration(from: accessToken) {
       expiration = decodedExpiration
     } else {
-      #logDebug("⚠️ JWT decoding failed, using fallback expiration: 24 hours from now")
+      DDDLogger.debug("⚠️ JWT decoding failed, using fallback expiration: 24 hours from now", category: .auth)
       expiration = fallbackExpiration
     }
 
@@ -50,7 +50,7 @@ private extension AccessTokenCredential {
   static func decodeExpiration(from token: String) -> Date? {
     let components = token.components(separatedBy: ".")
     guard components.count == 3 else {
-      #logDebug("🚫 JWT decoding failed: Invalid JWT format (expected 3 parts, got \(components.count))")
+      DDDLogger.debug("🚫 JWT decoding failed: Invalid JWT format (expected 3 parts, got \(components.count))", category: .auth)
       return nil
     }
 
@@ -65,26 +65,24 @@ private extension AccessTokenCredential {
     }
 
     guard let data = Data(base64Encoded: base64) else {
-      #logDebug("🚫 JWT decoding failed: Base64 decoding failed")
+      DDDLogger.debug("🚫 JWT decoding failed: Base64 decoding failed", category: .auth)
       return nil
     }
 
     guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-      #logDebug("🚫 JWT decoding failed: JSON parsing failed")
+      DDDLogger.debug("🚫 JWT decoding failed: JSON parsing failed", category: .auth)
       return nil
     }
 
     guard let exp = json["exp"] as? TimeInterval else {
-      #logDebug("🚫 JWT decoding failed: 'exp' claim not found or invalid type")
-      #logDebug("🔍 Available keys in JWT payload: \(json.keys.joined(separator: ", "))")
+      DDDLogger.debug("🚫 JWT decoding failed: 'exp' claim not found or invalid type", category: .auth)
+      DDDLogger.debug("🔍 Available keys in JWT payload: \(json.keys.joined(separator: ", "))", category: .auth)
       return nil
     }
 
     let expirationDate = Date(timeIntervalSince1970: exp)
-    // #logDebug
-      #logDebug("✅ JWT expiration decoded successfully: \(expirationDate)")
-    // #logDebug
-      #logDebug("🕐 Time until expiration: \(expirationDate.timeIntervalSinceNow / 3600) hours")
+      DDDLogger.debug("✅ JWT expiration decoded successfully: \(expirationDate)", category: .auth)
+      DDDLogger.debug("🕐 Time until expiration: \(expirationDate.timeIntervalSinceNow / 3600) hours", category: .auth)
 
     return expirationDate
   }

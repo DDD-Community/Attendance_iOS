@@ -6,19 +6,17 @@
 //
 
 import Foundation
+
+import Dependencies
 import Entity
-import WeaveDI
 
 public protocol GoogleOAuthInterface: Sendable {
   func signIn() async throws -> GoogleOAuthPayload
 }
 
-public struct GoogleOAuthRepositoryDependencyKey: DependencyKey {
-  public static var liveValue:  GoogleOAuthInterface {
-    UnifiedDI.resolve(GoogleOAuthInterface.self) ?? MockGoogleOAuthRepository()
-  }
+public enum GoogleOAuthRepositoryDependencyKey: TestDependencyKey {
   public static var previewValue:  GoogleOAuthInterface {
-    UnifiedDI.resolve(GoogleOAuthInterface.self) ?? MockGoogleOAuthRepository()
+    MockGoogleOAuthRepository()
   }
   public static var testValue:  GoogleOAuthInterface = MockGoogleOAuthRepository()
 }

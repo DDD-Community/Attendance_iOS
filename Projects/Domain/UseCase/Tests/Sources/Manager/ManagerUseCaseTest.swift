@@ -33,7 +33,7 @@ struct ManagerUseCaseTest {
 
         // When: 토큰 저장 실행
         let result = await withDependencies {
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
+            $0.keychainManager = mockKeychainManager
         } operation: {
             let manager: KeychainManaging = mockKeychainManager
             manager.save(accessToken: accessToken, refreshToken: refreshToken)
@@ -55,7 +55,7 @@ struct ManagerUseCaseTest {
 
         // When: 개별 토큰 저장 실행
         await withDependencies {
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
+            $0.keychainManager = mockKeychainManager
         } operation: {
             let manager: KeychainManaging = mockKeychainManager
             manager.saveAccessToken(accessToken)
@@ -78,7 +78,7 @@ struct ManagerUseCaseTest {
 
         // When: 토큰 조회 실행
         let result = await withDependencies {
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
+            $0.keychainManager = mockKeychainManager
         } operation: {
             let manager: KeychainManaging = mockKeychainManager
             return (manager.accessToken(), manager.refreshToken())
@@ -98,7 +98,7 @@ struct ManagerUseCaseTest {
 
         // When: 토큰 조회 실행
         let result = await withDependencies {
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
+            $0.keychainManager = mockKeychainManager
         } operation: {
             let manager: KeychainManaging = mockKeychainManager
             return (manager.accessToken(), manager.refreshToken())
@@ -118,7 +118,7 @@ struct ManagerUseCaseTest {
 
         // When: 토큰 삭제 실행
         await withDependencies {
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
+            $0.keychainManager = mockKeychainManager
         } operation: {
             let manager: KeychainManaging = mockKeychainManager
             manager.clear()
@@ -137,7 +137,7 @@ struct ManagerUseCaseTest {
 
         // When: 빈 토큰 저장 실행
         await withDependencies {
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
+            $0.keychainManager = mockKeychainManager
         } operation: {
             let manager: KeychainManaging = mockKeychainManager
             manager.save(accessToken: emptyAccessToken, refreshToken: emptyRefreshToken)
@@ -157,7 +157,7 @@ struct ManagerUseCaseTest {
 
         // When: 긴 토큰 저장 실행
         await withDependencies {
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
+            $0.keychainManager = mockKeychainManager
         } operation: {
             let manager: KeychainManaging = mockKeychainManager
             manager.save(accessToken: longAccessToken, refreshToken: longRefreshToken)
@@ -177,7 +177,7 @@ struct ManagerUseCaseTest {
 
         // When: 특수 문자 토큰 저장 실행
         await withDependencies {
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
+            $0.keychainManager = mockKeychainManager
         } operation: {
             let manager: KeychainManaging = mockKeychainManager
             manager.save(accessToken: specialAccessToken, refreshToken: specialRefreshToken)
@@ -201,7 +201,7 @@ struct ManagerUseCaseTest {
 
         // When: 토큰 업데이트 실행
         await withDependencies {
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
+            $0.keychainManager = mockKeychainManager
         } operation: {
             let manager: KeychainManaging = mockKeychainManager
             manager.save(accessToken: newAccessToken, refreshToken: newRefreshToken)
@@ -221,7 +221,7 @@ struct ManagerUseCaseTest {
         // When: Access Token만 업데이트
         let newAccessToken = "updated_access_only"
         await withDependencies {
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
+            $0.keychainManager = mockKeychainManager
         } operation: {
             let manager: KeychainManaging = mockKeychainManager
             manager.saveAccessToken(newAccessToken)
@@ -241,7 +241,7 @@ struct ManagerUseCaseTest {
 
         // When: 각각에 다른 토큰 저장
         await withDependencies {
-            $0[UseCase.KeychainManagerDependency.self] = mockKeychainManager
+            $0.keychainManager = mockKeychainManager
         } operation: {
             manager1.save(accessToken: "manager1_access", refreshToken: "manager1_refresh")
             manager2.save(accessToken: "manager2_access", refreshToken: "manager2_refresh")
