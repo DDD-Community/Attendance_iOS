@@ -2,7 +2,6 @@
 
 set -uo pipefail
 
-readonly WORKSPACE_PATH="${WORKSPACE_PATH:-DDDAttendance.xcworkspace}"
 readonly APP_SCHEME="${APP_SCHEME:-DDDAttendance}"
 readonly CONFIGURATION="${CONFIGURATION:-Stage}"
 readonly SIMULATOR_DESTINATION="${SIMULATOR_DESTINATION:?SIMULATOR_DESTINATION is required}"
@@ -54,14 +53,15 @@ for scheme in "${test_schemes[@]}"; do
     "$result_bundle"
 
   echo "▶︎ $scheme 테스트 시작"
-  if xcodebuild test \
-    -quiet \
-    -workspace "$WORKSPACE_PATH" \
-    -scheme "$scheme" \
-    -configuration "$CONFIGURATION" \
+  if mise exec -- tuist test "$scheme" \
+    --configuration "$CONFIGURATION" \
+    --no-selective-testing \
+    --inspect-mode remote \
+    --result-bundle-path "$result_bundle" \
+    --path "$PWD" \
+    -- \
     -destination "$SIMULATOR_DESTINATION" \
     -derivedDataPath "$derived_data" \
-    -resultBundlePath "$result_bundle" \
     -enableCodeCoverage YES \
     -retry-tests-on-failure \
     -test-iterations 3 \

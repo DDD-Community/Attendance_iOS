@@ -112,7 +112,8 @@ jobs:
         run: |
           # Xcode 26.3에서 host-less 모듈 테스트가 앱의 Sharing.framework와 같은
           # Products 디렉터리를 공유하면 XCTest가 시작 전에 충돌한다.
-          # 모듈별 DerivedData에서 실행한 뒤 xcresult를 합쳐 Tuist Test Insights에 한 번 업로드한다.
+          # 각 모듈을 tuist test로 실행해 Test Insights와 최적화 기준을 저장하고,
+          # 분리된 xcresult를 합쳐 전체 커버리지 Run도 한 번 업로드한다.
           ./Scripts/run-isolated-module-tests.sh
 
       - name: Upload test results
