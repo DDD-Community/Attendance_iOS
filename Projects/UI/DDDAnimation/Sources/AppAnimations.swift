@@ -1,6 +1,6 @@
 //
 //  AppAnimations.swift
-//  DDDDesignKit
+//  DDDAnimation
 //
 //  Created by DDD on 1/15/26.
 //

@@ -15,26 +15,14 @@ let project = Project.makeAppModule(
   product: .app,
   settings: .appMainSetting,
   scripts: [],
+  // App 은 조립 레이어 하나만 본다. 피처·Repository·UseCase 는
+  // FeatureAssembly 가 묶어서 @_exported 로 다시 내보낸다.
   dependencies: [
-    .core(.logger),
-    .core(.coreUtility),
-    .ui(.sharedUI),
-    .featureAssembly,
-    .data(.repository),
-    .domain(.domainInterface),
-    .domain(.useCase),
-
-    // 조립 레이어 — Navigation 의 Coordinator 들이 각 피처 화면을 붙인다.
-    .feature(.auth),
-    .feature(.splash),
-    .feature(.onBoarding),
-    .feature(.management),
-    .feature(.member),
-    .feature(.profile),
-    .feature(.web)
+    .featureAssembly
   ],
   sources: ["Sources/**"],
   resources: ["Resources/**"],
   infoPlist: .appInfoPlist,
-  entitlements: .file(path: "../../Entitlements/DDDAttendance.entitlements")
+  entitlements: .file(path: "../../Entitlements/DDDAttendance.entitlements"),
+  hasTests: true
 )

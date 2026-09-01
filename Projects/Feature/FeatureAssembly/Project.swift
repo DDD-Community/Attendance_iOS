@@ -16,12 +16,10 @@ let project = Project.makeModule(
     .feature(.onBoarding),
     .feature(.profile),
     .feature(.web),
+    .feature(.sharedUI),
 
-    // 조립 대상 구현 모듈 — 인터페이스에 liveValue 를 붙이기 위해 여기서만 구현을 본다.
-    .service,
-    .data(.repository),
-    .domain(.useCase),
-    .domain(.domainInterface)
+    // 구현 등록은 DataAssembly 가 끝내 놓았다. 여기서는 그걸 앱까지 실어 나르기만 한다.
+    .dataAssembly
   ],
   sources: ["Sources/**"]
 )

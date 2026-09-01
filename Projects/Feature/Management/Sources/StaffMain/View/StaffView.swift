@@ -12,7 +12,6 @@ import DDDDesignKit
 import Model
 
 import ComposableArchitecture
-import SDWebImageSwiftUI
 
 public struct StaffView: View {
   @Bindable var store: StoreOf<Staff>

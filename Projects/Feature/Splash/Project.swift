@@ -14,8 +14,9 @@ let project = Project.makeModule(
     .core(.coreUtility),
     .ui(.sharedUI),
     .core(.logger),
+    .ui(.animation),
     .ui(.designKit),
-    .domain(.useCase)
+    .domainAssembly
   ],
   sources: ["Sources/**"],
   hasTests: true

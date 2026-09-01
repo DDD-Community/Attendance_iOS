@@ -1,19 +1,24 @@
-import DependencyPackagePlugin
+//
+//  Project.swift
+//  DomainAssembly
+//
+//  Created by DDD on 9/1/26.
+//
+
 import DependencyPlugin
 import Foundation
 import ProjectDescription
 import ProjectTemplatePlugin
 
 let project = Project.makeModule(
-  name: "DDDSharedUI",
-  bundleId: .appBundleID(name: ".DDDSharedUI"),
+  name: "DomainAssembly",
+  bundleId: .appBundleID(name: ".DomainAssembly"),
   product: .staticFramework,
   settings: .moduleSettings,
   dependencies: [
-    .ui(.animation),
-    .ui(.designKit),
-    .core(.coreUI),
-    .core(.coreUtility)
+    .domain(.entity),
+    .domain(.domainInterface),
+    .domain(.useCase)
   ],
   sources: ["Sources/**"]
 )

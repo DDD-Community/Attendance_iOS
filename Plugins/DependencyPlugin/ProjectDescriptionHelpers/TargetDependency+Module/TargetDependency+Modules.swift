@@ -54,6 +54,12 @@ public extension TargetDependency {
     return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
 
+  /// Model·Repository 를 묶고 DomainInterface 에 구현을 바인딩하는 조립 모듈.
+  /// 구현 등록이 필요한 쪽(FeatureAssembly/App)만 의존한다.
+  static var dataAssembly: Self {
+    return .data(.assembly)
+  }
+
   static func service(_ module: ServiceModule, _ target: ModuleTarget = .implementation) -> Self {
     return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
@@ -64,6 +70,12 @@ public extension TargetDependency {
 
   static func domain(_ module: DomainModule, _ target: ModuleTarget = .implementation) -> Self {
     return .moduleDependency(name: module.rawValue, path: module.path, target: target)
+  }
+
+  /// Entity·DomainInterface·UseCase 를 재수출하는 조립 모듈.
+  /// 피처는 도메인 개별 모듈이 아니라 이 문 하나만 본다.
+  static var domainAssembly: Self {
+    return .domain(.assembly)
   }
 
   static func ui(_ module: UIModule, _ target: ModuleTarget = .implementation) -> Self {

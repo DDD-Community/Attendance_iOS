@@ -1,6 +1,6 @@
 //
-//  AttendanceDTO+.swift
-//  DDDSharedUI
+//  AttendanceStatus+Color.swift
+//  FeatureSharedUI
 //
 //  Created by DDD on 11/4/24.
 //

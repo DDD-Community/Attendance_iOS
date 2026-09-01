@@ -1,6 +1,6 @@
 //
 //  AttendanceCheckStatusCard.swift
-//  DDDSharedUI
+//  FeatureSharedUI
 //
 //  Created by DDD on 1/27/25.
 //

@@ -11,7 +11,7 @@ import DDDDesignKit
 import DDDSharedUI
 
 import ComposableArchitecture
-import SDWebImageSwiftUI
+import DDDAnimation
 
 @ViewAction(for: Splash.self)
 public struct SplashView: View {
@@ -32,9 +32,7 @@ public struct SplashView: View {
       VStack {
         Spacer()
         
-        AnimatedImage(name: "DDDLoding.gif", isAnimating: $isAnimating)
-          .resizable()
-          .scaledToFit()
+        DDDAnimationView(.loading, isAnimating: $isAnimating)
           .frame(width: 200, height: 200)
         
         Spacer()

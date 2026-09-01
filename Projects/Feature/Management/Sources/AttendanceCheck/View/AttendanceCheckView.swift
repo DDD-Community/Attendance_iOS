@@ -11,6 +11,7 @@ import SwiftUI
 import DDDDesignKit
 import Entity
 import DDDSharedUI
+import FeatureSharedUI
 
 import ComposableArchitecture
 

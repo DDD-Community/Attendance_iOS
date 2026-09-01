@@ -8,7 +8,7 @@
 import SwiftUI
 
 import SwiftUIX
-import SDWebImageSwiftUI
+import DDDAnimation
 
 public struct LoadingView: View {
   @State private var isVisible = false
@@ -41,9 +41,7 @@ extension LoadingView {
     VStack {
       Spacer()
       
-      AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(isVisible))
-        .resizable()
-        .scaledToFit()
+      DDDAnimationView(.loading, isAnimating: .constant(isVisible))
         .frame(width: 200, height: 200)
       
       Spacer()

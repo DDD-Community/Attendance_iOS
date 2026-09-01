@@ -8,7 +8,6 @@
 import Dependencies
 import DomainInterface
 import Entity
-import Model
 
 public struct ScheduleUseCaseImpl: ScheduleInterface {
   @Dependency(\.scheduleRepository) var repository

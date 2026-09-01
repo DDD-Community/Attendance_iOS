@@ -10,6 +10,7 @@ import Foundation
 import ProjectDescription
 
 public enum FeatureModule: String, CaseIterable {
+  case sharedUI = "FeatureSharedUI"
   case splash = "Splash"
   case auth = "Auth"
   case management = "Management"
@@ -40,6 +41,7 @@ public enum CoreModule: String, CaseIterable {
 }
 
 public enum DataModule: String, CaseIterable {
+  case assembly = "DataAssembly"
   case model = "Model"
   case repository = "Repository"
 
@@ -61,6 +63,7 @@ public enum ServiceModule: String, CaseIterable {
 }
 
 public enum DomainModule: String, CaseIterable {
+  case assembly = "DomainAssembly"
   case useCase = "UseCase"
   case domainInterface = "DomainInterface"
   case entity = "Entity"
@@ -72,6 +75,7 @@ public enum DomainModule: String, CaseIterable {
 }
 
 public enum UIModule: String, CaseIterable {
+  case animation = "DDDAnimation"
   case designKit = "DDDDesignKit"
   case sharedUI = "DDDSharedUI"
 

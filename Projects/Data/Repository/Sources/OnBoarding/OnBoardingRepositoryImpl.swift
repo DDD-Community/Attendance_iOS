@@ -9,6 +9,7 @@ import Foundation
 
 import DDDNetworkInterface
 import DomainInterface
+import Model
 import Entity
 import APIEndpoint
 

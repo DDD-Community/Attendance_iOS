@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Model
 import Entity
 
 /// Auth Repository의 기본 구현체 (테스트/프리뷰용)

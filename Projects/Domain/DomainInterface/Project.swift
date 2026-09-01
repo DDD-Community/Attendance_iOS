@@ -12,11 +12,11 @@ let project = Project.makeModule(
   settings:  .moduleSettings,
   dependencies: [
 
-    .data(.model),
+    .domain(.entity),
     .SPM.dependencies,
     .SPM.composableArchitecture,
   ],
   sources: ["Sources/**"],
-  hasTests: false
+  hasTests: true
 
 )

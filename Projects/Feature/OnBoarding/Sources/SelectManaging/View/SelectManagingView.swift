@@ -10,7 +10,7 @@ import DDDCoreUI
 import SwiftUI
 import DDDDesignKit
 import ComposableArchitecture
-import SDWebImageSwiftUI
+import DDDAnimation
 
 @ViewAction(for: SelectManagingReducer.self)
 public struct SelectManagingView: View {
@@ -42,9 +42,7 @@ public struct SelectManagingView: View {
           VStack {
             Spacer()
 
-            AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(store.loading))
-              .resizable()
-              .scaledToFit()
+            DDDAnimationView(.loading, isAnimating: .constant(store.loading))
               .frame(width: 200, height: 200)
 
             Spacer()

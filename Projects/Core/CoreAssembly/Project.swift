@@ -16,6 +16,9 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings: .moduleSettings,
   dependencies: [
+    .core(.logger),
+    .core(.coreUI),
+    .core(.coreUtility),
     .core(.network, .implementation),
     .core(.storage, .implementation)
   ],

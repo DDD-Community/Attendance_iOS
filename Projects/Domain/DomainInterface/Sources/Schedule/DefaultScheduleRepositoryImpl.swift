@@ -6,7 +6,6 @@
 //
 
 import Entity
-import Model
 
 public final class DefaultScheduleRepositoryImpl: ScheduleInterface {
   public init() {}

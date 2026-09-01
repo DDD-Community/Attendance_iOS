@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-import Model
 import Entity
 
 final public class DefaultQRCodeRepositoryImpl: QRCodeInterface {
