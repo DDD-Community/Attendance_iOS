@@ -123,6 +123,7 @@ jobs:
           path: |
             TestResults.xcresult
             TuistTestRun.log
+            TestLogs
           if-no-files-found: ignore
           retention-days: 7
 

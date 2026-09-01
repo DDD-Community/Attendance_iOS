@@ -9,7 +9,9 @@ readonly SIMULATOR_DESTINATION="${SIMULATOR_DESTINATION:?SIMULATOR_DESTINATION i
 readonly CI_DERIVED_DATA="${CI_DERIVED_DATA:?CI_DERIVED_DATA is required}"
 readonly RESULTS_DIRECTORY="${RESULTS_DIRECTORY:-TestResults}"
 readonly MERGED_RESULT_BUNDLE="${MERGED_RESULT_BUNDLE:-TestResults.xcresult}"
-readonly COMPILATION_CACHE_ENABLED="${XCODE_COMPILATION_CACHE_ENABLED:-NO}"
+readonly LOGS_DIRECTORY="${LOGS_DIRECTORY:-TestLogs}"
+
+compilation_cache_enabled="${XCODE_COMPILATION_CACHE_ENABLED:-NO}"
 
 declare -a test_schemes=()
 declare -a result_bundles=()
@@ -31,13 +33,14 @@ if [[ ${#test_schemes[@]} -eq 0 ]]; then
   exit 1
 fi
 
-rm -rf "$RESULTS_DIRECTORY" "$MERGED_RESULT_BUNDLE"
-mkdir -p "$RESULTS_DIRECTORY" "$CI_DERIVED_DATA"
+rm -rf "$RESULTS_DIRECTORY" "$MERGED_RESULT_BUNDLE" "$LOGS_DIRECTORY"
+mkdir -p "$RESULTS_DIRECTORY" "$CI_DERIVED_DATA" "$LOGS_DIRECTORY"
 
 for scheme in "${test_schemes[@]}"; do
   safe_scheme="${scheme//[^[:alnum:]_-]/_}"
   derived_data="$CI_DERIVED_DATA/$safe_scheme"
   result_bundle="$RESULTS_DIRECTORY/$safe_scheme.xcresult"
+  build_log="$LOGS_DIRECTORY/$safe_scheme.log"
 
   # Xcode 26.3은 host-less 테스트가 Sharing.framework가 있는 공용 Products를 보면
   # XCTest의 LocalStatusKit 클래스 탐색 중 충돌한다. 스킴별 Products를 격리한다.
@@ -63,11 +66,19 @@ for scheme in "${test_schemes[@]}"; do
     -retry-tests-on-failure \
     -test-iterations 3 \
     ONLY_ACTIVE_ARCH=YES \
-    COMPILATION_CACHE_ENABLE_CACHING="$COMPILATION_CACHE_ENABLED"; then
+    COMPILATION_CACHE_ENABLE_CACHING="$compilation_cache_enabled" 2>&1 | tee "$build_log"; then
     echo "✓ $scheme 테스트 성공"
   else
     echo "✗ $scheme 테스트 실패"
     failed_schemes+=("$scheme")
+  fi
+
+  # Tuist 원격 CAS가 5xx를 반환하면 Xcode는 소스 컴파일로 복구하지만 같은 경고를
+  # 다음 타깃에서도 반복한다. 해당 실행의 남은 모듈만 캐시를 꺼 불필요한 재시도를 막는다.
+  if [[ "$compilation_cache_enabled" == "YES" ]] && \
+    grep -Eq 'CAS error:.*Tuist response of 5[0-9]{2}' "$build_log"; then
+    compilation_cache_enabled="NO"
+    echo "Tuist CAS 서버 오류를 감지해 남은 모듈은 compilation cache 없이 실행합니다."
   fi
 
   if [[ -d "$result_bundle" ]]; then
