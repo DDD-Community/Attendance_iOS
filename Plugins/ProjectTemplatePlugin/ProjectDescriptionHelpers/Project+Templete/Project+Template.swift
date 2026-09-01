@@ -59,7 +59,7 @@ public extension Project {
         bundleId: "\(bundleId).\(name)Tests",
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
-        sources: ["Tests/Sources/**"],
+        buildableFolders: ["Tests"],
         dependencies: [.target(name: name)],
         settings: suppressWarningsSettings
       )
@@ -122,7 +122,8 @@ public extension Project {
     schemes: [ProjectDescription.Scheme] = [],
     hasTests: Bool = false,
     hasInterface: Bool = false,
-    interfaceDependencies: [ProjectDescription.TargetDependency] = []
+    interfaceDependencies: [ProjectDescription.TargetDependency] = [],
+    hasTesting: Bool = false
   ) -> Project {
     // Interface 타깃은 Interface/ 폴더가 실제로 있을 때만 만든다(buildableFolders 는 폴더가 없으면 generate 실패).
     let interfaceTarget: Target? = hasInterface ? .target(
@@ -154,6 +155,22 @@ public extension Project {
 
     var targets: [Target] = interfaceTarget.map { [$0, appTarget] } ?? [appTarget]
 
+    // Testing: Interface 를 구현한 목/더블. 구현이 아니라 Interface 에만 의존해야
+    // 다른 모듈 테스트가 구현을 끌고 오지 않고 재사용할 수 있다.
+    if hasTesting {
+      targets.append(.target(
+        name: "\(name)Testing",
+        destinations: destinations,
+        product: product,
+        bundleId: "\(bundleId)Testing",
+        deploymentTargets: deploymentTarget,
+        infoPlist: .default,
+        buildableFolders: ["Testing"],
+        dependencies: hasInterface ? [.target(name: "\(name)Interface")] : [.target(name: name)],
+        settings: suppressWarningsSettings
+      ))
+    }
+
     if hasTests {
       let appTestTarget: Target = .target(
         name: "\(name)Tests",
@@ -162,8 +179,9 @@ public extension Project {
         bundleId: "\(bundleId).\(name)Tests",
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
-        sources: ["Tests/Sources/**"],
-        dependencies: [.target(name: name)],
+        buildableFolders: ["Tests"],
+        // Testing 이 있으면 테스트가 그 목을 그대로 쓴다.
+        dependencies: [.target(name: name)] + (hasTesting ? [.target(name: "\(name)Testing")] : []),
         settings: suppressWarningsSettings
       )
       targets.append(appTestTarget)
