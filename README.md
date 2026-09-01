@@ -229,11 +229,11 @@ Network/Service → Data (API 통신)
 - **[WeaveDI](https://github.com/Roy-wonji/WeaveDI.git)** 3.4.0 ⭐️ - 의존성 주입 컨테이너 (커스텀 포크)
 
 #### 🔐 인증 & 보안
-- **[GoogleSignIn-iOS](https://github.com/google/GoogleSignIn-iOS)** 9.0.0 - Google OAuth 2.0 인증
-- **[AppAuth-iOS](https://github.com/openid/AppAuth-iOS.git)** 2.0.0 - OAuth 2.0 및 OpenID Connect 클라이언트
+- **[GoogleSignIn-iOS](https://github.com/google/GoogleSignIn-iOS)** 9.2.0 - Google OAuth 2.0 인증
+- **[AppAuth-iOS](https://github.com/openid/AppAuth-iOS.git)** 2.1.0 - OAuth 2.0 및 OpenID Connect 클라이언트
 
 #### 🌐 네트워킹
-- **[AsyncMoya](https://github.com/Roy-wonji/AsyncMoya)** 1.1.8 ⭐️ - async/await 기반 HTTP 클라이언트 (커스텀)
+- **DDDNetwork** - Alamofire 기반 요청·인증·토큰 재발급을 제공하는 자체 네트워크 모듈
 
 #### 🎨 UI & UX
 - **[SwiftUIX](https://github.com/SwiftUIX/SwiftUIX.git)** 0.2.3 - SwiftUI 확장 컴포넌트
