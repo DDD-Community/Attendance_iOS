@@ -51,17 +51,24 @@ jobs:
           mise install tuist
           bundle install
 
+      # CI 잡마다 캐시 데몬과 소켓을 빌드 전에 보장한다.
+      # 이게 없으면 컴파일마다 없는 소켓에 질의하다 타임아웃 나 빌드가 급격히 느려진다.
+      - name: Setup Tuist cache
+        run: tuist setup cache
+
       - name: Generate Xcode workspace
         run: |
           tuist install
           tuist generate --no-open
 
-      # self-hosted 러너는 실행 간 디스크가 유지되므로 이전 빌드 산출물을 비운다.
+      # CompilationCache.noindex 는 재사용하고, 용량이 큰 빌드 산출물만 비운다.
       - name: Prepare runner disk
         run: |
-          DERIVED_DATA="$HOME/ci-derived-data/DDDAttendance"
-          rm -rf "$DERIVED_DATA" TestResults.xcresult
-          mkdir -p "$DERIVED_DATA"
+          for DERIVED_DATA in "$HOME"/Library/Developer/Xcode/DerivedData/DDDAttendance-*; do
+            test -d "$DERIVED_DATA" || continue
+            rm -rf "$DERIVED_DATA/Build"
+          done
+          rm -rf TestResults TestResults.xcresult
 
       # 러너에 실제 존재하는 최신 iPhone 시뮬레이터를 고른다(이름 하드코딩은 Xcode 업데이트마다 깨진다).
       - name: Run tests
