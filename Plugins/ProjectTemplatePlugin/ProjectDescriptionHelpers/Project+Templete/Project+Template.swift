@@ -88,7 +88,17 @@ public extension Project {
       .scheme(
         name: schemeName,
         shared: true,
-        buildAction: .buildAction(targets: [.target(name)]),
+        buildAction: .buildAction(
+          targets: [.target(name)],
+          postActions: [
+            .executionAction(
+              title: "Inspect Build",
+              scriptText: "$HOME/.local/bin/mise x -C $SRCROOT -- tuist inspect build",
+              target: .target(name)
+            )
+          ],
+          runPostActionsOnFailure: true
+        ),
         runAction: .runAction(configuration: config),
         archiveAction: .archiveAction(configuration: config),
         profileAction: .profileAction(configuration: config),

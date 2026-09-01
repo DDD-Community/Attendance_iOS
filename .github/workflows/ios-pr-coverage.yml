@@ -22,6 +22,7 @@ jobs:
 
     env:
       TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
+      CI_DERIVED_DATA: ${{ runner.temp }}/DDDAttendance-${{ github.run_id }}
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
 
@@ -54,20 +55,21 @@ jobs:
       # CI 잡마다 캐시 데몬과 소켓을 빌드 전에 보장한다.
       # 이게 없으면 컴파일마다 없는 소켓에 질의하다 타임아웃 나 빌드가 급격히 느려진다.
       - name: Setup Tuist cache
-        run: tuist setup cache
+        run: mise exec -- tuist setup cache
+
+      # Build Insights가 빌드 중 CPU/메모리 같은 러너 메트릭도 함께 수집하게 한다.
+      - name: Setup Tuist insights
+        run: mise exec -- tuist setup insights
 
       - name: Generate Xcode workspace
         run: |
-          tuist install
-          tuist generate --no-open
+          mise exec -- tuist install
+          mise exec -- tuist generate --no-open
 
-      # CompilationCache.noindex 는 재사용하고, 용량이 큰 빌드 산출물만 비운다.
+      # 로컬 Xcode DerivedData와 분리된 이 CI 실행 전용 산출물만 비운다.
       - name: Prepare runner disk
         run: |
-          for DERIVED_DATA in "$HOME"/Library/Developer/Xcode/DerivedData/DDDAttendance-*; do
-            test -d "$DERIVED_DATA" || continue
-            rm -rf "$DERIVED_DATA/Build"
-          done
+          rm -rf "$CI_DERIVED_DATA"
           rm -rf TestResults TestResults.xcresult
 
       # 러너에 실제 존재하는 최신 iPhone 시뮬레이터를 고른다(이름 하드코딩은 Xcode 업데이트마다 깨진다).
@@ -79,9 +81,11 @@ jobs:
           # tuist test 는 요약만 내보내고, 워크스페이스 전체가 아니라
           # 우리 타깃의 테스트만 돌려 외부 SPM 패키지 테스트를 끌고 오지 않는다.
           rm -rf TestResults TestResults.xcresult
-          tuist test \
+          mise exec -- tuist test \
             --no-selective-testing \
-            --result-bundle-path TestResults
+            --result-bundle-path TestResults \
+            -- \
+            -derivedDataPath "$CI_DERIVED_DATA"
 
       - name: Upload test results
         if: always()
@@ -104,6 +108,10 @@ jobs:
             // 상대경로가 먹지 않는다. 워크스페이스 절대경로로 지정한다.
             const report = require(`${process.env.GITHUB_WORKSPACE}/Scripts/ios-test-report.js`)
             await report({ github, context, core })
+
+      - name: Clean CI DerivedData
+        if: always()
+        run: rm -rf "$CI_DERIVED_DATA"
 
       - name: Fail if tests failed
         if: steps.tests.outcome != 'success'
