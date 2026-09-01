@@ -16,6 +16,28 @@ declare -a test_schemes=()
 declare -a result_bundles=()
 declare -a failed_schemes=()
 
+run_module_tests() {
+  local scheme="$1"
+  local result_bundle="$2"
+  local derived_data="$3"
+
+  mise exec -- tuist test "$scheme" \
+    --configuration "$CONFIGURATION" \
+    --no-selective-testing \
+    --inspect-mode remote \
+    --result-bundle-path "$result_bundle" \
+    --path "$PWD" \
+    -- \
+    -destination "$SIMULATOR_DESTINATION" \
+    -derivedDataPath "$derived_data" \
+    -enableCodeCoverage YES \
+    -retry-tests-on-failure \
+    -test-iterations 3 \
+    -collect-test-diagnostics never \
+    ONLY_ACTIVE_ARCH=YES \
+    COMPILATION_CACHE_ENABLE_CACHING="$compilation_cache_enabled"
+}
+
 while IFS= read -r tests_directory; do
   project_directory="$(dirname "$tests_directory")"
   module_name="$(basename "$project_directory")"
@@ -53,21 +75,17 @@ for scheme in "${test_schemes[@]}"; do
     "$result_bundle"
 
   echo "▶︎ $scheme 테스트 시작"
-  if mise exec -- tuist test "$scheme" \
-    --configuration "$CONFIGURATION" \
-    --no-selective-testing \
-    --inspect-mode remote \
-    --result-bundle-path "$result_bundle" \
-    --path "$PWD" \
-    -- \
-    -destination "$SIMULATOR_DESTINATION" \
-    -derivedDataPath "$derived_data" \
-    -enableCodeCoverage YES \
-    -retry-tests-on-failure \
-    -test-iterations 3 \
-    ONLY_ACTIVE_ARCH=YES \
-    COMPILATION_CACHE_ENABLE_CACHING="$compilation_cache_enabled" 2>&1 | tee "$build_log"; then
+  if run_module_tests "$scheme" "$result_bundle" "$derived_data" 2>&1 | tee "$build_log"; then
     echo "✓ $scheme 테스트 성공"
+  elif grep -Fq 'unexpected service error: The Xcode build system has crashed' "$build_log"; then
+    echo "Xcode 빌드 시스템 충돌을 감지해 $scheme 테스트를 한 번 다시 실행합니다."
+    rm -rf "$derived_data/Build" "$derived_data/Index.noindex" "$derived_data/Logs" "$result_bundle"
+    if run_module_tests "$scheme" "$result_bundle" "$derived_data" 2>&1 | tee -a "$build_log"; then
+      echo "✓ $scheme 테스트 재시도 성공"
+    else
+      echo "✗ $scheme 테스트 재시도 실패"
+      failed_schemes+=("$scheme")
+    fi
   else
     echo "✗ $scheme 테스트 실패"
     failed_schemes+=("$scheme")
