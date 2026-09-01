@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct SelectMangerRoleDTO: Decodable {
+public struct SelectMangerRoleDTO: Decodable, Sendable {
   public let data: [SelectMangerRoleDTOResponse]
 
   public init(from decoder: Decoder) throws {
@@ -26,6 +26,6 @@ public struct SelectMangerRoleDTO: Decodable {
   }
 }
 
-public struct SelectMangerRoleDTOResponse: Decodable {
+public struct SelectMangerRoleDTOResponse: Decodable, Sendable {
     let key, description: String
 }

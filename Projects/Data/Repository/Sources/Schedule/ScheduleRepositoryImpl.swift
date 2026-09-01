@@ -7,24 +7,23 @@
 
 import Foundation
 
+import DDDNetworkInterface
 import DomainInterface
 import Entity
 import Model
-import Service
+import APIEndpoint
 
 import Dependencies
-
-@preconcurrency import AsyncMoya
 
 public final class ScheduleRepositoryImpl: ScheduleInterface, @unchecked Sendable {
   @Dependency(\.scheduleLocalDataSource) private var localDataSource
 
-  private let provider: MoyaProvider<ScheduleService>
+  private let client: any DDDNetworkClient
 
   public init(
-    provider: MoyaProvider<ScheduleService> = MoyaProvider<ScheduleService>.authorized
+    client: any DDDNetworkClient
   ) {
-    self.provider = provider
+    self.client = client
   }
 
   public func getCachedSchedule() async -> [Schedule]? {
@@ -44,7 +43,10 @@ public final class ScheduleRepositoryImpl: ScheduleInterface, @unchecked Sendabl
   }
 
   private func fetchAndCacheSchedule() async throws -> [Schedule] {
-    let dto: ScheduleDTO = try await provider.request(.getSchedule)
+    let dto = try await client.send(
+      ScheduleRequest.getSchedule,
+      as: ScheduleDTO.self
+    )
     let schedules = dto.toDomain().sortedByDate()
     try? await localDataSource.saveAll(schedules)
     return schedules

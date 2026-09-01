@@ -214,7 +214,7 @@ public final class MockAuthRepository: AuthInterface, @unchecked Sendable {
         }
     }
 
-    public func updateSessionCredential(with tokens: AuthTokens) {
+    public func updateSessionCredential(with tokens: AuthTokens) async {
         updateCredentialCallCount += 1
         lastUpdatedTokens = tokens
     }

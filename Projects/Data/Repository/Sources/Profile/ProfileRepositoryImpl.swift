@@ -11,25 +11,22 @@ import Foundation
 import ComposableArchitecture
 
 // 프로젝트 모듈
+import DDDNetworkInterface
 import DomainInterface
 import Entity
 import Model
-import Service
-
-// 외부 의존성
-import Moya
+import APIEndpoint
 
 public final class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable {
   @Shared(.appStorage("staffRole")) var staffRole: Staff?
   @Dependency(\.profileLocalDataSource) private var localDataSource
 
-  private let provider: MoyaProvider<ProfileService>
+  private let client: any DDDNetworkClient
 
   public init(
-    provider: MoyaProvider<ProfileService>? = nil
+    client: any DDDNetworkClient
   ) {
-    // 🚀 MoyaProviderPool 사용으로 메모리 최적화
-    self.provider = provider ?? MoyaProviderPool.shared.authorizedProvider(for: ProfileService.self)
+    self.client = client
   }
 
   // MARK: - 프로필 조회
@@ -65,12 +62,12 @@ public final class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable 
     if let role = staffRole {
       switch role {
       case .manager:
-        let dto: ProfileDTO = try await provider.request(.getAdminProfile)
+        let dto = try await client.send(ProfileService.getAdminProfile, as: ProfileDTO.self)
         let profile = dto.toDomain()
         try? await localDataSource.saveUser(profile)
         return profile
       case .member:
-        let dto: ProfileDTO = try await provider.request(.getUserProfile)
+        let dto = try await client.send(ProfileService.getUserProfile, as: ProfileDTO.self)
         let profile = dto.toDomain()
         try? await localDataSource.saveUser(profile)
         return profile
@@ -80,12 +77,12 @@ public final class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable 
     // 2. 역할 정보가 없으면, 유저 프로필을 먼저 시도 (가장 일반적인 케이스)
     // 실패 시 어드민 프로필 시도.
     do {
-      let dto: ProfileDTO = try await provider.request(.getUserProfile)
+      let dto = try await client.send(ProfileService.getUserProfile, as: ProfileDTO.self)
       let profile = dto.toDomain()
       try? await localDataSource.saveUser(profile)
       return profile
     } catch {
-      let dto: ProfileDTO = try await provider.request(.getAdminProfile)
+      let dto = try await client.send(ProfileService.getAdminProfile, as: ProfileDTO.self)
       let profile = dto.toDomain()
       try? await localDataSource.saveUser(profile)
       return profile
@@ -98,7 +95,7 @@ public final class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable 
     input: EditProfileInput
   ) async throws -> Entity.ProfileEntity {
     let body = input.toRequestDTO()
-    let dto: ProfileDTO = try await provider.request(.editProfile(body: body))
+    let dto = try await client.send(ProfileService.editProfile(body: body), as: ProfileDTO.self)
     let profile = dto.toDomain()
     try? await localDataSource.saveUser(profile)
     return profile

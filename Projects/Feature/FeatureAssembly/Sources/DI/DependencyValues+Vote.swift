@@ -9,8 +9,8 @@
 import Dependencies
 import DomainInterface
 
-import Repository
-
 extension VoteRepositoryDependency: DependencyKey {
-  public static var liveValue: VoteInterface { VoteRepositoryImpl() }
+  public static var liveValue: VoteInterface {
+    return RepositoryFactory.vote
+  }
 }

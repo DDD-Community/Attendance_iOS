@@ -20,7 +20,6 @@ public protocol SignUpUseCaseInterface: Sendable {
 public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
   @Dependency(\.signUpRepository) var repository
   @Dependency(\.authUseCase) var authUseCase
-  @Dependency(\.keychainManager) private var keychainManager
   @Dependency(\.profileUseCase) private var profileUseCase
 
   public init() {}
@@ -58,12 +57,8 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
     }
 
     switch loginResult {
-    case let .success(loginEntity):
-      keychainManager.save(
-        accessToken: loginEntity.token.accessToken,
-        refreshToken: loginEntity.token.refreshToken
-      )
-      authUseCase.updateSessionCredential(with: loginEntity.token)
+    case .success:
+      break
 
     case let .failure(error):
       DDDLogger.error("회원가입 후 토큰 재발급 실패(회원가입 자체는 성공): \(error)", category: .auth)

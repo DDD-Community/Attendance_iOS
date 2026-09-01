@@ -7,7 +7,7 @@
 
 import Foundation
 import Entity
-import Service
+import APIEndpoint
 
 // MARK: - SignUpUserInput → SignUpUserRequestDTO 변환
 extension SignUpUserInput {

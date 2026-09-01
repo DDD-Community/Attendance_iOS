@@ -5,35 +5,38 @@
 //  Created by DDD on 7/23/25.
 //
 
+import DDDNetworkInterface
 import DomainInterface
-import Model
 import Entity
+import Foundation
+import Model
 
-import Service
+import APIEndpoint
 
-@preconcurrency import AsyncMoya
-
-@Observable
 final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
-  private let provider: MoyaProvider<AttendanceService>
+  private let client: any DDDNetworkClient
 
   public init(
-    provider: MoyaProvider<AttendanceService>? = nil
+    client: any DDDNetworkClient
   ) {
-    // 🚀 MoyaProviderPool 사용으로 메모리 최적화
-    self.provider = provider ?? MoyaProviderPool.shared.authorizedProvider(for: AttendanceService.self)
-
+    self.client = client
   }
 
   // MARK: - 운영진  출석 데이터 api
   public func adminAttendanceCount(scheduleId: Int) async throws -> AttendanceCount {
-    let dto: AttendanceCountDTO  = try await provider.request(.adminAttendanceCount(scheduleId: scheduleId))
+    let dto = try await client.send(
+      AttendanceRequest.adminAttendanceCount(scheduleId: scheduleId),
+      as: AttendanceCountDTO.self
+    )
     return dto.toDomain()
   }
 
   // MARK: - 출석할 팀 조회
   public func fetchAttendanceTeams() async throws -> [SelectTeamEntity] {
-    let dto: SelectTeamsDTO = try await provider.request(.fetchTeams)
+    let dto = try await client.send(
+      AttendanceRequest.fetchTeams,
+      as: SelectTeamsDTO.self
+    )
     return dto.toDomain()
   }
 
@@ -43,13 +46,19 @@ final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
     teamId: Int
   ) async throws -> [Attendance] {
     let body = AttendanceRequestDTO(scheduleId: scheduleId, teamId: teamId)
-    let dto: AttendanceDTOModel = try await provider.request(.sessionAttendance(body: body))
+    let dto = try await client.send(
+      AttendanceRequest.sessionAttendance(body: body),
+      as: AttendanceDTOModel.self
+    )
     return dto.toDomain()
   }
 
   // MARK: - 출석 status 조회
   public func fetchStatus() async throws -> [AttendanceStatus] {
-    let dto: AttendanceStatusDTO = try await provider.request(.status)
+    let dto = try await client.send(
+      AttendanceRequest.status,
+      as: AttendanceStatusDTO.self
+    )
     return dto.toDomain()
   }
 
@@ -63,7 +72,7 @@ final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
       userId: input.userId,
       scheduleId: "\(input.scheduleId)"
     )
-    let response = try await provider.requestResponse(.editAttendance(body: request))
+    let response = try await client.sendResponse(AttendanceRequest.editAttendance(body: request))
     let decoder = JSONDecoder()
 
     if (200...299).contains(response.statusCode) {

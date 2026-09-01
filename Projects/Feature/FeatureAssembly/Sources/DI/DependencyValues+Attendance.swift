@@ -9,16 +9,20 @@
 import Dependencies
 import DomainInterface
 
-import Repository
-
 extension AttendanceRepositoryDependency: DependencyKey {
-  public static var liveValue: AttendanceInterface { AttendanceRepositoryImpl() }
+  public static var liveValue: AttendanceInterface {
+    return RepositoryFactory.attendance
+  }
 }
 
 extension ScheduleRepositoryDependency: DependencyKey {
-  public static var liveValue: ScheduleInterface { ScheduleRepositoryImpl() }
+  public static var liveValue: ScheduleInterface {
+    return RepositoryFactory.schedule
+  }
 }
 
 extension QRCodeRepositoryDependency: DependencyKey {
-  public static var liveValue: QRCodeInterface { QRCodeRepositoryImpl() }
+  public static var liveValue: QRCodeInterface {
+    return RepositoryFactory.qrCode
+  }
 }

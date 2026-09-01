@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - [멤버] 피드백 템플릿 응답 (GET /votes/{id}/feedback/template)
 
-public struct FeedbackTemplateResponseDTO: Decodable {
+public struct FeedbackTemplateResponseDTO: Decodable, Sendable {
   public let templateVersion: Int?
   public let status: String?
   public let template: FeedbackTemplateDTO?

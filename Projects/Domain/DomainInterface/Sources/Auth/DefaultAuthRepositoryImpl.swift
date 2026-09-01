@@ -47,7 +47,7 @@ final public class DefaultAuthRepositoryImpl: AuthInterface {
     )
   }
 
-  public func updateSessionCredential(with tokens: AuthTokens) {
+  public func updateSessionCredential(with tokens: AuthTokens) async {
     // Mock 구현체에서는 아무것도 하지 않음 (테스트/프리뷰용)
   }
 }

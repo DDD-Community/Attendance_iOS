@@ -9,12 +9,14 @@
 import Dependencies
 import DomainInterface
 
-import Repository
-
 extension OnBoardingRepositoryDependency: DependencyKey {
-  public static var liveValue: OnBoardingInterface { OnBoardingRepositoryImpl() }
+  public static var liveValue: OnBoardingInterface {
+    return RepositoryFactory.onBoarding
+  }
 }
 
 extension SignUpRepositoryDependency: DependencyKey {
-  public static var liveValue: SignUpInterface { SignUpRepositoryImpl() }
+  public static var liveValue: SignUpInterface {
+    return RepositoryFactory.signUp
+  }
 }

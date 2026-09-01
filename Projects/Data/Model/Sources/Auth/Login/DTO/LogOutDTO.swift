@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct LogOutDTO: Decodable {
+public struct LogOutDTO: Decodable, Sendable {
   public let code: String?
   public let message: String?
   public let detail: String?

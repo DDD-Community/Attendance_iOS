@@ -9,6 +9,6 @@ import Foundation
 
 // MARK: - [운영진] 투표 생성 응답 (POST /votes)
 
-public struct CreateVoteResponseDTO: Decodable {
+public struct CreateVoteResponseDTO: Decodable, Sendable {
   public let voteId: Int?
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ProfileDTO: Decodable {
+public struct ProfileDTO: Decodable, Sendable {
   let userID: Int
   let name: String
   let email: String?

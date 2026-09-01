@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Member: Codable, Hashable, Equatable {
+public struct Member: Codable, Sendable, Hashable, Equatable {
   /// Firebase Auth의 uid
   public var uid: String
   public var memberid: String

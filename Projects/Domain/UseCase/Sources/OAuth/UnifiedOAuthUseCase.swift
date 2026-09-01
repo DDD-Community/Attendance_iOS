@@ -18,7 +18,6 @@ public struct UnifiedOAuthUseCase {
   @Dependency(\.authRepository) private var authRepository: AuthInterface
   @Dependency(\.appleOAuthProvider) private var appleProvider: AppleOAuthProviderInterface
   @Dependency(\.googleOAuthProvider) private var googleProvider: GoogleOAuthProviderInterface
-  @Dependency(\.keychainManager) private var keychainManager: KeychainManaging
   @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   @Shared(.appStorage("staffRole")) var staffRole: Staff?
   @Shared(.appStorage("appleUserName")) var savedAppleUserName: String?
@@ -85,14 +84,6 @@ public extension UnifiedOAuthUseCase {
       token: payload.authorizationCode ?? ""
     )
 
-    keychainManager.save(
-      accessToken: loginEntity.token.accessToken,
-      refreshToken: loginEntity.token.refreshToken
-    )
-
-    // AuthSessionManager의 credential도 업데이트
-    await authRepository.updateSessionCredential(with: loginEntity.token)
-
     // UserSession에 oauthRefreshToken 설정 (Apple 로그인의 경우)
     self.$userSession.withLock {
       $0.oauthRefreshToken = loginEntity.token.oauthRefreshToken
@@ -121,14 +112,6 @@ public extension UnifiedOAuthUseCase {
       provider: .google,
       token: processedToken
     )
-    keychainManager.save(
-      accessToken: loginEntity.token.accessToken,
-      refreshToken: loginEntity.token.refreshToken
-    )
-
-    // AuthSessionManager의 credential도 업데이트
-    await authRepository.updateSessionCredential(with: loginEntity.token)
-
     if loginEntity.isNewUser == true {
 
     } else {

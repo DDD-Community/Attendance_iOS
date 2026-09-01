@@ -9,29 +9,26 @@
 import Dependencies
 import DomainInterface
 
-import Repository
-import UseCase
-
 extension AuthRepositoryDependency: DependencyKey {
-  public static var liveValue: AuthInterface { AuthRepositoryImpl() }
+  public static var liveValue: AuthInterface {
+    return RepositoryFactory.auth
+  }
 }
 
 extension GoogleOAuthRepositoryDependencyKey: DependencyKey {
-  public static var liveValue: GoogleOAuthInterface { GoogleOAuthRepositoryImpl() }
+  public static var liveValue: GoogleOAuthInterface {
+    return RepositoryFactory.googleOAuth
+  }
 }
 
 extension AppleOAuthRepositoryDependencyKey: DependencyKey {
-  public static var liveValue: AppleOAuthInterface { AppleOAuthRepositoryImpl() }
+  public static var liveValue: AppleOAuthInterface {
+    return RepositoryFactory.appleOAuth
+  }
 }
 
 extension AppleAuthRequestDependency: DependencyKey {
-  public static var liveValue: AppleAuthRequestInterface { AppleLoginRepositoryImpl() }
-}
-
-extension AppleOAuthProviderDependency: DependencyKey {
-  public static var liveValue: AppleOAuthProviderInterface { AppleOAuthProvider() }
-}
-
-extension GoogleOAuthProviderDependency: DependencyKey {
-  public static var liveValue: GoogleOAuthProviderInterface { GoogleOAuthProvider() }
+  public static var liveValue: AppleAuthRequestInterface {
+    return RepositoryFactory.appleAuthRequest
+  }
 }

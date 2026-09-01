@@ -18,10 +18,10 @@ let project = Project.makeModule(
     .feature(.web),
 
     // 조립 대상 구현 모듈 — 인터페이스에 liveValue 를 붙이기 위해 여기서만 구현을 본다.
+    .service,
     .data(.repository),
     .domain(.useCase),
-    .domain(.domainInterface),
-    .network(.foundations)
+    .domain(.domainInterface)
   ],
   sources: ["Sources/**"]
 )

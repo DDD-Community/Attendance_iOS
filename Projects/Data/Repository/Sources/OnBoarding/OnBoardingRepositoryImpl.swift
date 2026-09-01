@@ -7,33 +7,38 @@
 
 import Foundation
 
+import DDDNetworkInterface
 import DomainInterface
-import Service
 import Entity
-
-@preconcurrency  import AsyncMoya
+import APIEndpoint
 
 final public class OnBoardingRepositoryImpl: OnBoardingInterface {
 
-  private let provider: MoyaProvider<OnBoardingService>
+  private let client: any DDDNetworkClient
 
   public init(
-    provider: MoyaProvider<OnBoardingService> = MoyaProvider<OnBoardingService>.default
+    client: any DDDNetworkClient
   ) {
-    self.provider = provider
+    self.client = client
   }
 
   // MARK: - 코드 검증
   public func verifyCode(
     code: String
   ) async throws -> VerifyCodeEntity {
-    let dto: VerifyCodeDTO = try await provider.request(.verifyCode(code: code))
+    let dto = try await client.send(
+      OnBoardingService.verifyCode(code: code),
+      as: VerifyCodeDTO.self
+    )
     return dto.toDomain()
   }
 
   // MARK: - 직군 선택
   public func fetchJobs() async throws -> [Entity.SelectJob] {
-    let dtoArray: SelectJobsDTO = try await provider.request(.jobs)
+    let dtoArray = try await client.send(
+      OnBoardingService.jobs,
+      as: SelectJobsDTO.self
+    )
     return dtoArray.data.toDomain()
   }
 
@@ -41,13 +46,19 @@ final public class OnBoardingRepositoryImpl: OnBoardingInterface {
   public func fetchTeams(
     generationId: Int
   ) async throws -> [SelectTeamEntity] {
-    let dto : SelectTeamsDTO = try await provider.request(.teams(generationId: generationId))
+    let dto = try await client.send(
+      OnBoardingService.teams(generationId: generationId),
+      as: SelectTeamsDTO.self
+    )
     return dto.data.toDomain()
   }
 
   // MARK: - 매니저 역활 선택
   public func fetchManaging() async throws -> [SelectManaging] {
-    let dto: SelectMangerRoleDTO = try await provider.request(.mangerRole)
+    let dto = try await client.send(
+      OnBoardingService.mangerRole,
+      as: SelectMangerRoleDTO.self
+    )
     return dto.data.toDomain()
   }
 

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct FeedbackResultQuestionDTO: Decodable {
+public struct FeedbackResultQuestionDTO: Decodable, Sendable {
   public let questionId: String?
   public let title: String?
   public let type: String?

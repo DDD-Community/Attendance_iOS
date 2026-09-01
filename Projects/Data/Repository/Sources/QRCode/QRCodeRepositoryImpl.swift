@@ -9,28 +9,29 @@ import SwiftUI
 import UIKit
 import CoreImage.CIFilterBuiltins
 
+import DDDNetworkInterface
 import DomainInterface
 import Model
-import Service
+import APIEndpoint
 import Entity
 
-@preconcurrency import AsyncMoya
-
-@Observable
 final public class QRCodeRepositoryImpl: QRCodeInterface {
   
-  private let provider: MoyaProvider<QRService>
+  private let client: any DDDNetworkClient
   
   public init(
-    provider: MoyaProvider<QRService> = MoyaProvider<QRService>.authorized
+    client: any DDDNetworkClient
   ) {
-    self.provider = provider
+    self.client = client
   }
   
   // MARK: - QRCode String 생성
   
   public func createQRCode(userID: Int) async throws -> String {
-    let response: CreateQRCodeResponseDTO = try await provider.request(.createQRCode(userID: userID))
+    let response = try await client.send(
+      QRService.createQRCode(userID: userID),
+      as: CreateQRCodeResponseDTO.self
+    )
     return response.qrBase64
   }
   
@@ -45,7 +46,7 @@ final public class QRCodeRepositoryImpl: QRCodeInterface {
   }
   
   public func qrValidateCheck(from code: String) async throws -> Entity.QRValidateEntity {
-    let response = try await provider.requestResponse(.qrAttendanceCheck(qrCode: code))
+    let response = try await client.sendResponse(QRService.qrAttendanceCheck(qrCode: code))
     let decoder = JSONDecoder()
     
     if (200...299).contains(response.statusCode) {

@@ -5,25 +5,25 @@
 //  Created by DDD on 6/11/26.
 //
 
+import DDDNetworkInterface
 import DomainInterface
 import Entity
+import Foundation
 import Model
 
-import Service
-
-@preconcurrency import AsyncMoya
+import APIEndpoint
 
 public final class VoteRepositoryImpl: VoteInterface, @unchecked Sendable {
-  private let provider: MoyaProvider<VoteService>
+  private let client: any DDDNetworkClient
 
   public init(
-    provider: MoyaProvider<VoteService>? = nil
+    client: any DDDNetworkClient
   ) {
-    self.provider = provider ?? MoyaProviderPool.shared.authorizedProvider(for: VoteService.self)
+    self.client = client
   }
 
   public func fetchVotes() async throws -> [Vote] {
-    let response = try await provider.requestResponse(.list)
+    let response = try await client.sendResponse(VoteRequest.list)
     try validate(response)
     return try decode([VoteListItemDTO].self, from: response.data).toDomain()
   }
@@ -31,7 +31,7 @@ public final class VoteRepositoryImpl: VoteInterface, @unchecked Sendable {
   public func fetchParticipation(
     voteId: Int
   ) async throws -> VoteParticipation {
-    let response = try await provider.requestResponse(.participation(voteId: voteId))
+    let response = try await client.sendResponse(VoteRequest.participation(voteId: voteId))
     try validate(response)
     return try decode(VoteParticipationDTO.self, from: response.data).toDomain()
   }
@@ -57,7 +57,7 @@ public final class VoteRepositoryImpl: VoteInterface, @unchecked Sendable {
   public func fetchNonResponders(
     voteId: Int
   ) async throws -> [NonParticipant] {
-    let response = try await provider.requestResponse(.nonResponders(voteId: voteId))
+    let response = try await client.sendResponse(VoteRequest.nonResponders(voteId: voteId))
     try validate(response)
     return try decode(NonRespondersDTO.self, from: response.data).toDomain()
   }
@@ -65,21 +65,21 @@ public final class VoteRepositoryImpl: VoteInterface, @unchecked Sendable {
   public func openVote(
     voteId: Int
   ) async throws {
-    let response = try await provider.requestResponse(.open(voteId: voteId))
+    let response = try await client.sendResponse(VoteRequest.open(voteId: voteId))
     try validate(response)
   }
 
   public func closeVote(
     voteId: Int
   ) async throws {
-    let response = try await provider.requestResponse(.close(voteId: voteId))
+    let response = try await client.sendResponse(VoteRequest.close(voteId: voteId))
     try validate(response)
   }
 
   public func createVote(
     input: CreateVoteInput
   ) async throws -> Int {
-    let response = try await provider.requestResponse(.create(body: input))
+    let response = try await client.sendResponse(VoteRequest.create(body: input))
     try validate(response)
     return try decode(CreateVoteResponseDTO.self, from: response.data).voteId ?? 0
   }
@@ -87,7 +87,7 @@ public final class VoteRepositoryImpl: VoteInterface, @unchecked Sendable {
   public func fetchTeamVoteResults(
     voteId: Int
   ) async throws -> TeamVoteResults {
-    let response = try await provider.requestResponse(.teamVoteResults(voteId: voteId))
+    let response = try await client.sendResponse(VoteRequest.teamVoteResults(voteId: voteId))
     try validate(response)
     return try decode(TeamVoteResultsDTO.self, from: response.data).toDomain()
   }
@@ -95,13 +95,13 @@ public final class VoteRepositoryImpl: VoteInterface, @unchecked Sendable {
   public func fetchFeedbackResults(
     voteId: Int
   ) async throws -> FeedbackResults {
-    let response = try await provider.requestResponse(.feedbackResults(voteId: voteId))
+    let response = try await client.sendResponse(VoteRequest.feedbackResults(voteId: voteId))
     try validate(response)
     return try decode(FeedbackResultsDTO.self, from: response.data).toDomain()
   }
 
   public func fetchActiveVote() async throws -> ActiveVote {
-    let response = try await provider.requestResponse(.active)
+    let response = try await client.sendResponse(VoteRequest.active)
     try validate(response)
     return try decode(ActiveVoteDTO.self, from: response.data).toDomain()
   }
@@ -109,7 +109,7 @@ public final class VoteRepositoryImpl: VoteInterface, @unchecked Sendable {
   public func fetchTeamVoteTemplate(
     voteId: Int
   ) async throws -> TeamVoteTemplateInfo {
-    let response = try await provider.requestResponse(.teamVoteTemplate(voteId: voteId))
+    let response = try await client.sendResponse(VoteRequest.teamVoteTemplate(voteId: voteId))
     try validate(response)
     return try decode(TeamVoteTemplateResponseDTO.self, from: response.data).toDomain()
   }
@@ -117,7 +117,7 @@ public final class VoteRepositoryImpl: VoteInterface, @unchecked Sendable {
   public func fetchFeedbackTemplate(
     voteId: Int
   ) async throws -> FeedbackTemplateInfo {
-    let response = try await provider.requestResponse(.feedbackTemplate(voteId: voteId))
+    let response = try await client.sendResponse(VoteRequest.feedbackTemplate(voteId: voteId))
     try validate(response)
     return try decode(FeedbackTemplateResponseDTO.self, from: response.data).toDomain()
   }
@@ -126,14 +126,14 @@ public final class VoteRepositoryImpl: VoteInterface, @unchecked Sendable {
     voteId: Int,
     submission: VoteSubmission
   ) async throws {
-    let response = try await provider.requestResponse(.submit(voteId: voteId, body: submission))
+    let response = try await client.sendResponse(VoteRequest.submit(voteId: voteId, body: submission))
     try validate(response)
   }
 
   public func fetchMyResponse(
     voteId: Int
   ) async throws -> MyVoteResponse {
-    let response = try await provider.requestResponse(.myResponse(voteId: voteId))
+    let response = try await client.sendResponse(VoteRequest.myResponse(voteId: voteId))
     try validate(response)
     return try decode(MyVoteResponseDTO.self, from: response.data).toDomain()
   }
@@ -145,7 +145,7 @@ private extension VoteRepositoryImpl {
     let message: String?
   }
 
-  func validate(_ response: Response) throws {
+  func validate(_ response: DDDHTTPResponse) throws {
     guard !(200 ..< 300).contains(response.statusCode) else { return }
     let body = try? JSONDecoder().decode(ErrorBody.self, from: response.data)
     throw VoteError.from(statusCode: response.statusCode, code: body?.code, message: body?.message)

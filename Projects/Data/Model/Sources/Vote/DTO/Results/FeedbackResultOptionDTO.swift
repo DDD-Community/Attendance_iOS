@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct FeedbackResultOptionDTO: Decodable {
+public struct FeedbackResultOptionDTO: Decodable, Sendable {
   public let optionId: String?
   public let label: String?
   public let count: Int?

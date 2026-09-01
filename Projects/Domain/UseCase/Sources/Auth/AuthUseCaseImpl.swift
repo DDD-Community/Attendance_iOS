@@ -14,7 +14,6 @@ import Foundation
 public struct AuthUseCaseImpl: AuthInterface {
   @Dependency(\.authRepository) var authRepository
   @Shared(.appStorage("staffRole")) var staffRole: Staff?
-  @Dependency(\.keychainManager) private var keychainManager: KeychainManaging
   @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
 
   public init() {}
@@ -28,11 +27,6 @@ public struct AuthUseCaseImpl: AuthInterface {
     $userSession.withLock {
       $0.oauthRefreshToken = authResult.token.oauthRefreshToken
     }
-    keychainManager.save(
-      accessToken: authResult.token.accessToken,
-      refreshToken: authResult.token.refreshToken
-    )
-
     return authResult
   }
 
@@ -43,18 +37,15 @@ public struct AuthUseCaseImpl: AuthInterface {
   public func logout() async throws -> AuthExitEntity {
     let logoutResult = try await authRepository.logout()
     $staffRole.withLock { $0 = nil }
-    self.keychainManager.clear()
     return logoutResult
   }
 
   public func withDraw(token: String) async throws -> WithdrawEntity {
-    let withDrawResult = try await authRepository.withDraw(token: token)
-    self.keychainManager.clear()
-    return withDrawResult
+    return try await authRepository.withDraw(token: token)
   }
 
-  public func updateSessionCredential(with tokens: AuthTokens) {
-    authRepository.updateSessionCredential(with: tokens)
+  public func updateSessionCredential(with tokens: AuthTokens) async {
+    await authRepository.updateSessionCredential(with: tokens)
   }
 }
 

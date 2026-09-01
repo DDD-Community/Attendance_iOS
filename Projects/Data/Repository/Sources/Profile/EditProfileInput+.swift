@@ -6,7 +6,7 @@
 //
 
 import Entity
-import Service
+import APIEndpoint
 // MARK: - DTO 변환 (SignUpUserInput 패턴과 동일)
 public extension EditProfileInput {
   /// EditProfileRequestDTO로 변환 (registerUser 패턴과 동일)
@@ -21,5 +21,4 @@ public extension EditProfileInput {
     )
   }
 }
-
 

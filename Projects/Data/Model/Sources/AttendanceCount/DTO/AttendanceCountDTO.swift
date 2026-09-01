@@ -7,6 +7,6 @@
 
 import Foundation
 
-public struct AttendanceCountDTO: Decodable {
+public struct AttendanceCountDTO: Decodable, Sendable {
     let totalAttended, totalLate, totalAbsent: Int
 }

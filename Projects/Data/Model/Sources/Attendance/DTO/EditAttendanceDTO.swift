@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct EditAttendanceDTO: Decodable {
+public struct EditAttendanceDTO: Decodable, Sendable {
   public let code: String?
   public let message: String?
   public let detail: String?

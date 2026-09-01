@@ -9,16 +9,20 @@
 import Dependencies
 import DomainInterface
 
-import Repository
-
 extension ProfileRepositoryDependency: DependencyKey {
-  public static var liveValue: ProfileInterface { ProfileRepositoryImpl() }
+  public static var liveValue: ProfileInterface {
+    return RepositoryFactory.profile
+  }
 }
 
 extension MyPageRepositoryDependency: DependencyKey {
-  public static var liveValue: any MyPageRepositoryInterface { MyPageRepositoryImpl() }
+  public static var liveValue: any MyPageRepositoryInterface {
+    return RepositoryFactory.myPage
+  }
 }
 
 extension AppUpdateRepositoryDependency: DependencyKey {
-  public static var liveValue: AppUpdateInterface { AppUpdateRepositoryImpl() }
+  public static var liveValue: AppUpdateInterface {
+    return RepositoryFactory.appUpdate
+  }
 }

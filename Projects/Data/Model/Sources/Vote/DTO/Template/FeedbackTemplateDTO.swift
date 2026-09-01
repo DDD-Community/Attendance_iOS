@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - [공통] 피드백 템플릿
 
-public struct FeedbackTemplateDTO: Codable {
+public struct FeedbackTemplateDTO: Codable, Sendable {
   public let title: String?
   public let description: String?
   public let questions: [FeedbackQuestionDTO]?

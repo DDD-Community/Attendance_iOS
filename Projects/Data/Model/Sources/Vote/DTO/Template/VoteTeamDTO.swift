@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - [멤버] 팀 투표 대상 팀
 
-public struct VoteTeamDTO: Decodable {
+public struct VoteTeamDTO: Decodable, Sendable {
   public let teamId: Int?
   public let name: String?
   public let serviceName: String?

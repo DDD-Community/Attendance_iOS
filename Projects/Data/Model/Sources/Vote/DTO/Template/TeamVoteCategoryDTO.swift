@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct TeamVoteCategoryDTO: Codable {
+public struct TeamVoteCategoryDTO: Codable, Sendable {
   public let id: String?
   public let order: Int?
   public let title: String?

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct WithdrawDTO: Decodable {
+public struct WithdrawDTO: Decodable, Sendable {
   public let code: String?
   public let message: String?
   public let detail: String?

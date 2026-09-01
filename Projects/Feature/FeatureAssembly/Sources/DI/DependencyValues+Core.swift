@@ -8,15 +8,10 @@
 
 import Dependencies
 import DomainInterface
-
-import Foundations
-import Repository
-import UseCase
+import ServiceAssembly
 
 extension KeychainManagerDependency: DependencyKey {
-  public static var liveValue: KeychainManaging { KeychainManager() }
-}
-
-extension TokenProviderKey: DependencyKey {
-  public static var liveValue: TokenProviding { KeychainTokenProvider() }
+  public static var liveValue: KeychainManaging {
+    return NetworkContainer.keychainManager
+  }
 }
