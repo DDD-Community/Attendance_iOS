@@ -1,2 +1,13 @@
 [tools]
 tuist = "4.206.0"
+
+# 의존성 그래프. 외부 SPM 패키지를 빼야 자사 모듈 구조가 읽힌다.
+# 실행: mise run graph
+[tasks.graph]
+description = "자사 모듈 의존성 그래프를 graph.png 로 갱신한다"
+run = "tuist graph --no-open --skip-external-dependencies --format png --output-path ."
+
+# 테스트 타깃까지 뺀 순수 프로덕션 의존성만 보고 싶을 때.
+[tasks."graph:prod"]
+description = "테스트 타깃을 제외한 의존성 그래프를 갱신한다"
+run = "tuist graph --no-open --skip-external-dependencies --skip-test-targets --format png --output-path ."
