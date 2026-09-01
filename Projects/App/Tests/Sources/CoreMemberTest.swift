@@ -11,7 +11,6 @@ import Foundation
 import Testing
 
 import ComposableArchitecture
-import KeychainAccess
 import APIEndpoint
 
 @testable import DDDAttendance
