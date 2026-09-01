@@ -69,6 +69,7 @@ public extension Project {
     return Project(
       name: name,
       options: .options(
+        automaticSchemesOptions: .enabled(codeCoverageEnabled: true),
         defaultKnownRegions: ["en", "ko"],
         developmentRegion: "ko"
       ),
@@ -170,6 +171,13 @@ public extension Project {
 
     return Project(
       name: name,
+      // tuist test 는 모듈별 자동 생성 스킴으로 도는데, 여기서 커버리지를 켜지 않으면
+      // 결과 번들에 커버리지가 담기지 않아 리포트가 비어 나온다.
+      options: .options(
+        automaticSchemesOptions: .enabled(codeCoverageEnabled: true),
+        defaultKnownRegions: ["en", "ko"],
+        developmentRegion: "ko"
+      ),
       packages: packages,
       settings: settings,
       targets: targets,
