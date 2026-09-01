@@ -19,7 +19,6 @@ let project = Project.makeAppModule(
   // Domain 계층이 Data 구현을 알지 않도록 라이브 구현 링크 책임을 여기에 둔다.
   dependencies: [
     .featureAssembly,
-    .dataAssembly
   ],
   sources: ["Sources/**"],
   resources: ["Resources/**"],
