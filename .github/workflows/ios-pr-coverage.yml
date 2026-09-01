@@ -16,6 +16,8 @@ jobs:
 
     permissions:
       contents: read
+      # PR 코멘트는 issues API 를 쓴다.
+      issues: write
       pull-requests: write
 
     env:
@@ -79,11 +81,20 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ github.run_id }}
-          path: |
-            TestResults.xcresult
-            coverage.json
+          path: TestResults.xcresult
           if-no-files-found: ignore
           retention-days: 7
+
+      - name: Report to PR
+        if: steps.tests.outcome != 'cancelled'
+        uses: actions/github-script@v7
+        env:
+          RESULT_BUNDLE_DIR: TestResults
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+        with:
+          script: |
+            const report = require('./scripts/ios-test-report.js')
+            await report({ github, context, core })
 
       - name: Fail if tests failed
         if: steps.tests.outcome != 'success'
