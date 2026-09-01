@@ -101,10 +101,10 @@ public actor MockAttendanceRepository: AttendanceInterface {
 
     // MARK: - AttendanceInterface Implementation
 
-    public func adminAttendanceCount(scheduleId: Int) async throws -> Entity.AttendanceCount {
+    public func adminAttendanceCount(scheduleId: Int) async throws(AttendanceError) -> Entity.AttendanceCount {
         adminCountCallCount += 1
 
-        try await Task.sleep(for: .milliseconds(10))
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .adminCountSuccess:
@@ -114,16 +114,16 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 absentCount: 3
             )
         case .networkError:
-            throw MockAttendanceError.networkError
+            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
         default:
             return Entity.AttendanceCount(attendanceCount: 0, lateCount: 0, absentCount: 0)
         }
     }
 
-    public func fetchAttendanceTeams() async throws -> [SelectTeamEntity] {
+    public func fetchAttendanceTeams() async throws(AttendanceError) -> [SelectTeamEntity] {
         teamsCallCount += 1
 
-        try await Task.sleep(for: .milliseconds(10))
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .teamsSuccess:
@@ -133,17 +133,17 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 SelectTeamEntity(teamId: 3, teams: .web1)
             ]
         case .networkError:
-            throw MockAttendanceError.networkError
+            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
         default:
             return []
         }
     }
 
-    public func sessionAttendance(scheduleId: Int, teamId: Int) async throws -> [Entity.Attendance] {
+    public func sessionAttendance(scheduleId: Int, teamId: Int) async throws(AttendanceError) -> [Entity.Attendance] {
         sessionAttendanceCallCount += 1
         lastSessionAttendanceParams = (scheduleId: scheduleId, teamId: teamId)
 
-        try await Task.sleep(for: .milliseconds(10))
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .sessionAttendanceSuccess:
@@ -155,29 +155,29 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 Entity.Attendance(id: 5, userID: "105", userName: "정엔지니어", userInfo: "iOS1팀/개발자", status: .absent)
             ]
         case .networkError:
-            throw MockAttendanceError.networkError
+            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
         default:
             return []
         }
     }
 
-    public func fetchStatus() async throws -> [AttendanceStatus] {
-        try await Task.sleep(for: .milliseconds(10))
+    public func fetchStatus() async throws(AttendanceError) -> [AttendanceStatus] {
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .statusSuccess:
             return [.attended, .late, .absent]
         case .networkError:
-            throw MockAttendanceError.networkError
+            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
         default:
             return []
         }
     }
 
-    public func editAttendance(input: Entity.EditAttendanceInput) async throws -> Entity.EditAttendance {
+    public func editAttendance(input: Entity.EditAttendanceInput) async throws(AttendanceError) -> Entity.EditAttendance {
         editCallCount += 1
 
-        try await Task.sleep(for: .milliseconds(10))
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .editSuccess, .statusChangeFlow, .permissionValidation, .historyTracking:
@@ -188,18 +188,18 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 detail: "attendanceId: \(input.attendanceId), userId: \(input.userId)"
             )
         case .permissionDenied:
-            throw MockAttendanceError.permissionDenied
+            throw AttendanceError.unauthorized
         case .invalidData:
-            throw MockAttendanceError.invalidData
+            throw AttendanceError.decodingError(MockAttendanceError.invalidData.localizedDescription)
         case .networkError:
-            throw MockAttendanceError.networkError
+            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
         default:
-            throw MockAttendanceError.unknownError
+            throw AttendanceError.unknown(MockAttendanceError.unknownError.localizedDescription)
         }
     }
 
-    public func calculateAttendanceStatistics(startDate: Date, endDate: Date) async throws -> AttendanceStatistics {
-        try await Task.sleep(for: .milliseconds(10))
+    public func calculateAttendanceStatistics(startDate: Date, endDate: Date) async throws(AttendanceError) -> AttendanceStatistics {
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .statisticsSuccess:
@@ -217,14 +217,14 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 attendanceRate: attendanceRate
             )
         case .networkError:
-            throw MockAttendanceError.networkError
+            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
         default:
             return AttendanceStatistics(totalSessions: 0, presentCount: 0, lateCount: 0, absentCount: 0, attendanceRate: 0.0)
         }
     }
 
-    public func fetchTeamAttendance(teamType: SelectTeams) async throws -> [SessionAttendance] {
-        try await Task.sleep(for: .milliseconds(10))
+    public func fetchTeamAttendance(teamType: SelectTeams) async throws(AttendanceError) -> [SessionAttendance] {
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .teamFiltering:
@@ -245,14 +245,14 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 return []
             }
         case .networkError:
-            throw MockAttendanceError.networkError
+            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
         default:
             return []
         }
     }
 
-    public func validateAttendanceConsistency(scheduleId: Int, userId: Int) async throws -> AttendanceValidationResult {
-        try await Task.sleep(for: .milliseconds(10))
+    public func validateAttendanceConsistency(scheduleId: Int, userId: Int) async throws(AttendanceError) -> AttendanceValidationResult {
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .consistencyValidation:
@@ -272,14 +272,14 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 )
             }
         case .networkError:
-            throw MockAttendanceError.networkError
+            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
         default:
             return AttendanceValidationResult(isValid: false, scheduleExists: false, userExists: false, attendanceRecordExists: false)
         }
     }
 
-    public func getAttendanceHistory(attendanceId: Int) async throws -> AttendanceHistory {
-        try await Task.sleep(for: .milliseconds(10))
+    public func getAttendanceHistory(attendanceId: Int) async throws(AttendanceError) -> AttendanceHistory {
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .historyTracking:
@@ -301,7 +301,7 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 )
             }
         case .networkError:
-            throw MockAttendanceError.networkError
+            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
         default:
             return AttendanceHistory(currentStatus: .attended, previousStatus: nil, modificationCount: 0, lastModifiedDate: Date())
         }

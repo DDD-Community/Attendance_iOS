@@ -12,10 +12,10 @@ import Dependencies
 
 /// Profile 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol ProfileInterface: Sendable {
-  func getProfile() async throws -> ProfileEntity
+  func getProfile() async throws(ProfileError) -> ProfileEntity
   func getCachedProfile() async -> ProfileEntity?
-  func refreshProfile() async throws -> ProfileEntity
-  func editProfile(input: EditProfileInput) async throws -> ProfileEntity
+  func refreshProfile() async throws(ProfileError) -> ProfileEntity
+  func editProfile(input: EditProfileInput) async throws(EditProfileError) -> ProfileEntity
 }
 
 /// Profile Repository의 DependencyKey 구조체

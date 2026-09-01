@@ -16,9 +16,9 @@ public protocol AppleOAuthProviderInterface: Sendable {
   func signInWithCredential(
     credential: ASAuthorizationAppleIDCredential,
     nonce: String
-  ) async throws -> AppleOAuthPayload
+  ) async throws(AuthError) -> AppleOAuthPayload
 
-  func signIn() async throws -> AppleOAuthPayload
+  func signIn() async throws(AuthError) -> AppleOAuthPayload
 }
 
 /// Apple OAuth Provider의 DependencyKey 구조체
@@ -46,7 +46,7 @@ public struct MockAppleOAuthProvider: AppleOAuthProviderInterface {
   public func signInWithCredential(
     credential: ASAuthorizationAppleIDCredential,
     nonce: String
-  ) async throws -> AppleOAuthPayload {
+  ) async throws(AuthError) -> AppleOAuthPayload {
     return AppleOAuthPayload(
       idToken: "mock_id_token",
       authorizationCode: "mock_auth_code",
@@ -55,7 +55,7 @@ public struct MockAppleOAuthProvider: AppleOAuthProviderInterface {
     )
   }
 
-  public func signIn() async throws -> AppleOAuthPayload {
+  public func signIn() async throws(AuthError) -> AppleOAuthPayload {
     return AppleOAuthPayload(
       idToken: "mock_id_token",
       authorizationCode: "mock_auth_code",

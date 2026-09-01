@@ -48,18 +48,18 @@ public actor MockAppleOAuthRepository: AppleOAuthInterface {
       }
     }
     
-    var error: MockAppleOAuthError? {
+    var error: AuthError? {
       switch self {
         case .success, .customUser, .customDelay:
           return nil
         case .failure:
-          return .signInFailed
+          return .unknownError("Mock Apple OAuth sign in failed")
         case .userCancelled:
           return .userCancelled
         case .invalidCredentials:
-          return .invalidCredentials
+          return .invalidCredential("Mock Apple OAuth invalid credentials")
         case .networkError:
-          return .networkError
+          return .networkError("Mock Apple OAuth network error")
       }
     }
   }
@@ -98,14 +98,21 @@ public actor MockAppleOAuthRepository: AppleOAuthInterface {
   
   // MARK: - AppleOAuthRepositoryProtocol Implementation
 
-  public func signInWithCredential(_ credential: ASAuthorizationAppleIDCredential, nonce: String) async throws -> AppleOAuthPayload {
+  public func signInWithCredential(
+    _ credential: ASAuthorizationAppleIDCredential,
+    nonce: String
+  ) async throws(AuthError) -> AppleOAuthPayload {
     // Track call
     signInCallCount += 1
     lastSignInCall = Date()
 
     // Apply delay
     if configuration.delay > 0 {
-      try await Task.sleep(for: .seconds(configuration.delay))
+      do {
+        try await Task.sleep(for: .seconds(configuration.delay))
+      } catch {
+        throw AuthError.from(error)
+      }
     }
 
     // Handle failure scenarios
@@ -122,14 +129,18 @@ public actor MockAppleOAuthRepository: AppleOAuthInterface {
     )
   }
 
-  public func signIn() async throws -> AppleOAuthPayload {
+  public func signIn() async throws(AuthError) -> AppleOAuthPayload {
     // Track call
     signInCallCount += 1
     lastSignInCall = Date()
     
     // Apply delay
     if configuration.delay > 0 {
-      try await Task.sleep(for: .seconds(configuration.delay))
+      do {
+        try await Task.sleep(for: .seconds(configuration.delay))
+      } catch {
+        throw AuthError.from(error)
+      }
     }
     
     // Handle failure scenarios
@@ -196,33 +207,5 @@ public extension MockAppleOAuthRepository {
   /// Creates a pre-configured actor with custom delay
   static func withDelay(_ delay: TimeInterval) -> MockAppleOAuthRepository {
     return MockAppleOAuthRepository(configuration: .customDelay(delay))
-  }
-}
-
-// MARK: - Mock Errors
-
-public enum MockAppleOAuthError: Error, LocalizedError {
-  case signInFailed
-  case userCancelled
-  case invalidCredentials
-  case networkError
-  case missingIdentityToken
-  case unknownError
-  
-  public var errorDescription: String? {
-    switch self {
-      case .signInFailed:
-        return "Mock Apple OAuth sign in failed"
-      case .userCancelled:
-        return "Mock Apple OAuth user cancelled"
-      case .invalidCredentials:
-        return "Mock Apple OAuth invalid credentials"
-      case .networkError:
-        return "Mock Apple OAuth network error"
-      case .missingIdentityToken:
-        return "Mock Apple OAuth missing identity token"
-      case .unknownError:
-        return "Mock Apple OAuth unknown error"
-    }
   }
 }

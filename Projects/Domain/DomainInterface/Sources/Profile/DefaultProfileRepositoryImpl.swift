@@ -19,13 +19,17 @@ public final class DefaultProfileRepositoryImpl: ProfileInterface {
     nil
   }
 
-  public func refreshProfile() async throws -> ProfileEntity {
+  public func refreshProfile() async throws(ProfileError) -> ProfileEntity {
     try await getProfile()
   }
 
-  public func getProfile() async throws -> ProfileEntity {
+  public func getProfile() async throws(ProfileError) -> ProfileEntity {
     // 네트워크 호출 시뮬레이션
-    try await Task.sleep(nanoseconds: 500_000_000) // 0.5초 대기
+    do {
+      try await Task.sleep(nanoseconds: 500_000_000) // 0.5초 대기
+    } catch {
+      throw ProfileError.from(error)
+    }
 
     switch mockUserType {
     case .member:
@@ -37,9 +41,13 @@ public final class DefaultProfileRepositoryImpl: ProfileInterface {
     }
   }
 
-  public func editProfile(input: Entity.EditProfileInput) async throws -> Entity.ProfileEntity {
+  public func editProfile(input: Entity.EditProfileInput) async throws(EditProfileError) -> Entity.ProfileEntity {
     // 네트워크 호출 시뮬레이션
-    try await Task.sleep(nanoseconds: 800_000_000) // 0.8초 대기
+    do {
+      try await Task.sleep(nanoseconds: 800_000_000) // 0.8초 대기
+    } catch {
+      throw EditProfileError.from(error)
+    }
 
     // generationId를 문자열로 변환
     let generation = "\(input.generationId)기"

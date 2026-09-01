@@ -14,7 +14,7 @@ import Entity
 final public class DefaultAuthRepositoryImpl: AuthInterface {
   public init() {}
 
-  public func login(provider: Entity.SocialType, token: String) async throws -> Entity.LoginEntity {
+  public func login(provider: Entity.SocialType, token: String) async throws(AuthError) -> Entity.LoginEntity {
     return LoginEntity(
       name: "Mock User",
       isNewUser: false,
@@ -27,18 +27,18 @@ final public class DefaultAuthRepositoryImpl: AuthInterface {
     )
   }
 
-  public func refresh() async throws -> Entity.AuthTokens {
+  public func refresh() async throws(AuthError) -> Entity.AuthTokens {
     return AuthTokens(
       accessToken: "mock_refreshed_access_token_\(UUID().uuidString)",
       refreshToken: "mock_refreshed_refresh_token_\(UUID().uuidString)"
     )
   }
 
-  public func withDraw(token: String) async throws -> WithdrawEntity {
+  public func withDraw(token: String) async throws(AuthError) -> WithdrawEntity {
     return WithdrawEntity(isSuccess: true)
   }
 
-  public func logout() async throws -> AuthExitEntity {
+  public func logout() async throws(AuthError) -> AuthExitEntity {
     // Mock 로그아웃 성공 응답
     return AuthExitEntity(
       code: "200",

@@ -22,7 +22,7 @@ public struct AuthUseCaseImpl: AuthInterface {
   public func login(
     provider: Entity.SocialType,
     token: String
-  ) async throws -> Entity.LoginEntity {
+  ) async throws(AuthError) -> Entity.LoginEntity {
     let authResult =  try await authRepository.login(provider: provider, token: token)
     $userSession.withLock {
       $0.oauthRefreshToken = authResult.token.oauthRefreshToken
@@ -30,17 +30,17 @@ public struct AuthUseCaseImpl: AuthInterface {
     return authResult
   }
 
-  public func refresh() async throws -> Entity.AuthTokens {
+  public func refresh() async throws(AuthError) -> Entity.AuthTokens {
     return try await authRepository.refresh()
   }
 
-  public func logout() async throws -> AuthExitEntity {
+  public func logout() async throws(AuthError) -> AuthExitEntity {
     let logoutResult = try await authRepository.logout()
     $staffRole.withLock { $0 = nil }
     return logoutResult
   }
 
-  public func withDraw(token: String) async throws -> WithdrawEntity {
+  public func withDraw(token: String) async throws(AuthError) -> WithdrawEntity {
     return try await authRepository.withDraw(token: token)
   }
 

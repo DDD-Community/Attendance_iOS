@@ -23,13 +23,16 @@ public final class AppleOAuthRepositoryImpl: NSObject, AppleOAuthInterface, @unc
   @Shared(.appStorage("appleUserName")) var appleUserName: String?
 
   private var currentNonce: String?
-  private var signInContinuation: CheckedContinuation<AppleOAuthPayload, Error>?
+  private var signInContinuation: CheckedContinuation<Result<AppleOAuthPayload, AuthError>, Never>?
   private var isSigningIn: Bool = false
 
   public override init() {
 
   }
-  public func signInWithCredential(_ credential: ASAuthorizationAppleIDCredential, nonce: String) async throws -> AppleOAuthPayload {
+  public func signInWithCredential(
+    _ credential: ASAuthorizationAppleIDCredential,
+    nonce: String
+  ) async throws(AuthError) -> AppleOAuthPayload {
     // 받은 credential으로 직접 payload 생성
     guard let identityTokenData = credential.identityToken,
           let identityToken = String(data: identityTokenData, encoding: .utf8)
@@ -49,15 +52,13 @@ public final class AppleOAuthRepositoryImpl: NSObject, AppleOAuthInterface, @unc
   }
 
   @MainActor
-  public func signIn() async throws -> AppleOAuthPayload {
-    // 이미 진행 중인 로그인이 있으면 기다림
+  public func signIn() async throws(AuthError) -> AppleOAuthPayload {
+    // 중복 요청은 기존 인증 화면과 continuation을 덮어쓰지 않도록 거부한다.
     if isSigningIn {
-      return try await withCheckedThrowingContinuation { newContinuation in
-        newContinuation.resume(throwing: AuthError.invalidCredential("이미 로그인이 진행 중입니다"))
-      }
+      throw AuthError.invalidCredential("이미 로그인이 진행 중입니다")
     }
 
-    return try await withCheckedThrowingContinuation { continuation in
+    let result = await withCheckedContinuation { continuation in
       self.isSigningIn = true
       self.signInContinuation = continuation
 
@@ -70,6 +71,7 @@ public final class AppleOAuthRepositoryImpl: NSObject, AppleOAuthInterface, @unc
       controller.presentationContextProvider = self
       controller.performRequests()
     }
+    return try result.get()
   }
 
   private func formatDisplayName(_ components: PersonNameComponents?) -> String? {
@@ -84,21 +86,21 @@ public final class AppleOAuthRepositoryImpl: NSObject, AppleOAuthInterface, @unc
 extension AppleOAuthRepositoryImpl: ASAuthorizationControllerDelegate {
   public func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
     guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-      signInContinuation?.resume(throwing: AuthError.invalidCredential("Invalid credential type"))
-      signInContinuation = nil
+      signInContinuation?.resume(returning: .failure(.invalidCredential("Invalid credential type")))
+      resetSignInState()
       return
     }
 
     guard let nonce = currentNonce else {
-      signInContinuation?.resume(throwing: AuthError.missingIDToken)
-      signInContinuation = nil
+      signInContinuation?.resume(returning: .failure(.missingIDToken))
+      resetSignInState()
       return
     }
 
     guard let identityTokenData = credential.identityToken,
           let identityToken = String(data: identityTokenData, encoding: .utf8) else {
-      signInContinuation?.resume(throwing: AuthError.missingIDToken)
-      signInContinuation = nil
+      signInContinuation?.resume(returning: .failure(.missingIDToken))
+      resetSignInState()
       return
     }
 
@@ -115,10 +117,8 @@ extension AppleOAuthRepositoryImpl: ASAuthorizationControllerDelegate {
     self.$appleUserName.withLock { $0 = displayName }
 
     DDDLogger.info("Apple Sign In successful for user: \(displayName ?? "unknown"), \(appleUserName)", category: .auth)
-    signInContinuation?.resume(returning: payload)
-    signInContinuation = nil
-    currentNonce = nil
-    isSigningIn = false
+    signInContinuation?.resume(returning: .success(payload))
+    resetSignInState()
   }
 
   public func authorizationController(
@@ -128,12 +128,16 @@ extension AppleOAuthRepositoryImpl: ASAuthorizationControllerDelegate {
     let nsError = error as NSError
 
     if nsError.code == ASAuthorizationError.canceled.rawValue {
-      signInContinuation?.resume(throwing: AuthError.userCancelled)
+      signInContinuation?.resume(returning: .failure(.userCancelled))
     } else {
       DDDLogger.error("Apple Sign In failed: \(error.localizedDescription)", category: .auth)
-      signInContinuation?.resume(throwing: AuthError.invalidCredential(error.localizedDescription))
+      signInContinuation?.resume(returning: .failure(.invalidCredential(error.localizedDescription)))
     }
 
+    resetSignInState()
+  }
+
+  private func resetSignInState() {
     signInContinuation = nil
     currentNonce = nil
     isSigningIn = false

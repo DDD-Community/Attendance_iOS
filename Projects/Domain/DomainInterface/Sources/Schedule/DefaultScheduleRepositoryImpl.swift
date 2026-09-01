@@ -15,7 +15,7 @@ public final class DefaultScheduleRepositoryImpl: ScheduleInterface {
     nil
   }
 
-  public func getSchedule() async throws -> [Schedule] {
+  public func getSchedule() async throws(ScheduleError) -> [Schedule] {
     return [
       Schedule(
         id: 1,

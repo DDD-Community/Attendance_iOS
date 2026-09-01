@@ -22,7 +22,7 @@ public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface, @unchecked S
     }
 
     @MainActor
-    public func signIn() async throws -> GoogleOAuthPayload {
+    public func signIn() async throws(AuthError) -> GoogleOAuthPayload {
         guard configuration.isValid else {
             throw AuthError.configurationMissing
         }
@@ -38,8 +38,10 @@ public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface, @unchecked S
         do {
             let result = try await signInWithRetry(presenting: presenting)
             return try makePayload(from: result)
-        } catch let error as NSError {
-            throw mapSignInError(error)
+        } catch let error as AuthError {
+            throw error
+        } catch {
+            throw mapSignInError(error as NSError)
         }
     }
 
@@ -56,7 +58,7 @@ public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface, @unchecked S
         }
     }
 
-    private func makePayload(from result: GIDSignInResult) throws -> GoogleOAuthPayload {
+    private func makePayload(from result: GIDSignInResult) throws(AuthError) -> GoogleOAuthPayload {
         guard let idToken = result.user.idToken?.tokenString else {
             throw AuthError.missingIDToken
         }
@@ -72,7 +74,7 @@ public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface, @unchecked S
         return payload
     }
 
-    private func mapSignInError(_ error: NSError) -> Error {
+    private func mapSignInError(_ error: NSError) -> AuthError {
         if error.domain == "com.google.GIDSignIn",
            error.code == GIDSignInError.canceled.rawValue {
             DDDLogger.info("Google sign-in cancelled by user.", category: .auth)

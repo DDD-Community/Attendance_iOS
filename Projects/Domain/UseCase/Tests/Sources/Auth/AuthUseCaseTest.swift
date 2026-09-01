@@ -230,7 +230,7 @@ final class AuthUseCaseTest {
       mockKeychainManager: mockKeychainManager
     ) {
       let useCase = AuthUseCaseImpl()
-      useCase.updateSessionCredential(with: testTokens)
+      await useCase.updateSessionCredential(with: testTokens)
     }
 
     // Then: Repository 호출 검증

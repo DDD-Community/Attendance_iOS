@@ -11,12 +11,12 @@ import ComposableArchitecture
 import Entity
 
 public protocol ProfileUseCaseInterface: Sendable {
-  func getProfile() async throws -> ProfileEntity
+  func getProfile() async throws(ProfileError) -> ProfileEntity
   func getCachedProfile() async -> ProfileEntity?
-  func refreshProfile() async throws -> ProfileEntity
+  func refreshProfile() async throws(ProfileError) -> ProfileEntity
   func editUser(
     userSession: UserSession
-  ) async throws -> ProfileEntity
+  ) async throws(EditProfileError) -> ProfileEntity
 }
 
 public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
@@ -36,7 +36,7 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
 
   // MARK: - 강제 새로고침 (캐시 무시, 네트워크)
 
-  public func refreshProfile() async throws -> ProfileEntity {
+  public func refreshProfile() async throws(ProfileError) -> ProfileEntity {
     let profile = try await repository.refreshProfile()
     syncProfileSession(with: profile)
     return profile
@@ -44,7 +44,7 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
 
   // MARK: - 프로필 조회
 
-  public func getProfile() async throws -> ProfileEntity {
+  public func getProfile() async throws(ProfileError) -> ProfileEntity {
     let profileResult = try await repository.getProfile()
     syncProfileSession(with: profileResult)
     return profileResult
@@ -52,7 +52,7 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
 
   public func editUser(
     userSession: UserSession
-  ) async throws -> ProfileEntity {
+  ) async throws(EditProfileError) -> ProfileEntity {
     let isManager = userSession.userRole == .manager
     let input = EditProfileInput(
       name: userSession.name,
@@ -65,7 +65,7 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
     return try await editProfile(input: input)
   }
 
-  public func editProfile(input: EditProfileInput) async throws -> ProfileEntity {
+  public func editProfile(input: EditProfileInput) async throws(EditProfileError) -> ProfileEntity {
     let editProfile = try await repository.editProfile(input: input)
     syncProfileSession(
       with: editProfile,

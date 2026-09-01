@@ -304,18 +304,18 @@ class MockScheduleRepository: ScheduleInterface {
 
   // MARK: - Configured Responses
 
-  private var scheduleResponse: Result<[Schedule], Error>?
+  private var scheduleResponse: Result<[Schedule], Entity.ScheduleError>?
 
   // MARK: - Implementation
 
-  func getSchedule() async throws -> [Schedule] {
+  func getSchedule() async throws(Entity.ScheduleError) -> [Schedule] {
     getScheduleCallCount += 1
 
     if let response = scheduleResponse {
       return try response.get()
     }
 
-    throw ScheduleError.notConfigured
+    throw Entity.ScheduleError.unknown("not configured")
   }
 
   func getCachedSchedule() async -> [Schedule]? {
@@ -329,7 +329,7 @@ class MockScheduleRepository: ScheduleInterface {
   }
 
   func configureScheduleFailure(_ error: Error) {
-    scheduleResponse = .failure(error)
+    scheduleResponse = .failure(Entity.ScheduleError.from(error))
   }
 }
 

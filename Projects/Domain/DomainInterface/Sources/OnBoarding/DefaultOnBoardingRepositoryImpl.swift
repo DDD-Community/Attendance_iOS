@@ -10,7 +10,7 @@ import Entity
 
 // MARK: - OnBoarding Errors
 
-public enum OnBoardingError: Error, LocalizedError {
+public enum OnBoardingError: Error, LocalizedError, Sendable, Equatable {
   case invalidCode
   case verifyFailed
   case networkError
@@ -27,6 +27,15 @@ public enum OnBoardingError: Error, LocalizedError {
     case .unknownError:
       return "Unknown error occurred"
     }
+  }
+}
+
+public extension OnBoardingError {
+  static func from(_ error: Error) -> OnBoardingError {
+    if let onBoardingError = error as? OnBoardingError {
+      return onBoardingError
+    }
+    return .unknownError
   }
 }
 
@@ -170,14 +179,14 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
 
   // MARK: - OnBoardingInterface Implementation
 
-  public func verifyCode(code: String) async throws -> VerifyCodeEntity {
+  public func verifyCode(code: String) async throws(OnBoardingError) -> VerifyCodeEntity {
     // Track call
     verifyCallCount += 1
     lastVerifyCall = Date()
 
     // Apply delay
     if configuration.delay > 0 {
-      try await Task.sleep(for: .seconds(configuration.delay))
+      try? await Task.sleep(for: .seconds(configuration.delay))
     }
 
     // 코드 유효성 검사 (기본적인 검사)
@@ -222,14 +231,14 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     }
   }
 
-  public func fetchJobs() async throws -> [Entity.SelectJob] {
+  public func fetchJobs() async throws(OnBoardingError) -> [Entity.SelectJob] {
     // Track call
     fetchJobsCallCount += 1
     lastFetchJobsCall = Date()
 
     // Apply delay
     if configuration.delay > 0 {
-      try await Task.sleep(for: .seconds(configuration.delay))
+      try? await Task.sleep(for: .seconds(configuration.delay))
     }
 
     // Configuration 기반 응답 처리
@@ -279,14 +288,14 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     }
   }
 
-  public func fetchTeams(generationId: Int) async throws -> [SelectTeamEntity] {
+  public func fetchTeams(generationId: Int) async throws(OnBoardingError) -> [SelectTeamEntity] {
     // Track call
     fetchTeamsCallCount += 1
     lastFetchTeamsCall = Date()
 
     // Apply delay
     if configuration.delay > 0 {
-      try await Task.sleep(for: .seconds(configuration.delay))
+      try? await Task.sleep(for: .seconds(configuration.delay))
     }
 
     // Configuration 기반 응답 처리
@@ -305,14 +314,14 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
     }
   }
 
-  public func fetchManaging() async throws -> [SelectManaging] {
+  public func fetchManaging() async throws(OnBoardingError) -> [SelectManaging] {
     // Track call
     fetchManagingCallCount += 1
     lastFetchManagingCall = Date()
 
     // Apply delay
     if configuration.delay > 0 {
-      try await Task.sleep(for: .seconds(configuration.delay))
+      try? await Task.sleep(for: .seconds(configuration.delay))
     }
 
     // Configuration 기반 응답 처리

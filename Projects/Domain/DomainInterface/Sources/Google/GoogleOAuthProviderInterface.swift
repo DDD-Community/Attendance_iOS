@@ -8,12 +8,13 @@
 import Foundation
 
 import Dependencies
+import Entity
 
 /// Google OAuth Provider Interface 프로토콜
 public protocol GoogleOAuthProviderInterface: Sendable {
   func signInWithToken(
     token: String
-  ) async throws -> String
+  ) async throws(AuthError) -> String
 }
 
 /// Google OAuth Provider의 DependencyKey 구조체
@@ -40,7 +41,7 @@ public struct MockGoogleOAuthProvider: GoogleOAuthProviderInterface {
 
   public func signInWithToken(
     token: String
-  ) async throws -> String {
+  ) async throws(AuthError) -> String {
     return "mock_google_token"
   }
 }

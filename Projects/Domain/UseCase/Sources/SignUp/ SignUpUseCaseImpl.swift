@@ -14,7 +14,7 @@ import Entity
 public protocol SignUpUseCaseInterface: Sendable {
   func registerUser(
     userSession: UserSession
-  ) async throws -> SignUpUser
+  ) async throws(SignUpError) -> SignUpUser
 }
 
 public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
@@ -28,7 +28,7 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
 
   public func registerUser(
     userSession: UserSession
-  ) async throws -> SignUpUser {
+  ) async throws(SignUpError) -> SignUpUser {
     let isManager = userSession.userRole == .manager
     if !isManager, userSession.selectTeamId == nil {
       throw SignUpError.missingRequiredField("팀")

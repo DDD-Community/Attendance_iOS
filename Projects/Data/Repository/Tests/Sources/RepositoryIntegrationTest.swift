@@ -72,16 +72,21 @@ struct RepositoryIntegrationTest {
   func testMockRepositoryMethods() async throws {
     // Given
     let mockRepository = MockAuthRepository.success()
+    let tokens = AuthTokens(accessToken: "access", refreshToken: "refresh")
 
-    // When & Then - 모든 메서드가 존재하는지 확인
-    #expect(mockRepository.login != nil)
-    #expect(mockRepository.refresh != nil)
-    #expect(mockRepository.logout != nil)
-    #expect(mockRepository.withDraw != nil)
-    #expect(mockRepository.updateSessionCredential != nil)
-    #expect(mockRepository.reset != nil)
-    #expect(mockRepository.configureSuccess != nil)
-    #expect(mockRepository.configureFailure != nil)
+    // When - 함수 값을 비교하지 않고 실제 인터페이스 계약을 호출해 검증
+    _ = try await mockRepository.login(provider: .google, token: "test")
+    _ = try await mockRepository.refresh()
+    _ = try await mockRepository.logout()
+    _ = try await mockRepository.withDraw(token: "test")
+    await mockRepository.updateSessionCredential(with: tokens)
+
+    // Then
+    #expect(mockRepository.loginCallCount == 1)
+    #expect(mockRepository.refreshCallCount == 1)
+    #expect(mockRepository.logoutCallCount == 1)
+    #expect(mockRepository.withDrawCallCount == 1)
+    #expect(mockRepository.updateSessionCredentialCallCount == 1)
   }
 
   // MARK: - Mock Repository 성능 테스트
@@ -193,7 +198,7 @@ struct RepositoryIntegrationTest {
     #expect(mockRepository.refreshCallCount == 1)
 
     // 3. 세션 업데이트
-    mockRepository.updateSessionCredential(with: refreshResult)
+    await mockRepository.updateSessionCredential(with: refreshResult)
     #expect(mockRepository.updateSessionCredentialCallCount == 1)
 
     // 4. 로그아웃

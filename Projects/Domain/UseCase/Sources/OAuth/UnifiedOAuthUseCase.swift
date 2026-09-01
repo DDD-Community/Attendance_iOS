@@ -35,7 +35,7 @@ public extension UnifiedOAuthUseCase {
     appleCredential: ASAuthorizationAppleIDCredential? = nil,
     nonce: String? = nil,
     googleToken: String? = nil
-  ) async throws -> LoginEntity {
+  ) async throws(AuthError) -> LoginEntity {
     switch socialType {
     case .apple:
       guard let credential = appleCredential, let nonce = nonce else {
@@ -54,7 +54,7 @@ public extension UnifiedOAuthUseCase {
   func appleLogin(
     credential: ASAuthorizationAppleIDCredential,
     nonce: String
-  ) async throws -> LoginEntity {
+  ) async throws(AuthError) -> LoginEntity {
     let payload = try await appleProvider.signInWithCredential(
       credential: credential,
       nonce: nonce
@@ -105,7 +105,7 @@ public extension UnifiedOAuthUseCase {
   /// Google 로그인 처리
   func googleLogin(
     token: String
-  ) async throws -> LoginEntity {
+  ) async throws(AuthError) -> LoginEntity {
     let processedToken = try await googleProvider.signInWithToken(token: token)
     self.$userSession.withLock { $0.token = processedToken }
     let loginEntity = try await authRepository.login(
@@ -138,10 +138,8 @@ public extension UnifiedOAuthUseCase {
         googleToken: googleToken
       )
       return .success(result)
-    } catch let error as AuthError {
-      return .failure(error)
     } catch {
-      return .failure(.unknownError(error.localizedDescription))
+      return .failure(error)
     }
   }
 }

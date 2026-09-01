@@ -12,17 +12,17 @@ final class MockQRCodeRepository: QRCodeInterface {
   private(set) var lastGenerateString: String?
   private(set) var lastValidateCode: String?
 
-  var createQRCodeResponse: Result<String, Error> = .failure(QRCodeError.networkError)
+  var createQRCodeResponse: Result<String, Entity.QRCodeError> = .failure(.networkError)
   var generateQRCodeResponse: Image? = nil
-  var qrValidateCheckResponse: Result<QRValidateEntity, Error> = .failure(QRCodeError.invalidCode)
+  var qrValidateCheckResponse: Result<QRValidateEntity, Entity.QRCodeError> = .failure(.invalidPayload)
 
   var createQRCodeDelay: TimeInterval = 0
   var generateQRCodeDelay: TimeInterval = 0
   var qrValidateCheckDelay: TimeInterval = 0
 
-  func createQRCode(userID: Int) async throws -> String {
+  func createQRCode(userID: Int) async throws(Entity.QRCodeError) -> String {
     if createQRCodeDelay > 0 {
-      try await Task.sleep(nanoseconds: UInt64(createQRCodeDelay * 1_000_000_000))
+      try? await Task.sleep(nanoseconds: UInt64(createQRCodeDelay * 1_000_000_000))
     }
     createQRCodeCallCount += 1
     lastCreateUserID = userID
@@ -38,9 +38,9 @@ final class MockQRCodeRepository: QRCodeInterface {
     return generateQRCodeResponse
   }
 
-  func qrValidateCheck(from code: String) async throws -> QRValidateEntity {
+  func qrValidateCheck(from code: String) async throws(Entity.QRCodeError) -> QRValidateEntity {
     if qrValidateCheckDelay > 0 {
-      try await Task.sleep(nanoseconds: UInt64(qrValidateCheckDelay * 1_000_000_000))
+      try? await Task.sleep(nanoseconds: UInt64(qrValidateCheckDelay * 1_000_000_000))
     }
     qrValidateCheckCallCount += 1
     lastValidateCode = code
@@ -54,9 +54,9 @@ final class MockQRCodeRepository: QRCodeInterface {
     lastCreateUserID = nil
     lastGenerateString = nil
     lastValidateCode = nil
-    createQRCodeResponse = .failure(QRCodeError.networkError)
+    createQRCodeResponse = .failure(.networkError)
     generateQRCodeResponse = nil
-    qrValidateCheckResponse = .failure(QRCodeError.invalidCode)
+    qrValidateCheckResponse = .failure(.invalidPayload)
     createQRCodeDelay = 0
     generateQRCodeDelay = 0
     qrValidateCheckDelay = 0
@@ -86,11 +86,11 @@ final class MockQRCodeRepository: QRCodeInterface {
   }
 
   func configureCreateFailure(_ error: Error) {
-    createQRCodeResponse = .failure(error)
+    createQRCodeResponse = .failure(Entity.QRCodeError.from(error))
   }
 
   func configureValidateFailure(_ error: Error) {
-    qrValidateCheckResponse = .failure(error)
+    qrValidateCheckResponse = .failure(Entity.QRCodeError.from(error))
   }
 
   // Static factory methods

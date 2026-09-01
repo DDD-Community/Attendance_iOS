@@ -25,41 +25,57 @@ final public class OnBoardingRepositoryImpl: OnBoardingInterface {
   // MARK: - 코드 검증
   public func verifyCode(
     code: String
-  ) async throws -> VerifyCodeEntity {
-    let dto = try await client.send(
-      OnBoardingService.verifyCode(code: code),
-      as: VerifyCodeDTO.self
-    )
-    return dto.toDomain()
+  ) async throws(OnBoardingError) -> VerifyCodeEntity {
+    do {
+      let dto = try await client.send(
+        OnBoardingService.verifyCode(code: code),
+        as: VerifyCodeDTO.self
+      )
+      return dto.toDomain()
+    } catch {
+      throw OnBoardingError.from(error)
+    }
   }
 
   // MARK: - 직군 선택
-  public func fetchJobs() async throws -> [Entity.SelectJob] {
-    let dtoArray = try await client.send(
-      OnBoardingService.jobs,
-      as: SelectJobsDTO.self
-    )
-    return dtoArray.data.toDomain()
+  public func fetchJobs() async throws(OnBoardingError) -> [Entity.SelectJob] {
+    do {
+      let dtoArray = try await client.send(
+        OnBoardingService.jobs,
+        as: SelectJobsDTO.self
+      )
+      return dtoArray.data.toDomain()
+    } catch {
+      throw OnBoardingError.from(error)
+    }
   }
 
   // MARK: - 팀 선택
   public func fetchTeams(
     generationId: Int
-  ) async throws -> [SelectTeamEntity] {
-    let dto = try await client.send(
-      OnBoardingService.teams(generationId: generationId),
-      as: SelectTeamsDTO.self
-    )
-    return dto.data.toDomain()
+  ) async throws(OnBoardingError) -> [SelectTeamEntity] {
+    do {
+      let dto = try await client.send(
+        OnBoardingService.teams(generationId: generationId),
+        as: SelectTeamsDTO.self
+      )
+      return dto.data.toDomain()
+    } catch {
+      throw OnBoardingError.from(error)
+    }
   }
 
   // MARK: - 매니저 역활 선택
-  public func fetchManaging() async throws -> [SelectManaging] {
-    let dto = try await client.send(
-      OnBoardingService.mangerRole,
-      as: SelectMangerRoleDTO.self
-    )
-    return dto.data.toDomain()
+  public func fetchManaging() async throws(OnBoardingError) -> [SelectManaging] {
+    do {
+      let dto = try await client.send(
+        OnBoardingService.mangerRole,
+        as: SelectMangerRoleDTO.self
+      )
+      return dto.data.toDomain()
+    } catch {
+      throw OnBoardingError.from(error)
+    }
   }
 
 }

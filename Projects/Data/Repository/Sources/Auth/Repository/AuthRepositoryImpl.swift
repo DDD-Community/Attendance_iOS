@@ -33,28 +33,30 @@ public final class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
   }
 
   // MARK: - 로그인 API
-
   public func login(
     provider socialProvider: SocialType,
     token: String
-  ) async throws -> LoginEntity {
-    let dto = try await client.send(
-      AuthRequest.login(
-        body: OAuthLoginRequest(provider: socialProvider.description, token: token)
-      ),
-      as: LoginResponseDTO.self
-    )
-    let entity = dto.toDomain()
-    await authService.signIn(
-      accessToken: entity.token.accessToken,
-      refreshToken: entity.token.refreshToken
-    )
-    return entity
+  ) async throws(AuthError) -> LoginEntity {
+    do {
+      let dto = try await client.send(
+        AuthRequest.login(
+          body: OAuthLoginRequest(provider: socialProvider.description, token: token)
+        ),
+        as: LoginResponseDTO.self
+      )
+      let entity = dto.toDomain()
+      await authService.signIn(
+        accessToken: entity.token.accessToken,
+        refreshToken: entity.token.refreshToken
+      )
+      return entity
+    } catch {
+      throw AuthError.from(error)
+    }
   }
 
   // MARK: - 토큰 재발급
-
-  public func refresh() async throws -> AuthTokens {
+  public func refresh() async throws(AuthError) -> AuthTokens {
     let refreshToken = keychainManager.refreshToken() ?? ""
 
     do {
@@ -72,63 +74,69 @@ public final class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
         throw AuthError.refreshTokenExpired
       }
 
-      throw error
+      throw AuthError.from(error)
     }
   }
 
   // MARK: - 로그아웃
+  public func logout() async throws(AuthError) -> AuthExitEntity {
+    do {
+      let response = try await client.sendResponse(AuthRequest.logout)
+      let decoder = JSONDecoder()
 
-  public func logout() async throws -> AuthExitEntity {
-    let response = try await client.sendResponse(AuthRequest.logout)
-    let decoder = JSONDecoder()
-
-    if (200 ... 299).contains(response.statusCode) {
-      await authService.signOut()
-      try? await profileLocalDataSource.clear()
-      try? await scheduleLocalDataSource.clear()
-      if response.data.isEmpty {
+      if (200 ... 299).contains(response.statusCode) {
+        await authService.signOut()
+        try? await profileLocalDataSource.clear()
+        try? await scheduleLocalDataSource.clear()
+        if response.data.isEmpty {
+          return AuthExitEntity()
+        }
+        if let successDTO = try? decoder.decode(LogOutDTO.self, from: response.data) {
+          return successDTO.toDomain()
+        }
         return AuthExitEntity()
       }
-      if let successDTO = try? decoder.decode(LogOutDTO.self, from: response.data) {
-        return successDTO.toDomain()
+
+      if let errorDTO = try? decoder.decode(LogOutDTO.self, from: response.data) {
+        return errorDTO.toDomain()
       }
-      return AuthExitEntity()
-    }
 
-    if let errorDTO = try? decoder.decode(LogOutDTO.self, from: response.data) {
-      return errorDTO.toDomain()
+      let errorMessage = String(data: response.data, encoding: .utf8)
+      return AuthExitEntity(message: errorMessage)
+    } catch {
+      throw AuthError.from(error)
     }
-
-    let errorMessage = String(data: response.data, encoding: .utf8)
-    return AuthExitEntity(message: errorMessage)
   }
 
   // MARK: - 계정 삭제
+  public func withDraw(token: String) async throws(AuthError) -> WithdrawEntity {
+    do {
+      let response = try await client.sendResponse(AuthRequest.withdraw(token: token))
+      let decoder = JSONDecoder()
 
-  public func withDraw(token: String) async throws -> WithdrawEntity {
-    let response = try await client.sendResponse(AuthRequest.withdraw(token: token))
-    let decoder = JSONDecoder()
-
-    if (200 ... 299).contains(response.statusCode) {
-      await authService.signOut()
-      try? await profileLocalDataSource.clear()
-      try? await scheduleLocalDataSource.clear()
-      if response.data.isEmpty {
+      if (200 ... 299).contains(response.statusCode) {
+        await authService.signOut()
+        try? await profileLocalDataSource.clear()
+        try? await scheduleLocalDataSource.clear()
+        if response.data.isEmpty {
+          return WithdrawEntity(isSuccess: true)
+        }
+        if let successDTO = try? decoder.decode(WithdrawDTO.self, from: response.data) {
+          return successDTO.toDomain(isSuccess: true)
+        }
         return WithdrawEntity(isSuccess: true)
       }
-      if let successDTO = try? decoder.decode(WithdrawDTO.self, from: response.data) {
-        return successDTO.toDomain(isSuccess: true)
-      }
-      return WithdrawEntity(isSuccess: true)
-    }
 
-    if let errorDTO = try? decoder.decode(WithdrawDTO.self, from: response.data) {
-      return errorDTO.toDomain(isSuccess: false)
+      if let errorDTO = try? decoder.decode(WithdrawDTO.self, from: response.data) {
+        return errorDTO.toDomain(isSuccess: false)
+      }
+      return WithdrawEntity(
+        isSuccess: false,
+        message: String(data: response.data, encoding: .utf8)
+      )
+    } catch {
+      throw AuthError.from(error)
     }
-    return WithdrawEntity(
-      isSuccess: false,
-      message: String(data: response.data, encoding: .utf8)
-    )
   }
 
   // MARK: - 세션 Credential 업데이트

@@ -470,13 +470,13 @@ class MockOnBoardingRepository: OnBoardingInterface {
     var lastFetchTeamsGenerationId: Int?
 
     // MARK: - Configured Responses
-    private var verifyCodeResponse: Result<VerifyCodeEntity, Error>?
-    private var jobsResponse: Result<[SelectJob], Error>?
-    private var teamsResponse: Result<[SelectTeamEntity], Error>?
-    private var managingResponse: Result<[SelectManaging], Error>?
+    private var verifyCodeResponse: Result<VerifyCodeEntity, DomainInterface.OnBoardingError>?
+    private var jobsResponse: Result<[SelectJob], DomainInterface.OnBoardingError>?
+    private var teamsResponse: Result<[SelectTeamEntity], DomainInterface.OnBoardingError>?
+    private var managingResponse: Result<[SelectManaging], DomainInterface.OnBoardingError>?
 
     // MARK: - Implementation
-    func verifyCode(code: String) async throws -> VerifyCodeEntity {
+    func verifyCode(code: String) async throws(DomainInterface.OnBoardingError) -> VerifyCodeEntity {
         verifyCodeCallCount += 1
         lastVerifyCode = code
 
@@ -484,20 +484,20 @@ class MockOnBoardingRepository: OnBoardingInterface {
             return try response.get()
         }
 
-        throw OnBoardingError.notConfigured
+        throw DomainInterface.OnBoardingError.unknownError
     }
 
-    func fetchJobs() async throws -> [SelectJob] {
+    func fetchJobs() async throws(DomainInterface.OnBoardingError) -> [SelectJob] {
         fetchJobsCallCount += 1
 
         if let response = jobsResponse {
             return try response.get()
         }
 
-        throw OnBoardingError.notConfigured
+        throw DomainInterface.OnBoardingError.unknownError
     }
 
-    func fetchTeams(generationId: Int) async throws -> [SelectTeamEntity] {
+    func fetchTeams(generationId: Int) async throws(DomainInterface.OnBoardingError) -> [SelectTeamEntity] {
         fetchTeamsCallCount += 1
         lastFetchTeamsGenerationId = generationId
 
@@ -505,17 +505,17 @@ class MockOnBoardingRepository: OnBoardingInterface {
             return try response.get()
         }
 
-        throw OnBoardingError.notConfigured
+        throw DomainInterface.OnBoardingError.unknownError
     }
 
-    func fetchManaging() async throws -> [SelectManaging] {
+    func fetchManaging() async throws(DomainInterface.OnBoardingError) -> [SelectManaging] {
         fetchManagingCallCount += 1
 
         if let response = managingResponse {
             return try response.get()
         }
 
-        throw OnBoardingError.notConfigured
+        throw DomainInterface.OnBoardingError.unknownError
     }
 
     // MARK: - Configuration Methods
@@ -524,7 +524,7 @@ class MockOnBoardingRepository: OnBoardingInterface {
     }
 
     func configureVerifyCodeFailure(_ error: Error) {
-        verifyCodeResponse = .failure(error)
+        verifyCodeResponse = .failure(DomainInterface.OnBoardingError.from(error))
     }
 
     func configureJobsSuccess(_ jobs: [SelectJob]) {
@@ -532,7 +532,7 @@ class MockOnBoardingRepository: OnBoardingInterface {
     }
 
     func configureJobsFailure(_ error: Error) {
-        jobsResponse = .failure(error)
+        jobsResponse = .failure(DomainInterface.OnBoardingError.from(error))
     }
 
     func configureTeamsSuccess(_ teams: [SelectTeamEntity]) {
@@ -540,7 +540,7 @@ class MockOnBoardingRepository: OnBoardingInterface {
     }
 
     func configureTeamsFailure(_ error: Error) {
-        teamsResponse = .failure(error)
+        teamsResponse = .failure(DomainInterface.OnBoardingError.from(error))
     }
 
     func configureManagingSuccess(_ managing: [SelectManaging]) {
@@ -548,7 +548,7 @@ class MockOnBoardingRepository: OnBoardingInterface {
     }
 
     func configureManagingFailure(_ error: Error) {
-        managingResponse = .failure(error)
+        managingResponse = .failure(DomainInterface.OnBoardingError.from(error))
     }
 }
 

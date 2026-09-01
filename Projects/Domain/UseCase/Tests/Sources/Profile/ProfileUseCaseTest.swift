@@ -541,22 +541,22 @@ final class MockProfileRepository: ProfileInterface {
 
   // MARK: - Configured Responses
 
-  private var getProfileResponse: Result<ProfileEntity, Error>?
-  private var editProfileResponse: Result<ProfileEntity, Error>?
+  private var getProfileResponse: Result<ProfileEntity, Entity.ProfileError>?
+  private var editProfileResponse: Result<ProfileEntity, Entity.EditProfileError>?
 
   // MARK: - Implementation
 
-  func getProfile() async throws -> ProfileEntity {
+  func getProfile() async throws(Entity.ProfileError) -> ProfileEntity {
     getProfileCallCount += 1
 
     if let response = getProfileResponse {
       return try response.get()
     }
 
-    throw ProfileError.notConfigured
+    throw Entity.ProfileError.unknownError("not configured")
   }
 
-  func editProfile(input: EditProfileInput) async throws -> ProfileEntity {
+  func editProfile(input: EditProfileInput) async throws(Entity.EditProfileError) -> ProfileEntity {
     editProfileCallCount += 1
     lastEditInput = input
 
@@ -564,14 +564,14 @@ final class MockProfileRepository: ProfileInterface {
       return try response.get()
     }
 
-    throw ProfileError.notConfigured
+    throw Entity.EditProfileError.unknownError("not configured")
   }
 
   func getCachedProfile() async -> ProfileEntity? {
     try? getProfileResponse?.get()
   }
 
-  func refreshProfile() async throws -> ProfileEntity {
+  func refreshProfile() async throws(Entity.ProfileError) -> ProfileEntity {
     try await getProfile()
   }
 
@@ -582,7 +582,7 @@ final class MockProfileRepository: ProfileInterface {
   }
 
   func configureGetProfileFailure(_ error: Error) {
-    getProfileResponse = .failure(error)
+    getProfileResponse = .failure(Entity.ProfileError.from(error))
   }
 
   func configureEditProfileSuccess(_ profile: ProfileEntity) {
@@ -590,7 +590,7 @@ final class MockProfileRepository: ProfileInterface {
   }
 
   func configureEditProfileFailure(_ error: Error) {
-    editProfileResponse = .failure(error)
+    editProfileResponse = .failure(Entity.EditProfileError.from(error))
   }
 }
 

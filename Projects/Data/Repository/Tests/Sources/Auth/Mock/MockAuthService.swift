@@ -6,9 +6,7 @@
 //
 
 import Foundation
-import AsyncMoya
-import Moya
-import Service
+import APIEndpoint
 import Model
 import Entity
 

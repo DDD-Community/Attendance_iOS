@@ -27,13 +27,17 @@ final public class SignUpRepositoryImpl: SignUpInterface {
   // Mark : -  API 회원가입
   public func registerUser(
     input: SignUpUserInput
-  ) async throws -> SignUpUser {
-    // SignUpUserInput을 SignUpUserRequestDTO로 변환
-    let body = input.toRequestDTO()
-    let dto = try await client.send(
-      SignUpService.signUpUser(body: body),
-      as: SignUpUserDTO.self
-    )
-    return dto.toDomain()
+  ) async throws(SignUpError) -> SignUpUser {
+    do {
+      // SignUpUserInput을 SignUpUserRequestDTO로 변환
+      let body = input.toRequestDTO()
+      let dto = try await client.send(
+        SignUpService.signUpUser(body: body),
+        as: SignUpUserDTO.self
+      )
+      return dto.toDomain()
+    } catch {
+      throw SignUpError.from(error)
+    }
   }
 }

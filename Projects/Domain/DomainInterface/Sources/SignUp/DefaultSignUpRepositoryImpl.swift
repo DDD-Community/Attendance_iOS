@@ -98,14 +98,18 @@ final public class DefaultSignUpRepositoryImpl: SignUpInterface, @unchecked Send
 
   public func registerUser(
     input: SignUpUserInput
-  ) async throws -> SignUpUser {
+  ) async throws(SignUpError) -> SignUpUser {
     // Track call
     registerCallCount += 1
     lastCall = Date()
 
     // Apply delay
     if configuration.delay > 0 {
-      try await Task.sleep(for: .seconds(configuration.delay))
+      do {
+        try await Task.sleep(for: .seconds(configuration.delay))
+      } catch {
+        throw SignUpError.from(error)
+      }
     }
 
     // 입력 값 검증

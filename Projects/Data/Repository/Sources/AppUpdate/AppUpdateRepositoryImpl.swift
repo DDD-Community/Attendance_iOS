@@ -23,7 +23,7 @@ public final class AppUpdateRepositoryImpl: AppUpdateInterface {
         self.bundleId = bundleId ?? Bundle.main.bundleIdentifier ?? ""
     }
 
-    public func checkForUpdate() async throws -> AppUpdateInfo {
+    public func checkForUpdate() async throws(AppUpdateError) -> AppUpdateInfo {
         guard !bundleId.isEmpty else {
             throw AppUpdateError.invalidBundleId
         }
@@ -62,7 +62,7 @@ public final class AppUpdateRepositoryImpl: AppUpdateInterface {
         return "en"
     }
 
-    private func fetchAppStoreInfo() async throws -> AppStoreInfoDTO {
+    private func fetchAppStoreInfo() async throws(AppUpdateError) -> AppStoreInfoDTO {
         let currentLanguage = getCurrentAppLanguage()
         DDDLogger.debug("[AppUpdate] Current app language: \(currentLanguage)", category: .network)
 
@@ -83,7 +83,7 @@ public final class AppUpdateRepositoryImpl: AppUpdateInterface {
         return fallbackResult
     }
 
-    private func fetchAppStoreInfo(country: String) async throws -> AppStoreInfoDTO {
+    private func fetchAppStoreInfo(country: String) async throws(AppUpdateError) -> AppStoreInfoDTO {
         let urlString = "https://itunes.apple.com/lookup?bundleId=\(bundleId)&country=\(country)"
         guard let url = URL(string: urlString) else {
             throw AppUpdateError.invalidBundleId

@@ -30,7 +30,7 @@ public final class ScheduleRepositoryImpl: ScheduleInterface, @unchecked Sendabl
     try? await localDataSource.loadAll()
   }
 
-  public func getSchedule() async throws -> [Schedule] {
+  public func getSchedule() async throws(ScheduleError) -> [Schedule] {
     // SWR: 캐시 hit이면 즉시 반환 + 백그라운드에서 fresh 갱신
     if let cached = try? await localDataSource.loadAll(), !cached.isEmpty {
       _Concurrency.Task.detached { [weak self] in
@@ -39,17 +39,25 @@ public final class ScheduleRepositoryImpl: ScheduleInterface, @unchecked Sendabl
       return cached
     }
 
-    return try await fetchAndCacheSchedule()
+    do {
+      return try await fetchAndCacheSchedule()
+    } catch {
+      throw ScheduleError.from(error)
+    }
   }
 
-  private func fetchAndCacheSchedule() async throws -> [Schedule] {
-    let dto = try await client.send(
-      ScheduleRequest.getSchedule,
-      as: ScheduleDTO.self
-    )
-    let schedules = dto.toDomain().sortedByDate()
-    try? await localDataSource.saveAll(schedules)
-    return schedules
+  private func fetchAndCacheSchedule() async throws(ScheduleError) -> [Schedule] {
+    do {
+      let dto = try await client.send(
+        ScheduleRequest.getSchedule,
+        as: ScheduleDTO.self
+      )
+      let schedules = dto.toDomain().sortedByDate()
+      try? await localDataSource.saveAll(schedules)
+      return schedules
+    } catch {
+      throw ScheduleError.from(error)
+    }
   }
 }
 

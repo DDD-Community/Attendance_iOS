@@ -518,16 +518,16 @@ class MockAttendanceRepository: AttendanceInterface {
     var lastEditInput: EditAttendanceInput?
 
     // MARK: - Configured Responses
-    private var adminCountResponse: Result<AttendanceCount, Error>?
-    private var teamsResponse: Result<[SelectTeamEntity], Error>?
-    private var sessionResponse: Result<[Attendance], Error>?
-    private var statusResponse: Result<[AttendanceStatus], Error>?
-    private var editResponse: Result<EditAttendance, Error>?
-    private var retryScenarioFirstFailure: Error?
+    private var adminCountResponse: Result<AttendanceCount, Entity.AttendanceError>?
+    private var teamsResponse: Result<[SelectTeamEntity], Entity.AttendanceError>?
+    private var sessionResponse: Result<[Attendance], Entity.AttendanceError>?
+    private var statusResponse: Result<[AttendanceStatus], Entity.AttendanceError>?
+    private var editResponse: Result<EditAttendance, Entity.AttendanceError>?
+    private var retryScenarioFirstFailure: Entity.AttendanceError?
     private var retryScenarioSuccess: AttendanceCount?
 
     // MARK: - Implementation
-    func adminAttendanceCount(scheduleId: Int) async throws -> AttendanceCount {
+    func adminAttendanceCount(scheduleId: Int) async throws(Entity.AttendanceError) -> AttendanceCount {
         adminCountCallCount += 1
         lastAdminCountScheduleId = scheduleId
 
@@ -544,20 +544,20 @@ class MockAttendanceRepository: AttendanceInterface {
             return try response.get()
         }
 
-        throw AttendanceError.notConfigured
+        throw Entity.AttendanceError.unknown("not configured")
     }
 
-    func fetchAttendanceTeams() async throws -> [SelectTeamEntity] {
+    func fetchAttendanceTeams() async throws(Entity.AttendanceError) -> [SelectTeamEntity] {
         teamsCallCount += 1
 
         if let response = teamsResponse {
             return try response.get()
         }
 
-        throw AttendanceError.notConfigured
+        throw Entity.AttendanceError.unknown("not configured")
     }
 
-    func sessionAttendance(scheduleId: Int, teamId: Int) async throws -> [Attendance] {
+    func sessionAttendance(scheduleId: Int, teamId: Int) async throws(Entity.AttendanceError) -> [Attendance] {
         sessionCallCount += 1
         lastSessionScheduleId = scheduleId
         lastSessionTeamId = teamId
@@ -566,20 +566,20 @@ class MockAttendanceRepository: AttendanceInterface {
             return try response.get()
         }
 
-        throw AttendanceError.notConfigured
+        throw Entity.AttendanceError.unknown("not configured")
     }
 
-    func fetchStatus() async throws -> [AttendanceStatus] {
+    func fetchStatus() async throws(Entity.AttendanceError) -> [AttendanceStatus] {
         statusCallCount += 1
 
         if let response = statusResponse {
             return try response.get()
         }
 
-        throw AttendanceError.notConfigured
+        throw Entity.AttendanceError.unknown("not configured")
     }
 
-    func editAttendance(input: EditAttendanceInput) async throws -> EditAttendance {
+    func editAttendance(input: EditAttendanceInput) async throws(Entity.AttendanceError) -> EditAttendance {
         editCallCount += 1
         lastEditInput = input
 
@@ -587,7 +587,7 @@ class MockAttendanceRepository: AttendanceInterface {
             return try response.get()
         }
 
-        throw AttendanceError.notConfigured
+        throw Entity.AttendanceError.unknown("not configured")
     }
 
     // MARK: - Configuration Methods
@@ -605,7 +605,7 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     func configureAdminCountFailure(_ error: Error) {
-        adminCountResponse = .failure(error)
+        adminCountResponse = .failure(Entity.AttendanceError.from(error))
     }
 
     func configureTeamsSuccess(_ teams: [SelectTeamEntity]) {
@@ -613,7 +613,7 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     func configureTeamsFailure(_ error: Error) {
-        teamsResponse = .failure(error)
+        teamsResponse = .failure(Entity.AttendanceError.from(error))
     }
 
     func configureSessionSuccess(_ attendances: [Attendance]) {
@@ -621,7 +621,7 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     func configureSessionFailure(_ error: Error) {
-        sessionResponse = .failure(error)
+        sessionResponse = .failure(Entity.AttendanceError.from(error))
     }
 
     func configureStatusSuccess(_ statuses: [AttendanceStatus]) {
@@ -629,7 +629,7 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     func configureStatusFailure(_ error: Error) {
-        statusResponse = .failure(error)
+        statusResponse = .failure(Entity.AttendanceError.from(error))
     }
 
     func configureEditSuccess(_ result: EditAttendance) {
@@ -637,7 +637,7 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     func configureEditFailure(_ error: Error) {
-        editResponse = .failure(error)
+        editResponse = .failure(Entity.AttendanceError.from(error))
     }
 
     func configureConcurrentEditSuccess(_ results: [EditAttendance]) {
@@ -648,7 +648,7 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     func configureRetryScenario(firstFailure: Error, thenSuccess: AttendanceCount) {
-        retryScenarioFirstFailure = firstFailure
+        retryScenarioFirstFailure = Entity.AttendanceError.from(firstFailure)
         retryScenarioSuccess = thenSuccess
         retryCallCount = 0
     }

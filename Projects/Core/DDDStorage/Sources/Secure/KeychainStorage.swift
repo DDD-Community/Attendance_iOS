@@ -16,7 +16,7 @@ struct KeychainStorage: SecureStorage {
     self.service = service
   }
 
-  func save(_ value: String, for key: SecureStorageKey) throws {
+  func save(_ value: String, for key: SecureStorageKey) throws(SecureStorageError) {
     let data = Data(value.utf8)
     let status = SecItemUpdate(
       baseQuery(for: key) as CFDictionary,
@@ -33,7 +33,7 @@ struct KeychainStorage: SecureStorage {
     }
   }
 
-  func load(_ key: SecureStorageKey) throws -> String? {
+  func load(_ key: SecureStorageKey) throws(SecureStorageError) -> String? {
     var query = baseQuery(for: key)
     query[kSecReturnData as String] = true
     query[kSecMatchLimit as String] = kSecMatchLimitOne
@@ -54,14 +54,14 @@ struct KeychainStorage: SecureStorage {
     }
   }
 
-  func remove(_ key: SecureStorageKey) throws {
+  func remove(_ key: SecureStorageKey) throws(SecureStorageError) {
     let status = SecItemDelete(baseQuery(for: key) as CFDictionary)
     guard status == errSecSuccess || status == errSecItemNotFound else {
       throw SecureStorageError.unexpectedStatus(status)
     }
   }
 
-  func removeAll() throws {
+  func removeAll() throws(SecureStorageError) {
     for key in SecureStorageKey.all {
       try remove(key)
     }
@@ -77,7 +77,7 @@ private extension KeychainStorage {
     ]
   }
 
-  func add(_ data: Data, for key: SecureStorageKey) throws {
+  func add(_ data: Data, for key: SecureStorageKey) throws(SecureStorageError) {
     var query = baseQuery(for: key)
     query[kSecValueData as String] = data
     query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock

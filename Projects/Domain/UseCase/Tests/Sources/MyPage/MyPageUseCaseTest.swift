@@ -303,28 +303,28 @@ class MockMyPageRepository: MyPageRepositoryInterface {
     var fetchSchedulesCallCount = 0
 
     // MARK: - Configured Responses
-    private var attendancesResponse: Result<AttendanceSummaryResponse, Error>?
-    private var schedulesResponse: Result<[AttendanceMyScheduleResponse], Error>?
+    private var attendancesResponse: Result<AttendanceSummaryResponse, Entity.MyPageError>?
+    private var schedulesResponse: Result<[AttendanceMyScheduleResponse], Entity.MyPageError>?
 
     // MARK: - Implementation
-    func fetchAttendances() async throws -> AttendanceSummaryResponse {
+    func fetchAttendances() async throws(Entity.MyPageError) -> AttendanceSummaryResponse {
         fetchAttendancesCallCount += 1
 
         if let response = attendancesResponse {
             return try response.get()
         }
 
-        throw MyPageError.notConfigured
+        throw Entity.MyPageError.unknown("not configured")
     }
 
-    func fetchSchedules() async throws -> [AttendanceMyScheduleResponse] {
+    func fetchSchedules() async throws(Entity.MyPageError) -> [AttendanceMyScheduleResponse] {
         fetchSchedulesCallCount += 1
 
         if let response = schedulesResponse {
             return try response.get()
         }
 
-        throw MyPageError.notConfigured
+        throw Entity.MyPageError.unknown("not configured")
     }
 
     // MARK: - Configuration Methods
@@ -333,7 +333,7 @@ class MockMyPageRepository: MyPageRepositoryInterface {
     }
 
     func configureAttendancesFailure(_ error: Error) {
-        attendancesResponse = .failure(error)
+        attendancesResponse = .failure(Entity.MyPageError.from(error))
     }
 
     func configureSchedulesSuccess(_ schedules: [AttendanceMyScheduleResponse]) {
@@ -341,7 +341,7 @@ class MockMyPageRepository: MyPageRepositoryInterface {
     }
 
     func configureSchedulesFailure(_ error: Error) {
-        schedulesResponse = .failure(error)
+        schedulesResponse = .failure(Entity.MyPageError.from(error))
     }
 }
 
@@ -352,4 +352,3 @@ enum MyPageError: Error, Equatable {
     case invalidData
     case notConfigured
 }
-

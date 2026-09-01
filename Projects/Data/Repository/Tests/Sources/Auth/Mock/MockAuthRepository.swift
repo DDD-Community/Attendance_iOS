@@ -27,7 +27,7 @@ final class MockAuthRepository: AuthInterface {
 
   // MARK: - Response Configuration
   var shouldSucceed = true
-  var errorToThrow: Error = MockAuthError.invalidToken
+  var errorToThrow: AuthError = .invalidCredential("invalid token")
 
   init() {}
 
@@ -38,7 +38,7 @@ final class MockAuthRepository: AuthInterface {
 
   func configureFailure(_ error: Error) {
     shouldSucceed = false
-    errorToThrow = error
+    errorToThrow = AuthError.from(error)
   }
 
   func reset() {
@@ -54,11 +54,11 @@ final class MockAuthRepository: AuthInterface {
     lastUpdateTokens = nil
 
     shouldSucceed = true
-    errorToThrow = MockAuthError.invalidToken
+    errorToThrow = .invalidCredential("invalid token")
   }
 
   // MARK: - AuthInterface Implementation
-  func login(provider: SocialType, token: String) async throws -> LoginEntity {
+  func login(provider: SocialType, token: String) async throws(AuthError) -> LoginEntity {
     loginCallCount += 1
     lastLoginProvider = provider
     lastLoginToken = token
@@ -78,7 +78,7 @@ final class MockAuthRepository: AuthInterface {
     )
   }
 
-  func refresh() async throws -> AuthTokens {
+  func refresh() async throws(AuthError) -> AuthTokens {
     refreshCallCount += 1
 
     guard shouldSucceed else { throw errorToThrow }
@@ -90,7 +90,7 @@ final class MockAuthRepository: AuthInterface {
     )
   }
 
-  func logout() async throws -> AuthExitEntity {
+  func logout() async throws(AuthError) -> AuthExitEntity {
     logoutCallCount += 1
 
     guard shouldSucceed else { throw errorToThrow }
@@ -102,7 +102,7 @@ final class MockAuthRepository: AuthInterface {
     )
   }
 
-  func withDraw(token: String) async throws -> WithdrawEntity {
+  func withDraw(token: String) async throws(AuthError) -> WithdrawEntity {
     withDrawCallCount += 1
     lastWithdrawToken = token
 
@@ -116,7 +116,7 @@ final class MockAuthRepository: AuthInterface {
     )
   }
 
-  func updateSessionCredential(with tokens: AuthTokens) {
+  func updateSessionCredential(with tokens: AuthTokens) async {
     updateSessionCredentialCallCount += 1
     lastUpdateTokens = tokens
   }

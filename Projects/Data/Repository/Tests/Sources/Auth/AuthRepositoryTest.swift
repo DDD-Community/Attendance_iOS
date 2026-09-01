@@ -174,7 +174,7 @@ struct AuthRepositoryTest {
     )
 
     // When
-    mockRepository.updateSessionCredential(with: tokens)
+    await mockRepository.updateSessionCredential(with: tokens)
 
     // Then
     #expect(mockRepository.updateSessionCredentialCallCount == 1)
@@ -221,7 +221,7 @@ struct AuthRepositoryTest {
     #expect(mockRepository.refreshCallCount == 1)
 
     // 3. 세션 업데이트
-    mockRepository.updateSessionCredential(with: refreshResult)
+    await mockRepository.updateSessionCredential(with: refreshResult)
     #expect(mockRepository.updateSessionCredentialCallCount == 1)
 
     // 4. 로그아웃
@@ -336,7 +336,7 @@ struct AuthRepositoryTest {
     _ = try await mockRepository.withDraw(token: "withdraw_token")
 
     let tokens = AuthTokens(accessToken: "test", refreshToken: "test")
-    mockRepository.updateSessionCredential(with: tokens)
+    await mockRepository.updateSessionCredential(with: tokens)
 
     // Then - 호출 추적 정확성 검증
     #expect(mockRepository.loginCallCount == 2)
