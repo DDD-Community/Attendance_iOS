@@ -6,9 +6,28 @@
 
 let packageSettings = PackageSettings(
   productTypes: [
-    // 여러 모듈이 공유하는 저수준 의존은 동적 프레임워크로 둔다.
-    // GoogleUtilities 는 단일 프로덕트가 아니라 서브프로덕트로 나뉘어 있어
-    // 이름을 개별로 적어야 설정이 먹는다 ("GoogleUtilities" 키는 매칭되지 않는다).
+    // Firebase 체인은 통째로 동적 프레임워크로 올린다.
+    // 앱에 .framework 모듈(DDDDesignKit)이 있으면 정적 산출물이 그 경계에서 흡수돼
+    // 앱 링크 라인까지 전파되지 않는다. 일부만 올리면 nanopb/FirebaseSessions 심볼이 풀리지 않아
+    // 체인 전체를 함께 올려야 한다.
+    // 키는 패키지 이름이 아니라 SPM 타깃 이름이다 ("GoogleUtilities" 같은 패키지 이름은 매칭되지 않는다).
+    "Firebase": .framework,
+    "FirebaseCore": .framework,
+    "FirebaseCoreExtension": .framework,
+    "FirebaseCoreInternal": .framework,
+    "FirebaseInstallations": .framework,
+    "FirebaseSessions": .framework,
+    "FirebaseSessionsObjC": .framework,
+    "FirebaseCrashlytics": .framework,
+    "FirebaseCrashlyticsSwift": .framework,
+    "FirebaseRemoteConfigInterop": .framework,
+    "FirebaseAppCheck": .framework,
+    "FirebaseAppCheckInterop": .framework,
+    "GoogleDataTransport": .framework,
+    "nanopb": .framework,
+    "AppCheckCore": .framework,
+    "FBLPromises": .framework,
+    "Promises": .framework,
     "GoogleUtilities-AppDelegateSwizzler": .framework,
     "GoogleUtilities-Environment": .framework,
     "GoogleUtilities-Logger": .framework,
@@ -17,17 +36,6 @@ let packageSettings = PackageSettings(
     "GoogleUtilities-NSData": .framework,
     "GoogleUtilities-Reachability": .framework,
     "GoogleUtilities-UserDefaults": .framework,
-    "FBLPromises": .framework,
-    "nanopb": .framework,
-    "FirebaseCore": .framework,
-    "FirebaseCoreInternal": .framework,
-    "FirebaseInstallations": .framework,
-
-    // Firebase 리프 제품은 정적 유지
-    "FirebaseCoreExtension": .staticFramework,
-    "FirebaseAppCheck": .staticFramework,
-    "FirebaseAppCheckInterop": .staticFramework,
-    "AppCheckCore": .staticFramework,
 
     // 기존 설정 유지
     "ComposableArchitecture": .staticFramework,

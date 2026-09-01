@@ -93,7 +93,9 @@ jobs:
           TEST_OUTCOME: ${{ steps.tests.outcome }}
         with:
           script: |
-            const report = require('./scripts/ios-test-report.js')
+            // github-script 의 require 는 액션 디렉토리 기준으로 경로를 풀어서
+            // 상대경로가 먹지 않는다. 워크스페이스 절대경로로 지정한다.
+            const report = require(`${process.env.GITHUB_WORKSPACE}/scripts/ios-test-report.js`)
             await report({ github, context, core })
 
       - name: Fail if tests failed
