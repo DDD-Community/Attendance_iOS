@@ -194,8 +194,13 @@ public extension Project {
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
         buildableFolders: ["Tests"],
+        // Xcode 26.3의 host-less XCTest는 TCA의 Sharing → SwiftUI를 로드하는 중
+        // LocalStatusKit 메타데이터 탐색에서 충돌한다. 전용 경량 앱에서 테스트를 호스팅한다.
         // Testing 이 있으면 테스트가 그 목을 그대로 쓴다.
-        dependencies: [.target(name: name)] + (hasTesting ? [.target(name: "\(name)Testing")] : []),
+        dependencies: [
+          .target(name: name),
+          .project(target: "DDDTestHost", path: .relativeToRoot("Projects/TestHost"))
+        ] + (hasTesting ? [.target(name: "\(name)Testing")] : []),
         settings: suppressWarningsSettings
       )
       targets.append(appTestTarget)
