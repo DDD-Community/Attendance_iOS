@@ -11,7 +11,6 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings:  .moduleSettings,
   dependencies: [
-    .ui(.animation),
     .ui(.sharedUI),
     .domainAssembly
   ],
