@@ -15,10 +15,11 @@ let project = Project.makeAppModule(
   product: .app,
   settings: .appMainSetting,
   scripts: [],
-  // App 은 조립 레이어 하나만 본다. 피처·Repository·UseCase 는
-  // FeatureAssembly 가 묶어서 @_exported 로 다시 내보낸다.
+  // App 은 Feature·Data 조립 레이어를 병렬로 연결하는 최종 Composition Root 다.
+  // Domain 계층이 Data 구현을 알지 않도록 라이브 구현 링크 책임을 여기에 둔다.
   dependencies: [
-    .featureAssembly
+    .featureAssembly,
+    .dataAssembly
   ],
   sources: ["Sources/**"],
   resources: ["Resources/**"],
