@@ -12,7 +12,7 @@ import OSLog
 /// 값은 항상 `.private` 로 기록 — 릴리즈 통합로그/sysdiagnose 에 평문 유출을 막는다.
 /// (개발 중 디버거가 붙은 상태에서는 값이 그대로 보인다)
 public enum DDDLogger {
-  private static let subsystem: String = Bundle.main.bundleIdentifier ?? "com.dnd.dddattendance"
+  private static let subsystem: String = Bundle.main.bundleIdentifier ?? "com.ddd.dddattendance"
   /// 이 레벨 미만은 출력 스킵. 릴리즈에선 notice 이상만.
   private static let minimumLevel: DDDLogLevel = DDDLogger.defaultMinimumLevel
 

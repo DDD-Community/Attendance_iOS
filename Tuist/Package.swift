@@ -38,9 +38,6 @@ let packageSettings = PackageSettings(
     "GoogleUtilities-UserDefaults": .framework,
 
     // 기존 설정 유지
-    "ComposableArchitecture": .staticFramework,
-    "IdentifiedCollections": .staticFramework,
-    "TCAFlow": .staticFramework,
     "Moya": .staticFramework,
     "LogMacro": .staticFramework,
     "AsyncMoya": .staticFramework,
@@ -48,17 +45,30 @@ let packageSettings = PackageSettings(
     "AppAuthCore": .staticFramework,
     "GTMAppAuth": .staticFramework,
     "GTMSessionFetcherCore": .staticFramework,
-    "IssueReporting": .staticFramework,
-    "IssueReportingPackageSupport": .staticFramework,
-    "XCTestDynamicOverlay": .staticFramework,
-    // Picke 스타일에 맞춰 정적 프레임워크로 통일 (archive 시 strip 노이즈 제거)
-    "Clocks": .staticFramework,
-    "CombineSchedulers": .staticFramework,
-    "ConcurrencyExtras": .staticFramework,
-    "SDWebImageSwiftUI": .staticFramework,
-    "SDWebImage": .staticFramework,
-    "SwiftUIX": .staticFramework,
-
+    
+    "ComposableArchitecture": .framework,
+    "IdentifiedCollections": .framework,
+    "TCAFlow": .framework,
+    "IssueReporting": .framework,
+    "IssueReportingPackageSupport": .framework,
+    "XCTestDynamicOverlay": .framework,
+    "Clocks": .framework,
+    "CombineSchedulers": .framework,
+    "ConcurrencyExtras": .framework,
+    "SDWebImageSwiftUI": .framework,
+    "SDWebImage": .framework,
+    "SwiftUIX": .framework,
+    
+    // ── 경고에 떴지만 productTypes에 없어서 기본값(static)으로 중복되던 전이 의존성 ──
+    "Dependencies": .framework,
+    "DependenciesMacros": .framework,
+    "PerceptionCore": .framework,
+    "Perception": .framework,
+    "Sharing": .framework,
+    "SwiftNavigation": .framework,
+    "SwiftUINavigation": .framework,
+    "CasePaths": .framework,
+    
     // GoogleSignIn 관련
     "GoogleSignIn": .staticFramework,
     "GoogleSignInSwift": .staticFramework,
