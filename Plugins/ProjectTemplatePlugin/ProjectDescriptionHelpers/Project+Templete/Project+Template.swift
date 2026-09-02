@@ -19,6 +19,16 @@ private let suppressWarningsSettings: ProjectDescription.Settings = .settings(
   configurations: XCConfig.configurations
 )
 
+private let appTargetSettings: ProjectDescription.Settings = .settings(
+  base: [
+    // DataAssembly는 FeatureAssembly를 통해 링크되는 정적 프레임워크다.
+    // 직접 호출되지 않는 DependencyKey.liveValue도 제거되지 않도록 조립 모듈만 강제 링크한다.
+    "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip -force_load $(BUILT_PRODUCTS_DIR)/DataAssembly.framework/DataAssembly",
+    "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
+  ],
+  configurations: XCConfig.configurations
+)
+
 public extension Project {
   static func makeAppModule(
     name: String = Environment.appName,
@@ -49,7 +59,7 @@ public extension Project {
       entitlements: entitlements,
       scripts: scripts,
       dependencies: dependencies,
-      settings: suppressWarningsSettings
+      settings: appTargetSettings
     )
 
     // 단일 타깃 + 다중 config 구조.
