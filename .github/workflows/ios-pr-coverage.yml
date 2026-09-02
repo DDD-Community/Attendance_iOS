@@ -110,10 +110,8 @@ jobs:
         id: tests
         continue-on-error: true
         run: |
-          # Xcode 26.3에서 host-less 모듈 테스트가 앱의 Sharing.framework와 같은
-          # Products 디렉터리를 공유하면 XCTest가 시작 전에 충돌한다.
-          # 각 모듈을 tuist test로 실행하되 빌드 산출물은 공유하고,
-          # 분리된 xcresult를 합쳐 Test Insights와 전체 커버리지를 한 번만 업로드한다.
+          # 모든 모듈 테스트는 전용 호스트를 사용하므로 Stage workspace scheme에서
+          # 한 번만 빌드·실행해 모듈별 tuist test 반복 비용을 제거한다.
           ./Scripts/run-isolated-module-tests.sh
 
       - name: Upload test results
