@@ -19,13 +19,13 @@ public enum OnBoardingError: Error, LocalizedError, Sendable, Equatable {
   public var errorDescription: String? {
     switch self {
     case .invalidCode:
-      return "Invalid verification code"
+      return "유효하지 않은 인증 코드입니다"
     case .verifyFailed:
-      return "Verification failed"
+      return "인증에 실패했습니다"
     case .networkError:
-      return "Network connection error"
+      return "네트워크 연결을 확인해주세요"
     case .unknownError:
-      return "Unknown error occurred"
+      return "알 수 없는 오류가 발생했습니다"
     }
   }
 }

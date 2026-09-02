@@ -25,7 +25,7 @@ public final class AppUpdateRepositoryImpl: AppUpdateInterface {
 
     public func checkForUpdate() async throws(AppUpdateError) -> AppUpdateInfo {
         guard !bundleId.isEmpty else {
-            throw AppUpdateError.invalidBundleId
+            throw .invalidBundleId
         }
 
         let currentVersion = getCurrentAppVersion()
@@ -86,24 +86,28 @@ public final class AppUpdateRepositoryImpl: AppUpdateInterface {
     private func fetchAppStoreInfo(country: String) async throws(AppUpdateError) -> AppStoreInfoDTO {
         let urlString = "https://itunes.apple.com/lookup?bundleId=\(bundleId)&country=\(country)"
         guard let url = URL(string: urlString) else {
-            throw AppUpdateError.invalidBundleId
+            throw .invalidBundleId
         }
 
+        let data: Data
         do {
-            let (data, _) = try await urlSession.data(from: url)
-            let response = try JSONDecoder().decode(AppUpdateResponseDTO.self, from: data)
-
-            guard let appInfo = response.results.first else {
-                throw AppUpdateError.appNotFound
-            }
-
-            return appInfo
-        } catch let decodingError as DecodingError {
-            DDDLogger.error("[AppUpdate] Decoding error for \(country): \(decodingError.localizedDescription)", category: .network)
-            throw AppUpdateError.decodingError
+            (data, _) = try await urlSession.data(from: url)
         } catch {
             DDDLogger.error("[AppUpdate] Network error for \(country): \(error.localizedDescription)", category: .network)
-            throw AppUpdateError.from(error)
+            throw .lookupFailed
         }
+
+        let response: AppUpdateResponseDTO
+        do {
+            response = try JSONDecoder().decode(AppUpdateResponseDTO.self, from: data)
+        } catch {
+            DDDLogger.error("[AppUpdate] Decoding error for \(country): \(error.localizedDescription)", category: .network)
+            throw .invalidResponse
+        }
+
+        guard let appInfo = response.results.first else {
+            throw .appNotFound
+        }
+        return appInfo
     }
 }

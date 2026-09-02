@@ -12,7 +12,7 @@ final class MockQRCodeRepository: QRCodeInterface {
   private(set) var lastGenerateString: String?
   private(set) var lastValidateCode: String?
 
-  var createQRCodeResponse: Result<String, Entity.QRCodeError> = .failure(.networkError)
+  var createQRCodeResponse: Result<String, Entity.QRCodeError> = .failure(.unknownError("네트워크 요청에 실패했습니다"))
   var generateQRCodeResponse: Image? = nil
   var qrValidateCheckResponse: Result<QRValidateEntity, Entity.QRCodeError> = .failure(.invalidPayload)
 
@@ -54,7 +54,7 @@ final class MockQRCodeRepository: QRCodeInterface {
     lastCreateUserID = nil
     lastGenerateString = nil
     lastValidateCode = nil
-    createQRCodeResponse = .failure(.networkError)
+    createQRCodeResponse = .failure(.unknownError("네트워크 요청에 실패했습니다"))
     generateQRCodeResponse = nil
     qrValidateCheckResponse = .failure(.invalidPayload)
     createQRCodeDelay = 0
@@ -127,8 +127,8 @@ final class MockQRCodeRepository: QRCodeInterface {
   @MainActor
   static func networkError() -> MockQRCodeRepository {
     let mock = MockQRCodeRepository()
-    mock.configureCreateFailure(QRCodeError.networkError)
-    mock.configureValidateFailure(QRCodeError.networkError)
+    mock.configureCreateFailure(QRCodeError.unknownError("네트워크 요청에 실패했습니다"))
+    mock.configureValidateFailure(QRCodeError.unknownError("네트워크 요청에 실패했습니다"))
     return mock
   }
 

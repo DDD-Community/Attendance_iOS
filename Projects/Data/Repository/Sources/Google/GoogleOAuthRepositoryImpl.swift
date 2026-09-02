@@ -24,10 +24,10 @@ public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface, @unchecked S
     @MainActor
     public func signIn() async throws(AuthError) -> GoogleOAuthPayload {
         guard configuration.isValid else {
-            throw AuthError.configurationMissing
+            throw .configurationMissing
         }
         guard let presenting = Self.topViewController() else {
-            throw AuthError.missingPresentingController
+            throw .missingPresentingController
         }
         let gidConfiguration = GIDConfiguration(
             clientID: configuration.clientID,
@@ -60,7 +60,7 @@ public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface, @unchecked S
 
     private func makePayload(from result: GIDSignInResult) throws(AuthError) -> GoogleOAuthPayload {
         guard let idToken = result.user.idToken?.tokenString else {
-            throw AuthError.missingIDToken
+            throw .missingIDToken
         }
 
         let payload = GoogleOAuthPayload(
@@ -78,11 +78,11 @@ public final class GoogleOAuthRepositoryImpl: GoogleOAuthInterface, @unchecked S
         if error.domain == "com.google.GIDSignIn",
            error.code == GIDSignInError.canceled.rawValue {
             DDDLogger.info("Google sign-in cancelled by user.", category: .auth)
-            return AuthError.userCancelled
+            return .userCancelled
         }
 
         DDDLogger.error("Google sign-in failed: \(error.localizedDescription)", category: .auth)
-        return AuthError.unknownError(error.localizedDescription)
+        return .loginFailed
     }
 
     private static func topViewController(

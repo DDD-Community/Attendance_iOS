@@ -114,7 +114,7 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 absentCount: 3
             )
         case .networkError:
-            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
+            throw AttendanceError.unknown
         default:
             return Entity.AttendanceCount(attendanceCount: 0, lateCount: 0, absentCount: 0)
         }
@@ -133,7 +133,7 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 SelectTeamEntity(teamId: 3, teams: .web1)
             ]
         case .networkError:
-            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
+            throw AttendanceError.unknown
         default:
             return []
         }
@@ -155,7 +155,7 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 Entity.Attendance(id: 5, userID: "105", userName: "정엔지니어", userInfo: "iOS1팀/개발자", status: .absent)
             ]
         case .networkError:
-            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
+            throw AttendanceError.unknown
         default:
             return []
         }
@@ -168,7 +168,7 @@ public actor MockAttendanceRepository: AttendanceInterface {
         case .statusSuccess:
             return [.attended, .late, .absent]
         case .networkError:
-            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
+            throw AttendanceError.unknown
         default:
             return []
         }
@@ -188,13 +188,13 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 detail: "attendanceId: \(input.attendanceId), userId: \(input.userId)"
             )
         case .permissionDenied:
-            throw AttendanceError.unauthorized
+            throw AttendanceError.unknown
         case .invalidData:
-            throw AttendanceError.decodingError(MockAttendanceError.invalidData.localizedDescription)
+            throw AttendanceError.unknown
         case .networkError:
-            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
+            throw AttendanceError.unknown
         default:
-            throw AttendanceError.unknown(MockAttendanceError.unknownError.localizedDescription)
+            throw AttendanceError.unknown
         }
     }
 
@@ -217,7 +217,7 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 attendanceRate: attendanceRate
             )
         case .networkError:
-            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
+            throw AttendanceError.unknown
         default:
             return AttendanceStatistics(totalSessions: 0, presentCount: 0, lateCount: 0, absentCount: 0, attendanceRate: 0.0)
         }
@@ -245,7 +245,7 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 return []
             }
         case .networkError:
-            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
+            throw AttendanceError.unknown
         default:
             return []
         }
@@ -272,7 +272,7 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 )
             }
         case .networkError:
-            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
+            throw AttendanceError.unknown
         default:
             return AttendanceValidationResult(isValid: false, scheduleExists: false, userExists: false, attendanceRecordExists: false)
         }
@@ -301,7 +301,7 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 )
             }
         case .networkError:
-            throw AttendanceError.networkError(MockAttendanceError.networkError.localizedDescription)
+            throw AttendanceError.unknown
         default:
             return AttendanceHistory(currentStatus: .attended, previousStatus: nil, modificationCount: 0, lastModifiedDate: Date())
         }

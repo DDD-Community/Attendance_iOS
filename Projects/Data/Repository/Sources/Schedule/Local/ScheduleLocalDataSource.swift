@@ -59,7 +59,7 @@ public actor ScheduleLocalDataSource: ScheduleLocalDataSourceProtocol {
       }
       return cached.map { $0.toDomain() }
     } catch {
-      throw ScheduleError.from(error)
+      throw .cacheFailed
     }
   }
 
@@ -73,7 +73,7 @@ public actor ScheduleLocalDataSource: ScheduleLocalDataSourceProtocol {
       }
       try context.save()
     } catch {
-      throw ScheduleError.from(error)
+      throw .cacheFailed
     }
   }
 
@@ -83,7 +83,7 @@ public actor ScheduleLocalDataSource: ScheduleLocalDataSourceProtocol {
       try context.delete(model: ScheduleCacheEntity.self)
       try context.save()
     } catch {
-      throw ScheduleError.from(error)
+      throw .cacheFailed
     }
   }
 }

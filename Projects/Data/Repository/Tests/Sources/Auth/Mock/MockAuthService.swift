@@ -163,13 +163,13 @@ enum MockAuthError: Error, Equatable {
     case .tokenExpired:
       return .refreshTokenExpired
     case .networkError:
-      return .networkError("network error")
+      return .loginFailed
     case .unauthorized:
       return .accountDeletionNotAllowed
     case .serverError:
-      return .backendError("server error")
+      return .loginFailed
     case .userNotFound:
-      return .backendError("user not found")
+      return .loginFailed
     }
   }
 }

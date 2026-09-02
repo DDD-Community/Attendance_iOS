@@ -59,7 +59,7 @@ public actor MockAppleOAuthRepository: AppleOAuthInterface {
         case .invalidCredentials:
           return .invalidCredential("Mock Apple OAuth invalid credentials")
         case .networkError:
-          return .networkError("Mock Apple OAuth network error")
+          return .unknownError("Mock Apple OAuth network error")
       }
     }
   }

@@ -52,7 +52,7 @@ public actor ProfileLocalDataSource: ProfileLocalDataSourceProtocol {
       }
       return cache.toDomain()
     } catch {
-      throw ProfileError.from(error)
+      throw .cacheFailed
     }
   }
 
@@ -65,7 +65,7 @@ public actor ProfileLocalDataSource: ProfileLocalDataSourceProtocol {
       context.insert(profile.toCacheModel(cacheKey: ProfileCacheKey.user))
       try context.save()
     } catch {
-      throw ProfileError.from(error)
+      throw .cacheFailed
     }
   }
 
@@ -75,7 +75,7 @@ public actor ProfileLocalDataSource: ProfileLocalDataSourceProtocol {
       try context.delete(model: ProfileCacheEntity.self)
       try context.save()
     } catch {
-      throw ProfileError.from(error)
+      throw .cacheFailed
     }
   }
 }

@@ -51,7 +51,7 @@ public final class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
       )
       return entity
     } catch {
-      throw AuthError.from(error)
+      throw .loginFailed
     }
   }
 
@@ -71,10 +71,10 @@ public final class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
 
       if case let DDDNetworkError.response(responseError) = error,
          responseError.isUnauthorized {
-        throw AuthError.refreshTokenExpired
+        throw .refreshTokenExpired
       }
 
-      throw AuthError.from(error)
+      throw .tokenRefreshFailed
     }
   }
 
@@ -104,7 +104,7 @@ public final class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
       let errorMessage = String(data: response.data, encoding: .utf8)
       return AuthExitEntity(message: errorMessage)
     } catch {
-      throw AuthError.from(error)
+      throw .logoutFailed
     }
   }
 
@@ -135,7 +135,7 @@ public final class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
         message: String(data: response.data, encoding: .utf8)
       )
     } catch {
-      throw AuthError.from(error)
+      throw .accountDeletionFailed
     }
   }
 

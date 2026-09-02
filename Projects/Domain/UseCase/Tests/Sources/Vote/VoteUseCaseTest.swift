@@ -59,7 +59,7 @@ struct VoteUseCaseTest {
 
   @Test("TC-003: 투표 목록 조회 실패")
   func fetch_votes_failure() async throws {
-    mockRepository.configureVotesFailure(VoteError.serverError(500))
+    mockRepository.configureVotesFailure(VoteError.unknown)
 
     await #expect(throws: VoteError.self) {
       try await withDependencies {

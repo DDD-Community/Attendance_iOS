@@ -18,10 +18,12 @@ public enum AuthError: Error, Equatable, LocalizedError, Hashable {
   case userCancelled
   /// 자격 증명 문제 (예: 잘못된 nonce, credential 등)
   case invalidCredential(String)
-  /// 네트워크/통신 문제
-  case networkError(String)
-  /// Supabase나 백엔드 쪽에서 온 에러
-  case backendError(String)
+  /// 로그인 처리 실패
+  case loginFailed
+  /// 토큰 갱신 처리 실패
+  case tokenRefreshFailed
+  /// 로그아웃 처리 실패
+  case logoutFailed
   /// 약관 동의가 필요한 경우
   case needsTermsAgreement(String)
   /// 회원 탈퇴 실패
@@ -49,10 +51,12 @@ public enum AuthError: Error, Equatable, LocalizedError, Hashable {
       return "사용자가 로그인을 취소했습니다."
     case .invalidCredential(let message):
       return "잘못된 자격 증명입니다: \(message)"
-    case .networkError(let message):
-      return "네트워크 오류가 발생했습니다: \(message)"
-    case .backendError(let message):
-      return "서버에서 오류가 발생했습니다: \(message)"
+    case .loginFailed:
+      return "로그인에 실패했습니다."
+    case .tokenRefreshFailed:
+      return "로그인 정보를 갱신하지 못했습니다."
+    case .logoutFailed:
+      return "로그아웃에 실패했습니다."
     case .needsTermsAgreement(let message):
       return "\(message)"
     case .accountDeletionFailed:
@@ -81,8 +85,6 @@ public extension AuthError {
 
   var isNetworkError: Bool {
     switch self {
-    case .networkError:
-      return true
     default:
       return false
     }
@@ -90,7 +92,7 @@ public extension AuthError {
 
   var isRetryable: Bool {
     switch self {
-    case .networkError, .backendError:
+    case .loginFailed, .tokenRefreshFailed, .logoutFailed:
       return true
     default:
       return false

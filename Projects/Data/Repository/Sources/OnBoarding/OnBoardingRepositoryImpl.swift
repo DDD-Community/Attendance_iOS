@@ -34,7 +34,7 @@ final public class OnBoardingRepositoryImpl: OnBoardingInterface {
       )
       return dto.toDomain()
     } catch {
-      throw OnBoardingError.from(error)
+      throw .verifyFailed
     }
   }
 
@@ -47,7 +47,7 @@ final public class OnBoardingRepositoryImpl: OnBoardingInterface {
       )
       return dtoArray.data.toDomain()
     } catch {
-      throw OnBoardingError.from(error)
+      throw .networkError
     }
   }
 
@@ -62,7 +62,7 @@ final public class OnBoardingRepositoryImpl: OnBoardingInterface {
       )
       return dto.data.toDomain()
     } catch {
-      throw OnBoardingError.from(error)
+      throw .networkError
     }
   }
 
@@ -75,7 +75,7 @@ final public class OnBoardingRepositoryImpl: OnBoardingInterface {
       )
       return dto.data.toDomain()
     } catch {
-      throw OnBoardingError.from(error)
+      throw .networkError
     }
   }
 

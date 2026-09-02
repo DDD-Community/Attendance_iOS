@@ -37,7 +37,7 @@ final public class SignUpRepositoryImpl: SignUpInterface {
       )
       return dto.toDomain()
     } catch {
-      throw SignUpError.from(error)
+      throw .accountCreationFailed
     }
   }
 }

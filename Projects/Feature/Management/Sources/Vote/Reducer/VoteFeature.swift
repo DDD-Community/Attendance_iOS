@@ -71,6 +71,7 @@ public struct VoteFeature {
     case fetchNonResponders
   }
 
+  @CasePathable
   public enum InnerAction: Equatable {
     case votesResponse(Result<[Vote], VoteError>)
     case participationResponse(Result<VoteParticipation, VoteError>)

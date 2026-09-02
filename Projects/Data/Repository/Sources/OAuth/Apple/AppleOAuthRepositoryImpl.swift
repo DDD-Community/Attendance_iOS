@@ -37,7 +37,7 @@ public final class AppleOAuthRepositoryImpl: NSObject, AppleOAuthInterface, @unc
     guard let identityTokenData = credential.identityToken,
           let identityToken = String(data: identityTokenData, encoding: .utf8)
     else {
-      throw AuthError.missingIDToken
+      throw .missingIDToken
     }
 
     let authorizationCode = credential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) }
@@ -55,7 +55,7 @@ public final class AppleOAuthRepositoryImpl: NSObject, AppleOAuthInterface, @unc
   public func signIn() async throws(AuthError) -> AppleOAuthPayload {
     // 중복 요청은 기존 인증 화면과 continuation을 덮어쓰지 않도록 거부한다.
     if isSigningIn {
-      throw AuthError.invalidCredential("이미 로그인이 진행 중입니다")
+      throw .invalidCredential("이미 로그인이 진행 중입니다")
     }
 
     let result = await withCheckedContinuation { continuation in

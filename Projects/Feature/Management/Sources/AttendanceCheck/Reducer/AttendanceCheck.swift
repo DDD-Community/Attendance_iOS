@@ -490,20 +490,11 @@ extension AttendanceCheck {
         let alertTitle: String
         let alertMessage: String
         
+        // 전송 실패는 도메인이 구분하지 않으므로 서버가 준 거절 사유만 따로 보여준다.
         switch error {
-        case .unknown(let message):
-          // 서버에서 온 상세 메시지 (예: "출석일이 아닙니다")
+        case let .rejected(message):
           alertTitle = "알림"
           alertMessage = message
-        case .serverError(let code):
-          alertTitle = "서버 오류"
-          alertMessage = "서버에 문제가 발생했습니다. (코드: \(code))\n잠시 후 다시 시도해주세요."
-        case .networkError(let message):
-          alertTitle = "네트워크 오류"
-          alertMessage = "인터넷 연결을 확인하고 다시 시도해주세요.\n\(message)"
-        case .unauthorized:
-          alertTitle = "인증 실패"
-          alertMessage = "로그인이 필요합니다. 다시 로그인해주세요."
         default:
           alertTitle = "출석 수정 실패"
           alertMessage = error.errorDescription ?? "출석 상태 수정에 실패했습니다. 다시 시도해주세요."

@@ -25,6 +25,9 @@ struct VoteFeatureReducerTests {
       $0.loading = true
     }
     await store.receive(\.async.fetchVotes)
+    await store.receive(\.inner.votesResponse) {
+      $0.loading = false
+    }
   }
 
   @Test("빈 투표 목록은 투표 상태를 before로 유지한다")

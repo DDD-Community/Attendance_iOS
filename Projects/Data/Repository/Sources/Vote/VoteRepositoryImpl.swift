@@ -149,21 +149,58 @@ private extension VoteRepositoryImpl {
     do {
       return try await client.sendResponse(request)
     } catch {
-      throw VoteError.from(error)
+      throw Self.mapError(error)
     }
+  }
+
+  /// 서버가 준 응답 코드만 도메인 케이스로 옮기고, 전송·디코딩 실패는 `.unknown` 으로 흡수한다.
+  private static func mapError(_ error: DDDNetworkError) -> VoteError {
+    guard case let .response(responseError) = error else {
+      return .requestFailed
+    }
+    return mapResponseError(
+      statusCode: responseError.httpStatus,
+      code: responseError.code
+    )
   }
 
   func validate(_ response: DDDHTTPResponse) throws(VoteError) {
     guard !(200 ..< 300).contains(response.statusCode) else { return }
     let body = try? JSONDecoder().decode(ErrorBody.self, from: response.data)
-    throw VoteError.from(statusCode: response.statusCode, code: body?.code, message: body?.message)
+    throw Self.mapResponseError(statusCode: response.statusCode, code: body?.code)
   }
 
   func decode<T: Decodable>(_: T.Type, from data: Data) throws(VoteError) -> T {
     do {
       return try JSONDecoder().decode(T.self, from: data)
     } catch {
-      throw VoteError.unknown("응답을 해석할 수 없습니다")
+      throw .invalidResponse
+    }
+  }
+
+  private static func mapResponseError(statusCode: Int, code: String?) -> VoteError {
+    switch code {
+    case "VOTE_NO_ACTIVE":
+      return .noActiveVote
+    case "DATA_NOT_FOUND", "VOTE_NOT_FOUND":
+      return .notFound
+    case "MANAGER_ONLY", "VOTE_MANAGER_NOT_ALLOWED":
+      return .managerOnly
+    case "VOTE_ALREADY_OPEN":
+      return .alreadyOpen
+    case "VOTE_INVALID_STATUS", "VOTE_NOT_DRAFT", "VOTE_NOT_OPEN", "VALIDATION_ERROR":
+      return .invalidStatus
+    default:
+      break
+    }
+
+    switch statusCode {
+    case 403:
+      return .managerOnly
+    case 404:
+      return .notFound
+    default:
+      return .requestFailed
     }
   }
 }

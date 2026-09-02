@@ -31,7 +31,7 @@ final public class MyPageRepositoryImpl: MyPageRepositoryInterface {
       )
       return response.toDomain()
     } catch {
-      throw MyPageError.from(error)
+      throw .loadFailed
     }
   }
   
@@ -44,7 +44,7 @@ final public class MyPageRepositoryImpl: MyPageRepositoryInterface {
       )
       return response.map { $0.toDomain() }
     } catch {
-      throw MyPageError.from(error)
+      throw .loadFailed
     }
   }
 }

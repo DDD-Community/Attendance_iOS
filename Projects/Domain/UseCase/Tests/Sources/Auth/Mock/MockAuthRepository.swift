@@ -145,7 +145,7 @@ final class MockAuthRepository: AuthInterface {
   @MainActor
   static func networkError() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureLoginFailure(AuthError.networkError("network unavailable"))
+    mock.configureLoginFailure(AuthError.unknownError("네트워크 요청에 실패했습니다"))
     return mock
   }
 
@@ -173,10 +173,10 @@ final class MockAuthRepository: AuthInterface {
   @MainActor
   static func unauthorized() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureWithdrawFailure(AuthError.backendError("unauthorized"))
-    mock.configureLoginFailure(AuthError.backendError("unauthorized"))
-    mock.configureRefreshFailure(AuthError.backendError("unauthorized"))
-    mock.configureLogoutFailure(AuthError.backendError("unauthorized"))
+    mock.configureWithdrawFailure(AuthError.accountDeletionNotAllowed)
+    mock.configureLoginFailure(AuthError.loginFailed)
+    mock.configureRefreshFailure(AuthError.tokenRefreshFailed)
+    mock.configureLogoutFailure(AuthError.logoutFailed)
     return mock
   }
 
@@ -197,10 +197,10 @@ final class MockAuthRepository: AuthInterface {
   @MainActor
   static func serverError() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureLoginFailure(AuthError.backendError("server error"))
-    mock.configureRefreshFailure(AuthError.backendError("server error"))
-    mock.configureLogoutFailure(AuthError.backendError("server error"))
-    mock.configureWithdrawFailure(AuthError.backendError("server error"))
+    mock.configureLoginFailure(AuthError.loginFailed)
+    mock.configureRefreshFailure(AuthError.tokenRefreshFailed)
+    mock.configureLogoutFailure(AuthError.logoutFailed)
+    mock.configureWithdrawFailure(AuthError.accountDeletionFailed)
     return mock
   }
 

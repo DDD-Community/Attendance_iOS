@@ -158,7 +158,8 @@ public extension Project {
     interfaceDependencies: [ProjectDescription.TargetDependency] = [],
     hasTesting: Bool = false,
     requiresTCAHost: Bool = false,
-    forceLoadInTests: Bool = false
+    forceLoadInTests: Bool = false,
+    forceLoadDependenciesInTests: [String] = []
   ) -> Project {
     // Interface 타깃은 Interface/ 폴더가 실제로 있을 때만 만든다(buildableFolders 는 폴더가 없으면 generate 실패).
     let interfaceTarget: Target? = hasInterface ? .target(
@@ -216,9 +217,12 @@ public extension Project {
         }
       }
       let testHostName = requiresTCAHost || hasDirectTCADependency ? "DDDTCAHost" : "DDDTestHost"
+      let forceLoadFlags = ([name] + forceLoadDependenciesInTests)
+        .map { "-force_load $(BUILT_PRODUCTS_DIR)/\($0).framework/\($0)" }
+        .joined(separator: " ")
       let testTargetSettings: ProjectDescription.Settings = forceLoadInTests ? .settings(
         base: [
-          "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip -force_load $(BUILT_PRODUCTS_DIR)/\(name).framework/\(name)",
+          "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip \(forceLoadFlags)",
           "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
         ],
         configurations: XCConfig.configurations

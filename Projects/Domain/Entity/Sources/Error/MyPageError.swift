@@ -2,39 +2,21 @@
 //  MyPageError.swift
 //  Entity
 //
-//  Created by DDD on 9/1/26.
+//  Created by DDD on 1/4/26.
 //
 
 import Foundation
 
+/// 마이페이지 조회 실패.
+/// 전송 관심사(네트워크·디코딩·HTTP 상태)는 DDDNetwork 가 소유하므로
+/// 여기서 구분할 도메인 실패가 따로 없어 단일 케이스로 둔다.
 public enum MyPageError: Error, LocalizedError, Equatable {
-  case networkError(String)
-  case decodingError(String)
-  case unauthorized
-  case serverError(Int)
-  case unknown(String)
+  case loadFailed
 
   public var errorDescription: String? {
     switch self {
-    case let .networkError(message):
-      return "네트워크 오류: \(message)"
-    case let .decodingError(message):
-      return "데이터 파싱 오류: \(message)"
-    case .unauthorized:
-      return "권한이 없습니다"
-    case let .serverError(code):
-      return "서버 오류 (코드: \(code))"
-    case let .unknown(message):
-      return "알 수 없는 오류: \(message)"
+    case .loadFailed:
+      return "마이페이지 정보를 불러오지 못했습니다"
     }
-  }
-}
-
-public extension MyPageError {
-  static func from(_ error: Error) -> MyPageError {
-    if let myPageError = error as? MyPageError {
-      return myPageError
-    }
-    return .unknown(error.localizedDescription)
   }
 }

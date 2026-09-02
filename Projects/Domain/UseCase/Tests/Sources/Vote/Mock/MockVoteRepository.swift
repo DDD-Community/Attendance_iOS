@@ -25,7 +25,7 @@ final class MockVoteRepository: VoteInterface {
 
   func fetchVotes() async throws(VoteError) -> [Vote] {
     fetchVotesCallCount += 1
-    guard let votesResponse else { throw VoteError.unknown("not configured") }
+    guard let votesResponse else { throw VoteError.unknown }
     return try votesResponse.get()
   }
 
@@ -33,7 +33,7 @@ final class MockVoteRepository: VoteInterface {
     voteId _: Int
   ) async throws(VoteError) -> VoteParticipation {
     participationCallCount += 1
-    guard let participationResponse else { throw VoteError.unknown("not configured") }
+    guard let participationResponse else { throw VoteError.unknown }
     return try participationResponse.get()
   }
 
@@ -53,7 +53,7 @@ final class MockVoteRepository: VoteInterface {
     voteId _: Int
   ) async throws(VoteError) -> [NonParticipant] {
     nonRespondersCallCount += 1
-    guard let nonRespondersResponse else { throw VoteError.unknown("not configured") }
+    guard let nonRespondersResponse else { throw VoteError.unknown }
     return try nonRespondersResponse.get()
   }
 
@@ -61,7 +61,7 @@ final class MockVoteRepository: VoteInterface {
     voteId _: Int
   ) async throws(VoteError) {
     openVoteCallCount += 1
-    guard let openVoteResponse else { throw VoteError.unknown("not configured") }
+    guard let openVoteResponse else { throw VoteError.unknown }
     try openVoteResponse.get()
   }
 
@@ -69,7 +69,7 @@ final class MockVoteRepository: VoteInterface {
     voteId _: Int
   ) async throws(VoteError) {
     closeVoteCallCount += 1
-    guard let closeVoteResponse else { throw VoteError.unknown("not configured") }
+    guard let closeVoteResponse else { throw VoteError.unknown }
     try closeVoteResponse.get()
   }
 

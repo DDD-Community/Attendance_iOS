@@ -152,7 +152,7 @@ public final class MockAuthRepository: AuthInterface, @unchecked Sendable {
             throw AuthError.invalidCredential("Mock invalid token")
 
         case .networkError:
-            throw AuthError.networkError("Mock network error")
+            throw AuthError.unknownError("네트워크 요청에 실패했습니다")
 
         default:
             throw AuthError.unknownError("Mock unknown error")
@@ -190,7 +190,7 @@ public final class MockAuthRepository: AuthInterface, @unchecked Sendable {
             return AuthExitEntity()
 
         case .serverError:
-            throw AuthError.backendError("Mock server error")
+            throw AuthError.logoutFailed
 
         default:
             throw AuthError.unknownError("Mock unknown error")

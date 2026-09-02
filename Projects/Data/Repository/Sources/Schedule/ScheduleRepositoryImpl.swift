@@ -42,7 +42,7 @@ public final class ScheduleRepositoryImpl: ScheduleInterface, @unchecked Sendabl
     do {
       return try await fetchAndCacheSchedule()
     } catch {
-      throw ScheduleError.from(error)
+      throw error
     }
   }
 
@@ -56,7 +56,20 @@ public final class ScheduleRepositoryImpl: ScheduleInterface, @unchecked Sendabl
       try? await localDataSource.saveAll(schedules)
       return schedules
     } catch {
-      throw ScheduleError.from(error)
+      throw Self.mapError(error)
+    }
+  }
+
+  /// 서버가 준 응답 코드만 도메인 케이스로 옮기고, 전송·디코딩 실패는 `.unknown` 으로 흡수한다.
+  private static func mapError(_ error: DDDNetworkError) -> ScheduleError {
+    guard case let .response(responseError) = error else {
+      return .loadFailed
+    }
+    switch responseError.httpStatus {
+    case 400:
+      return .invalidDate
+    default:
+      return .loadFailed
     }
   }
 }

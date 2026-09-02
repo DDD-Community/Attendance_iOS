@@ -31,7 +31,7 @@ final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
       )
       return dto.toDomain()
     } catch {
-      throw AttendanceError.from(error)
+      throw .loadFailed
     }
   }
 
@@ -44,7 +44,7 @@ final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
       )
       return dto.toDomain()
     } catch {
-      throw AttendanceError.from(error)
+      throw .loadFailed
     }
   }
 
@@ -61,7 +61,7 @@ final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
       )
       return dto.toDomain()
     } catch {
-      throw AttendanceError.from(error)
+      throw .loadFailed
     }
   }
 
@@ -74,7 +74,7 @@ final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
       )
       return dto.toDomain()
     } catch {
-      throw AttendanceError.from(error)
+      throw .loadFailed
     }
   }
 
@@ -82,48 +82,42 @@ final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
   public func editAttendance(
     input: EditAttendanceInput
   ) async throws(AttendanceError) -> EditAttendance {
+    let request = EditAttendanceRequestDTO(
+      attendanceId: input.attendanceId.map(String.init),
+      status: input.status.rawValue,
+      userId: input.userId,
+      scheduleId: "\(input.scheduleId)"
+    )
+    let response: DDDHTTPResponse
     do {
-      let request = EditAttendanceRequestDTO(
-        attendanceId: input.attendanceId.map(String.init),
-        status: input.status.rawValue,
-        userId: input.userId,
-        scheduleId: "\(input.scheduleId)"
-      )
-      let response = try await client.sendResponse(AttendanceRequest.editAttendance(body: request))
-      let decoder = JSONDecoder()
+      response = try await client.sendResponse(AttendanceRequest.editAttendance(body: request))
+    } catch {
+      throw .updateFailed
+    }
 
-      if (200...299).contains(response.statusCode) {
-        if response.data.isEmpty {
-          return EditAttendance(isSuccess: true)
-        }
-        if let successDTO = try? decoder.decode(EditAttendanceDTO.self, from: response.data) {
-          return successDTO.toDomain(isSuccess: true)
-        }
+    let decoder = JSONDecoder()
+    if (200...299).contains(response.statusCode) {
+      if response.data.isEmpty {
         return EditAttendance(isSuccess: true)
       }
-
-      // 400+ 에러는 exception으로 throw
-      if let errorDTO = try? decoder.decode(EditAttendanceDTO.self, from: response.data) {
-        // 서버에서 온 상세 메시지 우선 사용
-        let userMessage = errorDTO.message ?? "알 수 없는 오류가 발생했습니다"
-
-        switch response.statusCode {
-        case 400...499:
-          // 클라이언트 오류 - 서버 메시지를 사용자에게 표시
-          throw AttendanceError.unknown(userMessage)
-        case 500...599:
-          // 서버 오류
-          throw AttendanceError.serverError(response.statusCode)
-        default:
-          throw AttendanceError.unknown(userMessage)
-        }
+      if let successDTO = try? decoder.decode(EditAttendanceDTO.self, from: response.data) {
+        return successDTO.toDomain(isSuccess: true)
       }
-
-      // JSON 디코딩 실패 시
-      let rawMessage = String(data: response.data, encoding: .utf8) ?? "디코딩 실패"
-      throw AttendanceError.decodingError("응답 파싱 실패: \(rawMessage)")
-    } catch {
-      throw AttendanceError.from(error)
+      return EditAttendance(isSuccess: true)
     }
+
+    // 서버 응답 메시지가 있으면 거절 사유로 옮기고, 나머지는 변경 실패로 좁힌다.
+    let errorDTO = try? decoder.decode(EditAttendanceDTO.self, from: response.data)
+    throw Self.mapResponseError(
+      statusCode: response.statusCode,
+      message: errorDTO?.message
+    )
+  }
+
+  private static func mapResponseError(statusCode: Int, message: String?) -> AttendanceError {
+    if (400 ..< 500).contains(statusCode), let message, !message.isEmpty {
+      return .rejected(message)
+    }
+    return .updateFailed
   }
 }

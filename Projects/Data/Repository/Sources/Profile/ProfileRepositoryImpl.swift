@@ -39,11 +39,7 @@ public final class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable 
   // MARK: - 강제 refresh (캐시 무시, 항상 네트워크 + 캐시 저장)
 
   public func refreshProfile() async throws(ProfileError) -> Entity.ProfileEntity {
-    do {
-      return try await fetchAndCacheProfile()
-    } catch {
-      throw ProfileError.from(error)
-    }
+    try await fetchAndCacheProfile()
   }
 
   public func getProfile() async throws(ProfileError) -> Entity.ProfileEntity {
@@ -56,11 +52,7 @@ public final class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable 
     }
 
     // 캐시 miss → 네트워크 호출 후 캐시 저장
-    do {
-      return try await fetchAndCacheProfile()
-    } catch {
-      throw ProfileError.from(error)
-    }
+    return try await fetchAndCacheProfile()
   }
 
   private func fetchAndCacheProfile() async throws(ProfileError) -> Entity.ProfileEntity {
@@ -75,7 +67,7 @@ public final class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable 
           try? await localDataSource.saveUser(profile)
           return profile
         } catch {
-          throw ProfileError.from(error)
+          throw Self.mapLoadError(error)
         }
       case .member:
         do {
@@ -84,7 +76,7 @@ public final class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable 
           try? await localDataSource.saveUser(profile)
           return profile
         } catch {
-          throw ProfileError.from(error)
+          throw Self.mapLoadError(error)
         }
       }
     }
@@ -103,7 +95,7 @@ public final class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable 
         try? await localDataSource.saveUser(profile)
         return profile
       } catch {
-        throw ProfileError.from(error)
+        throw Self.mapLoadError(error)
       }
     }
   }
@@ -120,7 +112,41 @@ public final class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable 
       try? await localDataSource.saveUser(profile)
       return profile
     } catch {
-      throw EditProfileError.from(error)
+      throw Self.mapEditError(error)
+    }
+  }
+
+  private static func mapLoadError(_ error: DDDNetworkError) -> ProfileError {
+    switch error {
+    case let .response(responseError):
+      switch responseError.httpStatus {
+      case 401:
+        return .invalidSession
+      case 403:
+        return .profileAccessDenied
+      case 404:
+        return .profileNotFound
+      default:
+        return .loadFailed
+      }
+    case .decoding:
+      return .profileDataCorrupted
+    default:
+      return .loadFailed
+    }
+  }
+
+  private static func mapEditError(_ error: DDDNetworkError) -> EditProfileError {
+    guard case let .response(responseError) = error else {
+      return .profileUpdateFailed
+    }
+    switch responseError.httpStatus {
+    case 404:
+      return .profileNotFound
+    case 423:
+      return .profileLocked
+    default:
+      return .profileUpdateFailed
     }
   }
 }

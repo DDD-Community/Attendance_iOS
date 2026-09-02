@@ -6,6 +6,7 @@
 //
 
 @_exported import ComposableArchitecture
+import DataAssembly
 @_exported import DDDCoreUtility
 @_exported import DDDDesignKit
 @_exported import DDDSharedUI

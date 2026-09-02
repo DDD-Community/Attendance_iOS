@@ -102,7 +102,7 @@ public actor MockGoogleOAuthRepository: GoogleOAuthInterface {
         case .failure:
           throw AuthError.invalidCredential("Mock Google OAuth sign in failed")
         case .networkError:
-          throw AuthError.networkError("Mock Google OAuth network error")
+          throw AuthError.unknownError("Mock Google OAuth network error")
         default:
           throw AuthError.unknownError("Mock Google OAuth unknown error")
       }

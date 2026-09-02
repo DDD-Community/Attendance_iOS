@@ -72,10 +72,10 @@ struct ScheduleUseCaseTest {
   @Test("TC-003: 일정 조회 실패 (네트워크 오류)")
   func get_schedule_network_failure() async throws {
     // Given: 네트워크 오류 설정
-    mockScheduleRepository.configureScheduleFailure(ScheduleError.networkError("network unavailable"))
+    mockScheduleRepository.configureScheduleFailure(ScheduleError.unknown)
 
     // When & Then: 네트워크 오류 검증
-    await #expect(throws: ScheduleError.networkError("network unavailable")) {
+    await #expect(throws: ScheduleError.unknown) {
       try await withDependencies {
         $0.scheduleRepository = mockScheduleRepository
       } operation: {
@@ -90,10 +90,10 @@ struct ScheduleUseCaseTest {
   @Test("TC-004: 일정 조회 실패 (권한 없음)")
   func get_schedule_unauthorized() async throws {
     // Given: 권한 없음 오류 설정
-    mockScheduleRepository.configureScheduleFailure(ScheduleError.unauthorized)
+    mockScheduleRepository.configureScheduleFailure(ScheduleError.unknown)
 
     // When & Then: 권한 오류 검증
-    await #expect(throws: ScheduleError.unauthorized) {
+    await #expect(throws: ScheduleError.unknown) {
       try await withDependencies {
         $0.scheduleRepository = mockScheduleRepository
       } operation: {
@@ -315,7 +315,7 @@ class MockScheduleRepository: ScheduleInterface {
       return try response.get()
     }
 
-    throw Entity.ScheduleError.unknown("not configured")
+    throw Entity.ScheduleError.unknown
   }
 
   func getCachedSchedule() async -> [Schedule]? {

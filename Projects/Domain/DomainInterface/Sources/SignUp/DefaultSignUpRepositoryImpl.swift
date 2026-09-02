@@ -51,9 +51,9 @@ final public class DefaultSignUpRepositoryImpl: SignUpInterface, @unchecked Send
       case .expiredInviteCode:
         return .expiredInviteCode
       case .networkError:
-        return .networkError
+        return .unknownError("네트워크 요청에 실패했습니다")
       case .serverError:
-        return .serverError("서버 내부 오류")
+        return .unknownError("서버 요청에 실패했습니다")
       }
     }
   }

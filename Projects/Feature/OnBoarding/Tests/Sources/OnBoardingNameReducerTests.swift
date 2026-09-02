@@ -18,6 +18,8 @@ struct OnBoardingNameReducerTests {
   func availableNameNavigatesToPartSelection() async {
     var state = OnBoardingName.State()
     state.userSession.name = "철수"
+    // 이전 검증에서 남은 사용 불가 표시가 해제되는지 확인한다
+    state.isNotAvailableName = true
     let store = TestStore(initialState: state) {
       OnBoardingName()
     }

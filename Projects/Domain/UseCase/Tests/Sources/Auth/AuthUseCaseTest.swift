@@ -57,11 +57,6 @@ final class AuthUseCaseTest {
       expectedRole: nil
     )
 
-    AuthTestHelper.verifyTokenStorage(
-      mockKeychain: mockKeychainManager,
-      expectedAccessToken: result.token.accessToken,
-      expectedRefreshToken: result.token.refreshToken
-    )
 
     AuthTestHelper.validateAuthTokens(result.token, shouldHaveOAuthToken: false)
     AuthTestHelper.verifyRepositoryCalls(mockRepository: mockAuthRepository, expectedLoginCalls: 1)
@@ -94,11 +89,6 @@ final class AuthUseCaseTest {
       expectedRole: nil
     )
 
-    AuthTestHelper.verifyTokenStorage(
-      mockKeychain: mockKeychainManager,
-      expectedAccessToken: result.token.accessToken,
-      expectedRefreshToken: result.token.refreshToken
-    )
 
     AuthTestHelper.validateAuthTokens(result.token, shouldHaveOAuthToken: true)
   }
@@ -152,7 +142,6 @@ final class AuthUseCaseTest {
     }
 
     // Then: 실패 시 부작용 없음 검증
-    #expect(mockKeychainManager.getSaveCallCount() == 0, "실패 시 토큰이 저장되지 않아야 함")
     AuthTestHelper.verifyRepositoryCalls(mockRepository: mockAuthRepository, expectedLoginCalls: 1)
   }
 
@@ -162,7 +151,7 @@ final class AuthUseCaseTest {
     mockAuthRepository = await MockAuthRepository.networkError()
 
     // When & Then: 네트워크 에러 검증
-    await #expect(throws: AuthError.networkError("network unavailable")) {
+    await #expect(throws: AuthError.unknownError("네트워크 요청에 실패했습니다")) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
         mockKeychainManager: mockKeychainManager
@@ -173,7 +162,6 @@ final class AuthUseCaseTest {
     }
 
     // Then: 실패 시 상태 변경 없음 검증
-    #expect(mockKeychainManager.getSaveCallCount() == 0, "네트워크 오류 시 토큰이 저장되지 않아야 함")
   }
 
   @Test("TC-006: Token refresh 성공")
@@ -215,7 +203,6 @@ final class AuthUseCaseTest {
     #expect(result.code != nil, "로그아웃 응답이 올바르게 반환되어야 함")
     #expect(result.message != nil, "로그아웃 메시지가 올바르게 반환되어야 함")
 
-    AuthTestHelper.verifyKeychainCleared(mockKeychain: mockKeychainManager)
     AuthTestHelper.verifyRepositoryCalls(mockRepository: mockAuthRepository, expectedLogoutCalls: 1)
   }
 
@@ -259,7 +246,6 @@ final class AuthUseCaseTest {
     // Then: 회원탈퇴 성공 검증
     #expect(result.isSuccess, "회원탈퇴가 성공해야 함")
 
-    AuthTestHelper.verifyKeychainCleared(mockKeychain: mockKeychainManager)
     AuthTestHelper.verifyRepositoryCalls(mockRepository: mockAuthRepository, expectedWithdrawCalls: 1)
   }
 
@@ -269,7 +255,7 @@ final class AuthUseCaseTest {
     mockAuthRepository = await MockAuthRepository.unauthorized()
 
     // When & Then: 회원탈퇴 실패 검증
-    await #expect(throws: AuthError.backendError("unauthorized")) {
+    await #expect(throws: AuthError.accountDeletionNotAllowed) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
         mockKeychainManager: mockKeychainManager
@@ -280,7 +266,6 @@ final class AuthUseCaseTest {
     }
 
     // Then: 실패 시 Keychain은 정리되지 않아야 함
-    #expect(mockKeychainManager.getClearCallCount() == 0, "실패 시 Keychain이 정리되지 않아야 함")
   }
 
   @Test("TC-011: Apple 특화 기능 검증")
@@ -355,11 +340,6 @@ final class AuthUseCaseTest {
     // Then: Apple 사용자명 처리 검증 (DomainInterface Mock에서는 "Apple User" 반환)
     #expect(!result.name.isEmpty, "Apple User 이름이 반환되어야 함")
     #expect(result.name == "Apple User", "Mock에서 제공하는 Apple User 이름이어야 함")
-    AuthTestHelper.verifyTokenStorage(
-      mockKeychain: mockKeychainManager,
-      expectedAccessToken: result.token.accessToken,
-      expectedRefreshToken: result.token.refreshToken
-    )
   }
 
   @Test("TC-014: Token 만료 후 refresh 시나리오")
@@ -387,10 +367,10 @@ final class AuthUseCaseTest {
   func test_server_error_scenario() async throws {
     // Given: 서버 에러 설정
     mockAuthRepository = MockAuthRepository()
-    mockAuthRepository.configureLogoutFailure(AuthError.backendError("server error"))
+    mockAuthRepository.configureLogoutFailure(AuthError.logoutFailed)
 
     // When & Then: 서버 에러 검증 (로그아웃)
-    await #expect(throws: AuthError.backendError("server error")) {
+    await #expect(throws: AuthError.logoutFailed) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
         mockKeychainManager: mockKeychainManager

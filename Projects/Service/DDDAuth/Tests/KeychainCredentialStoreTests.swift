@@ -5,9 +5,11 @@
 //  Created by DDD on 9/1/26.
 //
 
+import Foundation
+@testable import DDDAuth
+import DDDNetworkInterface
 import DDDStorageInterface
 import Testing
-@testable import DDDAuth
 
 struct KeychainCredentialStoreTests {
   @Test
@@ -28,6 +30,18 @@ struct KeychainCredentialStoreTests {
     let storage = FakeSecureStorage(values: [.accessToken: "access"])
 
     #expect(KeychainCredentialStore(storage: storage).load() == nil)
+  }
+
+  /// UseCase 계층에 있던 토큰 저장 검증을 실제 책임 계층으로 옮긴 것이다.
+  @Test
+  func save는_토큰쌍을_각각의_보안키로_저장한다() {
+    let storage = FakeSecureStorage(values: [:])
+    let sut = KeychainCredentialStore(storage: storage)
+
+    sut.save(DDDCredential(accessToken: "access", refreshToken: "refresh", expiresAt: nil))
+
+    #expect(storage.values[.accessToken] == "access")
+    #expect(storage.values[.refreshToken] == "refresh")
   }
 
   @Test

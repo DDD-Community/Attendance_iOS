@@ -144,6 +144,7 @@ public struct ProfileReducer: Sendable {
   @Dependency(\.authUseCase) var authUseCase
   @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.continuousClock) var clock
 
   public var body: some Reducer<State, Action> {
     BindingReducer()

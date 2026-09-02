@@ -56,10 +56,10 @@ struct AttendanceUseCaseTest {
     @Test("TC-002: 관리자 출석 통계 조회 실패")
     func test_admin_attendance_count_failure() async throws {
         // Given: 네트워크 에러 설정
-        mockAttendanceRepository.configureAdminCountFailure(AttendanceError.networkError("network unavailable"))
+        mockAttendanceRepository.configureAdminCountFailure(AttendanceError.unknown)
 
         // When & Then: 에러 처리 검증
-        await #expect(throws: AttendanceError.networkError("network unavailable")) {
+        await #expect(throws: AttendanceError.unknown) {
             try await withDependencies {
                 $0.attendanceRepository = mockAttendanceRepository
             } operation: {
@@ -203,10 +203,10 @@ struct AttendanceUseCaseTest {
             userId: "unauthorized_user",
             newStatus: .attendance
         )
-        mockAttendanceRepository.configureEditFailure(AttendanceError.unauthorized)
+        mockAttendanceRepository.configureEditFailure(AttendanceError.unknown)
 
         // When & Then: 권한 에러 검증
-        await #expect(throws: AttendanceError.unauthorized) {
+        await #expect(throws: AttendanceError.unknown) {
             try await withDependencies {
                 $0.attendanceRepository = mockAttendanceRepository
             } operation: {
@@ -226,10 +226,10 @@ struct AttendanceUseCaseTest {
             userId: "",
             newStatus: .attendance
         )
-        mockAttendanceRepository.configureEditFailure(AttendanceError.decodingError("invalid data"))
+        mockAttendanceRepository.configureEditFailure(AttendanceError.unknown)
 
         // When & Then: 잘못된 데이터 에러 검증
-        await #expect(throws: AttendanceError.decodingError("invalid data")) {
+        await #expect(throws: AttendanceError.unknown) {
             try await withDependencies {
                 $0.attendanceRepository = mockAttendanceRepository
             } operation: {
@@ -345,10 +345,10 @@ struct AttendanceUseCaseTest {
     func test_network_retry_scenario() async throws {
         // Given: 네트워크 재시도 설정 (처음에는 실패, 두 번째에는 성공)
         let expectedCount = AttendanceCount(totalCount: 25, attendanceCount: 20, lateCount: 3, absentCount: 2)
-        mockAttendanceRepository.configureRetryScenario(firstFailure: AttendanceError.networkError("network unavailable"), thenSuccess: expectedCount)
+        mockAttendanceRepository.configureRetryScenario(firstFailure: AttendanceError.unknown, thenSuccess: expectedCount)
 
         // When: 첫 호출은 실패하고 동일 요청 재호출 시 성공
-        await #expect(throws: AttendanceError.networkError("network unavailable")) {
+        await #expect(throws: AttendanceError.unknown) {
             try await withDependencies {
                 $0.attendanceRepository = mockAttendanceRepository
             } operation: {
@@ -544,7 +544,7 @@ class MockAttendanceRepository: AttendanceInterface {
             return try response.get()
         }
 
-        throw Entity.AttendanceError.unknown("not configured")
+        throw Entity.AttendanceError.unknown
     }
 
     func fetchAttendanceTeams() async throws(Entity.AttendanceError) -> [SelectTeamEntity] {
@@ -554,7 +554,7 @@ class MockAttendanceRepository: AttendanceInterface {
             return try response.get()
         }
 
-        throw Entity.AttendanceError.unknown("not configured")
+        throw Entity.AttendanceError.unknown
     }
 
     func sessionAttendance(scheduleId: Int, teamId: Int) async throws(Entity.AttendanceError) -> [Attendance] {
@@ -566,7 +566,7 @@ class MockAttendanceRepository: AttendanceInterface {
             return try response.get()
         }
 
-        throw Entity.AttendanceError.unknown("not configured")
+        throw Entity.AttendanceError.unknown
     }
 
     func fetchStatus() async throws(Entity.AttendanceError) -> [AttendanceStatus] {
@@ -576,7 +576,7 @@ class MockAttendanceRepository: AttendanceInterface {
             return try response.get()
         }
 
-        throw Entity.AttendanceError.unknown("not configured")
+        throw Entity.AttendanceError.unknown
     }
 
     func editAttendance(input: EditAttendanceInput) async throws(Entity.AttendanceError) -> EditAttendance {
@@ -587,7 +587,7 @@ class MockAttendanceRepository: AttendanceInterface {
             return try response.get()
         }
 
-        throw Entity.AttendanceError.unknown("not configured")
+        throw Entity.AttendanceError.unknown
     }
 
     // MARK: - Configuration Methods

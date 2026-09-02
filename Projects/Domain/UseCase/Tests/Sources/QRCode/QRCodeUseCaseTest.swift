@@ -42,10 +42,10 @@ final class QRCodeUseCaseTest {
   @Test("TC-002: QR 코드 생성 실패 (네트워크 오류)")
   func test_create_qr_code_network_failure() async throws {
     // Given: 네트워크 오류 설정
-    mockQRCodeRepository.configureCreateFailure(QRCodeError.networkError)
+    mockQRCodeRepository.configureCreateFailure(QRCodeError.unknownError("네트워크 요청에 실패했습니다"))
 
     // When & Then: QR 코드 생성 실패
-    await #expect(throws: QRCodeError.networkError) {
+    await #expect(throws: QRCodeError.unknownError("네트워크 요청에 실패했습니다")) {
       try await withDependencies {
         $0.qrCodeRepository = mockQRCodeRepository
       } operation: {
@@ -200,10 +200,10 @@ final class QRCodeUseCaseTest {
   @Test("TC-010: QR 코드 검증 실패 (네트워크 오류)")
   func test_qr_validate_network_error() async throws {
     // Given: 네트워크 오류 설정
-    mockQRCodeRepository.configureValidateFailure(QRCodeError.networkError)
+    mockQRCodeRepository.configureValidateFailure(QRCodeError.unknownError("네트워크 요청에 실패했습니다"))
 
     // When & Then: QR 코드 검증 실패
-    await #expect(throws: QRCodeError.networkError) {
+    await #expect(throws: QRCodeError.unknownError("네트워크 요청에 실패했습니다")) {
       try await withDependencies {
         $0.qrCodeRepository = mockQRCodeRepository
       } operation: {
