@@ -139,14 +139,14 @@ jobs:
         id: app-build
         if: steps.tests.outcome == 'success'
         run: |
-          mise exec -- tuist xcodebuild build \
+          TUIST_RUN_REPORT_PATH="$BUILD_RUN_REPORT_PATH" \
+            mise exec -- tuist xcodebuild build \
             -workspace DDDAttendance.xcworkspace \
             -scheme DDDAttendance-Stage \
             -configuration Stage \
             -destination "$SIMULATOR_DESTINATION" \
             -derivedDataPath "$CI_DERIVED_DATA" \
             -resultBundlePath BundleBuildResults.xcresult \
-            --run-report-path "$BUILD_RUN_REPORT_PATH" \
             ONLY_ACTIVE_ARCH=YES \
             COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
 
