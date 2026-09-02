@@ -22,7 +22,7 @@ let project = Project.makeModule(
     .data(.model),
     .data(.repository),
     .domainAssembly,
-    .service,
+    .serviceAssembly,
     .SPM.dependencies
   ],
   sources: ["Sources/**"],

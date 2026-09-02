@@ -63,7 +63,8 @@ public extension TargetDependency {
     return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
 
-  static var service: Self {
+  /// Auth·API 등 Service 구현을 묶어 제공하는 엄브렐러 모듈.
+  static var serviceAssembly: Self {
     return .project(target: "ServiceAssembly", path: .relativeToService("ServiceAssembly"))
   }
 
