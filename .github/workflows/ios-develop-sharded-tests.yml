@@ -83,6 +83,9 @@ jobs:
           SIMULATOR_DESTINATION="$(python3 Scripts/select-ios-simulator.py)"
           echo "SIMULATOR_DESTINATION=$SIMULATOR_DESTINATION" >> "$GITHUB_ENV"
 
+      - name: Prepare simulator
+        run: ./Scripts/prepare-ios-simulator.sh
+
       - name: Prepare build DerivedData
         run: |
           mkdir -p "$CI_DERIVED_DATA"
@@ -209,6 +212,9 @@ jobs:
         run: |
           SIMULATOR_DESTINATION="$(python3 Scripts/select-ios-simulator.py)"
           echo "SIMULATOR_DESTINATION=$SIMULATOR_DESTINATION" >> "$GITHUB_ENV"
+
+      - name: Prepare simulator
+        run: ./Scripts/prepare-ios-simulator.sh
 
       - name: Prepare shard DerivedData
         run: |

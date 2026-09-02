@@ -106,6 +106,10 @@ jobs:
           SIMULATOR_DESTINATION="$(python3 Scripts/select-ios-simulator.py)"
           echo "SIMULATOR_DESTINATION=$SIMULATOR_DESTINATION" >> "$GITHUB_ENV"
 
+      # 사용 중인 개발용 기기 대신 유휴 기기를 부팅하고 actool의 CoreSimulator spawn을 미리 검증한다.
+      - name: Prepare simulator
+        run: ./Scripts/prepare-ios-simulator.sh
+
       - name: Run tests
         id: tests
         continue-on-error: true

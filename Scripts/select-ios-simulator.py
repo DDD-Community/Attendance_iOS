@@ -27,9 +27,17 @@ def load_simulators() -> dict:
 
 devices_by_runtime = load_simulators().get("devices", {})
 for runtime in sorted(devices_by_runtime, key=runtime_version, reverse=True):
-    for device in devices_by_runtime[runtime]:
-        if device.get("isAvailable") and device.get("name", "").startswith("iPhone"):
-            print(f"platform=iOS Simulator,id={device['udid']}")
-            raise SystemExit
+    available_iphones = [
+        device
+        for device in devices_by_runtime[runtime]
+        if device.get("isAvailable", True)
+        and device.get("name", "").startswith("iPhone")
+    ]
+
+    # 개발자가 사용 중인 Booted 기기를 CI가 가져가지 않도록 유휴 기기를 우선한다.
+    available_iphones.sort(key=lambda device: device.get("state") != "Shutdown")
+    if available_iphones:
+        print(f"platform=iOS Simulator,id={available_iphones[0]['udid']}")
+        raise SystemExit
 
 raise SystemExit("사용 가능한 iPhone 시뮬레이터가 없습니다.")
