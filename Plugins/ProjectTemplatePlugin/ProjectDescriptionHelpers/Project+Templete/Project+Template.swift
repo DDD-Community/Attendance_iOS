@@ -158,6 +158,8 @@ public extension Project {
     hasInterface: Bool = false,
     interfaceDependencies: [ProjectDescription.TargetDependency] = [],
     hasTesting: Bool = false,
+    hasDemo: Bool = false,
+    demoDependencies: [ProjectDescription.TargetDependency] = [],
     forceLoadInTests: Bool = false,
     forceLoadDependenciesInTests: [String] = []
   ) -> Project {
@@ -203,6 +205,24 @@ public extension Project {
         infoPlist: .default,
         buildableFolders: ["Testing"],
         dependencies: hasInterface ? [.target(name: "\(name)Interface")] : [.target(name: name)],
+        settings: suppressWarningsSettings
+      ))
+    }
+
+    // Demo: 이 모듈 하나만 띄우는 단독 실행 앱. Demo/ 폴더가 실제로 있을 때만 만든다
+    // (buildableFolders 는 폴더가 없으면 generate 가 실패한다).
+    // 앱 전체를 빌드하지 않고 피처 하나를 시뮬레이터에서 확인하려는 용도이고,
+    // tuist share 로 Previews 에 올려 링크로 넘기는 대상이기도 하다.
+    if hasDemo {
+      targets.append(.target(
+        name: "\(name)Demo",
+        destinations: destinations,
+        product: .app,
+        bundleId: "\(bundleId)Demo",
+        deploymentTargets: deploymentTarget,
+        infoPlist: .demoInfoPlist,
+        buildableFolders: ["Demo"],
+        dependencies: [.target(name: name)] + demoDependencies,
         settings: suppressWarningsSettings
       ))
     }
