@@ -56,10 +56,10 @@ struct MyPageUseCaseTest {
     @Test("TC-002: 내 출석 통계 조회 실패")
     func test_fetch_my_attendances_failure() async throws {
         // Given: 네트워크 에러 설정
-        mockMyPageRepository.configureAttendancesFailure(MyPageError.networkError)
+        mockMyPageRepository.configureAttendancesFailure(MyPageError.networkError("network unavailable"))
 
         // When & Then: 에러 처리 검증
-        await #expect(throws: MyPageError.self) {
+        await #expect(throws: MyPageError.networkError("network unavailable")) {
             try await withDependencies {
                 $0.myPageRepository = mockMyPageRepository
             } operation: {
@@ -102,7 +102,7 @@ struct MyPageUseCaseTest {
         mockMyPageRepository.configureSchedulesFailure(MyPageError.unauthorized)
 
         // When & Then: 권한 에러 검증
-        await #expect(throws: MyPageError.self) {
+        await #expect(throws: MyPageError.unauthorized) {
             try await withDependencies {
                 $0.myPageRepository = mockMyPageRepository
             } operation: {
@@ -345,10 +345,3 @@ class MockMyPageRepository: MyPageRepositoryInterface {
     }
 }
 
-// MARK: - Test Errors
-enum MyPageError: Error, Equatable {
-    case networkError
-    case unauthorized
-    case invalidData
-    case notConfigured
-}

@@ -56,10 +56,10 @@ struct AttendanceUseCaseTest {
     @Test("TC-002: 관리자 출석 통계 조회 실패")
     func test_admin_attendance_count_failure() async throws {
         // Given: 네트워크 에러 설정
-        mockAttendanceRepository.configureAdminCountFailure(AttendanceError.networkError)
+        mockAttendanceRepository.configureAdminCountFailure(AttendanceError.networkError("network unavailable"))
 
         // When & Then: 에러 처리 검증
-        await #expect(throws: AttendanceError.self) {
+        await #expect(throws: AttendanceError.networkError("network unavailable")) {
             try await withDependencies {
                 $0.attendanceRepository = mockAttendanceRepository
             } operation: {
@@ -206,7 +206,7 @@ struct AttendanceUseCaseTest {
         mockAttendanceRepository.configureEditFailure(AttendanceError.unauthorized)
 
         // When & Then: 권한 에러 검증
-        await #expect(throws: AttendanceError.self) {
+        await #expect(throws: AttendanceError.unauthorized) {
             try await withDependencies {
                 $0.attendanceRepository = mockAttendanceRepository
             } operation: {
@@ -226,10 +226,10 @@ struct AttendanceUseCaseTest {
             userId: "",
             newStatus: .attendance
         )
-        mockAttendanceRepository.configureEditFailure(AttendanceError.invalidData)
+        mockAttendanceRepository.configureEditFailure(AttendanceError.decodingError("invalid data"))
 
         // When & Then: 잘못된 데이터 에러 검증
-        await #expect(throws: AttendanceError.self) {
+        await #expect(throws: AttendanceError.decodingError("invalid data")) {
             try await withDependencies {
                 $0.attendanceRepository = mockAttendanceRepository
             } operation: {
@@ -345,10 +345,10 @@ struct AttendanceUseCaseTest {
     func test_network_retry_scenario() async throws {
         // Given: 네트워크 재시도 설정 (처음에는 실패, 두 번째에는 성공)
         let expectedCount = AttendanceCount(totalCount: 25, attendanceCount: 20, lateCount: 3, absentCount: 2)
-        mockAttendanceRepository.configureRetryScenario(firstFailure: AttendanceError.networkError, thenSuccess: expectedCount)
+        mockAttendanceRepository.configureRetryScenario(firstFailure: AttendanceError.networkError("network unavailable"), thenSuccess: expectedCount)
 
         // When: 첫 호출은 실패하고 동일 요청 재호출 시 성공
-        await #expect(throws: AttendanceError.self) {
+        await #expect(throws: AttendanceError.networkError("network unavailable")) {
             try await withDependencies {
                 $0.attendanceRepository = mockAttendanceRepository
             } operation: {
@@ -652,14 +652,6 @@ class MockAttendanceRepository: AttendanceInterface {
         retryScenarioSuccess = thenSuccess
         retryCallCount = 0
     }
-}
-
-// MARK: - Test Errors
-enum AttendanceError: Error, Equatable {
-    case networkError
-    case unauthorized
-    case invalidData
-    case notConfigured
 }
 
 // MARK: - Helper Extensions

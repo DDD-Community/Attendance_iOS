@@ -135,7 +135,7 @@ final class MockQRCodeRepository: QRCodeInterface {
   @MainActor
   static func invalidCode() -> MockQRCodeRepository {
     let mock = MockQRCodeRepository()
-    mock.configureValidateFailure(QRCodeError.invalidCode)
+    mock.configureValidateFailure(QRCodeError.invalidPayload)
     return mock
   }
 
@@ -146,13 +146,4 @@ final class MockQRCodeRepository: QRCodeInterface {
     mock.qrValidateCheckDelay = 0.01
     return mock
   }
-}
-
-enum QRCodeError: Error, Equatable {
-  case invalidCode
-  case networkError
-  case unauthorized
-  case serverError
-  case generateFailed
-  case userNotFound
 }

@@ -182,10 +182,10 @@ final class QRCodeUseCaseTest {
   @Test("TC-009: QR 코드 검증 실패 (잘못된 코드)")
   func test_qr_validate_invalid_code() async throws {
     // Given: 잘못된 QR 코드 설정
-    mockQRCodeRepository.configureValidateFailure(QRCodeError.invalidCode)
+    mockQRCodeRepository.configureValidateFailure(QRCodeError.invalidPayload)
 
     // When & Then: QR 코드 검증 실패
-    await #expect(throws: QRCodeError.invalidCode) {
+    await #expect(throws: QRCodeError.invalidPayload) {
       try await withDependencies {
         $0.qrCodeRepository = mockQRCodeRepository
       } operation: {
@@ -216,10 +216,10 @@ final class QRCodeUseCaseTest {
   @Test("TC-011: QR 코드 검증 실패 (권한 없음)")
   func test_qr_validate_unauthorized() async throws {
     // Given: 권한 없음 오류 설정
-    mockQRCodeRepository.configureValidateFailure(QRCodeError.unauthorized)
+    mockQRCodeRepository.configureValidateFailure(QRCodeError.invalidSession)
 
     // When & Then: QR 코드 검증 실패
-    await #expect(throws: QRCodeError.unauthorized) {
+    await #expect(throws: QRCodeError.invalidSession) {
       try await withDependencies {
         $0.qrCodeRepository = mockQRCodeRepository
       } operation: {

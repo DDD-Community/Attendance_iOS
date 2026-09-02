@@ -36,7 +36,7 @@ struct LoginReducerTests {
       $0.staffRole = .member
       $0.userSession.userRole = .member
     }
-    await store.receive(\.navigation.presentMemberMain) { _ in }
+    await store.receive(\.navigation.presentMemberMain)
   }
 }
 

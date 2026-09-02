@@ -60,7 +60,7 @@ struct OnBoardingReducerTests {
       $0.userSession.selectTeam = .unknown
       $0.userSession.selectTeamId = nil
     }
-    await store.receive(\.navigation.presentSignUpName) { _ in }
+    await store.receive(\.navigation.presentSignUpName)
   }
 
   @Test("이름이 여섯 글자 이상이면 다음 단계로 이동하지 않고 사용 불가 상태가 된다")

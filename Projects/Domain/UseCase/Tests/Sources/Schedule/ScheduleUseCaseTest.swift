@@ -72,10 +72,10 @@ struct ScheduleUseCaseTest {
   @Test("TC-003: 일정 조회 실패 (네트워크 오류)")
   func get_schedule_network_failure() async throws {
     // Given: 네트워크 오류 설정
-    mockScheduleRepository.configureScheduleFailure(ScheduleError.networkError)
+    mockScheduleRepository.configureScheduleFailure(ScheduleError.networkError("network unavailable"))
 
     // When & Then: 네트워크 오류 검증
-    await #expect(throws: ScheduleError.self) {
+    await #expect(throws: ScheduleError.networkError("network unavailable")) {
       try await withDependencies {
         $0.scheduleRepository = mockScheduleRepository
       } operation: {
@@ -93,7 +93,7 @@ struct ScheduleUseCaseTest {
     mockScheduleRepository.configureScheduleFailure(ScheduleError.unauthorized)
 
     // When & Then: 권한 오류 검증
-    await #expect(throws: ScheduleError.self) {
+    await #expect(throws: ScheduleError.unauthorized) {
       try await withDependencies {
         $0.scheduleRepository = mockScheduleRepository
       } operation: {
@@ -333,11 +333,3 @@ class MockScheduleRepository: ScheduleInterface {
   }
 }
 
-// MARK: - Test Errors
-
-enum ScheduleError: Error, Equatable {
-  case networkError
-  case unauthorized
-  case invalidData
-  case notConfigured
-}

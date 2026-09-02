@@ -78,7 +78,7 @@ struct ProfileReducerTests {
     await store.send(.inner(.logoutResponses(.success(authExit)))) {
       $0.authExit = authExit
     }
-    await store.receive(\.navigation.presentLogOut) { _ in }
+    await store.receive(\.navigation.presentLogOut)
   }
 
   @Test("deleteUserResponse 성공이 아니면 로그아웃 navigation을 보내지 않는다")

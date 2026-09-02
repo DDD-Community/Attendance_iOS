@@ -124,7 +124,8 @@ public struct Splash {
         }
         
       case .scope(.customAlert(.presented(.cancelTapped))):
-        // "나중에 할게요" 선택 시 화면 이동
+        // "나중에 할게요" 선택 시 팝업을 닫고 화면 이동
+        state.customAlert = nil
         if state.profileFetchCompleted {
           return navigateToNextScreen(state: &state)
         }

@@ -141,7 +141,7 @@ final class AuthUseCaseTest {
     mockAuthRepository = await MockAuthRepository.invalidToken()
 
     // When & Then: 로그인 실패 검증
-    await #expect(throws: AuthError.self) {
+    await #expect(throws: AuthError.invalidCredential("invalid token")) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
         mockKeychainManager: mockKeychainManager
@@ -162,7 +162,7 @@ final class AuthUseCaseTest {
     mockAuthRepository = await MockAuthRepository.networkError()
 
     // When & Then: 네트워크 에러 검증
-    await #expect(throws: AuthError.self) {
+    await #expect(throws: AuthError.networkError("network unavailable")) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
         mockKeychainManager: mockKeychainManager
@@ -269,7 +269,7 @@ final class AuthUseCaseTest {
     mockAuthRepository = await MockAuthRepository.unauthorized()
 
     // When & Then: 회원탈퇴 실패 검증
-    await #expect(throws: AuthError.self) {
+    await #expect(throws: AuthError.backendError("unauthorized")) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
         mockKeychainManager: mockKeychainManager
@@ -366,10 +366,10 @@ final class AuthUseCaseTest {
   func test_token_expired_refresh_scenario() async throws {
     // Given: 토큰 만료 상황 설정
     mockAuthRepository = MockAuthRepository()
-    mockAuthRepository.configureRefreshFailure(MockAuthError.tokenExpired)
+    mockAuthRepository.configureRefreshFailure(AuthError.refreshTokenExpired)
 
     // When & Then: 토큰 만료 에러 검증
-    await #expect(throws: MockAuthError.self) {
+    await #expect(throws: AuthError.refreshTokenExpired) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
         mockKeychainManager: mockKeychainManager
@@ -387,10 +387,10 @@ final class AuthUseCaseTest {
   func test_server_error_scenario() async throws {
     // Given: 서버 에러 설정
     mockAuthRepository = MockAuthRepository()
-    mockAuthRepository.configureLogoutFailure(MockAuthError.serverError)
+    mockAuthRepository.configureLogoutFailure(AuthError.backendError("server error"))
 
     // When & Then: 서버 에러 검증 (로그아웃)
-    await #expect(throws: MockAuthError.self) {
+    await #expect(throws: AuthError.backendError("server error")) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
         mockKeychainManager: mockKeychainManager

@@ -80,7 +80,7 @@ struct OnBoardingUseCaseTest {
         mockOnBoardingRepository.configureVerifyCodeFailure(OnBoardingError.invalidCode)
 
         // When & Then: 잘못된 코드 에러 검증
-        await #expect(throws: OnBoardingError.self) {
+        await #expect(throws: OnBoardingError.invalidCode) {
             try await withDependencies {
                 $0.onBoardingRepository = mockOnBoardingRepository
             } operation: {
@@ -95,10 +95,10 @@ struct OnBoardingUseCaseTest {
     @Test("TC-004: 초대 코드 검증 실패 (만료된 코드)")
     func test_verify_code_failure_expired() async throws {
         // Given: 만료된 초대 코드 에러 설정
-        mockOnBoardingRepository.configureVerifyCodeFailure(OnBoardingError.expiredCode)
+        mockOnBoardingRepository.configureVerifyCodeFailure(OnBoardingError.verifyFailed)
 
         // When & Then: 만료된 코드 에러 검증
-        await #expect(throws: OnBoardingError.self) {
+        await #expect(throws: OnBoardingError.verifyFailed) {
             try await withDependencies {
                 $0.onBoardingRepository = mockOnBoardingRepository
             } operation: {
@@ -142,7 +142,7 @@ struct OnBoardingUseCaseTest {
         mockOnBoardingRepository.configureJobsFailure(OnBoardingError.networkError)
 
         // When & Then: 네트워크 에러 검증
-        await #expect(throws: OnBoardingError.self) {
+        await #expect(throws: OnBoardingError.networkError) {
             try await withDependencies {
                 $0.onBoardingRepository = mockOnBoardingRepository
             } operation: {
@@ -185,10 +185,10 @@ struct OnBoardingUseCaseTest {
     @Test("TC-008: 팀 목록 조회 실패 (잘못된 기수)")
     func test_fetch_teams_failure_invalid_generation() async throws {
         // Given: 잘못된 기수 에러 설정
-        mockOnBoardingRepository.configureTeamsFailure(OnBoardingError.invalidGeneration)
+        mockOnBoardingRepository.configureTeamsFailure(OnBoardingError.unknownError)
 
         // When & Then: 잘못된 기수 에러 검증
-        await #expect(throws: OnBoardingError.self) {
+        await #expect(throws: OnBoardingError.unknownError) {
             try await withDependencies {
                 $0.onBoardingRepository = mockOnBoardingRepository
             } operation: {
@@ -229,10 +229,10 @@ struct OnBoardingUseCaseTest {
     @Test("TC-010: 관리 권한 목록 조회 실패 (권한 없음)")
     func test_fetch_managing_failure_unauthorized() async throws {
         // Given: 권한 없음 에러 설정
-        mockOnBoardingRepository.configureManagingFailure(OnBoardingError.unauthorized)
+        mockOnBoardingRepository.configureManagingFailure(OnBoardingError.unknownError)
 
         // When & Then: 권한 없음 에러 검증
-        await #expect(throws: OnBoardingError.self) {
+        await #expect(throws: OnBoardingError.unknownError) {
             try await withDependencies {
                 $0.onBoardingRepository = mockOnBoardingRepository
             } operation: {
@@ -550,14 +550,4 @@ class MockOnBoardingRepository: OnBoardingInterface {
     func configureManagingFailure(_ error: Error) {
         managingResponse = .failure(DomainInterface.OnBoardingError.from(error))
     }
-}
-
-// MARK: - Test Errors
-enum OnBoardingError: Error, Equatable {
-    case invalidCode
-    case expiredCode
-    case networkError
-    case unauthorized
-    case invalidGeneration
-    case notConfigured
 }

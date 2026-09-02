@@ -28,7 +28,6 @@ public struct QRCode {
 
     var qrCheckModel: QRValidateEntity?
     var scheduleId: String = ""
-    var nowDate = Date()
     var isUseQRCode: Bool = false
     @Presents public var alert: AlertState<AlertAction>?
 

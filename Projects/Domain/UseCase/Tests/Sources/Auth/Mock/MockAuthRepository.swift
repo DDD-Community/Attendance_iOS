@@ -138,14 +138,14 @@ final class MockAuthRepository: AuthInterface {
   @MainActor
   static func invalidToken() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureLoginFailure(AuthError.invalidToken)
+    mock.configureLoginFailure(AuthError.invalidCredential("invalid token"))
     return mock
   }
 
   @MainActor
   static func networkError() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureLoginFailure(AuthError.networkError)
+    mock.configureLoginFailure(AuthError.networkError("network unavailable"))
     return mock
   }
 
@@ -173,10 +173,10 @@ final class MockAuthRepository: AuthInterface {
   @MainActor
   static func unauthorized() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureWithdrawFailure(AuthError.unauthorized)
-    mock.configureLoginFailure(AuthError.unauthorized)
-    mock.configureRefreshFailure(AuthError.unauthorized)
-    mock.configureLogoutFailure(AuthError.unauthorized)
+    mock.configureWithdrawFailure(AuthError.backendError("unauthorized"))
+    mock.configureLoginFailure(AuthError.backendError("unauthorized"))
+    mock.configureRefreshFailure(AuthError.backendError("unauthorized"))
+    mock.configureLogoutFailure(AuthError.backendError("unauthorized"))
     return mock
   }
 
@@ -190,17 +190,17 @@ final class MockAuthRepository: AuthInterface {
   @MainActor
   static func tokenExpired() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureRefreshFailure(AuthError.tokenExpired)
+    mock.configureRefreshFailure(AuthError.refreshTokenExpired)
     return mock
   }
 
   @MainActor
   static func serverError() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureLoginFailure(AuthError.serverError)
-    mock.configureRefreshFailure(AuthError.serverError)
-    mock.configureLogoutFailure(AuthError.serverError)
-    mock.configureWithdrawFailure(AuthError.serverError)
+    mock.configureLoginFailure(AuthError.backendError("server error"))
+    mock.configureRefreshFailure(AuthError.backendError("server error"))
+    mock.configureLogoutFailure(AuthError.backendError("server error"))
+    mock.configureWithdrawFailure(AuthError.backendError("server error"))
     return mock
   }
 
@@ -219,24 +219,4 @@ final class MockAuthRepository: AuthInterface {
   func getWithdrawCallCount() -> Int { withDrawCallCount }
   func getUpdateCredentialCallCount() -> Int { updateSessionCredentialCallCount }
   func getLastUpdatedTokens() -> AuthTokens? { lastUpdateTokens }
-}
-
-enum AuthError: Error, Equatable {
-  case invalidToken
-  case tokenExpired
-  case networkError
-  case unauthorized
-  case serverError
-  case invalidCredentials
-  case userNotFound
-}
-
-enum MockAuthError: Error, Equatable {
-  case tokenExpired
-  case serverError
-  case networkError
-  case unauthorized
-  case invalidToken
-  case invalidCredentials
-  case userNotFound
 }

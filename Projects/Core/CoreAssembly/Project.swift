@@ -23,5 +23,6 @@ let project = Project.makeModule(
     .core(.storage, .implementation)
   ],
   sources: ["Sources/**"],
-  hasTests: true
+  hasTests: true,
+  requiresTCAHost: true
 )
