@@ -5,50 +5,45 @@
 //  Created by DDD on 9/2/26.
 //
 
-import DDDNetworkInterface
 import DomainInterface
 import Repository
-import ServiceAssembly
 
 /// FeatureAssembly에서 Domain 인터페이스와 Data 구현을 연결하는 Repository 팩토리입니다.
 enum RepositoryFactory {
   static var attendance: any AttendanceInterface {
-    return AttendanceRepositoryImpl(client: networkClient)
+    return AttendanceRepositoryImpl()
   }
 
   static var schedule: any ScheduleInterface {
-    return ScheduleRepositoryImpl(client: networkClient)
+    return ScheduleRepositoryImpl()
   }
 
   static var qrCode: any QRCodeInterface {
-    return QRCodeRepositoryImpl(client: networkClient)
+    return QRCodeRepositoryImpl()
   }
 
   static var auth: any AuthInterface {
-    return AuthRepositoryImpl(
-      client: networkClient,
-      authService: NetworkContainer.authService
-    )
+    return AuthRepositoryImpl()
   }
 
   static var onBoarding: any OnBoardingInterface {
-    return OnBoardingRepositoryImpl(client: networkClient)
+    return OnBoardingRepositoryImpl()
   }
 
   static var signUp: any SignUpInterface {
-    return SignUpRepositoryImpl(client: networkClient)
+    return SignUpRepositoryImpl()
   }
 
   static var profile: any ProfileInterface {
-    return ProfileRepositoryImpl(client: networkClient)
+    return ProfileRepositoryImpl()
   }
 
   static var myPage: any MyPageRepositoryInterface {
-    return MyPageRepositoryImpl(client: networkClient)
+    return MyPageRepositoryImpl()
   }
 
   static var vote: any VoteInterface {
-    return VoteRepositoryImpl(client: networkClient)
+    return VoteRepositoryImpl()
   }
 
   static var googleOAuth: any GoogleOAuthInterface {
@@ -65,11 +60,5 @@ enum RepositoryFactory {
 
   static var appUpdate: any AppUpdateInterface {
     return AppUpdateRepositoryImpl()
-  }
-}
-
-private extension RepositoryFactory {
-  static var networkClient: any DDDNetworkClient {
-    return NetworkContainer.authenticatedClient
   }
 }

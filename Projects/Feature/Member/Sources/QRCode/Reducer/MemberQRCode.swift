@@ -31,12 +31,12 @@ public struct MemberQRCode {
     @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   }
 
-  public enum Action: BindableAction, FeatureAction {
+  public enum Action: BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case inner(InnerAction)
     case async(AsyncAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
   }
 
   @CasePathable
@@ -55,7 +55,7 @@ public struct MemberQRCode {
   }
 
   /// 이동 계약은 MemberInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
-  public typealias NavigationAction = MemberQRCodeNavigation
+  public typealias DelegateAction = MemberQRCodeDelegate
 
   @Dependency(\.qrCodeUseCase) private var qrCodeUseCase
 
@@ -76,8 +76,8 @@ public struct MemberQRCode {
       case let .async(action):
         return handleAsyncAction(state: &state, action: action)
 
-      case let .navigation(action):
-        return handleNavigationAction(state: &state, action: action)
+      case let .delegate(action):
+        return handleDelegateAction(state: &state, action: action)
       }
     }
   }
@@ -172,9 +172,9 @@ extension MemberQRCode {
     }
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state _: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
     case .back:

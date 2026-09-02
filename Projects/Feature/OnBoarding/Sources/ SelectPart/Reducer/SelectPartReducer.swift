@@ -31,12 +31,12 @@ public struct SelectPartReducer {
 
   }
   
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
   }
   
   // MARK: - ViewAction
@@ -59,10 +59,10 @@ public struct SelectPartReducer {
     case jobListResponse(Result<[SelectJob], SignUpError>)
   }
   
-  // MARK: - NavigationAction
+  // MARK: - DelegateAction
   
   /// 이동 계약은 OnBoardingInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
-  public typealias NavigationAction = SelectPartNavigation
+  public typealias DelegateAction = SelectPartDelegate
 
 
   nonisolated enum CancelID: Hashable {
@@ -87,8 +87,8 @@ public struct SelectPartReducer {
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
         
-      case .navigation(let navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+      case .delegate(let delegateAction):
+        return handleDelegateAction(state: &state, action: delegateAction)
       }
     }
   }
@@ -123,9 +123,9 @@ extension SelectPartReducer {
     }
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
     case .presentManaging:
@@ -135,9 +135,9 @@ extension SelectPartReducer {
     case .presentNextStep:
         return .run { [isAdmin = state.userSession.userRole] send in
         if isAdmin == .manager {
-          await send(.navigation(.presentManaging))
+          await send(.delegate(.presentManaging))
         } else {
-          await send(.navigation(.presentSelectTeam))
+          await send(.delegate(.presentSelectTeam))
         }
       }
     }

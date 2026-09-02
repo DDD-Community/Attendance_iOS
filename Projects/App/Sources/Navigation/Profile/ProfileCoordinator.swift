@@ -85,7 +85,7 @@ extension ProfileCoordinator {
     action: IndexedRouterActionOf<ProfileScreen>
   ) -> Effect<Action> {
     switch action {
-    case .routeAction(id: _, action: .profile(.navigation(.presentLogOut))):
+    case .routeAction(id: _, action: .profile(.delegate(.presentLogOut))):
       state.routes.goBackToRoot()
       return .concatenate(
         .cancel(id: ProfileReducer.CancelID.fetchProfile),
@@ -97,39 +97,39 @@ extension ProfileCoordinator {
         }
       )
 
-      case .routeAction(id: _, action: .profile(.navigation(.presentPrivacyPolicy))):
+      case .routeAction(id: _, action: .profile(.delegate(.presentPrivacyPolicy))):
         state.routes.push(.web(.init(url: "https://dddset.notion.site/DDD-2d424441b0b08080a518ed42f1315b20?source=copy_link")))
         return .none
 
 
-      case .routeAction(id: _, action: .profile(.navigation(.presentAppPeedBackWeb))):
+      case .routeAction(id: _, action: .profile(.delegate(.presentAppPeedBackWeb))):
         state.routes.push(.web(.init(url: "https://forms.gle/a2idQmnxjbC5czfP7")))
         return .none
 
 
-      case .routeAction(id: _, action: .profile(.navigation(.presentEditGeneration))):
+      case .routeAction(id: _, action: .profile(.delegate(.presentEditGeneration))):
         state.routes.push(.onBoarding(.init()))
         return .none
 
       case .routeAction(id: _, action: .web(.backToRoot)):
         return .send(.view(.backAction))
 
-      case .routeAction(id: _, action: .onBoarding(.navigation(.presentLogin))):
+      case .routeAction(id: _, action: .onBoarding(.delegate(.presentLogin))):
         return .send(.navigation(.presentLogin))
 
-      case .routeAction(id: _, action: .onBoarding(.navigation(.backToRoot))):
+      case .routeAction(id: _, action: .onBoarding(.delegate(.backToRoot))):
         state.routes.goBackTo(\.profile)
         return .none
 
-      case .routeAction(id: _, action: .onBoarding(.navigation(.presentProfile))):
+      case .routeAction(id: _, action: .onBoarding(.delegate(.presentProfile))):
         state.routes.goBackTo(\.profile)
         return .none
 
       // 기수변경으로 역할이 바뀐 경우 상위(Member/Staff)로 전파해 홈 전환
-      case .routeAction(id: _, action: .onBoarding(.navigation(.presentStaff))):
+      case .routeAction(id: _, action: .onBoarding(.delegate(.presentStaff))):
         return .send(.navigation(.presentStaff))
 
-      case .routeAction(id: _, action: .onBoarding(.navigation(.presentMember))):
+      case .routeAction(id: _, action: .onBoarding(.delegate(.presentMember))):
         return .send(.navigation(.presentMember))
 
     default:

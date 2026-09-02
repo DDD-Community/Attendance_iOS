@@ -8,6 +8,7 @@
 import Combine
 
 import DDDNetworkInterface
+import Dependencies
 import DomainInterface
 import Model
 import Entity
@@ -16,13 +17,9 @@ import APIEndpoint
 final public class SignUpRepositoryImpl: SignUpInterface {
 
 
-  private let client: any DDDNetworkClient
+  @Dependency(\.networkClient) private var client
 
-  public init(
-    client: any DDDNetworkClient
-  ) {
-    self.client = client
-  }
+  public init() {}
 
   // Mark : -  API 회원가입
   public func registerUser(

@@ -126,7 +126,7 @@ extension CreateAppView {
             .foregroundStyle(.staticWhite)
         }
         .contentShape(Capsule())
-        .onTapGesture { store.send(.navigation(.presentWeb)) }
+        .onTapGesture { store.send(.delegate(.presentWeb)) }
 
       Spacer()
         .frame(height: 8)

@@ -25,7 +25,7 @@ struct VoteRepositoryImplTests {
       .response(200, "{}"), .response(200, "{}"), .response(204),
       .response(200, "{}")
     ])
-    let repository = VoteRepositoryImpl(client: client)
+    let repository = makeRepository(client: client) { VoteRepositoryImpl() }
 
     #expect(try await repository.fetchVotes().isEmpty)
     _ = try await repository.fetchParticipation(voteId: 1)
@@ -50,20 +50,20 @@ struct VoteRepositoryImplTests {
   )
   func responseErrors(status: Int, code: String?, expected: VoteError) async {
     let json = code.map { #"{"code":"\#($0)"}"# } ?? "{}"
-    let repository = VoteRepositoryImpl(client: StubNetworkClient(statusCode: status, json: json))
+    let repository = makeRepository(client: StubNetworkClient(statusCode: status, json: json)) { VoteRepositoryImpl() }
     await #expect(throws: expected) { try await repository.openVote(voteId: 1) }
   }
 
   @Test("네트워크 오류는 요청 실패")
   func networkError() async {
     let error = DDDNetworkError.response(.init(httpStatus: 503))
-    let repository = VoteRepositoryImpl(client: StubNetworkClient(error: error))
+    let repository = makeRepository(client: StubNetworkClient(error: error)) { VoteRepositoryImpl() }
     await #expect(throws: VoteError.requestFailed) { try await repository.fetchActiveVote() }
   }
 
   @Test("성공 상태의 잘못된 JSON은 invalidResponse")
   func invalidJSON() async {
-    let repository = VoteRepositoryImpl(client: StubNetworkClient(json: "not-json"))
+    let repository = makeRepository(client: StubNetworkClient(json: "not-json")) { VoteRepositoryImpl() }
     await #expect(throws: VoteError.invalidResponse) { try await repository.fetchActiveVote() }
   }
 }

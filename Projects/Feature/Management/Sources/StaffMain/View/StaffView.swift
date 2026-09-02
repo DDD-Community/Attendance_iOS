@@ -150,7 +150,7 @@ private extension StaffView {
               .foregroundStyle(.staticWhite)
           }
           .onTapGesture {
-            store.send(.navigation(.presentManagerProfile))
+            store.send(.delegate(.presentManagerProfile))
           }
       }
     }

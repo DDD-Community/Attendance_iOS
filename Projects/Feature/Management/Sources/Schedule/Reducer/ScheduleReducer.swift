@@ -30,12 +30,12 @@ public struct ScheduleReducer {
 
   }
   
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
     
   }
   
@@ -59,8 +59,8 @@ public struct ScheduleReducer {
     case fetchScheduleResponse(Result<[Schedule], ScheduleError>)
   }
   
-  //MARK: - NavigationAction
-  public enum NavigationAction: Equatable {
+  //MARK: - DelegateAction
+  public enum DelegateAction: Equatable {
     
     
   }
@@ -89,8 +89,8 @@ public struct ScheduleReducer {
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
         
-      case .navigation(let navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+      case .delegate(let delegateAction):
+        return handleDelegateAction(state: &state, action: delegateAction)
       }
     }
   }
@@ -136,9 +136,9 @@ extension ScheduleReducer {
     }
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     return .none
   }

@@ -8,19 +8,16 @@
 import Foundation
 // 프로젝트 모듈
 import DDDNetworkInterface
+import Dependencies
 import DomainInterface
 import Entity
 import Model
 import APIEndpoint
 
 final public class MyPageRepositoryImpl: MyPageRepositoryInterface {
-  private let client: any DDDNetworkClient
+  @Dependency(\.networkClient) private var client
 
-  public init(
-    client: any DDDNetworkClient
-  ) {
-    self.client = client
-  }
+  public init() {}
   
   /// 출석 현황 요약 조회
   public func fetchAttendances() async throws(MyPageError) -> AttendanceSummaryResponse {

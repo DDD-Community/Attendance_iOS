@@ -24,7 +24,7 @@ public struct WebReducer {
   }
 
   /// 이동 계약은 WebInterface 에 있다. 호출부(`.backToRoot`)를 그대로 두기 위해 별칭만 받는다.
-  public typealias Action = WebNavigation
+  public typealias Action = WebDelegate
 
   public var body: some Reducer<State, Action> {
     Reduce { state, action in

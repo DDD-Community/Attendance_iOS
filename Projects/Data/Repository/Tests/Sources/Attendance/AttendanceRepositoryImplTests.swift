@@ -20,7 +20,7 @@ struct AttendanceRepositoryImplTests {
       .response(200, "[]"),
       .response(200, "[]")
     ])
-    let repository = AttendanceRepositoryImpl(client: client)
+    let repository = makeRepository(client: client) { AttendanceRepositoryImpl() }
 
     let count = try await repository.adminAttendanceCount(scheduleId: 1)
     #expect(count.attendanceCount == 3)
@@ -31,9 +31,7 @@ struct AttendanceRepositoryImplTests {
 
   @Test("출석 조회 실패는 loadFailed")
   func readFailure() async {
-    let repository = AttendanceRepositoryImpl(
-      client: StubNetworkClient(error: .response(.init(httpStatus: 500)))
-    )
+    let repository = makeRepository(client: StubNetworkClient(error: .response(.init(httpStatus: 500)))) { AttendanceRepositoryImpl() }
     await #expect(throws: AttendanceError.loadFailed) {
       try await repository.fetchStatus()
     }
@@ -45,17 +43,13 @@ struct AttendanceRepositoryImplTests {
     (200, "not-json")
   ])
   func editSuccess(status: Int, json: String) async throws {
-    let repository = AttendanceRepositoryImpl(
-      client: StubNetworkClient(statusCode: status, json: json)
-    )
+    let repository = makeRepository(client: StubNetworkClient(statusCode: status, json: json)) { AttendanceRepositoryImpl() }
     #expect(try await repository.editAttendance(input: input).isSuccess)
   }
 
   @Test("4xx 상세 메시지는 rejected")
   func editRejected() async {
-    let repository = AttendanceRepositoryImpl(
-      client: StubNetworkClient(statusCode: 400, json: #"{"message":"출석일이 아닙니다"}"#)
-    )
+    let repository = makeRepository(client: StubNetworkClient(statusCode: 400, json: #"{"message":"출석일이 아닙니다"}"#)) { AttendanceRepositoryImpl() }
     await #expect(throws: AttendanceError.rejected("출석일이 아닙니다")) {
       try await repository.editAttendance(input: input)
     }
@@ -63,7 +57,7 @@ struct AttendanceRepositoryImplTests {
 
   @Test("메시지 없는 오류 응답은 updateFailed", arguments: [400, 500])
   func editResponseFailure(status: Int) async {
-    let repository = AttendanceRepositoryImpl(client: StubNetworkClient(statusCode: status, json: "{}"))
+    let repository = makeRepository(client: StubNetworkClient(statusCode: status, json: "{}")) { AttendanceRepositoryImpl() }
     await #expect(throws: AttendanceError.updateFailed) {
       try await repository.editAttendance(input: input)
     }
@@ -71,9 +65,7 @@ struct AttendanceRepositoryImplTests {
 
   @Test("출석 변경 전송 실패는 updateFailed")
   func editTransportFailure() async {
-    let repository = AttendanceRepositoryImpl(
-      client: StubNetworkClient(error: .response(.init(httpStatus: 503)))
-    )
+    let repository = makeRepository(client: StubNetworkClient(error: .response(.init(httpStatus: 503)))) { AttendanceRepositoryImpl() }
     await #expect(throws: AttendanceError.updateFailed) {
       try await repository.editAttendance(input: input)
     }

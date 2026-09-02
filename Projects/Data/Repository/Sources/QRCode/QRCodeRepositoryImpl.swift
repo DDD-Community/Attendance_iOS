@@ -10,6 +10,7 @@ import UIKit
 import CoreImage.CIFilterBuiltins
 
 import DDDNetworkInterface
+import Dependencies
 import DomainInterface
 import Model
 import APIEndpoint
@@ -17,13 +18,9 @@ import Entity
 
 final public class QRCodeRepositoryImpl: QRCodeInterface {
   
-  private let client: any DDDNetworkClient
-  
-  public init(
-    client: any DDDNetworkClient
-  ) {
-    self.client = client
-  }
+  @Dependency(\.networkClient) private var client
+
+  public init() {}
   
   // MARK: - QRCode String 생성
   

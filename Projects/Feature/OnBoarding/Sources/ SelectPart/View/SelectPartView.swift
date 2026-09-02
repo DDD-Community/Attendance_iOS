@@ -112,7 +112,7 @@ extension SelectPartView {
       
       CustomButton(
         action: {
-          store.send(.navigation(.presentNextStep))
+          store.send(.delegate(.presentNextStep))
         },
         title: "다음",
         config: CustomButtonConfig.create()

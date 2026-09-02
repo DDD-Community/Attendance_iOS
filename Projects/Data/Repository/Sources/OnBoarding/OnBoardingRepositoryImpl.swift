@@ -8,6 +8,7 @@
 import Foundation
 
 import DDDNetworkInterface
+import Dependencies
 import DomainInterface
 import Model
 import Entity
@@ -15,13 +16,9 @@ import APIEndpoint
 
 final public class OnBoardingRepositoryImpl: OnBoardingInterface {
 
-  private let client: any DDDNetworkClient
+  @Dependency(\.networkClient) private var client
 
-  public init(
-    client: any DDDNetworkClient
-  ) {
-    self.client = client
-  }
+  public init() {}
 
   // MARK: - 코드 검증
   public func verifyCode(

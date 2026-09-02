@@ -102,31 +102,31 @@ extension AuthCoordinator {
     switch action {
 
         // MARK: - 초대코드 입력
-      case .routeAction(id: _, action: .login(.navigation(.presentSignUpInviteView))):
+      case .routeAction(id: _, action: .login(.delegate(.presentSignUpInviteView))):
         state.routes.push(.onboarding(.init()))
         return .none
 
-      case .routeAction(id: _, action: .login(.navigation(.presentStaffMain))):
+      case .routeAction(id: _, action: .login(.delegate(.presentStaffMain))):
         return .send(.navigation(.presentStaff))
 
-      case .routeAction(id: _, action: .login(.navigation(.presentMemberMain))):
+      case .routeAction(id: _, action: .login(.delegate(.presentMemberMain))):
         return .send(.navigation(.presentMember))
 
-      case .routeAction(id: _, action: .login(.navigation(.presentWeb))):
+      case .routeAction(id: _, action: .login(.delegate(.presentWeb))):
         state.routes.push(.web(.init(url: "https://dddset.notion.site/DDD-2d424441b0b08080a518ed42f1315b20?source=copy_link")))
         return .none
 
       case .routeAction(id: _, action: .web(.backToRoot)):
         return .send(.view(.backAction))
 
-      case .routeAction(id: _, action: .onboarding(.navigation(.backToRoot))):
+      case .routeAction(id: _, action: .onboarding(.delegate(.backToRoot))):
         state.routes.goBackTo(\.login)
         return .none
 
-      case .routeAction(id: _, action: .onboarding(.navigation(.presentStaff))):
+      case .routeAction(id: _, action: .onboarding(.delegate(.presentStaff))):
         return .send(.navigation(.presentStaff))
 
-      case .routeAction(id: _, action: .onboarding(.navigation(.presentMember))):
+      case .routeAction(id: _, action: .onboarding(.delegate(.presentMember))):
         return .send(.navigation(.presentMember))
 
       default:

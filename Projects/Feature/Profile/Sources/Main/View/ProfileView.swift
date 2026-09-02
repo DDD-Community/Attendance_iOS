@@ -176,7 +176,7 @@ extension ProfileView {
         .fill(.dangerBlue.opacity(0.7))
     }
     .onTapGesture {
-      store.send(.navigation(.presentEditGeneration))
+      store.send(.delegate(.presentEditGeneration))
     }
   }
 
@@ -407,7 +407,7 @@ extension ProfileView {
         .foregroundStyle(.mediumGray)
         .underline(true, color: .mediumGray)
         .onTapGesture {
-          store.send(.navigation(.presentPrivacyPolicy))
+          store.send(.delegate(.presentPrivacyPolicy))
         }
 
       Spacer()

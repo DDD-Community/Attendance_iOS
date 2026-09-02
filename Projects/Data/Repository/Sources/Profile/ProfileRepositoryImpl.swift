@@ -12,6 +12,7 @@ import ComposableArchitecture
 
 // 프로젝트 모듈
 import DDDNetworkInterface
+import Dependencies
 import DomainInterface
 import Entity
 import Model
@@ -21,13 +22,9 @@ public final class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable 
   @Shared(.appStorage("staffRole")) var staffRole: Staff?
   @Dependency(\.profileLocalDataSource) private var localDataSource
 
-  private let client: any DDDNetworkClient
+  @Dependency(\.networkClient) private var client
 
-  public init(
-    client: any DDDNetworkClient
-  ) {
-    self.client = client
-  }
+  public init() {}
 
   // MARK: - 프로필 조회
 

@@ -6,6 +6,7 @@
 //
 
 import DDDNetworkInterface
+import Dependencies
 import DomainInterface
 import Entity
 import Foundation
@@ -14,13 +15,9 @@ import Model
 import APIEndpoint
 
 final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
-  private let client: any DDDNetworkClient
+  @Dependency(\.networkClient) private var client
 
-  public init(
-    client: any DDDNetworkClient
-  ) {
-    self.client = client
-  }
+  public init() {}
 
   // MARK: - 운영진  출석 데이터 api
   public func adminAttendanceCount(scheduleId: Int) async throws(AttendanceError) -> AttendanceCount {

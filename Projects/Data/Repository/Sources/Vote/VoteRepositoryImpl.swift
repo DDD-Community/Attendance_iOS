@@ -6,6 +6,7 @@
 //
 
 import DDDNetworkInterface
+import Dependencies
 import DomainInterface
 import Entity
 import Foundation
@@ -14,13 +15,9 @@ import Model
 import APIEndpoint
 
 public final class VoteRepositoryImpl: VoteInterface, @unchecked Sendable {
-  private let client: any DDDNetworkClient
+  @Dependency(\.networkClient) private var client
 
-  public init(
-    client: any DDDNetworkClient
-  ) {
-    self.client = client
-  }
+  public init() {}
 
   public func fetchVotes() async throws(VoteError) -> [Vote] {
     let response = try await response(VoteRequest.list)

@@ -14,7 +14,7 @@ struct RepositoryNetworkImplementationsTests {
       .response(200, #"[{"teamId":1,"name":"iOS"}]"#),
       .response(200, #"[{"key":"ADMIN","description":"운영"}]"#)
     ])
-    let repository = OnBoardingRepositoryImpl(client: client)
+    let repository = makeRepository(client: client) { OnBoardingRepositoryImpl() }
 
     _ = try await repository.verifyCode(code: "CODE")
     #expect(try await repository.fetchJobs().count == 1)
@@ -24,7 +24,7 @@ struct RepositoryNetworkImplementationsTests {
 
   @Test("온보딩 코드 검증 실패는 verifyFailed")
   func onboardingVerifyFailure() async {
-    let repository = OnBoardingRepositoryImpl(client: failingClient())
+    let repository = makeRepository(client: failingClient()) { OnBoardingRepositoryImpl() }
     await #expect(throws: OnBoardingError.verifyFailed) {
       try await repository.verifyCode(code: "bad")
     }
@@ -32,7 +32,7 @@ struct RepositoryNetworkImplementationsTests {
 
   @Test("온보딩 목록 실패는 networkError", arguments: [0, 1, 2])
   func onboardingListFailure(kind: Int) async {
-    let repository = OnBoardingRepositoryImpl(client: failingClient())
+    let repository = makeRepository(client: failingClient()) { OnBoardingRepositoryImpl() }
     await #expect(throws: OnBoardingError.networkError) {
       switch kind {
       case 0: _ = try await repository.fetchJobs()
@@ -44,14 +44,14 @@ struct RepositoryNetworkImplementationsTests {
 
   @Test("마이페이지 API 성공과 실패")
   func myPagePaths() async throws {
-    let success = MyPageRepositoryImpl(client: StubNetworkClient([
+    let success = makeRepository(client: StubNetworkClient([
       .response(200, #"{"totalAttended":2,"totalLate":1,"totalAbsent":0}"#),
       .response(200, #"[{"id":1,"name":"세션","status":"ATTENDED","desc":"설명","month":9,"day":2}]"#)
-    ]))
+    ])) { MyPageRepositoryImpl() }
     #expect(try await success.fetchAttendances().totalAttended == 2)
     #expect(try await success.fetchSchedules().count == 1)
 
-    let failure = MyPageRepositoryImpl(client: failingClient())
+    let failure = makeRepository(client: failingClient()) { MyPageRepositoryImpl() }
     await #expect(throws: MyPageError.loadFailed) { try await failure.fetchAttendances() }
   }
 
@@ -62,15 +62,15 @@ struct RepositoryNetworkImplementationsTests {
       managerRoles: nil, provider: .google, token: "token",
       oauthRefreshToken: nil, invitationCode: "CODE"
     )
-    let success = SignUpRepositoryImpl(client: StubNetworkClient(json: #"""
+    let success = makeRepository(client: StubNetworkClient(json: #"""
     {
       "userId":1,"name":"홍길동","generation":"12기","team":"iOS",
       "jobRole":"DESIGN","managerRoles":null
     }
-    """#))
+    """#)) { SignUpRepositoryImpl() }
     #expect(try await success.registerUser(input: input).name == "홍길동")
 
-    let failure = SignUpRepositoryImpl(client: failingClient())
+    let failure = makeRepository(client: failingClient()) { SignUpRepositoryImpl() }
     await #expect(throws: SignUpError.accountCreationFailed) {
       try await failure.registerUser(input: input)
     }
@@ -78,12 +78,12 @@ struct RepositoryNetworkImplementationsTests {
 
   @Test("QR 생성과 검증 성공 경로")
   func qrSuccessPaths() async throws {
-    let repository = QRCodeRepositoryImpl(client: StubNetworkClient([
+    let repository = makeRepository(client: StubNetworkClient([
       .response(200, #"{"id":1,"qrBase64":"aGVsbG8="}"#),
       .response(204),
       .response(200, #"{"message":"ok"}"#),
       .response(200, "not-json")
-    ]))
+    ])) { QRCodeRepositoryImpl() }
     #expect(try await repository.createQRCode(userID: 1) == "aGVsbG8=")
     #expect(try await repository.qrValidateCheck(from: "one").isSuccess)
     #expect(try await repository.qrValidateCheck(from: "two").isSuccess)
@@ -98,16 +98,16 @@ struct RepositoryNetworkImplementationsTests {
     (400, "not-json", .invalidPayload)
   ])
   func qrResponseErrors(status: Int, json: String, expected: QRCodeError) async {
-    let repository = QRCodeRepositoryImpl(client: StubNetworkClient(statusCode: status, json: json))
+    let repository = makeRepository(client: StubNetworkClient(statusCode: status, json: json)) { QRCodeRepositoryImpl() }
     await #expect(throws: expected) { try await repository.qrValidateCheck(from: "code") }
   }
 
   @Test("QR 네트워크 실패를 기능 오류로 변환")
   func qrNetworkFailures() async {
-    let create = QRCodeRepositoryImpl(client: failingClient())
+    let create = makeRepository(client: failingClient()) { QRCodeRepositoryImpl() }
     await #expect(throws: QRCodeError.createFailed) { try await create.createQRCode(userID: 1) }
 
-    let validate = QRCodeRepositoryImpl(client: failingClient())
+    let validate = makeRepository(client: failingClient()) { QRCodeRepositoryImpl() }
     await #expect(throws: QRCodeError.validationFailed("QR 코드 검증 요청에 실패했습니다")) {
       try await validate.qrValidateCheck(from: "code")
     }

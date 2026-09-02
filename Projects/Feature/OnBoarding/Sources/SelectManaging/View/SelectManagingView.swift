@@ -107,7 +107,7 @@ extension SelectManagingView {
       CustomButton(
         action: {
           if store.userSession.managing.contains(.teamManaging) || store.userSession.userRole == .manager {
-            store.send(.navigation(.presentSelectTeam))
+            store.send(.delegate(.presentSelectTeam))
           } else {
             send(.signUp)
           }

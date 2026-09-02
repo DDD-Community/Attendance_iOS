@@ -36,12 +36,12 @@ public struct Splash {
     public init() {}
   }
   
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
     case scope(ScopeAction)
     
     @CasePathable
@@ -76,11 +76,11 @@ public struct Splash {
     case checkAppUpdateResponse(Result<AppUpdateInfo?, AppUpdateError>)
   }
   
-  // MARK: - NavigationAction
+  // MARK: - DelegateAction
   
-  /// 이동 계약은 SplashInterface 에 있다. 호출부(`.navigation(.presentStaff)`)를
+  /// 이동 계약은 SplashInterface 에 있다. 호출부(`.delegate(.presentStaff)`)를
   /// 그대로 두기 위해 여기서는 별칭만 받는다.
-  public typealias NavigationAction = SplashNavigation
+  public typealias DelegateAction = SplashDelegate
   
   nonisolated enum CancelID: Hashable {
     case fetchProfile
@@ -110,8 +110,8 @@ public struct Splash {
       case let .inner(innerAction):
         return handleInnerAction(state: &state, action: innerAction)
         
-      case let .navigation(navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+      case let .delegate(delegateAction):
+        return handleDelegateAction(state: &state, action: delegateAction)
         
       case .scope(.customAlert(.presented(.confirmTapped))):
         // 앱스토어로 이동
@@ -162,7 +162,7 @@ extension Splash {
           await send(.async(.fetchUser))
         } else {
           DDDLogger.debug("❓ [Splash] No staff role - redirecting to login", category: .app)
-          await send(.navigation(.presentLogin))
+          await send(.delegate(.presentLogin))
         }
       }
       .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
@@ -223,7 +223,7 @@ extension Splash {
         // 다른 네트워크 에러의 경우에도 안전하게 로그인으로 이동
         return .run { send in
           keychainManager.clear()
-          await send(.navigation(.presentLogin))
+          await send(.delegate(.presentLogin))
         }
       }
       
@@ -270,9 +270,9 @@ extension Splash {
     }
   }
   
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state _: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
     case .presentLogin:
@@ -291,13 +291,13 @@ extension Splash {
     
     if staffRole == .manager {
       DDDLogger.debug("[Splash] Navigation to staff after checks completed", category: .app)
-      return .send(.navigation(.presentStaff))
+      return .send(.delegate(.presentStaff))
     } else if staffRole == .member {
       DDDLogger.debug("[Splash] Navigation to member after checks completed", category: .app)
-      return .send(.navigation(.presentMember))
+      return .send(.delegate(.presentMember))
     } else {
       DDDLogger.debug("[Splash] No staff role after checks completed - redirecting to login", category: .app)
-      return .send(.navigation(.presentLogin))
+      return .send(.delegate(.presentLogin))
     }
   }
   

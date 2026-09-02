@@ -18,13 +18,9 @@ import Dependencies
 public final class ScheduleRepositoryImpl: ScheduleInterface, @unchecked Sendable {
   @Dependency(\.scheduleLocalDataSource) private var localDataSource
 
-  private let client: any DDDNetworkClient
+  @Dependency(\.networkClient) private var client
 
-  public init(
-    client: any DDDNetworkClient
-  ) {
-    self.client = client
-  }
+  public init() {}
 
   public func getCachedSchedule() async -> [Schedule]? {
     try? await localDataSource.loadAll()

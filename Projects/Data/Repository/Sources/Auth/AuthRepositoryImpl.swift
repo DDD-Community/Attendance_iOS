@@ -21,16 +21,10 @@ public final class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
   @Dependency(\.profileLocalDataSource) private var profileLocalDataSource
   @Dependency(\.scheduleLocalDataSource) private var scheduleLocalDataSource
 
-  private let client: any DDDRequestClient
-  private let authService: any AuthService
+  @Dependency(\.networkClient) private var client
+  @Dependency(\.authService) private var authService
 
-  public init(
-    client: any DDDRequestClient,
-    authService: any AuthService
-  ) {
-    self.client = client
-    self.authService = authService
-  }
+  public init() {}
 
   // MARK: - 로그인 API
   public func login(

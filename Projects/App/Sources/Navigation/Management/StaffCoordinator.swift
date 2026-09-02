@@ -97,7 +97,7 @@ extension StaffCoordinator {
   ) -> Effect<Action> {
     switch action {
       // MARK: - 운영진 프로필
-    case .routeAction(id: _, action: .coreMember(.navigation(.presentManagerProfile))):
+    case .routeAction(id: _, action: .coreMember(.delegate(.presentManagerProfile))):
       state.routes.push(.profile(.init()))
       return .concatenate(
         .cancel(id: CancelID.profileEffects),
@@ -108,7 +108,7 @@ extension StaffCoordinator {
 
 
       // MARK: - 로그아웃
-    case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
+    case .routeAction(id: _, action: .profile(.delegate(.presentLogin))):
       state.routes.goBackToRoot()
       return .concatenate(
         .cancel(id: CancelID.allEffects),
@@ -123,7 +123,7 @@ extension StaffCoordinator {
       )
       .cancellable(id: CancelID.allEffects, cancelInFlight: true)
 
-      case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
+      case .routeAction(id: _, action: .profile(.delegate(.presentRoot))):
         return .concatenate(
           .cancel(id: CancelID.profileEffects),
           .cancel(id: ProfileReducer.CancelID.fetchProfile),
@@ -132,7 +132,7 @@ extension StaffCoordinator {
           .send(.view(.backAction))
         )
 
-      case .routeAction(id: _, action: .profile(.navigation(.presentMember))):
+      case .routeAction(id: _, action: .profile(.delegate(.presentMember))):
         return .concatenate(
           .cancel(id: CancelID.profileEffects),
           .cancel(id: ProfileReducer.CancelID.fetchProfile),
@@ -141,7 +141,7 @@ extension StaffCoordinator {
           .send(.navigation(.presentMember))
         )
 
-      case .routeAction(id: _, action: .profile(.navigation(.presentStaff))):
+      case .routeAction(id: _, action: .profile(.delegate(.presentStaff))):
         return .concatenate(
           .cancel(id: CancelID.profileEffects),
           .cancel(id: ProfileReducer.CancelID.fetchProfile),

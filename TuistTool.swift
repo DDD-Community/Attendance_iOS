@@ -347,7 +347,8 @@ private func printHelp() {
 
     기본 명령어:
       ./make setup          # mise 도구 설치 + 의존성 설치 + 프로젝트 생성
-      ./make generate       # 프로젝트 생성
+      ./make generate       # 프로젝트 생성 (Demo 앱 제외)
+      DEMO=1 ./make generate  # Demo 앱까지 포함해 생성
       ./make build          # 클린 + 의존성 설치 + 프로젝트 생성
       ./make install        # 의존성 설치 + 프로젝트 생성
       ./make cache          # 바이너리 캐시 생성

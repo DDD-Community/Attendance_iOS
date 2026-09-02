@@ -37,7 +37,7 @@ public struct AppReducer: Sendable {
   }
 
   //MARK: - Action
-  public enum Action: ViewAction, FeatureAction {
+  public enum Action: ViewAction {
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
@@ -262,35 +262,35 @@ public struct AppReducer: Sendable {
   // 🎯 PFW 패턴: 네비게이션 로직 분리
   private func handleScopeNavigation(action: ScopeAction) -> Effect<Action> {
     switch action {
-    case .splash(.navigation(.presentLogin)):
+    case .splash(.delegate(.presentLogin)):
       return .run { send in
         try await clock.sleep(for: .seconds(0.5))
         await send(.view(.presentAuth))
       }
       .cancellable(id: CancelID.transition, cancelInFlight: true)
 
-    case .splash(.navigation(.presentStaff)):
+    case .splash(.delegate(.presentStaff)):
       return .send(.view(.presentStaff))
 
-    case .splash(.navigation(.presentMember)):
+    case .splash(.delegate(.presentMember)):
       return .send(.view(.presentMember))
 
-    case .auth(.navigation(.presentStaff)):
+    case .auth(.delegate(.presentStaff)):
       return .send(.view(.presentStaff))
 
-    case .auth(.navigation(.presentMember)):
+    case .auth(.delegate(.presentMember)):
       return .send(.view(.presentMember))
 
-    case .staff(.navigation(.presentLogin)):
+    case .staff(.delegate(.presentLogin)):
       return .send(.view(.presentAuth))
 
-    case .staff(.navigation(.presentMember)):
+    case .staff(.delegate(.presentMember)):
       return .send(.view(.presentMember))
 
-    case .member(.navigation(.presentLogin)):
+    case .member(.delegate(.presentLogin)):
       return .send(.view(.presentAuth))
 
-    case .member(.navigation(.presentStaff)):
+    case .member(.delegate(.presentStaff)):
       return .send(.view(.presentStaff))
 
     default:

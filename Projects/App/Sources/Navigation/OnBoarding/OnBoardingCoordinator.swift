@@ -81,51 +81,51 @@ extension OnBoardingCoordinator {
     switch action {
     // MARK: - 이름 입력
 
-    case .routeAction(id: _, action: .InviteCode(.navigation(.presentSignUpName))):
+    case .routeAction(id: _, action: .InviteCode(.delegate(.presentSignUpName))):
       state.routes.push(.onBoardingName(.init()))
       return .none
 
-    case .routeAction(id: _, action: .onBoardingName(.navigation(.presentSignUpPart))):
+    case .routeAction(id: _, action: .onBoardingName(.delegate(.presentSignUpPart))):
       state.routes.push(.selectPart(.init()))
       return .none
 
         // MARK: - 운영진 담당업무 선택
 
-    case .routeAction(id: _, action: .selectPart(.navigation(.presentManaging))):
+    case .routeAction(id: _, action: .selectPart(.delegate(.presentManaging))):
       state.routes.push(.selectManaging(.init()))
       return .none
 
     // MARK: -  운영진 매니징 업무선택시  팀매니징 선택시 팀선택
 
-    case .routeAction(id: _, action: .selectManaging(.navigation(.presentSelectTeam))):
+    case .routeAction(id: _, action: .selectManaging(.delegate(.presentSelectTeam))):
       state.routes.push(.selectTeam(.init()))
       return .none
 
-    case .routeAction(id: _, action: .selectManaging(.navigation(.presentManager))):
+    case .routeAction(id: _, action: .selectManaging(.delegate(.presentManager))):
       return .send(.navigation(.presentStaff))
 
-    case .routeAction(id: _, action: .selectManaging(.navigation(.presentMember))):
+    case .routeAction(id: _, action: .selectManaging(.delegate(.presentMember))):
       return .send(.navigation(.presentMember))
 
-    case .routeAction(id: _, action: .selectManaging(.navigation(.presentProfile))):
+    case .routeAction(id: _, action: .selectManaging(.delegate(.presentProfile))):
       return .send(.navigation(.presentProfile))
 
-    case .routeAction(id: _, action: .selectTeam(.navigation(.presentManager))):
+    case .routeAction(id: _, action: .selectTeam(.delegate(.presentManager))):
       return .send(.navigation(.presentStaff))
 
     // MARK: - 멤버 선택 할팀 선택
 
-    case .routeAction(id: _, action: .selectPart(.navigation(.presentSelectTeam))):
+    case .routeAction(id: _, action: .selectPart(.delegate(.presentSelectTeam))):
       state.routes.push(.selectTeam(.init()))
       return .none
 
-    case .routeAction(id: _, action: .selectTeam(.navigation(.presentMember))):
+    case .routeAction(id: _, action: .selectTeam(.delegate(.presentMember))):
       return .send(.navigation(.presentMember))
 
-    case .routeAction(id: _, action: .selectTeam(.navigation(.presentLogin))):
+    case .routeAction(id: _, action: .selectTeam(.delegate(.presentLogin))):
       return .send(.navigation(.presentLogin))
 
-    case .routeAction(id: _, action: .selectTeam(.navigation(.presentProfile))):
+    case .routeAction(id: _, action: .selectTeam(.delegate(.presentProfile))):
       return .send(.navigation(.presentProfile))
 
     default:

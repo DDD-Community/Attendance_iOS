@@ -11,15 +11,12 @@ struct AuthRepositoryImplTests {
   @Test("로그인 성공은 토큰을 AuthService에 반영")
   func loginSuccess() async throws {
     let service = AuthServiceSpy()
-    let repository = AuthRepositoryImpl(
-      client: StubNetworkClient(json: #"""
+    let repository = makeRepository(client: StubNetworkClient(json: #"""
       {
         "name":"사용자","oauthProvider":"GOOGLE","message":"ok","isNewUser":false,
         "accessToken":"access","refreshToken":"refresh","role":"MEMBER"
       }
-      """#),
-      authService: service
-    )
+      """#), authService: service) { AuthRepositoryImpl() }
     let result = try await repository.login(provider: .google, token: "oauth")
     #expect(result.name == "사용자")
     #expect(await service.signedInTokens == ["access", "refresh"])
@@ -27,7 +24,7 @@ struct AuthRepositoryImplTests {
 
   @Test("로그인 실패는 loginFailed")
   func loginFailure() async {
-    let repository = AuthRepositoryImpl(client: failingClient(), authService: AuthServiceSpy())
+    let repository = makeRepository(client: failingClient(), authService: AuthServiceSpy()) { AuthRepositoryImpl() }
     await #expect(throws: AuthError.loginFailed) {
       try await repository.login(provider: .apple, token: "bad")
     }
@@ -40,10 +37,7 @@ struct AuthRepositoryImplTests {
     let tokens = try await withDependencies {
       $0.keychainManager = keychain
     } operation: {
-      try await AuthRepositoryImpl(
-        client: StubNetworkClient(json: #"{"accessToken":"new-a","refreshToken":"new-r"}"#),
-        authService: AuthServiceSpy()
-      ).refresh()
+      try await makeRepository(client: StubNetworkClient(json: #"{"accessToken":"new-a","refreshToken":"new-r"}"#), authService: AuthServiceSpy()) { AuthRepositoryImpl() }.refresh()
     }
     #expect(tokens.accessToken == "new-a")
 
@@ -52,10 +46,7 @@ struct AuthRepositoryImplTests {
         try await withDependencies {
           $0.keychainManager = keychain
         } operation: {
-          try await AuthRepositoryImpl(
-            client: StubNetworkClient(error: .response(.init(httpStatus: status))),
-            authService: AuthServiceSpy()
-          ).refresh()
+          try await makeRepository(client: StubNetworkClient(error: .response(.init(httpStatus: status))), authService: AuthServiceSpy()) { AuthRepositoryImpl() }.refresh()
         }
       }
     }
@@ -105,7 +96,7 @@ struct AuthRepositoryImplTests {
   @Test("세션 credential 갱신을 AuthService에 전달")
   func updateSessionCredential() async {
     let service = AuthServiceSpy()
-    let repository = AuthRepositoryImpl(client: failingClient(), authService: service)
+    let repository = makeRepository(client: failingClient(), authService: service) { AuthRepositoryImpl() }
     await repository.updateSessionCredential(with: .init(accessToken: "a", refreshToken: "r"))
     #expect(await service.signedInTokens == ["a", "r"])
   }
@@ -118,7 +109,7 @@ struct AuthRepositoryImplTests {
       $0.profileLocalDataSource = ProfileLocalDataSourceSpy()
       $0.scheduleLocalDataSource = ScheduleLocalDataSourceSpy()
     } operation: {
-      AuthRepositoryImpl(client: client, authService: service)
+      makeRepository(client: client, authService: service) { AuthRepositoryImpl() }
     }
   }
 

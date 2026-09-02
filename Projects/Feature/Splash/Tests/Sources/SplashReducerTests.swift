@@ -31,7 +31,7 @@ struct SplashReducerTests {
     await store.send(.inner(.checkAppUpdateResponse(.success(nil)))) {
       $0.isUpdateCheckCompleted = true
     }
-    await store.receive(\.navigation.presentMember)
+    await store.receive(\.delegate.presentMember)
   }
 
   @Test("업데이트가 필요하면 앱스토어 URL을 저장하고 업데이트 팝업을 표시한다")
@@ -63,7 +63,7 @@ struct SplashReducerTests {
     }
 
     await store.send(.inner(.fetchUserResponse(.failure(.invalidSession))))
-    await store.receive(\.navigation.presentLogin)
+    await store.receive(\.delegate.presentLogin)
     #expect(keychain.didClear)
   }
 
@@ -87,7 +87,7 @@ struct SplashReducerTests {
     await store.send(.scope(.customAlert(.presented(.cancelTapped)))) {
       $0.customAlert = nil
     }
-    await store.receive(\.navigation.presentStaff)
+    await store.receive(\.delegate.presentStaff)
   }
 }
 

@@ -61,12 +61,12 @@ public struct MemberMain {
     public init() {}
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case inner(InnerAction)
     case async(AsyncAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
     case vote(MemberVote.Action)
   }
 
@@ -97,7 +97,7 @@ public struct MemberMain {
   }
 
   /// 이동 계약은 MemberInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
-  public typealias NavigationAction = MemberMainNavigation
+  public typealias DelegateAction = MemberMainDelegate
 
   @Reducer(state: .equatable)
   public enum Destination {
@@ -131,8 +131,8 @@ public struct MemberMain {
       case let .async(action):
         return handleAsyncAction(state: &state, action: action)
 
-      case let .navigation(action):
-        return handleNavigationAction(state: &state, action: action)
+      case let .delegate(action):
+        return handleDelegateAction(state: &state, action: action)
 
       case .vote(.delegate(.exitVote)):
         state.selectedHomeTab = .attendance
@@ -369,9 +369,9 @@ extension MemberMain {
     }
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
     case .routeToQRCode:

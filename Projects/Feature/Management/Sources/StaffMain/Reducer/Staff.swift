@@ -41,13 +41,13 @@ public struct Staff {
     public init( ) { }
   }
   
-  public enum Action : BindableAction, FeatureAction {
+  public enum Action : BindableAction {
     case binding(BindingAction<State>)
     case destination(PresentationAction<Destination.Action>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
     case attendanceCheck(AttendanceCheck.Action)
     case schedule(ScheduleReducer.Action)
     case vote(VoteFeature.Action)
@@ -77,7 +77,7 @@ public struct Staff {
   
   // MARK: - 네비게이션 연결 액션
   /// 이동 계약은 ManagementInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
-  public typealias NavigationAction = StaffNavigation
+  public typealias DelegateAction = StaffDelegate
   
   @Reducer(state: .equatable)
   public enum Destination {
@@ -110,9 +110,9 @@ public struct Staff {
       case .inner(let InnerAction):
         return handleInnerAction(state: &state, action: InnerAction)
         
-        // MARK: - NavigationAction
-      case .navigation(let NavigationAction):
-        return handleNavigationAction(state: &state, action: NavigationAction)
+        // MARK: - DelegateAction
+      case .delegate(let DelegateAction):
+        return handleDelegateAction(state: &state, action: DelegateAction)
         
       default:
         return .none
@@ -175,9 +175,9 @@ extension Staff {
 
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
     case .presentSchedule:

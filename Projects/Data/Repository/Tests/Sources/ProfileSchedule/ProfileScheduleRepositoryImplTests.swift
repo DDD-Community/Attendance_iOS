@@ -17,7 +17,7 @@ struct ProfileRepositoryImplTests {
     let repository = withDependencies {
       $0.profileLocalDataSource = localDataSource
     } operation: {
-      ProfileRepositoryImpl(client: client)
+      makeRepository(client: client) { ProfileRepositoryImpl() }
     }
 
     let result = await repository.getCachedProfile()
@@ -33,7 +33,7 @@ struct ProfileRepositoryImplTests {
     let repository = withDependencies {
       $0.profileLocalDataSource = localDataSource
     } operation: {
-      ProfileRepositoryImpl(client: client)
+      makeRepository(client: client) { ProfileRepositoryImpl() }
     }
 
     let result = try await repository.getProfile()
@@ -135,7 +135,7 @@ struct ProfileRepositoryImplTests {
     withDependencies {
       $0.profileLocalDataSource = ProfileLocalDataSourceStub()
     } operation: {
-      ProfileRepositoryImpl(client: client)
+      makeRepository(client: client) { ProfileRepositoryImpl() }
     }
   }
 
@@ -182,7 +182,7 @@ struct ScheduleRepositoryImplTests {
     let repository = withDependencies {
       $0.scheduleLocalDataSource = localDataSource
     } operation: {
-      ScheduleRepositoryImpl(client: client)
+      makeRepository(client: client) { ScheduleRepositoryImpl() }
     }
 
     let result = await repository.getCachedSchedule()
@@ -198,7 +198,7 @@ struct ScheduleRepositoryImplTests {
     let repository = withDependencies {
       $0.scheduleLocalDataSource = localDataSource
     } operation: {
-      ScheduleRepositoryImpl(client: client)
+      makeRepository(client: client) { ScheduleRepositoryImpl() }
     }
 
     let result = try await repository.getSchedule()
@@ -267,7 +267,7 @@ struct ScheduleRepositoryImplTests {
     withDependencies {
       $0.scheduleLocalDataSource = ScheduleLocalDataSourceStub()
     } operation: {
-      ScheduleRepositoryImpl(client: client)
+      makeRepository(client: client) { ScheduleRepositoryImpl() }
     }
   }
 

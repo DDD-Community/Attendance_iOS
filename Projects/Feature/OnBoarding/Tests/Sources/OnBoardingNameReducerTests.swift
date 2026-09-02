@@ -27,7 +27,7 @@ struct OnBoardingNameReducerTests {
     await store.send(.view(.checkIsAvailableName)) {
       $0.isNotAvailableName = false
     }
-    await store.receive(\.navigation.presentSignUpPart)
+    await store.receive(\.delegate.presentSignUpPart)
   }
 
   @Test("6자 이상 이름은 사용 불가로 표시하고 이동하지 않는다")

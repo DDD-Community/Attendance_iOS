@@ -1,17 +1,17 @@
 //
-//  ProfileNavigation.swift
+//  ProfileDelegate.swift
 //  ProfileInterface
 //
 //  Created by DDD on 2026-09-02
 //
-//  Profile 이 바깥에 알리는 이동 계약.
+//  Profile 이 바깥에 알리는 위임 계약.
 //
 
 import ComposableArchitecture
 import Foundation
 
 @CasePathable
-public enum ProfileNavigation: Equatable, Sendable {
+public enum ProfileDelegate: Equatable, Sendable {
   case presentLogOut
   case presentCreateByApp
   case presentPrivacyPolicy
@@ -20,6 +20,6 @@ public enum ProfileNavigation: Equatable, Sendable {
 }
 
 @CasePathable
-public enum CreateAppNavigation: Equatable, Sendable {
+public enum CreateAppDelegate: Equatable, Sendable {
   case presentWeb
 }

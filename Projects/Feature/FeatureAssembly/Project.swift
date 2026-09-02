@@ -9,6 +9,9 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings:  .moduleSettings,
   dependencies: [
+    // App의 live DependencyKey 구현을 링크한다. DataAssembly가 ServiceAssembly를
+    // 의존하므로 둘 다 App 빌드 그래프와 -force_load 입력에 포함된다.
+    .dataAssembly,
     .feature(.auth),
     .feature(.splash),
     .feature(.management),

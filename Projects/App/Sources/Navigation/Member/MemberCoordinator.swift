@@ -88,11 +88,11 @@ extension MemberCoordinator {
     action: IndexedRouterActionOf<MemberScreen>
   ) -> Effect<Action> {
     switch action {
-    case .routeAction(id: _, action: .member(.navigation(.routeToQRCode))):
+    case .routeAction(id: _, action: .member(.delegate(.routeToQRCode))):
       state.routes.push(.qrCode(.init()))
       return .none
 
-    case .routeAction(id: _, action: .member(.navigation(.routeToProfile))):
+    case .routeAction(id: _, action: .member(.delegate(.routeToProfile))):
       state.routes.push(.profile(.init()))
       return .concatenate(
         .cancel(id: CancelID.profileEffects),
@@ -101,7 +101,7 @@ extension MemberCoordinator {
         .cancel(id: ProfileReducer.CancelID.logoutUser)
       )
 
-    case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
+    case .routeAction(id: _, action: .profile(.delegate(.presentLogin))):
       state.routes.goBackToRoot()
       return .concatenate(
         .cancel(id: CancelID.allEffects),
@@ -117,10 +117,10 @@ extension MemberCoordinator {
       .cancellable(id: CancelID.allEffects, cancelInFlight: true)
 
       // 기수변경으로 멤버 → 운영진이 된 경우 운영진 홈으로 전환
-      case .routeAction(id: _, action: .profile(.navigation(.presentStaff))):
+      case .routeAction(id: _, action: .profile(.delegate(.presentStaff))):
         return .send(.navigation(.presentStaff))
 
-      case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
+      case .routeAction(id: _, action: .profile(.delegate(.presentRoot))):
         return .concatenate(
           .cancel(id: CancelID.profileEffects),
           .cancel(id: ProfileReducer.CancelID.fetchProfile),
