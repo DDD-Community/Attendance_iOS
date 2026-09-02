@@ -18,21 +18,21 @@ public struct OnBoardingUseCaseImpl: OnBoardingInterface {
 
   public func verifyCode(
     code: String
-  ) async throws -> Entity.VerifyCodeEntity {
+  ) async throws(OnBoardingError) -> Entity.VerifyCodeEntity {
     return try await repository.verifyCode(code: code)
   }
 
-  public func fetchJobs() async throws -> [Entity.SelectJob] {
+  public func fetchJobs() async throws(OnBoardingError) -> [Entity.SelectJob] {
     return try await repository.fetchJobs()
   }
 
   public func fetchTeams(
     generationId: Int
-  ) async throws -> [SelectTeamEntity] {
+  ) async throws(OnBoardingError) -> [SelectTeamEntity] {
     return try await repository.fetchTeams(generationId: generationId)
   }
 
-  public func fetchManaging() async throws -> [SelectManaging] {
+  public func fetchManaging() async throws(OnBoardingError) -> [SelectManaging] {
     return try await repository.fetchManaging()
   }
 }

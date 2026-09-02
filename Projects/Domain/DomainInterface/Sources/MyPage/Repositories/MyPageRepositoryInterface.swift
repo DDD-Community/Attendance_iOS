@@ -14,9 +14,9 @@ import Entity
 
 public protocol MyPageRepositoryInterface: Sendable {
   /// 출석 현황 요약 조회
-  func fetchAttendances() async throws -> AttendanceSummaryResponse
+  func fetchAttendances() async throws(MyPageError) -> AttendanceSummaryResponse
   /// 전체 스케줄/출석 현황 조회
-  func fetchSchedules() async throws -> [AttendanceMyScheduleResponse]
+  func fetchSchedules() async throws(MyPageError) -> [AttendanceMyScheduleResponse]
 }
 
 public enum MyPageRepositoryDependency: TestDependencyKey {

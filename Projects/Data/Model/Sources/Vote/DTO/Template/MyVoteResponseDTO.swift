@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct MyVoteResponseDTO: Decodable {
+public struct MyVoteResponseDTO: Decodable, Sendable {
   public let voteId: Int?
   public let responded: Bool?
 }

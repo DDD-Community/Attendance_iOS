@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct FeedbackQuestionDTO: Codable {
+public struct FeedbackQuestionDTO: Codable, Sendable {
   public let id: String?
   public let order: Int?
   public let type: String?

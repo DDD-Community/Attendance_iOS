@@ -61,6 +61,7 @@ public struct VoteFeature {
     case retry(AsyncAction)
   }
 
+  @CasePathable
   public enum AsyncAction: Equatable {
     case fetchVotes
     case fetchParticipation
@@ -70,6 +71,7 @@ public struct VoteFeature {
     case fetchNonResponders
   }
 
+  @CasePathable
   public enum InnerAction: Equatable {
     case votesResponse(Result<[Vote], VoteError>)
     case participationResponse(Result<VoteParticipation, VoteError>)

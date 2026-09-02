@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ScheduleDTO: Decodable {
+public struct ScheduleDTO: Decodable, Sendable {
   let data: [ScheduleDTOResponse]
 
   public init(from decoder: Decoder) throws {
@@ -27,7 +27,7 @@ public struct ScheduleDTO: Decodable {
 }
 
 
-public struct ScheduleDTOResponse: Decodable {
+public struct ScheduleDTOResponse: Decodable, Sendable {
     let id: Int
     let name, desc: String
     let year, month, day: Int

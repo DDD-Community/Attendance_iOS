@@ -13,10 +13,10 @@ import Entity
 
 
 public protocol OnBoardingInterface: Sendable {
-  func verifyCode(code: String) async throws -> VerifyCodeEntity
-  func fetchJobs() async throws -> [SelectJob]
-  func fetchTeams(generationId: Int) async throws -> [SelectTeamEntity]
-  func fetchManaging() async throws -> [SelectManaging]
+  func verifyCode(code: String) async throws(OnBoardingError) -> VerifyCodeEntity
+  func fetchJobs() async throws(OnBoardingError) -> [SelectJob]
+  func fetchTeams(generationId: Int) async throws(OnBoardingError) -> [SelectTeamEntity]
+  func fetchManaging() async throws(OnBoardingError) -> [SelectManaging]
 }
 
 public enum OnBoardingRepositoryDependency: TestDependencyKey {
@@ -34,4 +34,3 @@ public extension DependencyValues {
     set { self[OnBoardingRepositoryDependency.self] = newValue }
   }
 }
-

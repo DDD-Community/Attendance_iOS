@@ -7,31 +7,30 @@
 
 import Foundation
 
+import DDDNetworkInterface
 import DomainInterface
 import Entity
 import Model
-import Service
+import APIEndpoint
 
 import Dependencies
-
-@preconcurrency import AsyncMoya
 
 public final class ScheduleRepositoryImpl: ScheduleInterface, @unchecked Sendable {
   @Dependency(\.scheduleLocalDataSource) private var localDataSource
 
-  private let provider: MoyaProvider<ScheduleService>
+  private let client: any DDDNetworkClient
 
   public init(
-    provider: MoyaProvider<ScheduleService> = MoyaProvider<ScheduleService>.authorized
+    client: any DDDNetworkClient
   ) {
-    self.provider = provider
+    self.client = client
   }
 
   public func getCachedSchedule() async -> [Schedule]? {
     try? await localDataSource.loadAll()
   }
 
-  public func getSchedule() async throws -> [Schedule] {
+  public func getSchedule() async throws(ScheduleError) -> [Schedule] {
     // SWR: 캐시 hit이면 즉시 반환 + 백그라운드에서 fresh 갱신
     if let cached = try? await localDataSource.loadAll(), !cached.isEmpty {
       _Concurrency.Task.detached { [weak self] in
@@ -40,14 +39,38 @@ public final class ScheduleRepositoryImpl: ScheduleInterface, @unchecked Sendabl
       return cached
     }
 
-    return try await fetchAndCacheSchedule()
+    do {
+      return try await fetchAndCacheSchedule()
+    } catch {
+      throw error
+    }
   }
 
-  private func fetchAndCacheSchedule() async throws -> [Schedule] {
-    let dto: ScheduleDTO = try await provider.request(.getSchedule)
-    let schedules = dto.toDomain().sortedByDate()
-    try? await localDataSource.saveAll(schedules)
-    return schedules
+  private func fetchAndCacheSchedule() async throws(ScheduleError) -> [Schedule] {
+    do {
+      let dto = try await client.send(
+        ScheduleRequest.getSchedule,
+        as: ScheduleDTO.self
+      )
+      let schedules = dto.toDomain().sortedByDate()
+      try? await localDataSource.saveAll(schedules)
+      return schedules
+    } catch {
+      throw Self.mapError(error)
+    }
+  }
+
+  /// 서버가 준 응답 코드만 도메인 케이스로 옮기고, 전송·디코딩 실패는 `.unknown` 으로 흡수한다.
+  private static func mapError(_ error: DDDNetworkError) -> ScheduleError {
+    guard case let .response(responseError) = error else {
+      return .loadFailed
+    }
+    switch responseError.httpStatus {
+    case 400:
+      return .invalidDate
+    default:
+      return .loadFailed
+    }
   }
 }
 

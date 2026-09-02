@@ -12,11 +12,11 @@ import Entity
 
 /// Attendance 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol AttendanceInterface: Sendable {
-  func adminAttendanceCount(scheduleId: Int) async throws -> AttendanceCount
-  func fetchAttendanceTeams() async throws -> [SelectTeamEntity]
-  func sessionAttendance(scheduleId: Int, teamId: Int) async throws -> [Attendance]
-  func fetchStatus() async throws -> [AttendanceStatus]
-  func editAttendance(input: EditAttendanceInput) async throws -> EditAttendance
+  func adminAttendanceCount(scheduleId: Int) async throws(AttendanceError) -> AttendanceCount
+  func fetchAttendanceTeams() async throws(AttendanceError) -> [SelectTeamEntity]
+  func sessionAttendance(scheduleId: Int, teamId: Int) async throws(AttendanceError) -> [Attendance]
+  func fetchStatus() async throws(AttendanceError) -> [AttendanceStatus]
+  func editAttendance(input: EditAttendanceInput) async throws(AttendanceError) -> EditAttendance
 }
 
 /// Attendance Repository의 DependencyKey 구조체

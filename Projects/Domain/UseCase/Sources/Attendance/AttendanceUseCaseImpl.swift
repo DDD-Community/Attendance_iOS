@@ -7,7 +7,6 @@
 
 import Dependencies
 import DomainInterface
-import Model
 import Entity
 
 
@@ -17,28 +16,28 @@ public struct AttendanceUseCaseImpl: AttendanceInterface {
   public init() { }
 
 
-  public func adminAttendanceCount(scheduleId: Int) async throws -> Entity.AttendanceCount {
+  public func adminAttendanceCount(scheduleId: Int) async throws(AttendanceError) -> Entity.AttendanceCount {
     return try await repository.adminAttendanceCount(scheduleId: scheduleId)
   }
 
-  public func fetchAttendanceTeams() async throws -> [SelectTeamEntity] {
+  public func fetchAttendanceTeams() async throws(AttendanceError) -> [SelectTeamEntity] {
     return try await repository.fetchAttendanceTeams()
   }
 
   public func sessionAttendance(
     scheduleId: Int,
     teamId: Int
-  ) async throws -> [Attendance] {
+  ) async throws(AttendanceError) -> [Attendance] {
     return try await repository.sessionAttendance(scheduleId: scheduleId, teamId: teamId)
   }
 
-  public func fetchStatus() async throws -> [AttendanceStatus] {
+  public func fetchStatus() async throws(AttendanceError) -> [AttendanceStatus] {
     return try await repository.fetchStatus()
   }
 
   public func editAttendance(
     input: EditAttendanceInput
-  ) async throws -> EditAttendance {
+  ) async throws(AttendanceError) -> EditAttendance {
     return try await repository.editAttendance(input: input)
   }
 }

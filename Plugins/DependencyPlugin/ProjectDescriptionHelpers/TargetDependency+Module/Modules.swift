@@ -10,6 +10,7 @@ import Foundation
 import ProjectDescription
 
 public enum FeatureModule: String, CaseIterable {
+  case sharedUI = "FeatureSharedUI"
   case splash = "Splash"
   case auth = "Auth"
   case management = "Management"
@@ -19,51 +20,68 @@ public enum FeatureModule: String, CaseIterable {
   case web = "Web"
 
   /// Projects/Feature/<name>
-  var path: Path { .relativeToFeature(rawValue) }
+  var path: Path {
+    return .relativeToFeature(rawValue)
+  }
 }
 
 public enum CoreModule: String, CaseIterable {
+  case assembly = "CoreAssembly"
   case logger = "DDDCoreLogger"
+  case network = "DDDNetwork"
+  case storage = "DDDStorage"
   case coreUI = "DDDCoreUI"
   case coreUtility = "DDDCoreUtility"
   case thirdParty = "DDDThirdParty"
 
   /// Projects/Core/<name>
-  var path: Path { .relativeToCore(rawValue) }
-}
-
-public enum NetworkModule: String, CaseIterable {
-  case networks = "Networks"
-  case foundations = "Foundations"
-  case thirdPartys = "ThirdPartys"
-
-  /// Projects/Network/<name>
-  var path: Path { .relativeToNetwork(rawValue) }
+  var path: Path {
+    return .relativeToCore(rawValue)
+  }
 }
 
 public enum DataModule: String, CaseIterable {
+  case assembly = "DataAssembly"
   case model = "Model"
   case repository = "Repository"
-  case service = "Service"
-  case api = "API"
 
   /// Projects/Data/<name>
-  var path: Path { .relativeToData(rawValue) }
+  var path: Path {
+    return .relativeToData(rawValue)
+  }
+}
+
+public enum ServiceModule: String, CaseIterable {
+  case assembly = "ServiceAssembly"
+  case api = "API"
+  case apiEndpoint = "APIEndpoint"
+  case auth = "DDDAuth"
+
+  /// Projects/Service/<name>
+  var path: Path {
+    return .relativeToService(rawValue)
+  }
 }
 
 public enum DomainModule: String, CaseIterable {
+  case assembly = "DomainAssembly"
   case useCase = "UseCase"
   case domainInterface = "DomainInterface"
   case entity = "Entity"
 
   /// Projects/Domain/<name>
-  var path: Path { .relativeToDomain(rawValue) }
+  var path: Path {
+    return .relativeToDomain(rawValue)
+  }
 }
 
 public enum UIModule: String, CaseIterable {
+  case animation = "DDDAnimation"
   case designKit = "DDDDesignKit"
   case sharedUI = "DDDSharedUI"
 
   /// Projects/UI/<name>
-  var path: Path { .relativeToUI(rawValue) }
+  var path: Path {
+    return .relativeToUI(rawValue)
+  }
 }

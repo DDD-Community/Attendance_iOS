@@ -10,26 +10,26 @@ import ProjectDescription
 
 public extension ProjectDescription.Path {
   static func relativeToFeature(_ name: String) -> Self {
-    .relativeToRoot("Projects/Feature/\(name)")
+    return .relativeToRoot("Projects/Feature/\(name)")
   }
 
   static func relativeToCore(_ name: String) -> Self {
-    .relativeToRoot("Projects/Core/\(name)")
-  }
-
-  static func relativeToNetwork(_ name: String) -> Self {
-    .relativeToRoot("Projects/Network/\(name)")
+    return .relativeToRoot("Projects/Core/\(name)")
   }
 
   static func relativeToData(_ name: String) -> Self {
-    .relativeToRoot("Projects/Data/\(name)")
+    return .relativeToRoot("Projects/Data/\(name)")
+  }
+
+  static func relativeToService(_ name: String) -> Self {
+    return .relativeToRoot("Projects/Service/\(name)")
   }
 
   static func relativeToDomain(_ name: String) -> Self {
-    .relativeToRoot("Projects/Domain/\(name)")
+    return .relativeToRoot("Projects/Domain/\(name)")
   }
 
   static func relativeToUI(_ name: String) -> Self {
-    .relativeToRoot("Projects/UI/\(name)")
+    return .relativeToRoot("Projects/UI/\(name)")
   }
 }

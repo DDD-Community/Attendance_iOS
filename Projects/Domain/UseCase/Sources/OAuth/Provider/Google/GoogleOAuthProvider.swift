@@ -19,7 +19,7 @@ public final class GoogleOAuthProvider: GoogleOAuthProviderInterface, @unchecked
 
   public func signInWithToken(
     token: String
-  ) async throws -> String {
+  ) async throws(AuthError) -> String {
     DDDLogger.info("Starting Google OAuth flow", category: .auth)
     let payload = try await googleRepository.signIn()
     self.$userSession.withLock { $0.accessToken = payload.accessToken ?? "" }

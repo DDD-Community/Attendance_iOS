@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct CreateQRCodeResponseDTO: Decodable {
+public struct CreateQRCodeResponseDTO: Decodable, Sendable {
   public let id: Int
   public let qrBase64: String
 }

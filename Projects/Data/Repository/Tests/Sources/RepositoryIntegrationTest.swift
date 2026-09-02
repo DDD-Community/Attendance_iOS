@@ -33,12 +33,12 @@ struct RepositoryIntegrationTest {
   func testMockRepositoryStateIndependence() async throws {
     // Given
     let mockAuth1 = MockAuthRepository.success()
-    let mockAuth2 = MockAuthRepository.failure(MockAuthError.networkError)
+    let mockAuth2 = MockAuthRepository.failure(MockAuthError.networkError.authError)
 
     // When
     _ = try await mockAuth1.login(provider: .google, token: "token1")
 
-    await #expect(throws: MockAuthError.networkError) {
+    await #expect(throws: MockAuthError.networkError.authError) {
       try await mockAuth2.login(provider: .apple, token: "token2")
     }
 
@@ -72,16 +72,21 @@ struct RepositoryIntegrationTest {
   func testMockRepositoryMethods() async throws {
     // Given
     let mockRepository = MockAuthRepository.success()
+    let tokens = AuthTokens(accessToken: "access", refreshToken: "refresh")
 
-    // When & Then - 모든 메서드가 존재하는지 확인
-    #expect(mockRepository.login != nil)
-    #expect(mockRepository.refresh != nil)
-    #expect(mockRepository.logout != nil)
-    #expect(mockRepository.withDraw != nil)
-    #expect(mockRepository.updateSessionCredential != nil)
-    #expect(mockRepository.reset != nil)
-    #expect(mockRepository.configureSuccess != nil)
-    #expect(mockRepository.configureFailure != nil)
+    // When - 함수 값을 비교하지 않고 실제 인터페이스 계약을 호출해 검증
+    _ = try await mockRepository.login(provider: .google, token: "test")
+    _ = try await mockRepository.refresh()
+    _ = try await mockRepository.logout()
+    _ = try await mockRepository.withDraw(token: "test")
+    await mockRepository.updateSessionCredential(with: tokens)
+
+    // Then
+    #expect(mockRepository.loginCallCount == 1)
+    #expect(mockRepository.refreshCallCount == 1)
+    #expect(mockRepository.logoutCallCount == 1)
+    #expect(mockRepository.withDrawCallCount == 1)
+    #expect(mockRepository.updateSessionCredentialCallCount == 1)
   }
 
   // MARK: - Mock Repository 성능 테스트
@@ -161,8 +166,8 @@ struct RepositoryIntegrationTest {
     #expect(mockRepository.loginCallCount == 1)
 
     // 2. 실패 상태로 변경
-    mockRepository.configureFailure(MockAuthError.invalidToken)
-    await #expect(throws: MockAuthError.invalidToken) {
+    mockRepository.configureFailure(MockAuthError.invalidToken.authError)
+    await #expect(throws: MockAuthError.invalidToken.authError) {
       try await mockRepository.login(provider: .apple, token: "fail_token")
     }
     #expect(mockRepository.loginCallCount == 2)
@@ -193,7 +198,7 @@ struct RepositoryIntegrationTest {
     #expect(mockRepository.refreshCallCount == 1)
 
     // 3. 세션 업데이트
-    mockRepository.updateSessionCredential(with: refreshResult)
+    await mockRepository.updateSessionCredential(with: refreshResult)
     #expect(mockRepository.updateSessionCredentialCallCount == 1)
 
     // 4. 로그아웃
@@ -225,10 +230,10 @@ struct RepositoryIntegrationTest {
 
     for errorType in errorTypes {
       // Given
-      let mockRepository = MockAuthRepository.failure(errorType)
+      let mockRepository = MockAuthRepository.failure(errorType.authError)
 
       // When & Then
-      await #expect(throws: errorType) {
+      await #expect(throws: errorType.authError) {
         try await mockRepository.login(provider: .google, token: "test_token")
       }
       #expect(mockRepository.loginCallCount == 1)
@@ -274,14 +279,14 @@ struct RepositoryIntegrationTest {
     #expect(successMock.shouldSucceed == true)
 
     // 2. failure() 팩토리 메서드
-    let failureMock = MockAuthRepository.failure(MockAuthError.networkError)
+    let failureMock = MockAuthRepository.failure(MockAuthError.networkError.authError)
     #expect(failureMock.shouldSucceed == false)
 
     // 실제 동작 검증
     let successResult = try await successMock.login(provider: .google, token: "test")
     #expect(successResult.name == "Test User")
 
-    await #expect(throws: MockAuthError.networkError) {
+    await #expect(throws: MockAuthError.networkError.authError) {
       try await failureMock.login(provider: .google, token: "test")
     }
   }

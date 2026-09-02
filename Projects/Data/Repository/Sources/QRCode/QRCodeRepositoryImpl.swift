@@ -9,29 +9,34 @@ import SwiftUI
 import UIKit
 import CoreImage.CIFilterBuiltins
 
+import DDDNetworkInterface
 import DomainInterface
 import Model
-import Service
+import APIEndpoint
 import Entity
 
-@preconcurrency import AsyncMoya
-
-@Observable
 final public class QRCodeRepositoryImpl: QRCodeInterface {
   
-  private let provider: MoyaProvider<QRService>
+  private let client: any DDDNetworkClient
   
   public init(
-    provider: MoyaProvider<QRService> = MoyaProvider<QRService>.authorized
+    client: any DDDNetworkClient
   ) {
-    self.provider = provider
+    self.client = client
   }
   
   // MARK: - QRCode String 생성
   
-  public func createQRCode(userID: Int) async throws -> String {
-    let response: CreateQRCodeResponseDTO = try await provider.request(.createQRCode(userID: userID))
-    return response.qrBase64
+  public func createQRCode(userID: Int) async throws(QRCodeError) -> String {
+    do {
+      let response = try await client.send(
+        QRService.createQRCode(userID: userID),
+        as: CreateQRCodeResponseDTO.self
+      )
+      return response.qrBase64
+    } catch {
+      throw .createFailed
+    }
   }
   
   // MARK: - QRCode Image 생성
@@ -44,10 +49,16 @@ final public class QRCodeRepositoryImpl: QRCodeInterface {
     return nil
   }
   
-  public func qrValidateCheck(from code: String) async throws -> Entity.QRValidateEntity {
-    let response = try await provider.requestResponse(.qrAttendanceCheck(qrCode: code))
+  public func qrValidateCheck(from code: String) async throws(QRCodeError) -> Entity.QRValidateEntity {
+    let response: DDDHTTPResponse
+    do {
+      response = try await client.sendResponse(QRService.qrAttendanceCheck(qrCode: code))
+    } catch {
+      throw .validationFailed("QR 코드 검증 요청에 실패했습니다")
+    }
+
     let decoder = JSONDecoder()
-    
+
     if (200...299).contains(response.statusCode) {
       if response.data.isEmpty {
         return QRValidateEntity(isSuccess: true)
@@ -57,26 +68,25 @@ final public class QRCodeRepositoryImpl: QRCodeInterface {
       }
       return QRValidateEntity(isSuccess: true)
     }
-    
+
     // 400+ 에러는 exception으로 throw
     if let errorDTO = try? decoder.decode(QRValidateDTO.self, from: response.data) {
       // 서버에서 온 상세 메시지 우선 사용
       let userMessage = errorDTO.message ?? "알 수 없는 오류가 발생했습니다"
-      
+
       switch response.statusCode {
       case 400...499:
         // 클라이언트 오류 - 서버 메시지를 사용자에게 표시
-        throw AttendanceError.unknown(userMessage)
+        throw .validationFailed(userMessage)
       case 500...599:
         // 서버 오류
-        throw AttendanceError.serverError(response.statusCode)
+        throw .validationFailed("서버 오류 (코드: \(response.statusCode))")
       default:
-        throw AttendanceError.unknown(userMessage)
+        throw .validationFailed(userMessage)
       }
     }
-    
+
     // JSON 디코딩 실패 시
-    let rawMessage = String(data: response.data, encoding: .utf8) ?? "디코딩 실패"
-    throw AttendanceError.decodingError("응답 파싱 실패: \(rawMessage)")
+    throw .invalidPayload
   }
 }

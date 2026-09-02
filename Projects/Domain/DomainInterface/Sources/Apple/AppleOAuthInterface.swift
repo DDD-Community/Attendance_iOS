@@ -14,8 +14,11 @@ import Entity
 
 
 public protocol AppleOAuthInterface: Sendable {
-  func signIn() async throws -> AppleOAuthPayload
-  func signInWithCredential(_ credential: ASAuthorizationAppleIDCredential, nonce: String) async throws -> AppleOAuthPayload
+  func signIn() async throws(AuthError) -> AppleOAuthPayload
+  func signInWithCredential(
+    _ credential: ASAuthorizationAppleIDCredential,
+    nonce: String
+  ) async throws(AuthError) -> AppleOAuthPayload
 }
 
 // MARK: - Dependencies

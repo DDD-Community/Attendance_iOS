@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - [운영진] 미참여 명단 (GET /votes/{id}/non-responders)
 
-public struct NonRespondersDTO: Decodable {
+public struct NonRespondersDTO: Decodable, Sendable {
   public let totalCount: Int?
   public let members: [NonResponderMemberDTO]?
 }

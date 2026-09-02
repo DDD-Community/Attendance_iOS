@@ -19,8 +19,25 @@ public extension UserDTO {
       inviteCodeId: inviteCodeId,
       userRole: userRole,
       managing: managing.flatMap { StaffManaging(rawValue: $0.rawValue.uppercased()) },
-      role: role.flatMap { SelectParts(rawValue: $0.rawValue) },
-      memberTeam: memberTeam.flatMap { SelectTeams(rawValue: $0.rawValue) },
+      role: role.flatMap { SelectParts.from(apiKey: $0.rawValue) },
+      memberTeam: memberTeam.map { team in
+        switch team {
+        case .ios1:
+          return .ios1
+        case .ios2:
+          return .ios2
+        case .and1:
+          return .and1
+        case .and2:
+          return .and2
+        case .web1:
+          return .web1
+        case .web2:
+          return .web2
+        case .notTeam, .unknown:
+          return .unknown
+        }
+      },
       staffRole: staffRole
     )
   }

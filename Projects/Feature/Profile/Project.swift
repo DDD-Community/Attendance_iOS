@@ -1,21 +1,19 @@
+import DependencyPackagePlugin
+import DependencyPlugin
 import Foundation
 import ProjectDescription
-import DependencyPlugin
 import ProjectTemplatePlugin
-import ProjectTemplatePlugin
-import DependencyPackagePlugin
 
 let project = Project.makeModule(
   name: "Profile",
   bundleId: .appBundleID(name: ".Profile"),
   product: .staticFramework,
-  settings:  .moduleSettings,
+  settings: .moduleSettings,
   dependencies: [
-    .core(.logger),
-    .core(.coreUI),
     .ui(.sharedUI),
-    .domain(.useCase)
+    .domainAssembly
   ],
   sources: ["Sources/**"],
-  hasTests: true
+  hasTests: true,
+  requiresTCAHost: true
 )

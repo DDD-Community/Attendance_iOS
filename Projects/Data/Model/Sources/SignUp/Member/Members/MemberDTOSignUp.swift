@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct MemberDTOSignUp: Codable, Equatable {
+public struct MemberDTOSignUp: Codable, Sendable, Equatable {
   public var uid: String
   public var memberid: String
   public var email: String

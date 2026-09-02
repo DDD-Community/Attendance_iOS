@@ -17,7 +17,7 @@ public struct QRCodeUseCaseImpl: QRCodeInterface {
 
   public init() { }
 
-  public func createQRCode(userID: Int) async throws -> String {
+  public func createQRCode(userID: Int) async throws(QRCodeError) -> String {
     return try await repository.createQRCode(userID: userID)
   }
 
@@ -28,7 +28,7 @@ public struct QRCodeUseCaseImpl: QRCodeInterface {
   // MARK: - qrcode 출석체크
   public func qrValidateCheck(
     from code: String
-  ) async throws -> QRValidateEntity {
+  ) async throws(QRCodeError) -> QRValidateEntity {
     return try await repository.qrValidateCheck(from: code)
   }
 }

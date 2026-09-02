@@ -3,7 +3,7 @@
  * actions/github-script 스텝에서 require 해서 호출한다.
  *
  * 환경변수
- *   RESULT_BUNDLE_DIR — tuist test --result-bundle-path 에 넘긴 경로
+ *   RESULT_BUNDLE_DIR — xcodebuild -resultBundlePath 에 넘긴 경로
  *   TEST_OUTCOME      — 테스트 스텝의 outcome (success | failure | cancelled)
  */
 
@@ -22,6 +22,44 @@ const MAX_BUILD_ERRORS = 20;
 // 커버리지 막대 칸 수 (한 칸 = 5%)
 const BAR_WIDTH = 20;
 
+function findProjectManifests(root) {
+  if (!fs.existsSync(root)) return [];
+
+  const manifests = [];
+  const walk = (directory) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+
+      const child = path.join(directory, entry.name);
+      if (entry.name === "TestHost") continue;
+
+      const manifest = path.join(child, "Project.swift");
+      if (fs.existsSync(manifest)) manifests.push(manifest);
+      else walk(child);
+    }
+  };
+
+  walk(root);
+  return manifests;
+}
+
+// xccov는 테스트 스킴에 링크된 외부 패키지까지 반환한다.
+// Projects 아래 Tuist 모듈 이름을 기준으로 앱이 소유한 제품만 커버리지에 포함한다.
+function internalCoverageTargetNames(projectsRoot = path.join(process.cwd(), "Projects")) {
+  const names = new Set([process.env.COVERAGE_APP_TARGET || "DDDAttendance"]);
+
+  for (const manifest of findProjectManifests(projectsRoot)) {
+    const source = fs.readFileSync(manifest, "utf8");
+    const moduleName = /Project\.makeModule\s*\([\s\S]*?\bname:\s*"([^"]+)"/.exec(source)?.[1];
+    if (!moduleName) continue;
+
+    names.add(moduleName);
+    names.add(`${moduleName}Interface`);
+  }
+
+  return names;
+}
+
 function xcrun(args) {
   return execFileSync("xcrun", args, {
     encoding: "utf8",
@@ -33,8 +71,8 @@ function xcrun(args) {
 function findResultBundles(root) {
   if (!root || !fs.existsSync(root)) return [];
 
-  // tuist 는 <path>.xcresult 를 만들고 <path> 심볼릭 링크를 건다. xcresulttool 은
-  // 링크를 따라가지만 xccov 는 "unrecognized file format" 으로 거부한다.
+  // 과거 tuist test는 <path>.xcresult를 만들고 <path> 심볼릭 링크를 걸었다.
+  // 이전 실행 결과도 읽을 수 있도록 실제 경로를 해석한다.
   root = fs.realpathSync(root);
 
   const found = [];
@@ -111,7 +149,7 @@ function mergeSummaries(summaries) {
   return merged;
 }
 
-function mergeCoverage(reports) {
+function mergeCoverage(reports, allowedTargets = internalCoverageTargetNames()) {
   const byName = new Map();
 
   for (const target of reports.flat()) {
@@ -119,6 +157,8 @@ function mergeCoverage(reports) {
     if (!target.executableLines) continue;
 
     const name = target.name.replace(/\.(framework|app|bundle|a|dylib)$/, "");
+    if (!allowedTargets.has(name)) continue;
+
     const acc = byName.get(name) || { name, coveredLines: 0, executableLines: 0 };
     acc.coveredLines += target.coveredLines || 0;
     acc.executableLines += target.executableLines;
@@ -342,4 +382,9 @@ module.exports = async ({ github, context, core }) => {
   }
 
   await core.summary.addRaw(body.replace(MARKER, "")).write();
+};
+
+module.exports.__test__ = {
+  internalCoverageTargetNames,
+  mergeCoverage,
 };

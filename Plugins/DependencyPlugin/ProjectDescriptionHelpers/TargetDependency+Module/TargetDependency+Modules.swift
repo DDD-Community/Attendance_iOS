@@ -38,31 +38,47 @@ public extension TargetDependency {
   /// 피처 의존성. 피처끼리는 상대의 Interface 에만 의존하고,
   /// 구현 연결은 조립 레이어(FeatureAssembly/App)에서만 `.implementation` 으로 명시한다.
   static func feature(_ module: FeatureModule, _ target: ModuleTarget = .implementation) -> Self {
-    .moduleDependency(name: module.rawValue, path: module.path, target: target)
+    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
 
   /// 모든 피처를 묶고 구현을 등록하는 엄브렐러 모듈 (App 진입점).
   static var featureAssembly: Self {
-    .project(target: "FeatureAssembly", path: .relativeToFeature("FeatureAssembly"))
+    return .project(target: "FeatureAssembly", path: .relativeToFeature("FeatureAssembly"))
   }
 
   static func core(_ module: CoreModule, _ target: ModuleTarget = .implementation) -> Self {
-    .moduleDependency(name: module.rawValue, path: module.path, target: target)
-  }
-
-  static func network(_ module: NetworkModule, _ target: ModuleTarget = .implementation) -> Self {
-    .moduleDependency(name: module.rawValue, path: module.path, target: target)
+    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
 
   static func data(_ module: DataModule, _ target: ModuleTarget = .implementation) -> Self {
-    .moduleDependency(name: module.rawValue, path: module.path, target: target)
+    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
+  }
+
+  /// Model·Repository를 하나의 Data 진입점으로 제공하는 엄브렐러 모듈.
+  static var dataAssembly: Self {
+    return .data(.assembly)
+  }
+
+  static func service(_ module: ServiceModule, _ target: ModuleTarget = .implementation) -> Self {
+    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
+  }
+
+  /// Auth·API 등 Service 구현을 묶어 제공하는 엄브렐러 모듈.
+  static var serviceAssembly: Self {
+    return .service(.assembly)
   }
 
   static func domain(_ module: DomainModule, _ target: ModuleTarget = .implementation) -> Self {
-    .moduleDependency(name: module.rawValue, path: module.path, target: target)
+    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
+  }
+
+  /// Entity·DomainInterface·UseCase 를 재수출하는 조립 모듈.
+  /// 피처는 도메인 개별 모듈이 아니라 이 문 하나만 본다.
+  static var domainAssembly: Self {
+    return .domain(.assembly)
   }
 
   static func ui(_ module: UIModule, _ target: ModuleTarget = .implementation) -> Self {
-    .moduleDependency(name: module.rawValue, path: module.path, target: target)
+    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
 }

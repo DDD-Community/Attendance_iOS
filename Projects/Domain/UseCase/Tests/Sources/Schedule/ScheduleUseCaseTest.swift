@@ -72,10 +72,10 @@ struct ScheduleUseCaseTest {
   @Test("TC-003: 일정 조회 실패 (네트워크 오류)")
   func get_schedule_network_failure() async throws {
     // Given: 네트워크 오류 설정
-    mockScheduleRepository.configureScheduleFailure(ScheduleError.networkError)
+    mockScheduleRepository.configureScheduleFailure(ScheduleError.unknown)
 
     // When & Then: 네트워크 오류 검증
-    await #expect(throws: ScheduleError.self) {
+    await #expect(throws: ScheduleError.unknown) {
       try await withDependencies {
         $0.scheduleRepository = mockScheduleRepository
       } operation: {
@@ -90,10 +90,10 @@ struct ScheduleUseCaseTest {
   @Test("TC-004: 일정 조회 실패 (권한 없음)")
   func get_schedule_unauthorized() async throws {
     // Given: 권한 없음 오류 설정
-    mockScheduleRepository.configureScheduleFailure(ScheduleError.unauthorized)
+    mockScheduleRepository.configureScheduleFailure(ScheduleError.unknown)
 
     // When & Then: 권한 오류 검증
-    await #expect(throws: ScheduleError.self) {
+    await #expect(throws: ScheduleError.unknown) {
       try await withDependencies {
         $0.scheduleRepository = mockScheduleRepository
       } operation: {
@@ -304,18 +304,18 @@ class MockScheduleRepository: ScheduleInterface {
 
   // MARK: - Configured Responses
 
-  private var scheduleResponse: Result<[Schedule], Error>?
+  private var scheduleResponse: Result<[Schedule], Entity.ScheduleError>?
 
   // MARK: - Implementation
 
-  func getSchedule() async throws -> [Schedule] {
+  func getSchedule() async throws(Entity.ScheduleError) -> [Schedule] {
     getScheduleCallCount += 1
 
     if let response = scheduleResponse {
       return try response.get()
     }
 
-    throw ScheduleError.notConfigured
+    throw Entity.ScheduleError.unknown
   }
 
   func getCachedSchedule() async -> [Schedule]? {
@@ -329,15 +329,7 @@ class MockScheduleRepository: ScheduleInterface {
   }
 
   func configureScheduleFailure(_ error: Error) {
-    scheduleResponse = .failure(error)
+    scheduleResponse = .failure(Entity.ScheduleError.from(error))
   }
 }
 
-// MARK: - Test Errors
-
-enum ScheduleError: Error, Equatable {
-  case networkError
-  case unauthorized
-  case invalidData
-  case notConfigured
-}

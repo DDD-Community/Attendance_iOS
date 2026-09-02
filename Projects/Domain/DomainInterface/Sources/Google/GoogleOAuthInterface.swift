@@ -11,7 +11,7 @@ import Dependencies
 import Entity
 
 public protocol GoogleOAuthInterface: Sendable {
-  func signIn() async throws -> GoogleOAuthPayload
+  func signIn() async throws(AuthError) -> GoogleOAuthPayload
 }
 
 public enum GoogleOAuthRepositoryDependencyKey: TestDependencyKey {
@@ -27,4 +27,3 @@ public extension DependencyValues {
     set { self[GoogleOAuthRepositoryDependencyKey.self] = newValue }
   }
 }
-

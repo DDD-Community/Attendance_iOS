@@ -1,0 +1,298 @@
+name: Develop Sharded Tests
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: develop-sharded-tests
+  cancel-in-progress: true
+
+env:
+  TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
+  TUIST_BUILD_TAGS: ci,develop,sharded
+  TUIST_BUILD_VALUE_COMMIT: ${{ github.sha }}
+  LANG: en_US.UTF-8
+  LC_ALL: en_US.UTF-8
+
+jobs:
+  build-shards:
+    name: Build test shards
+    runs-on: self-hosted
+    timeout-minutes: 90
+
+    permissions:
+      contents: read
+
+    outputs:
+      matrix: ${{ steps.build.outputs.matrix }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PATH
+        run: |
+          echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
+          echo "CI_DERIVED_DATA=$HOME/ci-derived-data/DDDAttendance-develop-build" >> "$GITHUB_ENV"
+
+      - name: Restore gitignored build config
+        env:
+          CONFIG_TAR: ${{ secrets.CONFIG_DIR_TAR_BASE64 }}
+          GOOGLE_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        run: |
+          printf '%s' "$CONFIG_TAR" | base64 --decode | tar xzf -
+          mkdir -p Projects/App/Resources
+          printf '%s' "$GOOGLE_PLIST" | base64 --decode > Projects/App/Resources/GoogleService-Info.plist
+          git check-ignore -q Config/base.xcconfig
+          git check-ignore -q Projects/App/Resources/GoogleService-Info.plist
+
+      - name: Install Tuist
+        run: mise install tuist
+
+      - name: Setup Tuist cache
+        id: tuist-cache
+        continue-on-error: true
+        timeout-minutes: 3
+        run: mise exec -- tuist setup cache
+
+      - name: Configure compilation cache fallback
+        run: |
+          if [[ "${{ steps.tuist-cache.outcome }}" == "success" ]]; then
+            echo "XCODE_COMPILATION_CACHE_ENABLED=YES" >> "$GITHUB_ENV"
+          else
+            echo "XCODE_COMPILATION_CACHE_ENABLED=NO" >> "$GITHUB_ENV"
+            echo "Tuist cache를 사용할 수 없어 이번 실행은 Xcode compilation cache 없이 진행합니다."
+          fi
+
+      # Build Insights가 빌드 중 CPU/메모리 같은 러너 메트릭도 함께 수집하게 한다.
+      - name: Setup Tuist insights
+        continue-on-error: true
+        timeout-minutes: 3
+        run: mise exec -- tuist setup insights
+
+      - name: Install project dependencies
+        run: |
+          mise exec -- tuist install
+          mise exec -- tuist generate --no-open
+
+      - name: Select simulator
+        run: |
+          SIMULATOR_DESTINATION="$(python3 Scripts/select-ios-simulator.py)"
+          echo "SIMULATOR_DESTINATION=$SIMULATOR_DESTINATION" >> "$GITHUB_ENV"
+
+      - name: Prepare simulator
+        run: ./Scripts/prepare-ios-simulator.sh
+
+      - name: Prepare build DerivedData
+        run: |
+          mkdir -p "$CI_DERIVED_DATA"
+          rm -rf \
+            "$CI_DERIVED_DATA/Build" \
+            "$CI_DERIVED_DATA/Index.noindex" \
+            "$CI_DERIVED_DATA/Logs" \
+            "$CI_DERIVED_DATA/SourcePackages" \
+            "$CI_DERIVED_DATA/info.plist"
+
+      # Stage scheme의 전체 테스트를 한 번 빌드하고 최근 30일 실행 시간으로 두 shard를 계획한다.
+      - name: Build and plan shards
+        id: build
+        run: |
+          mise exec -- tuist xcodebuild build-for-testing \
+            -workspace DDDAttendance.xcworkspace \
+            -scheme DDDAttendance-Stage \
+            -configuration Stage \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$CI_DERIVED_DATA" \
+            -resultBundlePath ShardBuildResults.xcresult \
+            --shard-total 2 \
+            --shard-granularity suite \
+            ONLY_ACTIVE_ARCH=YES \
+            COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
+
+      # develop 번들을 기준선으로 저장해 PR의 크기 증감과 threshold를 비교할 수 있게 한다.
+      - name: Build app for bundle insights
+        run: |
+          mise exec -- tuist xcodebuild build \
+            -workspace DDDAttendance.xcworkspace \
+            -scheme DDDAttendance-Stage \
+            -configuration Stage \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$CI_DERIVED_DATA" \
+            -resultBundlePath BundleBuildResults.xcresult \
+            ONLY_ACTIVE_ARCH=YES \
+            COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
+
+      - name: Inspect bundle size
+        run: |
+          mise exec -- tuist inspect bundle DDDAttendance \
+            --platforms ios \
+            --configuration Stage \
+            --derived-data-path "$CI_DERIVED_DATA"
+
+      - name: Clean build DerivedData
+        if: always()
+        run: |
+          rm -rf \
+            "$CI_DERIVED_DATA/Build" \
+            "$CI_DERIVED_DATA/Index.noindex" \
+            "$CI_DERIVED_DATA/Logs" \
+            "$CI_DERIVED_DATA/SourcePackages" \
+            "$CI_DERIVED_DATA/info.plist"
+          rm -rf ShardBuildResults.xcresult BundleBuildResults.xcresult
+
+  test-shards:
+    name: Test shard ${{ matrix.shard }}
+    needs: build-shards
+    if: toJSON(fromJSON(needs.build-shards.outputs.matrix).shard) != '[]'
+    runs-on: self-hosted
+    timeout-minutes: 60
+
+    permissions:
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.build-shards.outputs.matrix) }}
+
+    env:
+      TUIST_SHARD_INDEX: ${{ matrix.shard }}
+      TUIST_SHARD_PLAN_ID: ${{ matrix.shard_plan_id }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PATH
+        run: |
+          echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
+          echo "CI_DERIVED_DATA=$HOME/ci-derived-data/DDDAttendance-develop-shard-$TUIST_SHARD_INDEX" >> "$GITHUB_ENV"
+
+      - name: Restore gitignored build config
+        env:
+          CONFIG_TAR: ${{ secrets.CONFIG_DIR_TAR_BASE64 }}
+          GOOGLE_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        run: |
+          printf '%s' "$CONFIG_TAR" | base64 --decode | tar xzf -
+          mkdir -p Projects/App/Resources
+          printf '%s' "$GOOGLE_PLIST" | base64 --decode > Projects/App/Resources/GoogleService-Info.plist
+          git check-ignore -q Config/base.xcconfig
+          git check-ignore -q Projects/App/Resources/GoogleService-Info.plist
+
+      - name: Install Tuist
+        run: |
+          mise install tuist
+          mise exec -- tuist install
+          mise exec -- tuist generate --no-open
+
+      - name: Setup Tuist cache
+        id: tuist-cache
+        continue-on-error: true
+        timeout-minutes: 3
+        run: mise exec -- tuist setup cache
+
+      - name: Configure compilation cache fallback
+        run: |
+          if [[ "${{ steps.tuist-cache.outcome }}" == "success" ]]; then
+            echo "XCODE_COMPILATION_CACHE_ENABLED=YES" >> "$GITHUB_ENV"
+          else
+            echo "XCODE_COMPILATION_CACHE_ENABLED=NO" >> "$GITHUB_ENV"
+            echo "Tuist cache를 사용할 수 없어 이번 shard는 Xcode compilation cache 없이 진행합니다."
+          fi
+
+      - name: Setup Tuist insights
+        continue-on-error: true
+        timeout-minutes: 3
+        run: mise exec -- tuist setup insights
+
+      - name: Select simulator
+        run: |
+          SIMULATOR_DESTINATION="$(python3 Scripts/select-ios-simulator.py)"
+          echo "SIMULATOR_DESTINATION=$SIMULATOR_DESTINATION" >> "$GITHUB_ENV"
+
+      - name: Prepare simulator
+        run: ./Scripts/prepare-ios-simulator.sh
+
+      - name: Prepare shard DerivedData
+        run: |
+          mkdir -p "$CI_DERIVED_DATA"
+          rm -rf \
+            "$CI_DERIVED_DATA/Build" \
+            "$CI_DERIVED_DATA/Index.noindex" \
+            "$CI_DERIVED_DATA/Logs" \
+            "$CI_DERIVED_DATA/SourcePackages" \
+            "$CI_DERIVED_DATA/info.plist"
+
+      # 빌드 단계가 업로드한 테스트 산출물을 받아 이 shard에 배정된 테스트만 실행한다.
+      # Tuist wrapper가 quarantine과 Test Insights 업로드를 함께 처리한다.
+      - name: Run shard
+        run: |
+          mise exec -- tuist xcodebuild test \
+            -workspace DDDAttendance.xcworkspace \
+            -scheme DDDAttendance-Stage \
+            -configuration Stage \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$CI_DERIVED_DATA" \
+            -resultBundlePath "TestResults-${{ matrix.shard }}.xcresult" \
+            -retry-tests-on-failure \
+            -test-iterations 3 \
+            ONLY_ACTIVE_ARCH=YES \
+            COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
+
+      - name: Clean shard DerivedData
+        if: always()
+        run: |
+          rm -rf \
+            "$CI_DERIVED_DATA/Build" \
+            "$CI_DERIVED_DATA/Index.noindex" \
+            "$CI_DERIVED_DATA/Logs" \
+            "$CI_DERIVED_DATA/SourcePackages" \
+            "$CI_DERIVED_DATA/info.plist"
+
+  warm-module-cache:
+    name: Warm Stage module cache
+    needs: test-shards
+    runs-on: self-hosted
+    timeout-minutes: 90
+    continue-on-error: true
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PATH
+        run: |
+          echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
+
+      - name: Restore gitignored build config
+        env:
+          CONFIG_TAR: ${{ secrets.CONFIG_DIR_TAR_BASE64 }}
+          GOOGLE_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        run: |
+          printf '%s' "$CONFIG_TAR" | base64 --decode | tar xzf -
+          mkdir -p Projects/App/Resources
+          printf '%s' "$GOOGLE_PLIST" | base64 --decode > Projects/App/Resources/GoogleService-Info.plist
+
+      - name: Install Tuist
+        run: |
+          mise install tuist
+          mise exec -- tuist install
+
+      - name: Setup Tuist cache
+        id: tuist-cache
+        continue-on-error: true
+        timeout-minutes: 3
+        run: mise exec -- tuist setup cache
+
+      # develop의 검증된 소스를 Stage 바이너리 캐시 생산자로 사용한다.
+      # tuist cache는 workspace를 변경하므로 후속 빌드와 분리된 마지막 job에서 실행한다.
+      - name: Warm module cache
+        if: steps.tuist-cache.outcome == 'success'
+        run: mise exec -- tuist cache warm --configuration Stage

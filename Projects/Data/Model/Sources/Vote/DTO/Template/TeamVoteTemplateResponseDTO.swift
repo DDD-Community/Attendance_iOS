@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - [멤버] 팀 투표 템플릿 응답 (GET /votes/{id}/team-vote/template)
 
-public struct TeamVoteTemplateResponseDTO: Decodable {
+public struct TeamVoteTemplateResponseDTO: Decodable, Sendable {
   public let templateVersion: Int?
   public let status: String?
   public let template: TeamVoteTemplateDTO?

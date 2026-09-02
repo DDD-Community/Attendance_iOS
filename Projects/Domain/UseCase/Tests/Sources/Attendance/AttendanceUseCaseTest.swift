@@ -56,10 +56,10 @@ struct AttendanceUseCaseTest {
     @Test("TC-002: 관리자 출석 통계 조회 실패")
     func test_admin_attendance_count_failure() async throws {
         // Given: 네트워크 에러 설정
-        mockAttendanceRepository.configureAdminCountFailure(AttendanceError.networkError)
+        mockAttendanceRepository.configureAdminCountFailure(AttendanceError.unknown)
 
         // When & Then: 에러 처리 검증
-        await #expect(throws: AttendanceError.self) {
+        await #expect(throws: AttendanceError.unknown) {
             try await withDependencies {
                 $0.attendanceRepository = mockAttendanceRepository
             } operation: {
@@ -203,10 +203,10 @@ struct AttendanceUseCaseTest {
             userId: "unauthorized_user",
             newStatus: .attendance
         )
-        mockAttendanceRepository.configureEditFailure(AttendanceError.unauthorized)
+        mockAttendanceRepository.configureEditFailure(AttendanceError.unknown)
 
         // When & Then: 권한 에러 검증
-        await #expect(throws: AttendanceError.self) {
+        await #expect(throws: AttendanceError.unknown) {
             try await withDependencies {
                 $0.attendanceRepository = mockAttendanceRepository
             } operation: {
@@ -226,10 +226,10 @@ struct AttendanceUseCaseTest {
             userId: "",
             newStatus: .attendance
         )
-        mockAttendanceRepository.configureEditFailure(AttendanceError.invalidData)
+        mockAttendanceRepository.configureEditFailure(AttendanceError.unknown)
 
         // When & Then: 잘못된 데이터 에러 검증
-        await #expect(throws: AttendanceError.self) {
+        await #expect(throws: AttendanceError.unknown) {
             try await withDependencies {
                 $0.attendanceRepository = mockAttendanceRepository
             } operation: {
@@ -345,10 +345,10 @@ struct AttendanceUseCaseTest {
     func test_network_retry_scenario() async throws {
         // Given: 네트워크 재시도 설정 (처음에는 실패, 두 번째에는 성공)
         let expectedCount = AttendanceCount(totalCount: 25, attendanceCount: 20, lateCount: 3, absentCount: 2)
-        mockAttendanceRepository.configureRetryScenario(firstFailure: AttendanceError.networkError, thenSuccess: expectedCount)
+        mockAttendanceRepository.configureRetryScenario(firstFailure: AttendanceError.unknown, thenSuccess: expectedCount)
 
         // When: 첫 호출은 실패하고 동일 요청 재호출 시 성공
-        await #expect(throws: AttendanceError.self) {
+        await #expect(throws: AttendanceError.unknown) {
             try await withDependencies {
                 $0.attendanceRepository = mockAttendanceRepository
             } operation: {
@@ -518,16 +518,16 @@ class MockAttendanceRepository: AttendanceInterface {
     var lastEditInput: EditAttendanceInput?
 
     // MARK: - Configured Responses
-    private var adminCountResponse: Result<AttendanceCount, Error>?
-    private var teamsResponse: Result<[SelectTeamEntity], Error>?
-    private var sessionResponse: Result<[Attendance], Error>?
-    private var statusResponse: Result<[AttendanceStatus], Error>?
-    private var editResponse: Result<EditAttendance, Error>?
-    private var retryScenarioFirstFailure: Error?
+    private var adminCountResponse: Result<AttendanceCount, Entity.AttendanceError>?
+    private var teamsResponse: Result<[SelectTeamEntity], Entity.AttendanceError>?
+    private var sessionResponse: Result<[Attendance], Entity.AttendanceError>?
+    private var statusResponse: Result<[AttendanceStatus], Entity.AttendanceError>?
+    private var editResponse: Result<EditAttendance, Entity.AttendanceError>?
+    private var retryScenarioFirstFailure: Entity.AttendanceError?
     private var retryScenarioSuccess: AttendanceCount?
 
     // MARK: - Implementation
-    func adminAttendanceCount(scheduleId: Int) async throws -> AttendanceCount {
+    func adminAttendanceCount(scheduleId: Int) async throws(Entity.AttendanceError) -> AttendanceCount {
         adminCountCallCount += 1
         lastAdminCountScheduleId = scheduleId
 
@@ -544,20 +544,20 @@ class MockAttendanceRepository: AttendanceInterface {
             return try response.get()
         }
 
-        throw AttendanceError.notConfigured
+        throw Entity.AttendanceError.unknown
     }
 
-    func fetchAttendanceTeams() async throws -> [SelectTeamEntity] {
+    func fetchAttendanceTeams() async throws(Entity.AttendanceError) -> [SelectTeamEntity] {
         teamsCallCount += 1
 
         if let response = teamsResponse {
             return try response.get()
         }
 
-        throw AttendanceError.notConfigured
+        throw Entity.AttendanceError.unknown
     }
 
-    func sessionAttendance(scheduleId: Int, teamId: Int) async throws -> [Attendance] {
+    func sessionAttendance(scheduleId: Int, teamId: Int) async throws(Entity.AttendanceError) -> [Attendance] {
         sessionCallCount += 1
         lastSessionScheduleId = scheduleId
         lastSessionTeamId = teamId
@@ -566,20 +566,20 @@ class MockAttendanceRepository: AttendanceInterface {
             return try response.get()
         }
 
-        throw AttendanceError.notConfigured
+        throw Entity.AttendanceError.unknown
     }
 
-    func fetchStatus() async throws -> [AttendanceStatus] {
+    func fetchStatus() async throws(Entity.AttendanceError) -> [AttendanceStatus] {
         statusCallCount += 1
 
         if let response = statusResponse {
             return try response.get()
         }
 
-        throw AttendanceError.notConfigured
+        throw Entity.AttendanceError.unknown
     }
 
-    func editAttendance(input: EditAttendanceInput) async throws -> EditAttendance {
+    func editAttendance(input: EditAttendanceInput) async throws(Entity.AttendanceError) -> EditAttendance {
         editCallCount += 1
         lastEditInput = input
 
@@ -587,7 +587,7 @@ class MockAttendanceRepository: AttendanceInterface {
             return try response.get()
         }
 
-        throw AttendanceError.notConfigured
+        throw Entity.AttendanceError.unknown
     }
 
     // MARK: - Configuration Methods
@@ -605,7 +605,7 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     func configureAdminCountFailure(_ error: Error) {
-        adminCountResponse = .failure(error)
+        adminCountResponse = .failure(Entity.AttendanceError.from(error))
     }
 
     func configureTeamsSuccess(_ teams: [SelectTeamEntity]) {
@@ -613,7 +613,7 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     func configureTeamsFailure(_ error: Error) {
-        teamsResponse = .failure(error)
+        teamsResponse = .failure(Entity.AttendanceError.from(error))
     }
 
     func configureSessionSuccess(_ attendances: [Attendance]) {
@@ -621,7 +621,7 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     func configureSessionFailure(_ error: Error) {
-        sessionResponse = .failure(error)
+        sessionResponse = .failure(Entity.AttendanceError.from(error))
     }
 
     func configureStatusSuccess(_ statuses: [AttendanceStatus]) {
@@ -629,7 +629,7 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     func configureStatusFailure(_ error: Error) {
-        statusResponse = .failure(error)
+        statusResponse = .failure(Entity.AttendanceError.from(error))
     }
 
     func configureEditSuccess(_ result: EditAttendance) {
@@ -637,7 +637,7 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     func configureEditFailure(_ error: Error) {
-        editResponse = .failure(error)
+        editResponse = .failure(Entity.AttendanceError.from(error))
     }
 
     func configureConcurrentEditSuccess(_ results: [EditAttendance]) {
@@ -648,18 +648,10 @@ class MockAttendanceRepository: AttendanceInterface {
     }
 
     func configureRetryScenario(firstFailure: Error, thenSuccess: AttendanceCount) {
-        retryScenarioFirstFailure = firstFailure
+        retryScenarioFirstFailure = Entity.AttendanceError.from(firstFailure)
         retryScenarioSuccess = thenSuccess
         retryCallCount = 0
     }
-}
-
-// MARK: - Test Errors
-enum AttendanceError: Error, Equatable {
-    case networkError
-    case unauthorized
-    case invalidData
-    case notConfigured
 }
 
 // MARK: - Helper Extensions

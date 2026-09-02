@@ -21,13 +21,13 @@ public final class AppleOAuthProvider: AppleOAuthProviderInterface, @unchecked S
   public func signInWithCredential(
     credential: ASAuthorizationAppleIDCredential,
     nonce: String
-  ) async throws -> AppleOAuthPayload {
+  ) async throws(AuthError) -> AppleOAuthPayload {
     let payload = try await appleRepository.signInWithCredential(credential, nonce: nonce)
     DDDLogger.info("Apple sign-in completed through repository with credential", category: .auth)
     return payload
   }
 
-  public func signIn() async throws -> AppleOAuthPayload {
+  public func signIn() async throws(AuthError) -> AppleOAuthPayload {
     let payload = try await appleRepository.signIn()
     DDDLogger.info("Apple sign-in completed through repository (direct)", category: .auth)
     return payload
@@ -40,4 +40,3 @@ public final class AppleOAuthProvider: AppleOAuthProviderInterface, @unchecked S
     return name.isEmpty ? nil : name
   }
 }
-

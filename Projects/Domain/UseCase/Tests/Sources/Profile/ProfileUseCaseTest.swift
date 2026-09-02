@@ -90,10 +90,10 @@ struct ProfileUseCaseTest {
   @Test("TC-003: 프로필 조회 실패 (네트워크 오류)")
   func get_profile_failure_network() async throws {
     // Given: 네트워크 오류 설정
-    mockProfileRepository.configureGetProfileFailure(ProfileError.networkError)
+    mockProfileRepository.configureGetProfileFailure(ProfileError.unknownError("network unavailable"))
 
     // When & Then: 네트워크 오류 검증
-    await #expect(throws: ProfileError.self) {
+    await #expect(throws: ProfileError.unknownError("network unavailable")) {
       try await withDependencies {
         $0.profileRepository = mockProfileRepository
       } operation: {
@@ -248,10 +248,10 @@ struct ProfileUseCaseTest {
       inviteCode: "INVALID",
       generation: "1기"
     )
-    mockProfileRepository.configureEditProfileFailure(ProfileError.unauthorized)
+    mockProfileRepository.configureEditProfileFailure(EditProfileError.profileLocked)
 
     // When & Then: 권한 오류 검증
-    await #expect(throws: ProfileError.self) {
+    await #expect(throws: EditProfileError.profileLocked) {
       try await withDependencies {
         $0.profileRepository = mockProfileRepository
       } operation: {
@@ -541,22 +541,22 @@ final class MockProfileRepository: ProfileInterface {
 
   // MARK: - Configured Responses
 
-  private var getProfileResponse: Result<ProfileEntity, Error>?
-  private var editProfileResponse: Result<ProfileEntity, Error>?
+  private var getProfileResponse: Result<ProfileEntity, Entity.ProfileError>?
+  private var editProfileResponse: Result<ProfileEntity, Entity.EditProfileError>?
 
   // MARK: - Implementation
 
-  func getProfile() async throws -> ProfileEntity {
+  func getProfile() async throws(Entity.ProfileError) -> ProfileEntity {
     getProfileCallCount += 1
 
     if let response = getProfileResponse {
       return try response.get()
     }
 
-    throw ProfileError.notConfigured
+    throw Entity.ProfileError.unknownError("not configured")
   }
 
-  func editProfile(input: EditProfileInput) async throws -> ProfileEntity {
+  func editProfile(input: EditProfileInput) async throws(Entity.EditProfileError) -> ProfileEntity {
     editProfileCallCount += 1
     lastEditInput = input
 
@@ -564,14 +564,14 @@ final class MockProfileRepository: ProfileInterface {
       return try response.get()
     }
 
-    throw ProfileError.notConfigured
+    throw Entity.EditProfileError.unknownError("not configured")
   }
 
   func getCachedProfile() async -> ProfileEntity? {
     try? getProfileResponse?.get()
   }
 
-  func refreshProfile() async throws -> ProfileEntity {
+  func refreshProfile() async throws(Entity.ProfileError) -> ProfileEntity {
     try await getProfile()
   }
 
@@ -582,7 +582,7 @@ final class MockProfileRepository: ProfileInterface {
   }
 
   func configureGetProfileFailure(_ error: Error) {
-    getProfileResponse = .failure(error)
+    getProfileResponse = .failure(Entity.ProfileError.from(error))
   }
 
   func configureEditProfileSuccess(_ profile: ProfileEntity) {
@@ -590,15 +590,7 @@ final class MockProfileRepository: ProfileInterface {
   }
 
   func configureEditProfileFailure(_ error: Error) {
-    editProfileResponse = .failure(error)
+    editProfileResponse = .failure(Entity.EditProfileError.from(error))
   }
 }
 
-// MARK: - Test Errors
-
-enum ProfileError: Error, Equatable {
-  case networkError
-  case unauthorized
-  case invalidData
-  case notConfigured
-}

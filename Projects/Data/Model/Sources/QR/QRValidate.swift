@@ -10,7 +10,7 @@ import Foundation
 public typealias QRValidateModel = BaseResponseDTO<QRValidateResponseModel>
 
 // MARK: - DataClass
-public struct QRValidateResponseModel: Decodable, Equatable {
+public struct QRValidateResponseModel: Decodable, Sendable, Equatable {
   public let id: String?
   public let profileSummary: QRProfileSummary?
   public let scheduleSummary: QRScheduleSummary?
@@ -38,7 +38,7 @@ public struct QRValidateResponseModel: Decodable, Equatable {
 }
 
 // MARK: - ProfileSummary
-public struct QRProfileSummary: Decodable, Equatable {
+public struct QRProfileSummary: Decodable, Sendable, Equatable {
   public let id: String
   public let userID: Int
   public let name: String
@@ -64,7 +64,7 @@ public struct QRProfileSummary: Decodable, Equatable {
 }
 
 // MARK: - ScheduleSummary
-public struct QRScheduleSummary: Decodable, Equatable  {
+public struct QRScheduleSummary: Decodable, Sendable, Equatable  {
 public let id, title, description: String
  public let startTime, endTime: String
 

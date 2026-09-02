@@ -15,27 +15,13 @@ let project = Project.makeAppModule(
   product: .app,
   settings: .appMainSetting,
   scripts: [],
+  // App은 FeatureAssembly 하나만 알고, Repository·Service 구현 조립은 하위 Assembly가 담당한다.
   dependencies: [
-    .core(.logger),
-    .core(.coreUtility),
-    .ui(.sharedUI),
     .featureAssembly,
-    .data(.repository),
-    .domain(.domainInterface),
-    .domain(.useCase),
-    .network(.foundations),
-
-    // 조립 레이어 — Navigation 의 Coordinator 들이 각 피처 화면을 붙인다.
-    .feature(.auth),
-    .feature(.splash),
-    .feature(.onBoarding),
-    .feature(.management),
-    .feature(.member),
-    .feature(.profile),
-    .feature(.web)
   ],
   sources: ["Sources/**"],
   resources: ["Resources/**"],
   infoPlist: .appInfoPlist,
-  entitlements: .file(path: "../../Entitlements/DDDAttendance.entitlements")
+  entitlements: .file(path: "../../Entitlements/DDDAttendance.entitlements"),
+  hasTests: true
 )

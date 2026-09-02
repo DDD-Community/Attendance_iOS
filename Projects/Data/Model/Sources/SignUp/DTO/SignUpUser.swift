@@ -6,7 +6,7 @@
 //
 import Foundation
 
-public struct SignUpUserDTO: Decodable {
+public struct SignUpUserDTO: Decodable, Sendable {
   let userID: Int
   let name: String
   let email: String?

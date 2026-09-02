@@ -11,6 +11,7 @@ import SwiftUI
 import DDDDesignKit
 import Entity
 import DDDSharedUI
+import FeatureSharedUI
 
 import ComposableArchitecture
 
@@ -49,23 +50,24 @@ struct AttendanceCheckView: View {
 private extension AttendanceCheckView {
   @ViewBuilder
   func selectAttendanceDate() -> some View {
-    LazyVStack {
-      Spacer()
-        .frame(height: 24)
-
+    VStack {                          // LazyVStack → VStack
+      Spacer().frame(height: 24)
+      
       HStack {
-        Text("🗓️")
-          .dddFont(.body1NormalMedium)
-
-        Spacer()
-          .frame(width: 4)
-
+        Image(asset: .calender)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 18, height: 26)
+        
+        Spacer().frame(width: 4)
+        
         Text(store.selectAttendanceDate.formatted(.yearMonthDayDotted))
           .dddFont(.body1NormalMedium)
           .foregroundStyle(.staticWhite)
-
+        
         Spacer()
       }
+      .contentShape(Rectangle())      // 탭 영역 확보(빈 곳도 탭되게)
       .onTapGesture {
         send(.tapSelectDate)
       }

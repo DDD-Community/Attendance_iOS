@@ -8,7 +8,6 @@
 import Dependencies
 import DomainInterface
 import Entity
-import Model
 
 public struct ScheduleUseCaseImpl: ScheduleInterface {
   @Dependency(\.scheduleRepository) var repository
@@ -23,7 +22,7 @@ public struct ScheduleUseCaseImpl: ScheduleInterface {
 
   // MARK: - 스케줄 조회
 
-  public func getSchedule() async throws -> [Schedule] {
+  public func getSchedule() async throws(ScheduleError) -> [Schedule] {
     return try await repository.getSchedule()
   }
 }

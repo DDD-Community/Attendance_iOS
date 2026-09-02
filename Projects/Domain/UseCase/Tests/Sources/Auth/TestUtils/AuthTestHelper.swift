@@ -76,49 +76,7 @@ struct AuthTestHelper {
                sourceLocation: sourceLocation)
     }
 
-    static func verifyTokenStorage(
-        mockKeychain: MockKeychainManager,
-        expectedAccessToken: String,
-        expectedRefreshToken: String,
-        shouldBeCalled: Bool = true,
-        sourceLocation: SourceLocation = #_sourceLocation
-    ) {
-        if shouldBeCalled {
-            #expect(mockKeychain.getSaveCallCount() > 0,
-                   "Keychain save should have been called",
-                   sourceLocation: sourceLocation)
 
-            // Verify stored tokens match expected values
-            #expect(mockKeychain.getStoredAccessToken() == expectedAccessToken ||
-                   mockKeychain.accessToken() == expectedAccessToken,
-                   "Access token should match expected value", sourceLocation: sourceLocation)
-
-            #expect(mockKeychain.getStoredRefreshToken() == expectedRefreshToken ||
-                   mockKeychain.refreshToken() == expectedRefreshToken,
-                   "Refresh token should match expected value", sourceLocation: sourceLocation)
-        } else {
-            #expect(mockKeychain.getSaveCallCount() == 0,
-                   "Keychain save should not have been called",
-                   sourceLocation: sourceLocation)
-        }
-    }
-
-    static func verifyKeychainCleared(
-        mockKeychain: MockKeychainManager,
-        sourceLocation: SourceLocation = #_sourceLocation
-    ) {
-        #expect(mockKeychain.getClearCallCount() > 0,
-               "Keychain clear should have been called",
-               sourceLocation: sourceLocation)
-
-        #expect(mockKeychain.getStoredAccessToken() == nil,
-               "Access token should be cleared",
-               sourceLocation: sourceLocation)
-
-        #expect(mockKeychain.getStoredRefreshToken() == nil,
-               "Refresh token should be cleared",
-               sourceLocation: sourceLocation)
-    }
 
     // MARK: - UserSession Verification
     static func verifyUserSessionUpdated(

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct CoreMemberDTOSignUp: Codable, Equatable {
+public struct CoreMemberDTOSignUp: Codable, Sendable, Equatable {
   public var uid: String
   public var memberid: String
   public var name: String

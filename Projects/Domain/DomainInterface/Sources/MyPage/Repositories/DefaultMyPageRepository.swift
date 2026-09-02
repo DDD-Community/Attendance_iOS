@@ -10,7 +10,7 @@ import Foundation
 import Entity
 
 final public class DefaultMyPageRepository: MyPageRepositoryInterface {
-  public func fetchAttendances() async throws -> AttendanceSummaryResponse {
+  public func fetchAttendances() async throws(MyPageError) -> AttendanceSummaryResponse {
     return .init(
       totalAttended: 0,
       totalLate: 0,
@@ -18,7 +18,7 @@ final public class DefaultMyPageRepository: MyPageRepositoryInterface {
     )
   }
   
-  public func fetchSchedules() async throws -> [AttendanceMyScheduleResponse] {
+  public func fetchSchedules() async throws(MyPageError) -> [AttendanceMyScheduleResponse] {
     return [
       .init(
         id: 1,

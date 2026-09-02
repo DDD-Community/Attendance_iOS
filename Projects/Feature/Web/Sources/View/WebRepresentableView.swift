@@ -10,7 +10,7 @@ import WebKit
 
 import DDDDesignKit
 
-import SDWebImageSwiftUI
+import DDDAnimation
 
 
 public struct WebRepresentableView: UIViewRepresentable {
@@ -104,9 +104,7 @@ public struct WebRepresentableView: UIViewRepresentable {
 
     // SwiftUI AnimatedImage를 UIKit에 임베드 - 조건부 애니메이션으로 메모리 최적화
     let animatedImageView = UIHostingController(rootView: AnyView(
-      AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(true))
-        .resizable()
-        .scaledToFit()
+      DDDAnimationView(.loading, isAnimating: .constant(true))
         .frame(width: 200, height: 200)
         .opacity(1) // alpha로 제어될 가시성에 맞춰 애니메이션 효율성 확보
     ))

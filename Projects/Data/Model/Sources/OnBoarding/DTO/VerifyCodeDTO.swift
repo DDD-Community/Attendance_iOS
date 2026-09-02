@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct VerifyCodeDTO: Decodable {
+public struct VerifyCodeDTO: Decodable, Sendable {
   let generationID: Int
   let generationName, type, description: String
 

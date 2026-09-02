@@ -10,10 +10,10 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings: .moduleSettings,
   dependencies: [
+    .ui(.animation),
     .ui(.designKit),
     .core(.coreUI),
-    .core(.coreUtility),
-    .domain(.entity)
+    .core(.coreUtility)
   ],
   sources: ["Sources/**"]
 )

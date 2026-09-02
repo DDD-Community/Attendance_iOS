@@ -11,7 +11,7 @@ import Entity
 final public class DefaultAttendanceRepositoryImpl: AttendanceInterface {
   public init() {}
 
-  public func adminAttendanceCount(scheduleId: Int) async throws -> AttendanceCount {
+  public func adminAttendanceCount(scheduleId: Int) async throws(AttendanceError) -> AttendanceCount {
     // Mock: sessionAttendance 데이터와 일치하도록 수정
     // attended: 2명 (김민지, 박지훈), late: 1명 (홍길동), absent: 1명 (이서준)
 
@@ -24,7 +24,7 @@ final public class DefaultAttendanceRepositoryImpl: AttendanceInterface {
     return result
   }
 
-  public func fetchAttendanceTeams() async throws -> [SelectTeamEntity] {
+  public func fetchAttendanceTeams() async throws(AttendanceError) -> [SelectTeamEntity] {
     return [
       SelectTeamEntity(teamId: 1, teams: .ios1),
       SelectTeamEntity(teamId: 2, teams: .ios2),
@@ -38,7 +38,7 @@ final public class DefaultAttendanceRepositoryImpl: AttendanceInterface {
   public func sessionAttendance(
     scheduleId: Int,
     teamId: Int
-  ) async throws -> [Attendance] {
+  ) async throws(AttendanceError) -> [Attendance] {
 
     let result = [
       Attendance(
@@ -74,7 +74,7 @@ final public class DefaultAttendanceRepositoryImpl: AttendanceInterface {
     return result
   }
 
-  public func fetchStatus() async throws -> [AttendanceStatus] {
+  public func fetchStatus() async throws(AttendanceError) -> [AttendanceStatus] {
     return [
       .attended,   // 출석
       .late,      // 지각
@@ -82,12 +82,12 @@ final public class DefaultAttendanceRepositoryImpl: AttendanceInterface {
     ]
   }
 
-  public func editAttendance(input: EditAttendanceInput) async throws -> EditAttendance {
+  public func editAttendance(input: EditAttendanceInput) async throws(AttendanceError) -> EditAttendance {
     // Mock: 출석 상태 변경 성공
     // 실제로는 API 호출하여 변경하지만, mock에서는 성공 응답만 반환
 
     // 짧은 지연으로 실제 API 호출 시뮬레이션
-    try await Task.sleep(for: .milliseconds(500))
+    try? await Task.sleep(for: .milliseconds(500))
 
     return EditAttendance(
       isSuccess: true,

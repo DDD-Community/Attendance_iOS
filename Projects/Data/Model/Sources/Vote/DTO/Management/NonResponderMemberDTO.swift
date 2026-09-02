@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct NonResponderMemberDTO: Decodable {
+public struct NonResponderMemberDTO: Decodable, Sendable {
   public let memberId: Int?
   public let name: String?
   public let teamName: String?

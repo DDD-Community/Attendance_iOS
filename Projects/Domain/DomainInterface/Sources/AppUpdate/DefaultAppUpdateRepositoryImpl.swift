@@ -11,7 +11,7 @@ import Entity
 public final class DefaultAppUpdateRepositoryImpl: AppUpdateInterface {
     public init() {}
 
-    public func checkForUpdate() async throws -> AppUpdateInfo {
+    public func checkForUpdate() async throws(AppUpdateError) -> AppUpdateInfo {
         // Mock implementation - 실제 구현은 Repository에서
         let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
 

@@ -11,7 +11,7 @@ import SwiftUI
 
 import DDDDesignKit
 
-import SDWebImageSwiftUI
+import DDDAnimation
 import ComposableArchitecture
 
 @ViewAction(for: SelectPartReducer.self)
@@ -44,9 +44,7 @@ public struct SelectPartView: View {
           VStack {
             Spacer()
 
-            AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(store.loading))
-              .resizable()
-              .scaledToFit()
+            DDDAnimationView(.loading, isAnimating: .constant(store.loading))
               .frame(width: 200, height: 200)
 
             Spacer()

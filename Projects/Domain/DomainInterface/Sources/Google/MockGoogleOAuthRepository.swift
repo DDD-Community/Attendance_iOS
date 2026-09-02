@@ -82,25 +82,29 @@ public actor MockGoogleOAuthRepository: GoogleOAuthInterface {
   
   // MARK: - GoogleOAuthRepositoryProtocol Implementation
   
-  public func signIn() async throws -> GoogleOAuthPayload {
+  public func signIn() async throws(AuthError) -> GoogleOAuthPayload {
     // Track call
     signInCallCount += 1
     lastSignInCall = Date()
     
     // Apply delay
     if configuration.delay > 0 {
-      try await Task.sleep(for: .seconds(configuration.delay))
+      do {
+        try await Task.sleep(for: .seconds(configuration.delay))
+      } catch {
+        throw AuthError.from(error)
+      }
     }
     
     // Handle failure scenarios
     if !configuration.shouldSucceed {
       switch configuration {
         case .failure:
-          throw MockGoogleOAuthError.signInFailed
+          throw AuthError.invalidCredential("Mock Google OAuth sign in failed")
         case .networkError:
-          throw MockGoogleOAuthError.networkError
+          throw AuthError.unknownError("Mock Google OAuth network error")
         default:
-          throw MockGoogleOAuthError.unknownError
+          throw AuthError.unknownError("Mock Google OAuth unknown error")
       }
     }
     

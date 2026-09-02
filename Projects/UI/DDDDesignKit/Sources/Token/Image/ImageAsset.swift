@@ -24,6 +24,7 @@ public enum ImageAsset: String {
   case user
   case info
   case closeGray
+  case calender
   
   // MARK: - 소셜로그인 버튼
   

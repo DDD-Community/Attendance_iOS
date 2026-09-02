@@ -17,19 +17,19 @@ final class MockAuthRepository: AuthInterface {
   private(set) var lastWithdrawToken: String?
   private(set) var lastUpdateTokens: AuthTokens?
 
-  var loginResponse: Result<LoginEntity, Error> = .failure(AuthError.invalidToken)
-  var refreshResponse: Result<AuthTokens, Error> = .failure(AuthError.tokenExpired)
-  var logoutResponse: Result<AuthExitEntity, Error> = .success(AuthExitEntity())
-  var withdrawResponse: Result<WithdrawEntity, Error> = .success(WithdrawEntity(isSuccess: true))
+  var loginResponse: Result<LoginEntity, Entity.AuthError> = .failure(.invalidCredential("invalid token"))
+  var refreshResponse: Result<AuthTokens, Entity.AuthError> = .failure(.refreshTokenExpired)
+  var logoutResponse: Result<AuthExitEntity, Entity.AuthError> = .success(AuthExitEntity())
+  var withdrawResponse: Result<WithdrawEntity, Entity.AuthError> = .success(WithdrawEntity(isSuccess: true))
 
   var loginDelay: TimeInterval = 0
   var refreshDelay: TimeInterval = 0
   var logoutDelay: TimeInterval = 0
   var withdrawDelay: TimeInterval = 0
 
-  func login(provider: SocialType, token: String) async throws -> LoginEntity {
+  func login(provider: SocialType, token: String) async throws(Entity.AuthError) -> LoginEntity {
     if loginDelay > 0 {
-      try await Task.sleep(nanoseconds: UInt64(loginDelay * 1_000_000_000))
+      try? await Task.sleep(nanoseconds: UInt64(loginDelay * 1_000_000_000))
     }
     loginCallCount += 1
     lastLoginProvider = provider
@@ -37,32 +37,32 @@ final class MockAuthRepository: AuthInterface {
     return try loginResponse.get()
   }
 
-  func refresh() async throws -> AuthTokens {
+  func refresh() async throws(Entity.AuthError) -> AuthTokens {
     if refreshDelay > 0 {
-      try await Task.sleep(nanoseconds: UInt64(refreshDelay * 1_000_000_000))
+      try? await Task.sleep(nanoseconds: UInt64(refreshDelay * 1_000_000_000))
     }
     refreshCallCount += 1
     return try refreshResponse.get()
   }
 
-  func logout() async throws -> AuthExitEntity {
+  func logout() async throws(Entity.AuthError) -> AuthExitEntity {
     if logoutDelay > 0 {
-      try await Task.sleep(nanoseconds: UInt64(logoutDelay * 1_000_000_000))
+      try? await Task.sleep(nanoseconds: UInt64(logoutDelay * 1_000_000_000))
     }
     logoutCallCount += 1
     return try logoutResponse.get()
   }
 
-  func withDraw(token: String) async throws -> WithdrawEntity {
+  func withDraw(token: String) async throws(Entity.AuthError) -> WithdrawEntity {
     if withdrawDelay > 0 {
-      try await Task.sleep(nanoseconds: UInt64(withdrawDelay * 1_000_000_000))
+      try? await Task.sleep(nanoseconds: UInt64(withdrawDelay * 1_000_000_000))
     }
     withDrawCallCount += 1
     lastWithdrawToken = token
     return try withdrawResponse.get()
   }
 
-  func updateSessionCredential(with tokens: AuthTokens) {
+  func updateSessionCredential(with tokens: AuthTokens) async {
     updateSessionCredentialCallCount += 1
     lastUpdateTokens = tokens
   }
@@ -77,8 +77,8 @@ final class MockAuthRepository: AuthInterface {
     lastLoginToken = nil
     lastWithdrawToken = nil
     lastUpdateTokens = nil
-    loginResponse = .failure(AuthError.invalidToken)
-    refreshResponse = .failure(AuthError.tokenExpired)
+    loginResponse = .failure(.invalidCredential("invalid token"))
+    refreshResponse = .failure(.refreshTokenExpired)
     logoutResponse = .success(AuthExitEntity())
     withdrawResponse = .success(WithdrawEntity(isSuccess: true))
     loginDelay = 0
@@ -109,10 +109,10 @@ final class MockAuthRepository: AuthInterface {
     )
   }
 
-  func configureLoginFailure(_ error: Error) { loginResponse = .failure(error) }
-  func configureRefreshFailure(_ error: Error) { refreshResponse = .failure(error) }
-  func configureLogoutFailure(_ error: Error) { logoutResponse = .failure(error) }
-  func configureWithdrawFailure(_ error: Error) { withdrawResponse = .failure(error) }
+  func configureLoginFailure(_ error: Error) { loginResponse = .failure(Entity.AuthError.from(error)) }
+  func configureRefreshFailure(_ error: Error) { refreshResponse = .failure(Entity.AuthError.from(error)) }
+  func configureLogoutFailure(_ error: Error) { logoutResponse = .failure(Entity.AuthError.from(error)) }
+  func configureWithdrawFailure(_ error: Error) { withdrawResponse = .failure(Entity.AuthError.from(error)) }
 
   @MainActor
   static func success() -> MockAuthRepository {
@@ -138,14 +138,14 @@ final class MockAuthRepository: AuthInterface {
   @MainActor
   static func invalidToken() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureLoginFailure(AuthError.invalidToken)
+    mock.configureLoginFailure(AuthError.invalidCredential("invalid token"))
     return mock
   }
 
   @MainActor
   static func networkError() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureLoginFailure(AuthError.networkError)
+    mock.configureLoginFailure(AuthError.unknownError("네트워크 요청에 실패했습니다"))
     return mock
   }
 
@@ -173,10 +173,10 @@ final class MockAuthRepository: AuthInterface {
   @MainActor
   static func unauthorized() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureWithdrawFailure(AuthError.unauthorized)
-    mock.configureLoginFailure(AuthError.unauthorized)
-    mock.refreshResponse = .failure(AuthError.unauthorized)
-    mock.logoutResponse = .failure(AuthError.unauthorized)
+    mock.configureWithdrawFailure(AuthError.accountDeletionNotAllowed)
+    mock.configureLoginFailure(AuthError.loginFailed)
+    mock.configureRefreshFailure(AuthError.tokenRefreshFailed)
+    mock.configureLogoutFailure(AuthError.logoutFailed)
     return mock
   }
 
@@ -190,17 +190,17 @@ final class MockAuthRepository: AuthInterface {
   @MainActor
   static func tokenExpired() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.refreshResponse = .failure(AuthError.tokenExpired)
+    mock.configureRefreshFailure(AuthError.refreshTokenExpired)
     return mock
   }
 
   @MainActor
   static func serverError() -> MockAuthRepository {
     let mock = MockAuthRepository()
-    mock.configureLoginFailure(AuthError.serverError)
-    mock.configureRefreshFailure(AuthError.serverError)
-    mock.logoutResponse = .failure(AuthError.serverError)
-    mock.withdrawResponse = .failure(AuthError.serverError)
+    mock.configureLoginFailure(AuthError.loginFailed)
+    mock.configureRefreshFailure(AuthError.tokenRefreshFailed)
+    mock.configureLogoutFailure(AuthError.logoutFailed)
+    mock.configureWithdrawFailure(AuthError.accountDeletionFailed)
     return mock
   }
 
@@ -219,24 +219,4 @@ final class MockAuthRepository: AuthInterface {
   func getWithdrawCallCount() -> Int { withDrawCallCount }
   func getUpdateCredentialCallCount() -> Int { updateSessionCredentialCallCount }
   func getLastUpdatedTokens() -> AuthTokens? { lastUpdateTokens }
-}
-
-enum AuthError: Error, Equatable {
-  case invalidToken
-  case tokenExpired
-  case networkError
-  case unauthorized
-  case serverError
-  case invalidCredentials
-  case userNotFound
-}
-
-enum MockAuthError: Error, Equatable {
-  case tokenExpired
-  case serverError
-  case networkError
-  case unauthorized
-  case invalidToken
-  case invalidCredentials
-  case userNotFound
 }

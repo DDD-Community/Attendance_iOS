@@ -33,8 +33,6 @@ public enum EditProfileError: Error, LocalizedError, Equatable {
   case profileLocked
 
   // MARK: - Network & Server Errors
-  case networkError
-  case serverError(String)
 
   // MARK: - General Errors
   case unknownError(String)
@@ -82,12 +80,6 @@ public enum EditProfileError: Error, LocalizedError, Equatable {
       return "프로필이 잠겨있어 수정할 수 없습니다"
 
     // Network & Server Errors
-    case .networkError:
-      return "네트워크 연결을 확인해주세요"
-    case .serverError(let message):
-      return "서버 오류: \(message)"
-
-    // General Errors
     case .unknownError(let message):
       return "알 수 없는 오류가 발생했습니다: \(message)"
     case .userCancelled:
@@ -111,10 +103,6 @@ public enum EditProfileError: Error, LocalizedError, Equatable {
       return "프로필 조회 실패"
     case .profileUpdateFailed:
       return "프로필 업데이트 실패"
-    case .networkError:
-      return "네트워크 연결 실패"
-    case .serverError:
-      return "서버 처리 실패"
     default:
       return nil
     }
@@ -136,8 +124,6 @@ public enum EditProfileError: Error, LocalizedError, Equatable {
       return "앱을 재시작하거나 로그인을 다시 해주세요"
     case .profileUpdateFailed:
       return "잠시 후 다시 시도해주세요"
-    case .networkError:
-      return "인터넷 연결을 확인하고 다시 시도해주세요"
     default:
       return "문제가 지속되면 고객센터에 문의해주세요"
     }
@@ -187,8 +173,6 @@ public extension EditProfileError {
   /// 네트워크 관련 에러인지 확인
   var isNetworkError: Bool {
     switch self {
-    case .networkError:
-      return true
     default:
       return false
     }
@@ -197,7 +181,7 @@ public extension EditProfileError {
   /// 재시도 가능한 에러인지 확인
   var isRetryable: Bool {
     switch self {
-    case .networkError, .serverError, .profileUpdateFailed:
+    case .profileUpdateFailed:
       return true
     default:
       return false

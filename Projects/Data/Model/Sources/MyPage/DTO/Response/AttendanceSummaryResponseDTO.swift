@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct AttendanceSummaryResponseDTO: Decodable {
+public struct AttendanceSummaryResponseDTO: Decodable, Sendable {
   public let totalAttended: Int
   public let totalLate: Int
   public let totalAbsent: Int

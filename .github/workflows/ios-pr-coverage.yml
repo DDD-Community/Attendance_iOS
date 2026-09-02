@@ -22,6 +22,8 @@ jobs:
 
     env:
       TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
+      TUIST_BUILD_TAGS: ci,pull-request
+      TUIST_BUILD_VALUE_PR_URL: ${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
 
@@ -34,6 +36,7 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
           echo "$HOME/.rbenv/shims" >> "$GITHUB_PATH"
+          echo "CI_DERIVED_DATA=$HOME/ci-derived-data/DDDAttendance-pr" >> "$GITHUB_ENV"
 
       - name: Restore gitignored build config
         env:
@@ -51,37 +54,79 @@ jobs:
           mise install tuist
           bundle install
 
+      # CI 잡마다 캐시 데몬과 소켓을 빌드 전에 보장한다.
+      # 인증이나 daemon 기동이 실패해도 테스트 자체는 캐시 없이 계속한다.
+      - name: Setup Tuist cache
+        id: tuist-cache
+        continue-on-error: true
+        timeout-minutes: 3
+        run: mise exec -- tuist setup cache
+
+      - name: Configure compilation cache fallback
+        run: |
+          if [[ "${{ steps.tuist-cache.outcome }}" == "success" ]]; then
+            echo "XCODE_COMPILATION_CACHE_ENABLED=YES" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          echo "XCODE_COMPILATION_CACHE_ENABLED=NO" >> "$GITHUB_ENV"
+          echo "Tuist cache를 사용할 수 없어 이번 실행은 Xcode compilation cache 없이 진행합니다."
+          CACHE_LOG="$HOME/.local/state/tuist/tuist.cache.DDD2026_attendance.stderr.log"
+          if [[ -f "$CACHE_LOG" ]]; then
+            tail -n 80 "$CACHE_LOG"
+          fi
+
+      # 토큰 권한이 정상일 때만 러너 메트릭 수집을 활성화한다.
+      - name: Setup Tuist insights
+        continue-on-error: true
+        timeout-minutes: 3
+        run: mise exec -- tuist setup insights
+
       - name: Generate Xcode workspace
         run: |
-          tuist install
-          tuist generate --no-open
+          mise exec -- tuist install
+          mise exec -- tuist generate --no-open
 
-      # self-hosted 러너는 실행 간 디스크가 유지되므로 이전 빌드 산출물을 비운다.
+      # CompilationCache.noindex는 유지하고 이전 실행의 빌드 산출물만 비운다.
+      # DerivedData 전체를 지우면 Xcode compilation cache도 함께 사라진다.
       - name: Prepare runner disk
         run: |
-          DERIVED_DATA="$HOME/ci-derived-data/DDDAttendance"
-          rm -rf "$DERIVED_DATA" TestResults.xcresult
-          mkdir -p "$DERIVED_DATA"
+          mkdir -p "$CI_DERIVED_DATA"
+          rm -rf \
+            "$CI_DERIVED_DATA/Build" \
+            "$CI_DERIVED_DATA/Index.noindex" \
+            "$CI_DERIVED_DATA/Logs" \
+            "$CI_DERIVED_DATA/SourcePackages" \
+            "$CI_DERIVED_DATA/info.plist"
+          rm -rf TestResults TestResults.xcresult BundleBuildResults.xcresult
 
-      # 러너에 실제 존재하는 최신 iPhone 시뮬레이터를 고른다(이름 하드코딩은 Xcode 업데이트마다 깨진다).
+      # Xcode 업데이트 뒤에도 러너에 실제 설치된 최신 iPhone runtime을 사용한다.
+      - name: Select simulator
+        run: |
+          SIMULATOR_DESTINATION="$(python3 Scripts/select-ios-simulator.py)"
+          echo "SIMULATOR_DESTINATION=$SIMULATOR_DESTINATION" >> "$GITHUB_ENV"
+
+      # 사용 중인 개발용 기기 대신 유휴 기기를 부팅하고 actool의 CoreSimulator spawn을 미리 검증한다.
+      - name: Prepare simulator
+        run: ./Scripts/prepare-ios-simulator.sh
+
       - name: Run tests
         id: tests
         continue-on-error: true
         run: |
-          # xcodebuild 원본 출력은 GitHub 로그 한도를 넘겨 잘린다.
-          # tuist test 는 요약만 내보내고, 워크스페이스 전체가 아니라
-          # 우리 타깃의 테스트만 돌려 외부 SPM 패키지 테스트를 끌고 오지 않는다.
-          rm -rf TestResults TestResults.xcresult
-          tuist test \
-            --no-selective-testing \
-            --result-bundle-path TestResults
+          # 모든 모듈 테스트는 전용 호스트를 사용하므로 Stage workspace scheme에서
+          # 한 번만 빌드·실행해 모듈별 tuist test 반복 비용을 제거한다.
+          ./Scripts/run-isolated-module-tests.sh
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ github.run_id }}
-          path: TestResults.xcresult
+          path: |
+            TestResults.xcresult
+            TuistTestRun.log
+            TestLogs
           if-no-files-found: ignore
           retention-days: 7
 
@@ -89,7 +134,7 @@ jobs:
         if: steps.tests.outcome != 'cancelled'
         uses: actions/github-script@v7
         env:
-          RESULT_BUNDLE_DIR: TestResults
+          RESULT_BUNDLE_DIR: TestResults.xcresult
           TEST_OUTCOME: ${{ steps.tests.outcome }}
         with:
           script: |
@@ -97,6 +142,49 @@ jobs:
             // 상대경로가 먹지 않는다. 워크스페이스 절대경로로 지정한다.
             const report = require(`${process.env.GITHUB_WORKSPACE}/Scripts/ios-test-report.js`)
             await report({ github, context, core })
+
+      # tuist test 실패 시 Test Insights만 업로드될 수 있으므로, 남은 xcactivitylog를
+      # 명시적으로 분석해 Builds 표에도 실패한 Stage 빌드를 기록한다.
+      - name: Report failed build to Tuist
+        if: steps.tests.outcome == 'failure'
+        continue-on-error: true
+        run: |
+          mise exec -- tuist inspect build \
+            --derived-data-path "$CI_DERIVED_DATA"
+
+      # 테스트 빌드의 DerivedData를 재사용해 추가 컴파일을 줄이고 PR 크기 변화를 기록한다.
+      - name: Build app for bundle insights
+        if: steps.tests.outcome == 'success'
+        run: |
+          mise exec -- tuist xcodebuild build \
+            -workspace DDDAttendance.xcworkspace \
+            -scheme DDDAttendance-Stage \
+            -configuration Stage \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$CI_DERIVED_DATA" \
+            -resultBundlePath BundleBuildResults.xcresult \
+            ONLY_ACTIVE_ARCH=YES \
+            COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
+
+      - name: Inspect bundle size
+        if: steps.tests.outcome == 'success'
+        continue-on-error: true
+        run: |
+          mise exec -- tuist inspect bundle DDDAttendance \
+            --platforms ios \
+            --configuration Stage \
+            --derived-data-path "$CI_DERIVED_DATA"
+
+      - name: Clean CI DerivedData
+        if: always()
+        run: |
+          rm -rf \
+            "$CI_DERIVED_DATA/Build" \
+            "$CI_DERIVED_DATA/Index.noindex" \
+            "$CI_DERIVED_DATA/Logs" \
+            "$CI_DERIVED_DATA/SourcePackages" \
+            "$CI_DERIVED_DATA/info.plist"
+          rm -rf BundleBuildResults.xcresult
 
       - name: Fail if tests failed
         if: steps.tests.outcome != 'success'

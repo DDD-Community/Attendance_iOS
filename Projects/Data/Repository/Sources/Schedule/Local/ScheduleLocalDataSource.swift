@@ -13,9 +13,9 @@ import Entity
 import Dependencies
 
 public protocol ScheduleLocalDataSourceProtocol: Actor {
-  func loadAll() async throws -> [Schedule]?
-  func saveAll(_ schedules: [Schedule]) async throws
-  func clear() async throws
+  func loadAll() async throws(ScheduleError) -> [Schedule]?
+  func saveAll(_ schedules: [Schedule]) async throws(ScheduleError)
+  func clear() async throws(ScheduleError)
 }
 
 public actor ScheduleLocalDataSource: ScheduleLocalDataSourceProtocol {
@@ -39,40 +39,52 @@ public actor ScheduleLocalDataSource: ScheduleLocalDataSourceProtocol {
     }
   }
 
-  public func loadAll() async throws -> [Schedule]? {
-    let context = makeContext()
-    let descriptor = FetchDescriptor<ScheduleCacheEntity>(
-      sortBy: [
-        SortDescriptor(\.year, order: .forward),
-        SortDescriptor(\.month, order: .forward),
-        SortDescriptor(\.day, order: .forward)
-      ]
-    )
-    let cached = try context.fetch(descriptor)
-    guard !cached.isEmpty else { return nil }
+  public func loadAll() async throws(ScheduleError) -> [Schedule]? {
+    do {
+      let context = makeContext()
+      let descriptor = FetchDescriptor<ScheduleCacheEntity>(
+        sortBy: [
+          SortDescriptor(\.year, order: .forward),
+          SortDescriptor(\.month, order: .forward),
+          SortDescriptor(\.day, order: .forward)
+        ]
+      )
+      let cached = try context.fetch(descriptor)
+      guard !cached.isEmpty else { return nil }
 
-    if cached.contains(where: { $0.isExpired }) {
+      if cached.contains(where: { $0.isExpired }) {
+        try context.delete(model: ScheduleCacheEntity.self)
+        try context.save()
+        return nil
+      }
+      return cached.map { $0.toDomain() }
+    } catch {
+      throw .cacheFailed
+    }
+  }
+
+  public func saveAll(_ schedules: [Schedule]) async throws(ScheduleError) {
+    do {
+      let context = makeContext()
+      try context.delete(model: ScheduleCacheEntity.self)
+      let now = Date()
+      for schedule in schedules {
+        context.insert(schedule.toCacheModel(cachedAt: now))
+      }
+      try context.save()
+    } catch {
+      throw .cacheFailed
+    }
+  }
+
+  public func clear() async throws(ScheduleError) {
+    do {
+      let context = makeContext()
       try context.delete(model: ScheduleCacheEntity.self)
       try context.save()
-      return nil
+    } catch {
+      throw .cacheFailed
     }
-    return cached.map { $0.toDomain() }
-  }
-
-  public func saveAll(_ schedules: [Schedule]) async throws {
-    let context = makeContext()
-    try context.delete(model: ScheduleCacheEntity.self)
-    let now = Date()
-    for schedule in schedules {
-      context.insert(schedule.toCacheModel(cachedAt: now))
-    }
-    try context.save()
-  }
-
-  public func clear() async throws {
-    let context = makeContext()
-    try context.delete(model: ScheduleCacheEntity.self)
-    try context.save()
   }
 }
 

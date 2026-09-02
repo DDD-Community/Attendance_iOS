@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct AttendanceDTO: Codable, Equatable {
+public struct AttendanceDTO: Codable, Sendable, Equatable {
   public var id: String
   public var memberId: String
   public var memberType: MemberType

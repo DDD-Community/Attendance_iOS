@@ -7,7 +7,7 @@
 
 //public typealias SelectJobsDTO = [SelectJobsDTOResponse]
 
-public struct SelectJobsDTO: Decodable {
+public struct SelectJobsDTO: Decodable, Sendable {
   public let data: [SelectJobsDTOResponse]
 
   public init(from decoder: Decoder) throws {
@@ -27,7 +27,7 @@ public struct SelectJobsDTO: Decodable {
 }
 
 
-public struct SelectJobsDTOResponse: Decodable {
+public struct SelectJobsDTOResponse: Decodable, Sendable {
     public let key: String
     public let description: String
 }

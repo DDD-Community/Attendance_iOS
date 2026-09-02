@@ -10,11 +10,11 @@ import Entity
 public final class DefaultVoteRepositoryImpl: VoteInterface {
   public init() {}
 
-  public func fetchVotes() async throws -> [Vote] { [] }
+  public func fetchVotes() async throws(VoteError) -> [Vote] { [] }
 
   public func fetchParticipation(
     voteId: Int
-  ) async throws -> VoteParticipation {
+  ) async throws(VoteError) -> VoteParticipation {
     VoteParticipation(voteId: voteId, totalMembers: 0, respondedMembers: 0, participationRate: 0)
   }
 
@@ -27,39 +27,39 @@ public final class DefaultVoteRepositoryImpl: VoteInterface {
 
   public func fetchNonResponders(
     voteId _: Int
-  ) async throws -> [NonParticipant] { [] }
+  ) async throws(VoteError) -> [NonParticipant] { [] }
 
   public func openVote(
     voteId _: Int
-  ) async throws {}
+  ) async throws(VoteError) {}
 
   public func closeVote(
     voteId _: Int
-  ) async throws {}
+  ) async throws(VoteError) {}
 
   public func createVote(
     input _: CreateVoteInput
-  ) async throws -> Int { 0 }
+  ) async throws(VoteError) -> Int { 0 }
 
   public func fetchTeamVoteResults(
     voteId: Int
-  ) async throws -> TeamVoteResults {
+  ) async throws(VoteError) -> TeamVoteResults {
     TeamVoteResults(voteId: voteId, title: "", status: .before, totalResponses: 0, categories: [])
   }
 
   public func fetchFeedbackResults(
     voteId: Int
-  ) async throws -> FeedbackResults {
+  ) async throws(VoteError) -> FeedbackResults {
     FeedbackResults(voteId: voteId, totalResponses: 0, questions: [])
   }
 
-  public func fetchActiveVote() async throws -> ActiveVote {
+  public func fetchActiveVote() async throws(VoteError) -> ActiveVote {
     ActiveVote(voteId: 0, title: "", alreadyResponded: false)
   }
 
   public func fetchTeamVoteTemplate(
     voteId _: Int
-  ) async throws -> TeamVoteTemplateInfo {
+  ) async throws(VoteError) -> TeamVoteTemplateInfo {
     TeamVoteTemplateInfo(
       templateVersion: 0,
       status: .before,
@@ -70,7 +70,7 @@ public final class DefaultVoteRepositoryImpl: VoteInterface {
 
   public func fetchFeedbackTemplate(
     voteId _: Int
-  ) async throws -> FeedbackTemplateInfo {
+  ) async throws(VoteError) -> FeedbackTemplateInfo {
     FeedbackTemplateInfo(
       templateVersion: 0,
       status: .before,
@@ -81,11 +81,11 @@ public final class DefaultVoteRepositoryImpl: VoteInterface {
   public func submitVote(
     voteId _: Int,
     submission _: VoteSubmission
-  ) async throws {}
+  ) async throws(VoteError) {}
 
   public func fetchMyResponse(
     voteId: Int
-  ) async throws -> MyVoteResponse {
+  ) async throws(VoteError) -> MyVoteResponse {
     MyVoteResponse(voteId: voteId, responded: false)
   }
 }

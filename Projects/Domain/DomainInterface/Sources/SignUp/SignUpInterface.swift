@@ -13,7 +13,7 @@ import Entity
 public protocol SignUpInterface: Sendable {
   func registerUser(
     input: SignUpUserInput
-  ) async throws -> SignUpUser
+  ) async throws(SignUpError) -> SignUpUser
 }
 
 /// SignUp Repository의 DependencyKey 구조체

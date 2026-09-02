@@ -18,7 +18,6 @@ public struct UnifiedOAuthUseCase {
   @Dependency(\.authRepository) private var authRepository: AuthInterface
   @Dependency(\.appleOAuthProvider) private var appleProvider: AppleOAuthProviderInterface
   @Dependency(\.googleOAuthProvider) private var googleProvider: GoogleOAuthProviderInterface
-  @Dependency(\.keychainManager) private var keychainManager: KeychainManaging
   @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
   @Shared(.appStorage("staffRole")) var staffRole: Staff?
   @Shared(.appStorage("appleUserName")) var savedAppleUserName: String?
@@ -36,7 +35,7 @@ public extension UnifiedOAuthUseCase {
     appleCredential: ASAuthorizationAppleIDCredential? = nil,
     nonce: String? = nil,
     googleToken: String? = nil
-  ) async throws -> LoginEntity {
+  ) async throws(AuthError) -> LoginEntity {
     switch socialType {
     case .apple:
       guard let credential = appleCredential, let nonce = nonce else {
@@ -55,7 +54,7 @@ public extension UnifiedOAuthUseCase {
   func appleLogin(
     credential: ASAuthorizationAppleIDCredential,
     nonce: String
-  ) async throws -> LoginEntity {
+  ) async throws(AuthError) -> LoginEntity {
     let payload = try await appleProvider.signInWithCredential(
       credential: credential,
       nonce: nonce
@@ -85,57 +84,26 @@ public extension UnifiedOAuthUseCase {
       token: payload.authorizationCode ?? ""
     )
 
-    keychainManager.save(
-      accessToken: loginEntity.token.accessToken,
-      refreshToken: loginEntity.token.refreshToken
-    )
-
-    // AuthSessionManager의 credential도 업데이트
-    await authRepository.updateSessionCredential(with: loginEntity.token)
-
     // UserSession에 oauthRefreshToken 설정 (Apple 로그인의 경우)
     self.$userSession.withLock {
       $0.oauthRefreshToken = loginEntity.token.oauthRefreshToken
     }
 
-    if loginEntity.isNewUser == true {
-
-    } else {
-      self.$userSession.withLock {
-        $0.userRole = loginEntity.role ?? .member
-      }
-      self.$staffRole.withLock {
-        $0 = loginEntity.role
-      }
-    }
+    syncRole(from: loginEntity)
     return loginEntity
   }
 
   /// Google 로그인 처리
   func googleLogin(
     token: String
-  ) async throws -> LoginEntity {
+  ) async throws(AuthError) -> LoginEntity {
     let processedToken = try await googleProvider.signInWithToken(token: token)
     self.$userSession.withLock { $0.token = processedToken }
     let loginEntity = try await authRepository.login(
       provider: .google,
       token: processedToken
     )
-    keychainManager.save(
-      accessToken: loginEntity.token.accessToken,
-      refreshToken: loginEntity.token.refreshToken
-    )
-
-    // AuthSessionManager의 credential도 업데이트
-    await authRepository.updateSessionCredential(with: loginEntity.token)
-
-    if loginEntity.isNewUser == true {
-
-    } else {
-      self.$userSession.withLock {
-        $0.userRole = loginEntity.role ?? .member
-      }
-    }
+    syncRole(from: loginEntity)
 
     return loginEntity
   }
@@ -155,11 +123,24 @@ public extension UnifiedOAuthUseCase {
         googleToken: googleToken
       )
       return .success(result)
-    } catch let error as AuthError {
-      return .failure(error)
     } catch {
-      return .failure(.unknownError(error.localizedDescription))
+      return .failure(error)
     }
+  }
+}
+
+private extension UnifiedOAuthUseCase {
+  /// 로그인 결과를 프로필 API 선택에 사용하는 역할 저장소와 동기화한다.
+  /// 신규 사용자는 온보딩에서 역할이 확정되므로 이전 계정의 값을 반드시 제거한다.
+  func syncRole(from loginEntity: LoginEntity) {
+    guard !loginEntity.isNewUser else {
+      $staffRole.withLock { $0 = nil }
+      return
+    }
+
+    let role = loginEntity.role ?? .member
+    $userSession.withLock { $0.userRole = role }
+    $staffRole.withLock { $0 = role }
   }
 }
 

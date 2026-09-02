@@ -7,14 +7,13 @@
 
 import SwiftUI
 
-import Model
 import Entity
 
 final public class DefaultQRCodeRepositoryImpl: QRCodeInterface {
   
   public init() {}
   
-  public func createQRCode(userID: Int) async throws -> String {
+  public func createQRCode(userID: Int) async throws(QRCodeError) -> String {
     return ""
   }
   
@@ -24,7 +23,7 @@ final public class DefaultQRCodeRepositoryImpl: QRCodeInterface {
   
   public func qrValidateCheck(
     from code: String
-  ) async throws -> QRValidateEntity {
+  ) async throws(QRCodeError) -> QRValidateEntity {
     return QRValidateEntity(
       isSuccess: true,
       code: code,

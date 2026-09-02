@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - [운영진] 참여 현황 (GET /votes/{id}/participation)
 
-public struct VoteParticipationDTO: Decodable {
+public struct VoteParticipationDTO: Decodable, Sendable {
   public let voteId: Int?
   public let title: String?
   public let status: String?

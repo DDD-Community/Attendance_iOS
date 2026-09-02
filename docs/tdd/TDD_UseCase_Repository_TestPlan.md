@@ -132,7 +132,7 @@ Projects/Data/Repository/Sources/
 | TC-048 | API 인증 헤더 검증 | Authorization Bearer 형식 |
 
 **Mock 의존성:**
-- `MockNetworkService` (Moya Provider)
+- `DDDRequestClient` 테스트 더블
 - `MockDTO` 응답 객체들
 
 #### 2. **AttendanceRepositoryTest** - 출석 API 통신

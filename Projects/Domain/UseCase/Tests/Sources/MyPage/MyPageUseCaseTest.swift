@@ -56,10 +56,10 @@ struct MyPageUseCaseTest {
     @Test("TC-002: 내 출석 통계 조회 실패")
     func test_fetch_my_attendances_failure() async throws {
         // Given: 네트워크 에러 설정
-        mockMyPageRepository.configureAttendancesFailure(MyPageError.networkError)
+        mockMyPageRepository.configureAttendancesFailure(MyPageError.loadFailed)
 
         // When & Then: 에러 처리 검증
-        await #expect(throws: MyPageError.self) {
+        await #expect(throws: MyPageError.loadFailed) {
             try await withDependencies {
                 $0.myPageRepository = mockMyPageRepository
             } operation: {
@@ -99,10 +99,10 @@ struct MyPageUseCaseTest {
     @Test("TC-004: 내 일정 목록 조회 실패")
     func test_fetch_my_schedules_failure() async throws {
         // Given: 권한 없음 에러 설정
-        mockMyPageRepository.configureSchedulesFailure(MyPageError.unauthorized)
+        mockMyPageRepository.configureSchedulesFailure(MyPageError.loadFailed)
 
         // When & Then: 권한 에러 검증
-        await #expect(throws: MyPageError.self) {
+        await #expect(throws: MyPageError.loadFailed) {
             try await withDependencies {
                 $0.myPageRepository = mockMyPageRepository
             } operation: {
@@ -303,28 +303,28 @@ class MockMyPageRepository: MyPageRepositoryInterface {
     var fetchSchedulesCallCount = 0
 
     // MARK: - Configured Responses
-    private var attendancesResponse: Result<AttendanceSummaryResponse, Error>?
-    private var schedulesResponse: Result<[AttendanceMyScheduleResponse], Error>?
+    private var attendancesResponse: Result<AttendanceSummaryResponse, Entity.MyPageError>?
+    private var schedulesResponse: Result<[AttendanceMyScheduleResponse], Entity.MyPageError>?
 
     // MARK: - Implementation
-    func fetchAttendances() async throws -> AttendanceSummaryResponse {
+    func fetchAttendances() async throws(Entity.MyPageError) -> AttendanceSummaryResponse {
         fetchAttendancesCallCount += 1
 
         if let response = attendancesResponse {
             return try response.get()
         }
 
-        throw MyPageError.notConfigured
+        throw Entity.MyPageError.loadFailed
     }
 
-    func fetchSchedules() async throws -> [AttendanceMyScheduleResponse] {
+    func fetchSchedules() async throws(Entity.MyPageError) -> [AttendanceMyScheduleResponse] {
         fetchSchedulesCallCount += 1
 
         if let response = schedulesResponse {
             return try response.get()
         }
 
-        throw MyPageError.notConfigured
+        throw Entity.MyPageError.loadFailed
     }
 
     // MARK: - Configuration Methods
@@ -333,7 +333,7 @@ class MockMyPageRepository: MyPageRepositoryInterface {
     }
 
     func configureAttendancesFailure(_ error: Error) {
-        attendancesResponse = .failure(error)
+        attendancesResponse = .failure(Entity.MyPageError.loadFailed)
     }
 
     func configureSchedulesSuccess(_ schedules: [AttendanceMyScheduleResponse]) {
@@ -341,15 +341,7 @@ class MockMyPageRepository: MyPageRepositoryInterface {
     }
 
     func configureSchedulesFailure(_ error: Error) {
-        schedulesResponse = .failure(error)
+        schedulesResponse = .failure(Entity.MyPageError.loadFailed)
     }
-}
-
-// MARK: - Test Errors
-enum MyPageError: Error, Equatable {
-    case networkError
-    case unauthorized
-    case invalidData
-    case notConfigured
 }
 

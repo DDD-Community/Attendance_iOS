@@ -11,48 +11,48 @@ import Foundation
 import Dependencies
 
 public protocol VoteInterface: Sendable {
-  func fetchVotes() async throws -> [Vote]
+  func fetchVotes() async throws(VoteError) -> [Vote]
   func fetchParticipation(
     voteId: Int
-  ) async throws -> VoteParticipation
+  ) async throws(VoteError) -> VoteParticipation
   func participationStream(
     voteId: Int,
     interval: Double
   ) -> AsyncStream<VoteParticipation>
   func fetchNonResponders(
     voteId: Int
-  ) async throws -> [NonParticipant]
+  ) async throws(VoteError) -> [NonParticipant]
   func openVote(
     voteId: Int
-  ) async throws
+  ) async throws(VoteError)
   func closeVote(
     voteId: Int
-  ) async throws
+  ) async throws(VoteError)
   func createVote(
     input: CreateVoteInput
-  ) async throws -> Int
+  ) async throws(VoteError) -> Int
   func fetchTeamVoteResults(
     voteId: Int
-  ) async throws -> TeamVoteResults
+  ) async throws(VoteError) -> TeamVoteResults
   func fetchFeedbackResults(
     voteId: Int
-  ) async throws -> FeedbackResults
+  ) async throws(VoteError) -> FeedbackResults
 
   // 멤버
-  func fetchActiveVote() async throws -> ActiveVote
+  func fetchActiveVote() async throws(VoteError) -> ActiveVote
   func fetchTeamVoteTemplate(
     voteId: Int
-  ) async throws -> TeamVoteTemplateInfo
+  ) async throws(VoteError) -> TeamVoteTemplateInfo
   func fetchFeedbackTemplate(
     voteId: Int
-  ) async throws -> FeedbackTemplateInfo
+  ) async throws(VoteError) -> FeedbackTemplateInfo
   func submitVote(
     voteId: Int,
     submission: VoteSubmission
-  ) async throws
+  ) async throws(VoteError)
   func fetchMyResponse(
     voteId: Int
-  ) async throws -> MyVoteResponse
+  ) async throws(VoteError) -> MyVoteResponse
 }
 
 public enum VoteRepositoryDependency: TestDependencyKey {

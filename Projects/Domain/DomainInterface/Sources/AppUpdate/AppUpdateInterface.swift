@@ -12,7 +12,7 @@ import Entity
 
 /// App Update 관련 비즈니스 로직을 위한 Interface 프로토콜
 public protocol AppUpdateInterface: Sendable {
-  func checkForUpdate() async throws -> AppUpdateInfo
+  func checkForUpdate() async throws(AppUpdateError) -> AppUpdateInfo
 }
 
 /// AppUpdate Repository의 DependencyKey 구조체

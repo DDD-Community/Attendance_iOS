@@ -11,6 +11,7 @@ let project = Project.makeModule(
   product: .framework,
   settings: .moduleSettings,
   dependencies: [
+    .ui(.animation),
     .core(.coreUI),
     .core(.thirdParty),
   ],

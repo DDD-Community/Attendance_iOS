@@ -13,9 +13,9 @@ import Entity
 import Dependencies
 
 public protocol ProfileLocalDataSourceProtocol: Actor {
-  func loadUser() async throws -> ProfileEntity?
-  func saveUser(_ profile: ProfileEntity) async throws
-  func clear() async throws
+  func loadUser() async throws(ProfileError) -> ProfileEntity?
+  func saveUser(_ profile: ProfileEntity) async throws(ProfileError)
+  func clear() async throws(ProfileError)
 }
 
 public actor ProfileLocalDataSource: ProfileLocalDataSourceProtocol {
@@ -39,32 +39,44 @@ public actor ProfileLocalDataSource: ProfileLocalDataSourceProtocol {
     }
   }
 
-  public func loadUser() async throws -> ProfileEntity? {
-    let context = makeContext()
-    guard let cache = try fetchCache(in: context) else {
-      return nil
+  public func loadUser() async throws(ProfileError) -> ProfileEntity? {
+    do {
+      let context = makeContext()
+      guard let cache = try fetchCache(in: context) else {
+        return nil
+      }
+      if cache.isExpired {
+        context.delete(cache)
+        try context.save()
+        return nil
+      }
+      return cache.toDomain()
+    } catch {
+      throw .cacheFailed
     }
-    if cache.isExpired {
-      context.delete(cache)
+  }
+
+  public func saveUser(_ profile: ProfileEntity) async throws(ProfileError) {
+    do {
+      let context = makeContext()
+      if let existing = try fetchCache(in: context) {
+        context.delete(existing)
+      }
+      context.insert(profile.toCacheModel(cacheKey: ProfileCacheKey.user))
       try context.save()
-      return nil
+    } catch {
+      throw .cacheFailed
     }
-    return cache.toDomain()
   }
 
-  public func saveUser(_ profile: ProfileEntity) async throws {
-    let context = makeContext()
-    if let existing = try fetchCache(in: context) {
-      context.delete(existing)
+  public func clear() async throws(ProfileError) {
+    do {
+      let context = makeContext()
+      try context.delete(model: ProfileCacheEntity.self)
+      try context.save()
+    } catch {
+      throw .cacheFailed
     }
-    context.insert(profile.toCacheModel(cacheKey: ProfileCacheKey.user))
-    try context.save()
-  }
-
-  public func clear() async throws {
-    let context = makeContext()
-    try context.delete(model: ProfileCacheEntity.self)
-    try context.save()
   }
 }
 

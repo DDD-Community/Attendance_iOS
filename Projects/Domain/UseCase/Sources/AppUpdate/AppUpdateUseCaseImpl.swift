@@ -10,7 +10,7 @@ import Entity
 import ComposableArchitecture
 
 public protocol AppUpdateUseCaseInterface: Sendable {
-    func checkForUpdate() async throws -> AppUpdateInfo?
+    func checkForUpdate() async throws(AppUpdateError) -> AppUpdateInfo?
 }
 
 public struct AppUpdateUseCaseImpl: AppUpdateUseCaseInterface {
@@ -18,7 +18,7 @@ public struct AppUpdateUseCaseImpl: AppUpdateUseCaseInterface {
 
   public init() {}
 
-  public func checkForUpdate() async throws -> AppUpdateInfo? {
+  public func checkForUpdate() async throws(AppUpdateError) -> AppUpdateInfo? {
     let updateInfo = try await repository.checkForUpdate()
 
     // 업데이트가 필요한 경우만 반환

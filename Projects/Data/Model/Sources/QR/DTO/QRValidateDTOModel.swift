@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct QRValidateDTO: Decodable {
+public struct QRValidateDTO: Decodable, Sendable {
   public let code: String?
   public let message: String?
   public let detail: String?

@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - [운영진] 투표 상세 (GET /votes/{id})
 
-public struct VoteDetailDTO: Decodable {
+public struct VoteDetailDTO: Decodable, Sendable {
   public let voteId: Int?
   public let title: String?
   public let status: String?

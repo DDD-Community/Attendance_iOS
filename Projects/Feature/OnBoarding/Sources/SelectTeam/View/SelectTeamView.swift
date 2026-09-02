@@ -12,7 +12,7 @@ import SwiftUI
 import DDDDesignKit
 
 import ComposableArchitecture
-import SDWebImageSwiftUI
+import DDDAnimation
 
 @ViewAction(for: SelectTeam.self)
 public struct SelectTeamView: View {
@@ -45,9 +45,7 @@ public struct SelectTeamView: View {
           VStack {
             Spacer()
 
-            AnimatedImage(name: "DDDLoding.gif", isAnimating: .constant(store.loading))
-              .resizable()
-              .scaledToFit()
+            DDDAnimationView(.loading, isAnimating: .constant(store.loading))
               .frame(width: 200, height: 200)
 
             Spacer()

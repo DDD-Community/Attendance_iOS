@@ -6,9 +6,7 @@
 //
 
 import Foundation
-import AsyncMoya
-import Moya
-import Service
+import APIEndpoint
 import Model
 import Entity
 
@@ -157,4 +155,21 @@ enum MockAuthError: Error, Equatable {
   case serverError
   case invalidCredentials
   case userNotFound
+
+  var authError: AuthError {
+    switch self {
+    case .invalidToken, .invalidCredentials:
+      return .invalidCredential("invalid token")
+    case .tokenExpired:
+      return .refreshTokenExpired
+    case .networkError:
+      return .loginFailed
+    case .unauthorized:
+      return .accountDeletionNotAllowed
+    case .serverError:
+      return .loginFailed
+    case .userNotFound:
+      return .loginFailed
+    }
+  }
 }

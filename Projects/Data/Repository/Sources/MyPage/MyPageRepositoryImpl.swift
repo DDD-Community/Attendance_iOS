@@ -7,32 +7,44 @@
 
 import Foundation
 // 프로젝트 모듈
+import DDDNetworkInterface
 import DomainInterface
 import Entity
-import Service
-// 외부 의존성
-import Moya
+import Model
+import APIEndpoint
 
 final public class MyPageRepositoryImpl: MyPageRepositoryInterface {
-  private let provider: MoyaProvider<MyPageService>
+  private let client: any DDDNetworkClient
 
   public init(
-    provider: MoyaProvider<MyPageService>? = nil
+    client: any DDDNetworkClient
   ) {
-    // 🚀 MoyaProviderPool 사용으로 메모리 최적화
-    self.provider = provider ?? MoyaProviderPool.shared.authorizedProvider(for: MyPageService.self)
-
+    self.client = client
   }
   
   /// 출석 현황 요약 조회
-  public func fetchAttendances() async throws -> AttendanceSummaryResponse {
-    let response: AttendanceSummaryResponseDTO = try await provider.request(.fetchAttendances)
-    return response.toDomain()
+  public func fetchAttendances() async throws(MyPageError) -> AttendanceSummaryResponse {
+    do {
+      let response = try await client.send(
+        MyPageService.fetchAttendances,
+        as: AttendanceSummaryResponseDTO.self
+      )
+      return response.toDomain()
+    } catch {
+      throw .loadFailed
+    }
   }
   
   /// 내 스케줄/출석 현황 조회
-  public func fetchSchedules() async throws -> [AttendanceMyScheduleResponse] {
-    let response: [AttendanceMyScheduleResponseDTO] = try await provider.request(.fetchSchedules)
-    return response.map { $0.toDomain() }
+  public func fetchSchedules() async throws(MyPageError) -> [AttendanceMyScheduleResponse] {
+    do {
+      let response = try await client.send(
+        MyPageService.fetchSchedules,
+        as: [AttendanceMyScheduleResponseDTO].self
+      )
+      return response.map { $0.toDomain() }
+    } catch {
+      throw .loadFailed
+    }
   }
 }

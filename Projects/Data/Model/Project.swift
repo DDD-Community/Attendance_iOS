@@ -13,5 +13,6 @@ let project = Project.makeModule(
   dependencies: [
     .domain(.entity)
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: true
 )

@@ -102,11 +102,11 @@ public final class MockAuthRepository: AuthInterface, @unchecked Sendable {
 
     // MARK: - AuthInterface Implementation
 
-    public func login(provider: SocialType, token: String) async throws -> LoginEntity {
+    public func login(provider: SocialType, token: String) async throws(AuthError) -> LoginEntity {
         loginCallCount += 1
 
         // Apply delay for testing
-        try await Task.sleep(for: .milliseconds(10))
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .success, .fullFlowSuccess, .concurrency:
@@ -149,20 +149,20 @@ public final class MockAuthRepository: AuthInterface, @unchecked Sendable {
             )
 
         case .invalidToken:
-            throw MockAuthError.invalidToken
+            throw AuthError.invalidCredential("Mock invalid token")
 
         case .networkError:
-            throw MockAuthError.networkError
+            throw AuthError.unknownError("네트워크 요청에 실패했습니다")
 
         default:
-            throw MockAuthError.unknownError
+            throw AuthError.unknownError("Mock unknown error")
         }
     }
 
-    public func refresh() async throws -> AuthTokens {
+    public func refresh() async throws(AuthError) -> AuthTokens {
         refreshCallCount += 1
 
-        try await Task.sleep(for: .milliseconds(10))
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .success, .refreshSuccess, .fullFlowSuccess:
@@ -173,48 +173,48 @@ public final class MockAuthRepository: AuthInterface, @unchecked Sendable {
             )
 
         case .tokenExpired:
-            throw MockAuthError.tokenExpired
+            throw AuthError.refreshTokenExpired
 
         default:
-            throw MockAuthError.unknownError
+            throw AuthError.unknownError("Mock unknown error")
         }
     }
 
-    public func logout() async throws -> AuthExitEntity {
+    public func logout() async throws(AuthError) -> AuthExitEntity {
         logoutCallCount += 1
 
-        try await Task.sleep(for: .milliseconds(10))
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .success, .logoutSuccess, .fullFlowSuccess:
             return AuthExitEntity()
 
         case .serverError:
-            throw MockAuthError.serverError
+            throw AuthError.logoutFailed
 
         default:
-            throw MockAuthError.unknownError
+            throw AuthError.unknownError("Mock unknown error")
         }
     }
 
-    public func withDraw(token: String) async throws -> WithdrawEntity {
+    public func withDraw(token: String) async throws(AuthError) -> WithdrawEntity {
         withdrawCallCount += 1
 
-        try await Task.sleep(for: .milliseconds(10))
+        try? await Task.sleep(for: .milliseconds(10))
 
         switch configuration {
         case .success, .withdrawSuccess:
             return WithdrawEntity(isSuccess: true)
 
         case .unauthorized:
-            throw MockAuthError.unauthorized
+            throw AuthError.accountDeletionNotAllowed
 
         default:
-            throw MockAuthError.unknownError
+            throw AuthError.unknownError("Mock unknown error")
         }
     }
 
-    public func updateSessionCredential(with tokens: AuthTokens) {
+    public func updateSessionCredential(with tokens: AuthTokens) async {
         updateCredentialCallCount += 1
         lastUpdatedTokens = tokens
     }

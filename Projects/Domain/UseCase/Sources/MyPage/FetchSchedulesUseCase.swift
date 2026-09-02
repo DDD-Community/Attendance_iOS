@@ -14,7 +14,7 @@ import Entity
 
 
 public protocol FetchMySchedulesUseCase: Sendable {
-  func execute() async throws -> [AttendanceMyScheduleResponse]
+  func execute() async throws(MyPageError) -> [AttendanceMyScheduleResponse]
 }
 
 public struct FetchMySchedulesUseCaseImpl: FetchMySchedulesUseCase {
@@ -24,7 +24,7 @@ public struct FetchMySchedulesUseCaseImpl: FetchMySchedulesUseCase {
     self.repository = repository
   }
   
-  public func execute() async throws -> [AttendanceMyScheduleResponse] {
+  public func execute() async throws(MyPageError) -> [AttendanceMyScheduleResponse] {
     return try await repository.fetchSchedules()
   }
 }

@@ -19,7 +19,7 @@ public extension LoginResponseDTO {
     return LoginEntity(
       name: self.name ?? "",
       isNewUser: self.isNewUser,
-      provider: SocialType(rawValue: oauthProvider ?? "") ?? .apple,
+      provider: SocialType(rawValue: oauthProvider?.lowercased() ?? "") ?? .apple,
       token: token,
       role: Staff.from(apiKey: self.role ?? "")
     )

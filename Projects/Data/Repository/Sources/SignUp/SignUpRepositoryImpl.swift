@@ -7,32 +7,37 @@
 
 import Combine
 
+import DDDNetworkInterface
 import DomainInterface
 import Model
 import Entity
-import Service
+import APIEndpoint
 
-@preconcurrency import AsyncMoya
-
-@Observable
 final public class SignUpRepositoryImpl: SignUpInterface {
 
 
-  private let provider: MoyaProvider<SignUpService>
+  private let client: any DDDNetworkClient
 
   public init(
-    provider: MoyaProvider<SignUpService> = MoyaProvider<SignUpService>.default
+    client: any DDDNetworkClient
   ) {
-    self.provider = provider
+    self.client = client
   }
 
   // Mark : -  API 회원가입
   public func registerUser(
     input: SignUpUserInput
-  ) async throws -> SignUpUser {
-    // SignUpUserInput을 SignUpUserRequestDTO로 변환
-    let body = input.toRequestDTO()
-    let dto: SignUpUserDTO = try await provider.request(.signUpUser(body: body))
-    return dto.toDomain()
+  ) async throws(SignUpError) -> SignUpUser {
+    do {
+      // SignUpUserInput을 SignUpUserRequestDTO로 변환
+      let body = input.toRequestDTO()
+      let dto = try await client.send(
+        SignUpService.signUpUser(body: body),
+        as: SignUpUserDTO.self
+      )
+      return dto.toDomain()
+    } catch {
+      throw .accountCreationFailed
+    }
   }
 }

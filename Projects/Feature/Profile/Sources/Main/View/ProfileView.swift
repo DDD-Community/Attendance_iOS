@@ -60,7 +60,9 @@ public struct ProfileView: View {
 extension ProfileView {
   @ViewBuilder
   fileprivate func mangerProfileLoadingData() -> some View {
-    if store.profileModel == nil && store.isLoading {
+    // SwiftData와 세션 모두 비어 있는 첫 프레임에 빈 이름("님")이 노출되지 않도록
+    // 표시 가능한 프로필이 생길 때까지 Skeleton을 유지한다.
+    if store.displayedProfile == nil {
       VStack {
         Spacer()
           .frame(height: 12)
@@ -112,7 +114,7 @@ extension ProfileView {
 
   private var profileCardContent: some View {
     VStack(alignment: .leading, spacing: .zero) {
-      if store.profileModel?.role == .manager {
+      if store.displayedProfile?.role == .manager {
         Spacer()
           .frame(height: 24)
       }
@@ -124,7 +126,7 @@ extension ProfileView {
       profileBottomSpacer
       profileFooter
 
-      if store.profileModel?.role == .manager {
+      if store.displayedProfile?.role == .manager {
         Spacer()
           .frame(height: 24)
       }
@@ -140,7 +142,7 @@ extension ProfileView {
   }
 
   private var profileRoleBadge: some View {
-    Text(store.profileModel?.role == .manager ? "매니저" : "멤버")
+    Text(store.displayedProfile?.role == .manager ? "매니저" : "멤버")
       .dddFont(.body3NormalBold)
       .foregroundStyle(.statusFocus)
       .padding(.horizontal, 14)
@@ -179,14 +181,14 @@ extension ProfileView {
   }
 
   private var profileName: some View {
-    Text("\(store.profileModel?.name ?? "")님")
+    Text("\(store.displayedProfile?.name ?? "")님")
       .dddFont(.headline5Bold)
       .foregroundStyle(.borderInverse)
   }
 
   private var profileSpacingAfterName: some View {
     Group {
-      if store.profileModel?.role == .manager {
+      if store.displayedProfile?.role == .manager {
         Spacer()
           .frame(height: 20)
       } else {
@@ -199,9 +201,9 @@ extension ProfileView {
     VStack(alignment: .leading, spacing: 20) {
       jobRoleComponent
 
-      if store.profileModel?.role == .manager {
+      if store.displayedProfile?.role == .manager {
         managerSpecificComponents
-      } else if store.profileModel?.role == .member {
+      } else if store.displayedProfile?.role == .member {
         memberSpecificComponents
       }
     }
@@ -210,7 +212,7 @@ extension ProfileView {
   private var jobRoleComponent: some View {
     managerTextComponent(
       title: store.managerProfileRoleType,
-      subTitle: store.profileModel?.jobRole.desc ?? "",
+      subTitle: store.displayedProfile?.jobRole.desc ?? "",
       managingTeam: "",
       isManaging: false,
       isGeneration: false
@@ -218,7 +220,7 @@ extension ProfileView {
   }
 
   private var managerSpecificComponents: some View {
-    let team = store.profileModel?.team ?? .unknown
+    let team = store.displayedProfile?.team ?? .unknown
 
     return Group {
       managerTextComponent(
@@ -231,13 +233,13 @@ extension ProfileView {
 
       managerTextComponent(
         title: store.managerProfileGeneration,
-        subTitle: store.profileModel?.generation ?? "",
+        subTitle: store.displayedProfile?.generation ?? "",
         managingTeam: "",
         isManaging: false,
         isGeneration: true
       )
 
-      if let managerRoles = store.profileModel?.manger, !managerRoles.isEmpty {
+      if let managerRoles = store.displayedProfile?.manger, !managerRoles.isEmpty {
         managerTextComponent(
           title: store.managerProfileManaging,
           subTitle: managerRoles.map { $0.desc }.joined(separator: " / "),
@@ -250,7 +252,7 @@ extension ProfileView {
   }
 
   private var memberSpecificComponents: some View {
-    let team = store.profileModel?.team ?? .unknown
+    let team = store.displayedProfile?.team ?? .unknown
 
     return Group {
       managerTextComponent(
@@ -263,7 +265,7 @@ extension ProfileView {
 
       managerTextComponent(
         title: store.managerProfileGeneration,
-        subTitle: store.profileModel?.generation ?? "",
+        subTitle: store.displayedProfile?.generation ?? "",
         managingTeam: "",
         isManaging: false,
         isGeneration: true
@@ -273,7 +275,7 @@ extension ProfileView {
 
   private var profileBottomSpacer: some View {
     Group {
-      if store.profileModel?.role == .manager {
+      if store.displayedProfile?.role == .manager {
         Spacer()
       } else {
         Spacer()
@@ -413,4 +415,3 @@ extension ProfileView {
     }
   }
 }
-

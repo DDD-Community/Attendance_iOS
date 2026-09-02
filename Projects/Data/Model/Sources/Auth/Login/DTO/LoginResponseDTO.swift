@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct LoginResponseDTO: Decodable {
+public struct LoginResponseDTO: Decodable, Sendable {
   let userId: Int?
   let name: String?
   let email: String?

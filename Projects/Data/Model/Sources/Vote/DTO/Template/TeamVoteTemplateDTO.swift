@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - [공통] 팀 투표 템플릿
 
-public struct TeamVoteTemplateDTO: Codable {
+public struct TeamVoteTemplateDTO: Codable, Sendable {
   public let title: String?
   public let description: String?
   public let notice: String?

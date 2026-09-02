@@ -2,7 +2,6 @@ import Foundation
 import ProjectDescription
 import DependencyPlugin
 import ProjectTemplatePlugin
-import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
 let project = Project.makeModule(
@@ -12,12 +11,12 @@ let project = Project.makeModule(
   settings: .repositoryBaseSettings(),
   dependencies: [
     .core(.logger),
-    .data(.service),
+    .core(.network, .interface),
+    .service(.auth, .interface),
+    .service(.apiEndpoint),
     .data(.model),
     .domain(.domainInterface),
     .domain(.entity),
-    .network(.foundations),
-    .SPM.asyncMoya,
     .SPM.composableArchitecture,
     .SPM.googleSignIn
   ],
