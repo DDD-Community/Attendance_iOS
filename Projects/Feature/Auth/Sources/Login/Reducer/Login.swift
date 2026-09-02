@@ -78,6 +78,7 @@ public struct Login {
   }
 
   // MARK: - NavigationAction
+  @CasePathable
   public enum NavigationAction: Equatable {
     case presentSignUpInviteView
     case presentStaffMain

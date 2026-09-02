@@ -45,6 +45,7 @@ public struct OnBoardingName {
 
   
   // MARK: - NavigationAction
+  @CasePathable
   public enum NavigationAction: Equatable {
     case presentSignUpPart
   }
