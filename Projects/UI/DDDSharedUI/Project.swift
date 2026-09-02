@@ -15,5 +15,6 @@ let project = Project.makeModule(
     .core(.coreUI),
     .core(.coreUtility)
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: true
 )

@@ -87,7 +87,11 @@ final class URLProtocolStub: URLProtocol {
 
   override func startLoading() {
     let current = Self.lock.withLock { () -> Stub? in
-      Self.capturedRequests.append(request)
+      var capturedRequest = request
+      if capturedRequest.httpBody == nil, let bodyStream = capturedRequest.httpBodyStream {
+        capturedRequest.httpBody = Self.readData(from: bodyStream)
+      }
+      Self.capturedRequests.append(capturedRequest)
       guard !Self.stubs.isEmpty else { return nil }
       if Self.stubs.count == 1 {
         return Self.stubs[0]
@@ -119,4 +123,18 @@ final class URLProtocolStub: URLProtocol {
   }
 
   override func stopLoading() {}
+
+  private static func readData(from stream: InputStream) -> Data {
+    stream.open()
+    defer { stream.close() }
+
+    var data = Data()
+    var buffer = [UInt8](repeating: 0, count: 1_024)
+    while true {
+      let count = stream.read(&buffer, maxLength: buffer.count)
+      guard count > 0 else { break }
+      data.append(buffer, count: count)
+    }
+    return data
+  }
 }

@@ -16,5 +16,6 @@ let project = Project.makeModule(
     .core(.thirdParty),
   ],
   sources: ["Sources/**"],
-  resources: ["Resources/**"]
+  resources: ["Resources/**"],
+  hasTests: true
 )

@@ -10,5 +10,6 @@ let project = Project.makeModule(
     product: .staticFramework,
     settings: .moduleSettings,
     dependencies: [],
-    sources: ["Sources/**"]
+    sources: ["Sources/**"],
+    hasTests: true
 )

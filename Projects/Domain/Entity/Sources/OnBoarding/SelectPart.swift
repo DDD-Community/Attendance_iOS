@@ -48,7 +48,8 @@ public enum SelectParts: String, CaseIterable, Codable, Equatable {
   }
 
   public static func from(apiKey: String) -> SelectParts? {
-    switch apiKey.uppercased() {
+    switch apiKey.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() {
+      case "ALL": return .all
       case "BACKEND", "BE": return .backend
       case "FRONTEND", "FE": return .frontend
       case "DESIGNER" ,"PD":  return .designer
