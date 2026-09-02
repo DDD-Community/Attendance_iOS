@@ -82,6 +82,27 @@ TCA 피처는 Reducer 자체가 구현이라 "Interface에 Reducer를 둔다"가
 4. **나머지 Feature 6개 확산** — 피처당 1커밋.
 5. **FeatureAssembly 를 XInterface 기준으로 정리**
 
+## 구현 중 확인된 사실
+
+### Demo 는 별도 스킴이 생기지 않는다
+
+Tuist 의 기본 스킴 그룹핑(`.byNameSuffix`)이 `Demo` 접미사를 **base 스킴의 run 타깃**으로 묶는다.
+`DDDDesignKitDemo` 를 만들어도 `DDDDesignKitDemo` 스킴은 생기지 않고,
+`DDDDesignKit` 스킴 하나가 구현·Demo·Tests 를 모두 빌드하고 실행 시 Demo 를 띄운다.
+
+```
+DDDDesignKit.xcscheme
+  BuildAction  : DDDDesignKit, DDDDesignKitDemo, DDDDesignKitTests
+  LaunchAction : DDDDesignKitDemo
+```
+
+따라서:
+
+- 개발자는 `X` 스킴을 골라 Run 하면 Demo 가 뜬다. 별도 스킴 정의가 필요 없다.
+- CI 에서 Demo 만 빌드하려면 스킴이 아니라 `-target XDemo` 를 쓰거나
+  명시적 스킴을 따로 정의해야 한다. 이는 "Demo 를 CI 필수 빌드에서 제외할지" 결정과 맞물린다.
+- `X` 스킴 빌드가 이제 Demo 까지 빌드하므로, 모듈 단위 빌드 시간이 늘어난다.
+
 ## 열려 있는 위험
 
 - **Feature 간 의존 엣지가 현재 0개다.** Interface 로 끊을 대상이 없으므로 이번 재편의
