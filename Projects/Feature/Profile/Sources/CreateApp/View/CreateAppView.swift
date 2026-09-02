@@ -8,9 +8,9 @@
 import SwiftUI
 
 import ComposableArchitecture
-import SwiftUIX
-import Model
 import DDDDesignKit
+import Entity
+import SwiftUIX
 
 struct CreateAppView: View {
   @Bindable private var store: StoreOf<CreateApp>
@@ -65,12 +65,12 @@ extension CreateAppView {
       )
 
       createAppPartItem(
-        selectPart: .design,
+        selectPart: .designer,
         creators: "강동길, 이지윤, 조재인"
       )
 
       createAppPartItem(
-        selectPart: .iOS,
+        selectPart: .ios,
         creators: "서원지, 홍은표"
       )
       
@@ -80,7 +80,7 @@ extension CreateAppView {
       )
       
       createAppPartItem(
-        selectPart: .server,
+        selectPart: .backend,
         creators: "조승준, 조지원, 이준석"
       )
       
@@ -89,14 +89,14 @@ extension CreateAppView {
   
   @ViewBuilder
   fileprivate func createAppPartItem(
-    selectPart: SelectPart,
+    selectPart: SelectParts,
     creators: String
   ) -> some View {
     VStack(alignment: .center) {
       Spacer()
         .frame(height: 24)
       
-      Text(selectPart.attendanceListDesc)
+      Text(selectPart.desc)
         .dddFont(.body3NormalRegular)
         .foregroundStyle(.staticWhite)
       
