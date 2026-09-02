@@ -10,6 +10,24 @@ readonly RESULT_BUNDLE="${RESULT_BUNDLE:-TestResults.xcresult}"
 readonly TEST_RUN_REPORT_PATH="${TEST_RUN_REPORT_PATH:-TestRunReport.json}"
 
 compilation_cache_enabled="${XCODE_COMPILATION_CACHE_ENABLED:-NO}"
+simulator_udid=""
+
+if [[ "$SIMULATOR_DESTINATION" =~ (^|,)id=([^,]+) ]]; then
+  simulator_udid="${BASH_REMATCH[2]}"
+fi
+
+shutdown_test_simulator() {
+  local exit_code=$?
+
+  if [[ -n "$simulator_udid" ]]; then
+    xcrun simctl shutdown "$simulator_udid" >/dev/null 2>&1 || true
+    echo "테스트 시뮬레이터를 종료했습니다: $simulator_udid"
+  fi
+
+  return "$exit_code"
+}
+
+trap shutdown_test_simulator EXIT
 
 rm -rf "$RESULT_BUNDLE" "$TEST_RUN_REPORT_PATH" TuistTestRun.log
 

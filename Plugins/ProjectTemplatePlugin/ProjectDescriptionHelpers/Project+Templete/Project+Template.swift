@@ -148,6 +148,7 @@ public extension Project {
     settings: ProjectDescription.Settings,
     scripts: [ProjectDescription.TargetScript] = [],
     dependencies: [ProjectDescription.TargetDependency] = [],
+    testDependencies: [ProjectDescription.TargetDependency] = [],
     sources _: ProjectDescription.SourceFilesList = ["Sources/**"],
     resources: ProjectDescription.ResourceFileElements? = nil,
     infoPlist: ProjectDescription.InfoPlist = .default,
@@ -244,7 +245,7 @@ public extension Project {
         dependencies: [
           .target(name: name),
           .project(target: testHostName, path: .relativeToRoot("Projects/TestHost"))
-        ] + (hasTesting ? [.target(name: "\(name)Testing")] : []),
+        ] + testDependencies + (hasTesting ? [.target(name: "\(name)Testing")] : []),
         settings: testTargetSettings
       )
       targets.append(appTestTarget)
