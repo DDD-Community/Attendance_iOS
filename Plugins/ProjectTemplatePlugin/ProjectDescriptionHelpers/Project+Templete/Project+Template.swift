@@ -21,9 +21,8 @@ private let suppressWarningsSettings: ProjectDescription.Settings = .settings(
 
 private let appTargetSettings: ProjectDescription.Settings = .settings(
   base: [
-    // FeatureAssembly에 모인 DependencyKey.liveValue 등록이 dead strip되지 않도록
-    // 앱의 composition root만 강제 링크한다.
-    "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip -force_load $(BUILT_PRODUCTS_DIR)/FeatureAssembly.framework/FeatureAssembly -force_load $(BUILT_PRODUCTS_DIR)/UseCase.framework/UseCase",
+    // 계층별 DependencyKey.liveValue가 dead strip되지 않도록 DI 조립 모듈을 링크한다.
+    "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip -force_load $(BUILT_PRODUCTS_DIR)/DataAssembly.framework/DataAssembly -force_load $(BUILT_PRODUCTS_DIR)/ServiceAssembly.framework/ServiceAssembly -force_load $(BUILT_PRODUCTS_DIR)/UseCase.framework/UseCase",
     "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
   ],
   configurations: XCConfig.configurations

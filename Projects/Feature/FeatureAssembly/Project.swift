@@ -1,7 +1,6 @@
 import Foundation
 import ProjectDescription
 import DependencyPlugin
-import DependencyPackagePlugin
 import ProjectTemplatePlugin
 
 let project = Project.makeModule(
@@ -18,11 +17,7 @@ let project = Project.makeModule(
     .feature(.profile),
     .feature(.web),
     .feature(.sharedUI),
-    .core(.network, .interface),
-    .data(.repository),
-    .domain(.domainInterface),
-    .service,
-    .SPM.dependencies
+    .dataAssembly
   ],
   sources: ["Sources/**"],
   hasTests: true,

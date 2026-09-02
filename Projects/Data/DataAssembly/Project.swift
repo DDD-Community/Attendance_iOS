@@ -6,6 +6,7 @@
 //
 
 import DependencyPlugin
+import DependencyPackagePlugin
 import Foundation
 import ProjectDescription
 import ProjectTemplatePlugin
@@ -15,13 +16,17 @@ let project = Project.makeModule(
   bundleId: .appBundleID(name: ".DataAssembly"),
   product: .staticFramework,
   settings: .moduleSettings,
-  // DataAssembly는 Data 모듈의 진입점만 제공한다.
-  // DomainInterface의 라이브 구현 등록은 FeatureAssembly가 담당한다.
+  // FeatureAssembly에 Data 세부 구조를 노출하지 않고 라이브 구현을 조립한다.
   dependencies: [
+    .core(.network, .interface),
     .data(.model),
-    .data(.repository)
+    .data(.repository),
+    .domainAssembly,
+    .service,
+    .SPM.dependencies
   ],
   sources: ["Sources/**"],
   hasTests: true,
-  requiresTCAHost: true
+  requiresTCAHost: true,
+  forceLoadInTests: true
 )
