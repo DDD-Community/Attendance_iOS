@@ -22,5 +22,6 @@ let project = Project.makeModule(
     .core(.network, .implementation),
     .core(.storage, .implementation)
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: true
 )

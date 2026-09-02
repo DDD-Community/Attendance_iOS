@@ -19,5 +19,7 @@ let project = Project.makeModule(
     .feature(.sharedUI),
     .dataAssembly
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: true,
+  requiresTCAHost: true
 )

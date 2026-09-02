@@ -22,5 +22,7 @@ let project = Project.makeModule(
     .domain(.domainInterface),
     .domain(.useCase)
   ],
-  sources: ["Sources/**"]
+  sources: ["Sources/**"],
+  hasTests: true,
+  requiresTCAHost: true
 )
