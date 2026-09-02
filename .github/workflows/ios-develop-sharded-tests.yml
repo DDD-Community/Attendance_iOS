@@ -113,7 +113,7 @@ jobs:
       - name: Build app for bundle insights
         run: |
           mise exec -- tuist xcodebuild build \
-            -project Projects/App/DDDAttendance.xcodeproj \
+            -workspace DDDAttendance.xcworkspace \
             -scheme DDDAttendance-Stage \
             -configuration Stage \
             -destination "$SIMULATOR_DESTINATION" \
