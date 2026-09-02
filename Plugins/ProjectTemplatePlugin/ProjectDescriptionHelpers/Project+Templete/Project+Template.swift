@@ -97,8 +97,8 @@ public extension Project {
     )
   }
 
-  /// 단일 앱 타깃을 환경별 config 로 빌드하는 스킴들.
-  /// 스킴 이름은 기존 CI(fastlane STAGE_SCHEME/PROD_SCHEME)와 호환되도록 유지한다.
+  /// 앱 프로젝트를 단독으로 열 때 사용하는 배포 스킴.
+  /// Stage 스킴은 workspace에서 전체 모듈 테스트와 함께 정의하므로 여기서 중복 생성하지 않는다.
   private static func appEnvironmentSchemes(name: String, hasTests: Bool) -> [Scheme] {
     func envScheme(_ schemeName: String, config: ConfigurationName) -> Scheme {
       return .scheme(
@@ -127,7 +127,6 @@ public extension Project {
       )
     }
     return [
-      envScheme("\(name)-Stage", config: .stage),
       envScheme("\(name)-Prod", config: .prod)
     ]
   }

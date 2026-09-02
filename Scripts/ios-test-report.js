@@ -22,6 +22,44 @@ const MAX_BUILD_ERRORS = 20;
 // 커버리지 막대 칸 수 (한 칸 = 5%)
 const BAR_WIDTH = 20;
 
+function findProjectManifests(root) {
+  if (!fs.existsSync(root)) return [];
+
+  const manifests = [];
+  const walk = (directory) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+
+      const child = path.join(directory, entry.name);
+      if (entry.name === "TestHost") continue;
+
+      const manifest = path.join(child, "Project.swift");
+      if (fs.existsSync(manifest)) manifests.push(manifest);
+      else walk(child);
+    }
+  };
+
+  walk(root);
+  return manifests;
+}
+
+// xccov는 테스트 스킴에 링크된 외부 패키지까지 반환한다.
+// Projects 아래 Tuist 모듈 이름을 기준으로 앱이 소유한 제품만 커버리지에 포함한다.
+function internalCoverageTargetNames(projectsRoot = path.join(process.cwd(), "Projects")) {
+  const names = new Set([process.env.COVERAGE_APP_TARGET || "DDDAttendance"]);
+
+  for (const manifest of findProjectManifests(projectsRoot)) {
+    const source = fs.readFileSync(manifest, "utf8");
+    const moduleName = /Project\.makeModule\s*\([\s\S]*?\bname:\s*"([^"]+)"/.exec(source)?.[1];
+    if (!moduleName) continue;
+
+    names.add(moduleName);
+    names.add(`${moduleName}Interface`);
+  }
+
+  return names;
+}
+
 function xcrun(args) {
   return execFileSync("xcrun", args, {
     encoding: "utf8",
@@ -111,7 +149,7 @@ function mergeSummaries(summaries) {
   return merged;
 }
 
-function mergeCoverage(reports) {
+function mergeCoverage(reports, allowedTargets = internalCoverageTargetNames()) {
   const byName = new Map();
 
   for (const target of reports.flat()) {
@@ -119,6 +157,8 @@ function mergeCoverage(reports) {
     if (!target.executableLines) continue;
 
     const name = target.name.replace(/\.(framework|app|bundle|a|dylib)$/, "");
+    if (!allowedTargets.has(name)) continue;
+
     const acc = byName.get(name) || { name, coveredLines: 0, executableLines: 0 };
     acc.coveredLines += target.coveredLines || 0;
     acc.executableLines += target.executableLines;
@@ -342,4 +382,9 @@ module.exports = async ({ github, context, core }) => {
   }
 
   await core.summary.addRaw(body.replace(MARKER, "")).write();
+};
+
+module.exports.__test__ = {
+  internalCoverageTargetNames,
+  mergeCoverage,
 };
