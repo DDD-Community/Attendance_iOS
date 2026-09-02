@@ -118,6 +118,13 @@ public extension Project {
         testAction: hasTests ? .targets(
           [.testableTarget(target: .target("\(name)Tests"))],
           configuration: config,
+          postActions: [
+            .executionAction(
+              title: "Inspect Test",
+              scriptText: "$HOME/.local/bin/mise x -C $SRCROOT -- tuist inspect test",
+              target: .target(name)
+            )
+          ],
           options: .options(coverage: true)
         ) : nil,
         runAction: .runAction(configuration: config),

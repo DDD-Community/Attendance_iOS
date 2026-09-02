@@ -33,6 +33,13 @@ public extension Scheme {
       testAction: .targets(
         allModuleTestTargets(appName: name),
         configuration: .stage,
+        postActions: [
+          .executionAction(
+            title: "Inspect Test",
+            scriptText: "$HOME/.local/bin/mise x -C $SRCROOT -- tuist inspect test",
+            target: appTarget
+          )
+        ],
         options: .options(coverage: true)
       ),
       runAction: .runAction(configuration: .stage, executable: appTarget),
