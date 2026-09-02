@@ -8,6 +8,7 @@
 
 import ComposableArchitecture
 import Entity
+import EntityTesting
 import Testing
 import UseCase
 
@@ -56,7 +57,7 @@ struct ProfileReducerTests {
   func fetchUserSuccessStoresProfileAndStopsLoading() async {
     var state = ProfileReducer.State()
     state.isLoading = true
-    let profile = Self.memberProfile
+    let profile = EntityFixture.memberProfile
 
     let store = TestStore(initialState: state) {
       ProfileReducer()
@@ -119,13 +120,4 @@ struct ProfileReducerTests {
 }
 
 private extension ProfileReducerTests {
-  static let memberProfile = ProfileEntity(
-    userID: 1,
-    name: "김철수",
-    generation: "2기",
-    team: .ios1,
-    jobRole: .ios,
-    role: .member,
-    manger: nil
-  )
 }

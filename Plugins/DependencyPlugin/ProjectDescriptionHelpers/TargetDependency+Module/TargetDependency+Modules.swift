@@ -18,16 +18,21 @@ import ProjectDescription
 public enum ModuleTarget {
   case interface
   case implementation
+  /// `Project.makeModule(hasTesting: true)` 가 만드는 "<name>Testing" 타깃.
+  /// 테스트 더블·픽스처 전용이라 테스트 타깃(testDependencies)에서만 참조한다.
+  case testing
 }
 
 extension TargetDependency {
-  /// interface → "<name>Interface" 타깃, implementation → "<name>" 타깃.
+  /// interface → "<name>Interface", implementation → "<name>", testing → "<name>Testing" 타깃.
   static func moduleDependency(name: String, path: Path, target: ModuleTarget) -> TargetDependency {
     switch target {
     case .interface:
       return .project(target: "\(name)Interface", path: path)
     case .implementation:
       return .project(target: name, path: path)
+    case .testing:
+      return .project(target: "\(name)Testing", path: path)
     }
   }
 }

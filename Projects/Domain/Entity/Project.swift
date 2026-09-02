@@ -13,5 +13,6 @@ let project = Project.makeModule(
   dependencies: [
   ],
   sources: ["Sources/**"],
-  hasTests: true
+  hasTests: true,
+  hasTesting: true
 )

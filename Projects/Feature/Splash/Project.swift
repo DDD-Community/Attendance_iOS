@@ -13,6 +13,9 @@ let project = Project.makeModule(
     .ui(.sharedUI),
     .domainAssembly
   ],
+  testDependencies: [
+    .domain(.entity, .testing)
+  ],
   sources: ["Sources/**"],
   hasTests: true,
   hasTesting: true,

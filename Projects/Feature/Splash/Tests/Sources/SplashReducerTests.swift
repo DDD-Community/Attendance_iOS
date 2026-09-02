@@ -9,6 +9,7 @@
 import ComposableArchitecture
 import DomainInterface
 import Entity
+import EntityTesting
 import Testing
 
 @testable import Splash
@@ -20,7 +21,7 @@ struct SplashReducerTests {
   func upToDateMemberNavigatesToMemberAfterProfileFetch() async {
     var state = Splash.State()
     state.staffRole = .member
-    state.profileModel = Self.memberProfile
+    state.profileModel = EntityFixture.memberProfile
     state.profileFetchCompleted = true
 
     let store = TestStore(initialState: state) {
@@ -39,7 +40,7 @@ struct SplashReducerTests {
       Splash()
     }
 
-    await store.send(.inner(.checkAppUpdateResponse(.success(Self.updateInfo)))) {
+    await store.send(.inner(.checkAppUpdateResponse(.success(EntityFixture.updateAvailable)))) {
       $0.isUpdateCheckCompleted = true
       $0.appStoreUrl = "https://apps.apple.com/app/id123"
       $0.customAlert = .alert(
@@ -91,23 +92,7 @@ struct SplashReducerTests {
 }
 
 private extension SplashReducerTests {
-  static let memberProfile = ProfileEntity(
-    userID: 1,
-    name: "김철수",
-    generation: "2기",
-    team: .ios1,
-    jobRole: .ios,
-    role: .member,
-    manger: nil
-  )
 
-  static let updateInfo = AppUpdateInfo(
-    currentVersion: "1.0.0",
-    latestVersion: "1.2.3",
-    releaseNotes: "[v 1.2.3]\n- bug fixes",
-    appStoreUrl: "https://apps.apple.com/app/id123",
-    isUpdateAvailable: true
-  )
 }
 
 private final class KeychainSpy: KeychainManaging, @unchecked Sendable {
