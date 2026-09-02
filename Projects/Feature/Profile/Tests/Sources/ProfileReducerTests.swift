@@ -68,6 +68,30 @@ struct ProfileReducerTests {
     }
   }
 
+  @Test("네트워크 프로필이 없으면 세션의 마지막 프로필을 즉시 표시한다")
+  func displayedProfileFallsBackToUserSession() {
+    var state = ProfileReducer.State()
+    let originalSession = state.userSession
+    defer {
+      state.$userSession.withLock { $0 = originalSession }
+    }
+
+    state.$userSession.withLock {
+      $0 = UserSession(
+        userID: 7,
+        name: "김철수",
+        selectPart: .ios,
+        userRole: .member,
+        selectTeam: .ios2,
+        generation: "2기"
+      )
+    }
+
+    #expect(state.displayedProfile?.userID == 7)
+    #expect(state.displayedProfile?.name == "김철수")
+    #expect(state.displayedProfile?.team == .ios2)
+  }
+
   @Test("logoutResponses 성공은 로그아웃 결과 저장 후 로그아웃 navigation을 보낸다")
   func logoutSuccessSendsLogoutNavigation() async {
     let authExit = AuthExitEntity(code: "200", message: "ok", detail: nil)

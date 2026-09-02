@@ -30,6 +30,28 @@ public struct ProfileReducer: Sendable {
     var logoutText: String = "로그아웃"
 
     var profileModel: ProfileEntity?
+
+    /// 네트워크 갱신 전에는 앱 전역 세션의 마지막 프로필을 즉시 표시합니다.
+    var displayedProfile: ProfileEntity? {
+      if let profileModel {
+        return profileModel
+      }
+
+      guard !userSession.name.isEmpty else {
+        return nil
+      }
+
+      return ProfileEntity(
+        userID: userSession.userID,
+        name: userSession.name,
+        generation: userSession.generation,
+        team: userSession.selectTeam == .unknown ? nil : userSession.selectTeam,
+        jobRole: userSession.selectPart,
+        role: userSession.userRole,
+        manger: userSession.managing.isEmpty ? nil : userSession.managing
+      )
+    }
+
     var deleteUser: WithdrawEntity?
     var authExit: AuthExitEntity?
     var appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
@@ -122,7 +144,6 @@ public struct ProfileReducer: Sendable {
   @Dependency(\.authUseCase) var authUseCase
   @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.mainQueue) var mainQueue
-  @Dependency(\.continuousClock) var clock
 
   public var body: some Reducer<State, Action> {
     BindingReducer()
@@ -215,13 +236,12 @@ extension ProfileReducer {
             return
           }
 
-          // 캐시 miss → 로딩 ON + 네트워크 + 인위 지연
+          // 캐시 miss → 세션의 마지막 프로필을 표시한 채 네트워크 갱신
           await send(.inner(.setLoading(true)))
           let fetchUserResult = await Result {
             try await profileUseCase.getProfile()
           }
           .mapError(ProfileError.from)
-          try await clock.sleep(for: .seconds(1))
 
           await send(.inner(.fetchUserResponse(fetchUserResult)))
         } catch is CancellationError {
