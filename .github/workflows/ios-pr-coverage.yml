@@ -28,6 +28,7 @@ jobs:
       LC_ALL: en_US.UTF-8
       TEST_RUN_REPORT_PATH: TestRunReport.json
       BUILD_RUN_REPORT_PATH: BuildRunReport.json
+      BUNDLE_INSPECT_REPORT_PATH: BundleInspectReport.json
 
     steps:
       - uses: actions/checkout@v4
@@ -105,7 +106,9 @@ jobs:
             TestResults.xcresult \
             BundleBuildResults.xcresult \
             "$TEST_RUN_REPORT_PATH" \
-            "$BUILD_RUN_REPORT_PATH"
+            "$BUILD_RUN_REPORT_PATH" \
+            "$BUNDLE_INSPECT_REPORT_PATH" \
+            DDDAttendance-Stage.ipa
 
       # Xcode 업데이트 뒤에도 러너에 실제 설치된 최신 iPhone runtime을 사용한다.
       - name: Select simulator
@@ -159,14 +162,30 @@ jobs:
         if: steps.tests.outcome == 'success' && steps.app-build.outcome == 'success'
         continue-on-error: true
         run: |
-          mise exec -- tuist inspect bundle DDDAttendance \
-            --platforms ios \
-            --configuration Stage \
-            --derived-data-path "$CI_DERIVED_DATA"
+          APP_PATH="$(find "$CI_DERIVED_DATA/Build/Products" -maxdepth 2 -type d -name DDDAttendance.app -print -quit)"
+          if [[ -z "$APP_PATH" ]]; then
+            echo "Stage 앱 번들을 찾지 못했습니다." >&2
+            exit 1
+          fi
+
+          BUNDLE_PAYLOAD="$RUNNER_TEMP/attendance-bundle-payload"
+          rm -rf "$BUNDLE_PAYLOAD"
+          mkdir -p "$BUNDLE_PAYLOAD/Payload"
+          ditto "$APP_PATH" "$BUNDLE_PAYLOAD/Payload/DDDAttendance.app"
+          ditto -c -k --sequesterRsrc --keepParent \
+            "$BUNDLE_PAYLOAD/Payload" \
+            DDDAttendance-Stage.ipa
+
+          # IPA를 검사해야 압축 후 Download size까지 Tuist와 PR 리포트에 기록된다.
+          mise exec -- tuist inspect bundle DDDAttendance-Stage.ipa --json \
+            > "$BUNDLE_INSPECT_REPORT_PATH"
 
       - name: Upload test and run reports
+        id: upload-test-reports
         if: always()
-        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        # v7은 Node 24를 사용하며 self-hosted runner 2.327.1 이상이 필요하다.
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: test-results-${{ github.run_id }}
           path: |
@@ -174,6 +193,28 @@ jobs:
             BundleBuildResults.xcresult
             TestRunReport.json
             BuildRunReport.json
+            BundleInspectReport.json
+            DDDAttendance-Stage.ipa
+            TuistTestRun.log
+            TestLogs
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # self-hosted runner에서 artifact finalize가 간헐적으로 403을 반환할 수 있다.
+      # immutable artifact 충돌을 피하도록 새 이름으로 한 번 더 업로드한다.
+      - name: Retry test and run report upload
+        if: always() && steps.upload-test-reports.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: test-results-${{ github.run_id }}-retry-${{ github.run_attempt }}
+          path: |
+            TestResults.xcresult
+            BundleBuildResults.xcresult
+            TestRunReport.json
+            BuildRunReport.json
+            BundleInspectReport.json
+            DDDAttendance-Stage.ipa
             TuistTestRun.log
             TestLogs
           if-no-files-found: ignore
@@ -204,7 +245,9 @@ jobs:
           rm -rf \
             BundleBuildResults.xcresult \
             "$TEST_RUN_REPORT_PATH" \
-            "$BUILD_RUN_REPORT_PATH"
+            "$BUILD_RUN_REPORT_PATH" \
+            "$BUNDLE_INSPECT_REPORT_PATH" \
+            DDDAttendance-Stage.ipa
 
       - name: Fail if tests failed
         if: steps.tests.outcome != 'success'
