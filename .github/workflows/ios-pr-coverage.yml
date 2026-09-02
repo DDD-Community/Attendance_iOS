@@ -147,10 +147,12 @@ jobs:
             -workspace DDDAttendance.xcworkspace \
             -scheme DDDAttendance-Stage \
             -configuration Stage \
-            -destination "$SIMULATOR_DESTINATION" \
+            -destination 'generic/platform=iOS' \
             -derivedDataPath "$CI_DERIVED_DATA" \
             -resultBundlePath BundleBuildResults.xcresult \
-            ONLY_ACTIVE_ARCH=YES \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
             COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
 
           if [[ ! -s "$BUILD_RUN_REPORT_PATH" ]]; then
@@ -162,9 +164,11 @@ jobs:
         if: steps.tests.outcome == 'success' && steps.app-build.outcome == 'success'
         continue-on-error: true
         run: |
-          APP_PATH="$(find "$CI_DERIVED_DATA/Build/Products" -maxdepth 2 -type d -name DDDAttendance.app -print -quit)"
+          # 번들 크기는 디바이스 아키텍처 기준이어야 의미가 있다.
+          # 시뮬레이터 산출물로 만든 ipa 는 download size 가 Unknown 으로 남는다.
+          APP_PATH="$(find "$CI_DERIVED_DATA/Build/Products/Stage-iphoneos" -maxdepth 1 -type d -name DDDAttendance.app -print -quit)"
           if [[ -z "$APP_PATH" ]]; then
-            echo "Stage 앱 번들을 찾지 못했습니다." >&2
+            echo "Stage 디바이스 앱 번들을 찾지 못했습니다." >&2
             exit 1
           fi
 
