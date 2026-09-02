@@ -33,7 +33,7 @@ struct RepositoryIntegrationTest {
   func testMockRepositoryStateIndependence() async throws {
     // Given
     let mockAuth1 = MockAuthRepository.success()
-    let mockAuth2 = MockAuthRepository.failure(MockAuthError.networkError)
+    let mockAuth2 = MockAuthRepository.failure(MockAuthError.networkError.authError)
 
     // When
     _ = try await mockAuth1.login(provider: .google, token: "token1")
@@ -166,7 +166,7 @@ struct RepositoryIntegrationTest {
     #expect(mockRepository.loginCallCount == 1)
 
     // 2. 실패 상태로 변경
-    mockRepository.configureFailure(MockAuthError.invalidToken)
+    mockRepository.configureFailure(MockAuthError.invalidToken.authError)
     await #expect(throws: MockAuthError.invalidToken.authError) {
       try await mockRepository.login(provider: .apple, token: "fail_token")
     }
@@ -230,7 +230,7 @@ struct RepositoryIntegrationTest {
 
     for errorType in errorTypes {
       // Given
-      let mockRepository = MockAuthRepository.failure(errorType)
+      let mockRepository = MockAuthRepository.failure(errorType.authError)
 
       // When & Then
       await #expect(throws: errorType.authError) {
@@ -279,7 +279,7 @@ struct RepositoryIntegrationTest {
     #expect(successMock.shouldSucceed == true)
 
     // 2. failure() 팩토리 메서드
-    let failureMock = MockAuthRepository.failure(MockAuthError.networkError)
+    let failureMock = MockAuthRepository.failure(MockAuthError.networkError.authError)
     #expect(failureMock.shouldSucceed == false)
 
     // 실제 동작 검증

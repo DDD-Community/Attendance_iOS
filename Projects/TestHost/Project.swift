@@ -36,7 +36,12 @@ let project = Project(
   ),
   settings: .moduleSettings,
   targets: [
-    testHostTarget(name: "DDDTestHost"),
+    // Swift Testing 번들도 Xcode test runner가 host bootstrap과 메타데이터 탐색을 수행한다.
+    // Xcode 26.3의 LocalStatusKit 충돌을 피하도록 SwiftUI 의존성을 먼저 로드한다.
+    testHostTarget(
+      name: "DDDTestHost",
+      dependencies: [.external(name: "ComposableArchitecture")]
+    ),
     // Sharing/SwiftUI를 테스트 번들보다 먼저 앱 프로세스에서 로드해
     // Xcode 26.3의 host bootstrap 중 LocalStatusKit 충돌을 피한다.
     testHostTarget(
