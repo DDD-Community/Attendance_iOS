@@ -158,7 +158,6 @@ public extension Project {
     hasInterface: Bool = false,
     interfaceDependencies: [ProjectDescription.TargetDependency] = [],
     hasTesting: Bool = false,
-    requiresTCAHost: Bool = false,
     forceLoadInTests: Bool = false,
     forceLoadDependenciesInTests: [String] = []
   ) -> Project {
@@ -209,15 +208,6 @@ public extension Project {
     }
 
     if hasTests {
-      let hasDirectTCADependency = dependencies.contains { dependency in
-        switch dependency {
-        case let .external(name, _):
-          return name == "ComposableArchitecture"
-        default:
-          return false
-        }
-      }
-      let testHostName = requiresTCAHost || hasDirectTCADependency ? "DDDTCAHost" : "DDDTestHost"
       let forceLoadFlags = ([name] + forceLoadDependenciesInTests)
         .map { "-force_load $(BUILT_PRODUCTS_DIR)/\($0).framework/\($0)" }
         .joined(separator: " ")
@@ -238,13 +228,12 @@ public extension Project {
         infoPlist: .default,
         buildableFolders: ["Tests"],
         // Swift Testing 번들도 Xcode test runner의 host bootstrap 경로를 거친다.
-        // Xcode 26.3은 Sharing → SwiftUI를 로드하는 중 LocalStatusKit 메타데이터 탐색에서
-        // 충돌할 수 있어 TCA 모듈만 전용 호스트에서 먼저 로드하고,
-        // 나머지 모듈은 경량 호스트를 사용해 불필요한 SwiftSyntax/TCA 빌드를 피한다.
+        // Xcode 26.3의 Sharing → SwiftUI 로딩 충돌을 피하도록 모든 모듈 테스트가
+        // TCA를 선행 로드하는 하나의 최소 Host를 공유한다.
         // Testing 이 있으면 테스트가 그 목을 그대로 쓴다.
         dependencies: [
           .target(name: name),
-          .project(target: testHostName, path: .relativeToRoot("Projects/TestHost"))
+          .project(target: "DDDTestHost", path: .relativeToRoot("Projects/TestHost"))
         ] + testDependencies + (hasTesting ? [.target(name: "\(name)Testing")] : []),
         settings: testTargetSettings
       )

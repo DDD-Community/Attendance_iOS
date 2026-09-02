@@ -18,6 +18,5 @@ let project = Project.makeModule(
     .data(.model)
   ],
   sources: ["Sources/**"],
-  hasTests: true,
-  requiresTCAHost: true
+  hasTests: true
 )

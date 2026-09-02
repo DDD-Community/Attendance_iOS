@@ -14,6 +14,5 @@ let project = Project.makeModule(
     .domainAssembly
   ],
   sources: ["Sources/**"],
-  hasTests: true,
-  requiresTCAHost: true
+  hasTests: true
 )
