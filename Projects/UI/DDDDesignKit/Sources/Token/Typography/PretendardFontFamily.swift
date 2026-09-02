@@ -17,4 +17,12 @@ public enum PretendardFontFamily {
   case Regular
   case SemiBold
   case Thin
+
+  public static func registerFonts() {
+    var registeredPaths = Set<String>()
+    for font in DDDDesignKitFontFamily.allCustomFonts
+    where registeredPaths.insert(font.path).inserted {
+      font.register()
+    }
+  }
 }

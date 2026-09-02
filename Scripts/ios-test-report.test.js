@@ -1,7 +1,17 @@
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
 const test = require("node:test");
 
-const { internalCoverageTargetNames, mergeCoverage } = require("./ios-test-report.js").__test__;
+const {
+  internalCoverageTargetNames,
+  mergeCoverage,
+  readBundleInsights,
+  readDashboardURL,
+  renderBundleInsights,
+} =
+  require("./ios-test-report.js").__test__;
 
 test("프로젝트 매니페스트에서 자사 커버리지 대상을 구성한다", () => {
   const targets = internalCoverageTargetNames();
@@ -35,4 +45,81 @@ test("커버리지 리포트는 내부 모듈만 집계한다", () => {
   );
   assert.equal(coverage.coveredLines, 35);
   assert.equal(coverage.executableLines, 350);
+});
+
+test("Tuist run report에서 테스트와 빌드 dashboard URL을 찾는다", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "tuist-run-report-"));
+  const reportPath = path.join(directory, "run-report.json");
+  fs.writeFileSync(
+    reportPath,
+    JSON.stringify({
+      test: { url: "https://tuist.dev/DDD2026/attendance/tests/test-runs/test-id" },
+      build: { nested: ["https://tuist.dev/DDD2026/attendance/builds/build-runs/build-id"] },
+    }),
+  );
+
+  assert.equal(
+    readDashboardURL(reportPath, "/tests/test-runs/"),
+    "https://tuist.dev/DDD2026/attendance/tests/test-runs/test-id",
+  );
+  assert.equal(
+    readDashboardURL(reportPath, "/builds/build-runs/"),
+    "https://tuist.dev/DDD2026/attendance/builds/build-runs/build-id",
+  );
+});
+
+test("Tuist IPA bundle JSON에서 install/download size를 읽는다", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "tuist-bundle-report-"));
+  const reportPath = path.join(directory, "bundle-report.json");
+  fs.writeFileSync(
+    reportPath,
+    JSON.stringify({
+      name: "DDD 출석",
+      bundleId: "io.DDD.Attendance",
+      type: "ipa",
+      installSize: 120_600_000,
+      downloadSize: 31_276_999,
+    }),
+  );
+
+  assert.deepEqual(readBundleInsights(reportPath), {
+    name: "DDD 출석",
+    installSize: 120_600_000,
+    downloadSize: 31_276_999,
+    installSizeDelta: null,
+    downloadSizeDelta: null,
+    baselineInstallSize: null,
+    baselineDownloadSize: null,
+  });
+});
+
+test("기준 bundle JSON이 있으면 install/download delta를 계산해 표시한다", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "tuist-bundle-comparison-"));
+  const reportPath = path.join(directory, "bundle-report.json");
+  fs.writeFileSync(
+    reportPath,
+    JSON.stringify({
+      current: {
+        name: "DDD 출석",
+        installSize: 120_600_000,
+        downloadSize: 31_000_000,
+      },
+      baseline: {
+        installSize: 104_600_000,
+        downloadSize: 30_000_000,
+      },
+    }),
+  );
+
+  const bundle = readBundleInsights(reportPath);
+  assert.equal(bundle.installSizeDelta, 16_000_000);
+  assert.equal(bundle.downloadSizeDelta, 1_000_000);
+  assert.deepEqual(renderBundleInsights(bundle), [
+    "### 📦 Bundle 크기",
+    "",
+    "| Bundle | Install size | Download size |",
+    "| --- | ---: | ---: |",
+    "| DDD 출석 | 120.6 MB<br><sub>Δ +16.0 MB (+15.30%)</sub> | 31.0 MB<br><sub>Δ +1.0 MB (+3.33%)</sub> |",
+    "",
+  ]);
 });

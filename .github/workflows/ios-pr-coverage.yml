@@ -26,6 +26,9 @@ jobs:
       TUIST_BUILD_VALUE_PR_URL: ${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
+      TEST_RUN_REPORT_PATH: TestRunReport.json
+      BUILD_RUN_REPORT_PATH: BuildRunReport.json
+      BUNDLE_INSPECT_REPORT_PATH: BundleInspectReport.json
 
     steps:
       - uses: actions/checkout@v4
@@ -98,7 +101,14 @@ jobs:
             "$CI_DERIVED_DATA/Logs" \
             "$CI_DERIVED_DATA/SourcePackages" \
             "$CI_DERIVED_DATA/info.plist"
-          rm -rf TestResults TestResults.xcresult BundleBuildResults.xcresult
+          rm -rf \
+            TestResults \
+            TestResults.xcresult \
+            BundleBuildResults.xcresult \
+            "$TEST_RUN_REPORT_PATH" \
+            "$BUILD_RUN_REPORT_PATH" \
+            "$BUNDLE_INSPECT_REPORT_PATH" \
+            DDDAttendance-Stage.ipa
 
       # Xcode 업데이트 뒤에도 러너에 실제 설치된 최신 iPhone runtime을 사용한다.
       - name: Select simulator
@@ -114,34 +124,9 @@ jobs:
         id: tests
         continue-on-error: true
         run: |
-          # 모든 모듈 테스트는 전용 호스트를 사용하므로 Stage workspace scheme에서
-          # 한 번만 빌드·실행해 모듈별 tuist test 반복 비용을 제거한다.
+          # 모듈 테스트는 별도 host 없이 Stage workspace scheme에서 한 번만 실행한다.
+          # Point-Free Sharing은 정적으로 링크해 Apple Sharing.framework와의 충돌을 피한다.
           ./Scripts/run-isolated-module-tests.sh
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ github.run_id }}
-          path: |
-            TestResults.xcresult
-            TuistTestRun.log
-            TestLogs
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Report to PR
-        if: steps.tests.outcome != 'cancelled'
-        uses: actions/github-script@v7
-        env:
-          RESULT_BUNDLE_DIR: TestResults.xcresult
-          TEST_OUTCOME: ${{ steps.tests.outcome }}
-        with:
-          script: |
-            // github-script 의 require 는 액션 디렉토리 기준으로 경로를 풀어서
-            // 상대경로가 먹지 않는다. 워크스페이스 절대경로로 지정한다.
-            const report = require(`${process.env.GITHUB_WORKSPACE}/Scripts/ios-test-report.js`)
-            await report({ github, context, core })
 
       # tuist test 실패 시 Test Insights만 업로드될 수 있으므로, 남은 xcactivitylog를
       # 명시적으로 분석해 Builds 표에도 실패한 Stage 빌드를 기록한다.
@@ -154,26 +139,103 @@ jobs:
 
       # 테스트 빌드의 DerivedData를 재사용해 추가 컴파일을 줄이고 PR 크기 변화를 기록한다.
       - name: Build app for bundle insights
+        id: app-build
         if: steps.tests.outcome == 'success'
         run: |
-          mise exec -- tuist xcodebuild build \
+          TUIST_RUN_REPORT_PATH="$BUILD_RUN_REPORT_PATH" \
+            mise exec -- tuist xcodebuild build \
             -workspace DDDAttendance.xcworkspace \
             -scheme DDDAttendance-Stage \
             -configuration Stage \
-            -destination "$SIMULATOR_DESTINATION" \
+            -destination 'generic/platform=iOS' \
             -derivedDataPath "$CI_DERIVED_DATA" \
             -resultBundlePath BundleBuildResults.xcresult \
-            ONLY_ACTIVE_ARCH=YES \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
             COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
 
+          if [[ ! -s "$BUILD_RUN_REPORT_PATH" ]]; then
+            echo "Tuist build run이 서버 dashboard URL을 기록하지 못했습니다: $BUILD_RUN_REPORT_PATH" >&2
+            exit 1
+          fi
+
       - name: Inspect bundle size
-        if: steps.tests.outcome == 'success'
+        if: steps.tests.outcome == 'success' && steps.app-build.outcome == 'success'
         continue-on-error: true
         run: |
-          mise exec -- tuist inspect bundle DDDAttendance \
-            --platforms ios \
-            --configuration Stage \
-            --derived-data-path "$CI_DERIVED_DATA"
+          # 번들 크기는 디바이스 아키텍처 기준이어야 의미가 있다.
+          # 시뮬레이터 산출물로 만든 ipa 는 download size 가 Unknown 으로 남는다.
+          APP_PATH="$(find "$CI_DERIVED_DATA/Build/Products/Stage-iphoneos" -maxdepth 1 -type d -name DDDAttendance.app -print -quit)"
+          if [[ -z "$APP_PATH" ]]; then
+            echo "Stage 디바이스 앱 번들을 찾지 못했습니다." >&2
+            exit 1
+          fi
+
+          BUNDLE_PAYLOAD="$RUNNER_TEMP/attendance-bundle-payload"
+          rm -rf "$BUNDLE_PAYLOAD"
+          mkdir -p "$BUNDLE_PAYLOAD/Payload"
+          ditto "$APP_PATH" "$BUNDLE_PAYLOAD/Payload/DDDAttendance.app"
+          ditto -c -k --sequesterRsrc --keepParent \
+            "$BUNDLE_PAYLOAD/Payload" \
+            DDDAttendance-Stage.ipa
+
+          # IPA를 검사해야 압축 후 Download size까지 Tuist와 PR 리포트에 기록된다.
+          mise exec -- tuist inspect bundle DDDAttendance-Stage.ipa --json \
+            > "$BUNDLE_INSPECT_REPORT_PATH"
+
+      - name: Upload test and run reports
+        id: upload-test-reports
+        if: always()
+        continue-on-error: true
+        # v7은 Node 24를 사용하며 self-hosted runner 2.327.1 이상이 필요하다.
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: test-results-${{ github.run_id }}
+          path: |
+            TestResults.xcresult
+            BundleBuildResults.xcresult
+            TestRunReport.json
+            BuildRunReport.json
+            BundleInspectReport.json
+            DDDAttendance-Stage.ipa
+            TuistTestRun.log
+            TestLogs
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # self-hosted runner에서 artifact finalize가 간헐적으로 403을 반환할 수 있다.
+      # immutable artifact 충돌을 피하도록 새 이름으로 한 번 더 업로드한다.
+      - name: Retry test and run report upload
+        if: always() && steps.upload-test-reports.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: test-results-${{ github.run_id }}-retry-${{ github.run_attempt }}
+          path: |
+            TestResults.xcresult
+            BundleBuildResults.xcresult
+            TestRunReport.json
+            BuildRunReport.json
+            BundleInspectReport.json
+            DDDAttendance-Stage.ipa
+            TuistTestRun.log
+            TestLogs
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Report to PR
+        if: always() && steps.tests.outcome != 'cancelled'
+        uses: actions/github-script@v7
+        env:
+          RESULT_BUNDLE_DIR: TestResults.xcresult
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+        with:
+          script: |
+            // github-script 의 require 는 액션 디렉토리 기준으로 경로를 풀어서
+            // 상대경로가 먹지 않는다. 워크스페이스 절대경로로 지정한다.
+            const report = require(`${process.env.GITHUB_WORKSPACE}/Scripts/ios-test-report.js`)
+            await report({ github, context, core })
 
       - name: Clean CI DerivedData
         if: always()
@@ -184,7 +246,12 @@ jobs:
             "$CI_DERIVED_DATA/Logs" \
             "$CI_DERIVED_DATA/SourcePackages" \
             "$CI_DERIVED_DATA/info.plist"
-          rm -rf BundleBuildResults.xcresult
+          rm -rf \
+            BundleBuildResults.xcresult \
+            "$TEST_RUN_REPORT_PATH" \
+            "$BUILD_RUN_REPORT_PATH" \
+            "$BUNDLE_INSPECT_REPORT_PATH" \
+            DDDAttendance-Stage.ipa
 
       - name: Fail if tests failed
         if: steps.tests.outcome != 'success'

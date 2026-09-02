@@ -10,7 +10,6 @@ import Foundation
 
 import DDDCoreUtility
 import Entity
-import Model
 
 import ComposableArchitecture
 

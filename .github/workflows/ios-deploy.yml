@@ -114,10 +114,28 @@ jobs:
           bundle exec fastlane ios submit_for_review version:"$VERSION"
 
       - name: Upload build artifacts
+        id: upload-build-artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        # v7은 Node 24를 사용하며 self-hosted runner 2.327.1 이상이 필요하다.
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: build-output-${{ github.run_id }}
+          path: |
+            fastlane/output/*.ipa
+            fastlane/output/*.dSYM.zip
+            ~/Library/Logs/gym/*.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # finalize 단계의 일시적인 403이 배포 결과를 실패로 바꾸지 않도록
+      # immutable artifact와 충돌하지 않는 이름으로 한 번 재시도한다.
+      - name: Retry build artifact upload
+        if: always() && steps.upload-build-artifacts.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: build-output-${{ github.run_id }}-retry-${{ github.run_attempt }}
           path: |
             fastlane/output/*.ipa
             fastlane/output/*.dSYM.zip

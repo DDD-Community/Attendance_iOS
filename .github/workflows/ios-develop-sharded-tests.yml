@@ -100,15 +100,17 @@ jobs:
       - name: Build and plan shards
         id: build
         run: |
-          mise exec -- tuist xcodebuild build-for-testing \
-            -workspace DDDAttendance.xcworkspace \
-            -scheme DDDAttendance-Stage \
-            -configuration Stage \
-            -destination "$SIMULATOR_DESTINATION" \
-            -derivedDataPath "$CI_DERIVED_DATA" \
-            -resultBundlePath ShardBuildResults.xcresult \
+          mise exec -- tuist test DDDAttendance-Stage \
+            --build-only \
+            --configuration Stage \
+            --no-selective-testing \
             --shard-total 2 \
             --shard-granularity suite \
+            --inspect-mode remote \
+            --result-bundle-path ShardBuildResults.xcresult \
+            -- \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$CI_DERIVED_DATA" \
             ONLY_ACTIVE_ARCH=YES \
             COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
 
@@ -230,13 +232,16 @@ jobs:
       # Tuist wrapper가 quarantine과 Test Insights 업로드를 함께 처리한다.
       - name: Run shard
         run: |
-          mise exec -- tuist xcodebuild test \
-            -workspace DDDAttendance.xcworkspace \
-            -scheme DDDAttendance-Stage \
-            -configuration Stage \
+          mise exec -- tuist test DDDAttendance-Stage \
+            --without-building \
+            --configuration Stage \
+            --shard-plan-id "$TUIST_SHARD_PLAN_ID" \
+            --shard-index "$TUIST_SHARD_INDEX" \
+            --inspect-mode remote \
+            --result-bundle-path "TestResults-${{ matrix.shard }}.xcresult" \
+            -- \
             -destination "$SIMULATOR_DESTINATION" \
             -derivedDataPath "$CI_DERIVED_DATA" \
-            -resultBundlePath "TestResults-${{ matrix.shard }}.xcresult" \
             -retry-tests-on-failure \
             -test-iterations 3 \
             ONLY_ACTIVE_ARCH=YES \

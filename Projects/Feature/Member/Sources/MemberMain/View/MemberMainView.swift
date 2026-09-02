@@ -9,7 +9,6 @@ import DDDSharedUI
 import SwiftUI
 
 import DDDDesignKit
-import Model
 
 import ComposableArchitecture
 import Entity

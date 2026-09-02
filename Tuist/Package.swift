@@ -77,7 +77,7 @@ let packageSettings = PackageSettings(
     "DependenciesMacros": .framework,
     "PerceptionCore": .framework,
     "Perception": .framework,
-    "Sharing": .framework,
+    "Sharing": .staticFramework,
     "SwiftNavigation": .framework,
     "SwiftUINavigation": .framework,
     "CasePaths": .framework,

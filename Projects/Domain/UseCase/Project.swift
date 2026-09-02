@@ -17,6 +17,6 @@ let project = Project.makeModule(
   ],
   sources: ["Sources/**"],
   hasTests: true,
-  requiresTCAHost: true,
+  hasTesting: true,
   forceLoadInTests: true
 )

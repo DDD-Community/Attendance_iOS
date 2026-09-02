@@ -148,6 +148,7 @@ public extension Project {
     settings: ProjectDescription.Settings,
     scripts: [ProjectDescription.TargetScript] = [],
     dependencies: [ProjectDescription.TargetDependency] = [],
+    testDependencies: [ProjectDescription.TargetDependency] = [],
     sources _: ProjectDescription.SourceFilesList = ["Sources/**"],
     resources: ProjectDescription.ResourceFileElements? = nil,
     infoPlist: ProjectDescription.InfoPlist = .default,
@@ -157,7 +158,6 @@ public extension Project {
     hasInterface: Bool = false,
     interfaceDependencies: [ProjectDescription.TargetDependency] = [],
     hasTesting: Bool = false,
-    requiresTCAHost: Bool = false,
     forceLoadInTests: Bool = false,
     forceLoadDependenciesInTests: [String] = []
   ) -> Project {
@@ -208,15 +208,6 @@ public extension Project {
     }
 
     if hasTests {
-      let hasDirectTCADependency = dependencies.contains { dependency in
-        switch dependency {
-        case let .external(name, _):
-          return name == "ComposableArchitecture"
-        default:
-          return false
-        }
-      }
-      let testHostName = requiresTCAHost || hasDirectTCADependency ? "DDDTCAHost" : "DDDTestHost"
       let forceLoadFlags = ([name] + forceLoadDependenciesInTests)
         .map { "-force_load $(BUILT_PRODUCTS_DIR)/\($0).framework/\($0)" }
         .joined(separator: " ")
@@ -236,14 +227,15 @@ public extension Project {
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
         buildableFolders: ["Tests"],
-        // Xcode 26.3의 host-less XCTest는 TCA의 Sharing → SwiftUI를 로드하는 중
-        // LocalStatusKit 메타데이터 탐색에서 충돌한다. TCA 모듈만 전용 호스트에서 먼저 로드하고,
-        // 나머지 모듈은 경량 호스트를 사용해 불필요한 SwiftSyntax/TCA 빌드를 피한다.
+        // 호스트 앱 없이 로직 테스트로 돈다. 앱을 host 로 붙이면 .xctest 가
+        // DDDAttendance.app/PlugIns 에 embed 되어 앱↔테스트 의존성 순환이 생긴다.
+        // Xcode 26.3 의 bootstrap SIGSEGV 는 Point-Free Sharing 을 정적으로 링크해
+        // Apple 의 Sharing.framework 와 겹치지 않게 하는 것으로 해결한다
+        // (Tuist/Package.swift 의 productTypes 참고).
         // Testing 이 있으면 테스트가 그 목을 그대로 쓴다.
         dependencies: [
-          .target(name: name),
-          .project(target: testHostName, path: .relativeToRoot("Projects/TestHost"))
-        ] + (hasTesting ? [.target(name: "\(name)Testing")] : []),
+          .target(name: name)
+        ] + testDependencies + (hasTesting ? [.target(name: "\(name)Testing")] : []),
         settings: testTargetSettings
       )
       targets.append(appTestTarget)

@@ -6,12 +6,18 @@
 //  DI 는 각 모듈이 스스로 등록하므로(어셈블리 레이어) 여기서 컨테이너를 부트스트랩하지 않는다.
 //
 
+import DDDDesignKit
 import Firebase
 import Foundation
 
 extension AppDelegate {
   func configure() {
+    configureFonts()
     configureFirebase()
+  }
+
+  func configureFonts() {
+    PretendardFontFamily.registerFonts()
   }
 
   func configureFirebase() {
