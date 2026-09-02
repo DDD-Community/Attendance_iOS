@@ -133,6 +133,38 @@ Splash 의 유일한 소비자는 다른 피처가 아니라 `Projects/App` 이�
 Interface 는 만들지 않았다. 지금 만들면 끊는 엣지가 없고, 나중에 App 조립 방식을
 바꿀 때 다시 갈아엎어야 한다.
 
+## 최종 결과
+
+| 단계 | 결과 |
+|---|---|
+| 1. 템플릿 Demo 지원 | 완료. 기존 그래프 무변화 |
+| 2. DDDDesignKitDemo | 완료. 실행·렌더링 확인, Previews 업로드 성공 |
+| 3. Splash 파일럿 | 완료. Testing·Demo 생성, **Interface 보류** |
+| 4. Feature 6개 확산 | 완료. Demo 만 추가. 6개 스킴 모두 빌드 성공 |
+| 5. FeatureAssembly 정리 | **불필요.** Interface 를 만들지 않아 정리할 대상이 없다 |
+
+신규 타깃은 계획 22개가 아니라 **9개**로 끝났다(Demo 8 + SplashTesting 1).
+Interface 7 과 Testing 6 을 만들지 않았기 때문이다. 근거는 위 "구현 중 확인된 사실" 참고.
+
+전체 스위트: 435개 통과 / 실패 0 / 순환 0 / segv 0.
+
+### Joongna 그래프와의 차이
+
+| Joongna | Attendance | |
+|---|---|---|
+| `JNSharedUI → JNAnimation, JNDesignKit` | `DDDSharedUI → DDDAnimation, DDDDesignKit` | 일치 |
+| `JNDesignKitDemo` | `DDDDesignKitDemo` | 일치 |
+| Feature × Demo | Feature × Demo (7) | 일치 |
+| `JNNetwork/JNStorage + Interface` | `DDDNetwork/DDDStorage + Interface` | 일치 |
+| CoreUI·CoreUtility·Logger 에 Interface 없음 | 동일 | 일치 |
+| — | `DomainAssembly`·`DataAssembly` | Attendance 고유 |
+| Feature × Interface (7) | 없음 | **차이** |
+| Feature × Testing (7) | Splash 1개 | **차이** |
+
+그래프 모양만 맞추려면 Interface 7개를 만들면 되지만 의존성은 바뀌지 않는다.
+실제로 Joongna 처럼 되려면 `AppReducer` 가 피처를 Interface 경유로 조립하도록
+바꿔야 하고, 그건 별도 설계가 필요한 아키텍처 변경이다.
+
 ## 열려 있는 위험
 
 - **Feature 간 의존 엣지가 현재 0개다.** Interface 로 끊을 대상이 없으므로 이번 재편의
