@@ -227,11 +227,12 @@ public extension Project {
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
         buildableFolders: ["Tests"],
-        // 호스트 앱 없이 로직 테스트로 돈다. 호스트를 두면 테스트마다 앱 프로세스를
-        // 부팅해야 하고, 크래시가 났을 때 원인이 테스트인지 호스트인지 가려진다.
+        // Xcode 26.3에서는 unhosted Swift Testing 번들이 bootstrap 중 SIGSEGV로
+        // 종료될 수 있어 별도 TestHost 없이 실제 앱을 공용 host로 사용한다.
         // Testing 이 있으면 테스트가 그 목을 그대로 쓴다.
         dependencies: [
-          .target(name: name)
+          .target(name: name),
+          .project(target: Environment.appName, path: .relativeToRoot("Projects/App"))
         ] + testDependencies + (hasTesting ? [.target(name: "\(name)Testing")] : []),
         settings: testTargetSettings
       )

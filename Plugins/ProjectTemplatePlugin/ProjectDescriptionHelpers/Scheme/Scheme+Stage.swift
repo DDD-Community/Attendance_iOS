@@ -31,7 +31,7 @@ public extension Scheme {
         runPostActionsOnFailure: true
       ),
       testAction: .targets(
-        allModuleTestTargets(appName: name),
+        allModuleTestTargets(),
         configuration: .stage,
         postActions: [
           .executionAction(
@@ -49,7 +49,7 @@ public extension Scheme {
     )
   }
 
-  private static func allModuleTestTargets(appName: String) -> [TestableTarget] {
+  private static func allModuleTestTargets() -> [TestableTarget] {
     let repositoryRootURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
     let projectsRootURL = repositoryRootURL.appendingPathComponent("Projects", isDirectory: true)
     let projectDirectoryURLs = FileManager.default.enumerator(
@@ -63,6 +63,11 @@ public extension Scheme {
 
       let projectURL = url.deletingLastPathComponent()
       let manifestURL = projectURL.appendingPathComponent("Project.swift")
+      guard projectURL.lastPathComponent != "App" else {
+        // 모든 모듈 테스트가 DDDAttendance를 공용 host로 사용한다. App 테스트까지
+        // 같은 action에 중복 포함하면 App State 종료 뒤 testmanagerd 대기가 재발할 수 있다.
+        return nil
+      }
       return FileManager.default.fileExists(atPath: manifestURL.path) ? projectURL : nil
     } ?? []
 
@@ -72,9 +77,7 @@ public extension Scheme {
           of: repositoryRootURL.path + "/",
           with: ""
         )
-        let moduleName = projectURL.lastPathComponent == "App"
-          ? appName
-          : projectURL.lastPathComponent
+        let moduleName = projectURL.lastPathComponent
 
         return .testableTarget(
           target: .project(
