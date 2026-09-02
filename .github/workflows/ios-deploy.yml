@@ -70,7 +70,10 @@ jobs:
       - name: Generate Xcode workspace
         run: |
           tuist install
-          tuist generate --no-open
+          # 배포 아카이브는 module cache 대상이 아니다.
+          # 바이너리 캐시는 시뮬레이터/디바이스 실행과 테스트용이라
+          # 릴리스는 항상 소스에서 빌드한다.
+          tuist generate --no-open --cache-profile none
 
       # 앱버전(appVersion)은 수동 관리한다. CI 는 빌드번호(날짜형)만 올린다.
       - name: Read app version

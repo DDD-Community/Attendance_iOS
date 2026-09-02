@@ -1,0 +1,77 @@
+name: Warm Module Cache
+
+# 외부 패키지(Firebase·TCA·RxSwift·Moya 등)를 미리 빌드해 원격 module cache 에 올린다.
+# PR·develop 워크플로의 `tuist generate` 는 only-external 프로파일이라
+# 여기서 올린 xcframework 를 그대로 내려받아 쓰고, 외부 의존성 컴파일을 통째로 건너뛴다.
+on:
+  push:
+    branches: [develop]
+    # 캐싱 대상이 외부 패키지뿐이라 의존성 그래프가 바뀔 때만 데우면 충분하다.
+    # 러너가 한 대뿐이라 매 커밋 전체 빌드는 대기열만 늘린다.
+    paths:
+      - 'Tuist/Package.swift'
+      - 'Tuist/Package.resolved'
+      - 'Tuist.swift'
+      - '.mise.toml'
+      - '.github/workflows/ios-cache-warm.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ios-cache-warm
+  cancel-in-progress: true
+
+jobs:
+  warm:
+    runs-on: self-hosted
+    timeout-minutes: 120
+
+    permissions:
+      contents: read
+
+    env:
+      TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # launchd 서비스는 PATH 가 최소라 툴체인 경로를 직접 얹어준다.
+      - name: Setup PATH
+        run: |
+          echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/share/mise/shims" >> "$GITHUB_PATH"
+
+      # Config/*.xcconfig 와 GoogleService-Info.plist 는 gitignore 대상이라
+      # 체크아웃에 없다. 시크릿에서 복원해야 generate 가 된다.
+      - name: Restore gitignored build config
+        env:
+          CONFIG_TAR: ${{ secrets.CONFIG_DIR_TAR_BASE64 }}
+          GOOGLE_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        run: |
+          printf '%s' "$CONFIG_TAR" | base64 --decode | tar xzf -
+          mkdir -p Projects/App/Resources
+          printf '%s' "$GOOGLE_PLIST" | base64 --decode > Projects/App/Resources/GoogleService-Info.plist
+          git check-ignore -q Config/base.xcconfig
+          git check-ignore -q Projects/App/Resources/GoogleService-Info.plist
+
+      - name: Install toolchain
+        run: mise install tuist
+
+      - name: Setup Tuist cache
+        continue-on-error: true
+        timeout-minutes: 3
+        run: mise exec -- tuist setup cache
+
+      - name: Resolve dependencies
+        run: mise exec -- tuist install
+
+      # `tuist cache` 는 워크스페이스를 캐시 전용으로 바꿔놓는다.
+      # 이 잡은 데우기만 하고 끝내며, 워크스페이스가 필요한 다른 잡은
+      # 각자 `tuist generate` 로 새로 만든다.
+      - name: Warm module cache
+        run: |
+          mise exec -- tuist cache warm \
+            --cache-profile only-external \
+            --configuration Stage
