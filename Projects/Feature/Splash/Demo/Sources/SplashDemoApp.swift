@@ -2,6 +2,8 @@
 //  SplashDemoApp.swift
 //  SplashDemo
 //
+//  Created by DDD on 2026-09-02
+//
 //  앱 전체를 빌드하지 않고 Splash 화면만 확인하기 위한 단독 실행 앱.
 //
 

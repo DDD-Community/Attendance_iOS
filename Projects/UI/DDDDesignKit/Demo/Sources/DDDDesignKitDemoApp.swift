@@ -2,6 +2,8 @@
 //  DDDDesignKitDemoApp.swift
 //  DDDDesignKitDemo
 //
+//  Created by DDD on 2026-09-02
+//
 //  DesignKit 컴포넌트를 앱 전체 빌드 없이 확인하기 위한 단독 실행 앱.
 //
 
