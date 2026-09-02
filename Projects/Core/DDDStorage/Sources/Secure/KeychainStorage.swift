@@ -14,38 +14,38 @@ struct KeychainStorage: SecureStorage {
   static let defaultService = "io.dddstudy.attendance"
 
   private let service: String
+  private let client: any KeychainClient
 
-  init(service: String = Self.defaultService) {
+  init(
+    service: String = Self.defaultService,
+    client: any KeychainClient = SystemKeychainClient()
+  ) {
     self.service = service
+    self.client = client
   }
 
   func save(_ value: String, for key: SecureStorageKey) throws(SecureStorageError) {
     let data = Data(value.utf8)
-    let status = SecItemUpdate(
-      baseQuery(for: key) as CFDictionary,
-      [kSecValueData as String: data] as CFDictionary
-    )
+    let status = client.update(data, service: service, account: key.rawValue)
 
     switch status {
     case errSecSuccess:
       return
     case errSecItemNotFound:
-      try add(data, for: key)
+      let addStatus = client.add(data, service: service, account: key.rawValue)
+      guard addStatus == errSecSuccess else {
+        throw SecureStorageError.unexpectedStatus(addStatus)
+      }
     default:
       throw SecureStorageError.unexpectedStatus(status)
     }
   }
 
   func load(_ key: SecureStorageKey) throws(SecureStorageError) -> String? {
-    var query = baseQuery(for: key)
-    query[kSecReturnData as String] = true
-    query[kSecMatchLimit as String] = kSecMatchLimitOne
-
-    var item: AnyObject?
-    let status = SecItemCopyMatching(query as CFDictionary, &item)
-    switch status {
+    let result = client.load(service: service, account: key.rawValue)
+    switch result.status {
     case errSecSuccess:
-      guard let data = item as? Data else { return nil }
+      guard let data = result.data else { return nil }
       guard let value = String(data: data, encoding: .utf8) else {
         throw SecureStorageError.invalidData
       }
@@ -53,12 +53,12 @@ struct KeychainStorage: SecureStorage {
     case errSecItemNotFound:
       return nil
     default:
-      throw SecureStorageError.unexpectedStatus(status)
+      throw SecureStorageError.unexpectedStatus(result.status)
     }
   }
 
   func remove(_ key: SecureStorageKey) throws(SecureStorageError) {
-    let status = SecItemDelete(baseQuery(for: key) as CFDictionary)
+    let status = client.delete(service: service, account: key.rawValue)
     guard status == errSecSuccess || status == errSecItemNotFound else {
       throw SecureStorageError.unexpectedStatus(status)
     }
@@ -67,27 +67,6 @@ struct KeychainStorage: SecureStorage {
   func removeAll() throws(SecureStorageError) {
     for key in SecureStorageKey.all {
       try remove(key)
-    }
-  }
-}
-
-private extension KeychainStorage {
-  func baseQuery(for key: SecureStorageKey) -> [String: Any] {
-    return [
-      kSecClass as String: kSecClassGenericPassword,
-      kSecAttrService as String: service,
-      kSecAttrAccount as String: key.rawValue
-    ]
-  }
-
-  func add(_ data: Data, for key: SecureStorageKey) throws(SecureStorageError) {
-    var query = baseQuery(for: key)
-    query[kSecValueData as String] = data
-    query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
-
-    let status = SecItemAdd(query as CFDictionary, nil)
-    guard status == errSecSuccess else {
-      throw SecureStorageError.unexpectedStatus(status)
     }
   }
 }

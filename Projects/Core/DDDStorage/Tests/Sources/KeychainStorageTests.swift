@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Security
 import Testing
 @testable import DDDStorage
 
@@ -96,6 +97,43 @@ struct KeychainStorageTests {
 
 private extension KeychainStorageTests {
   func makeStorage() -> KeychainStorage {
-    return KeychainStorage(service: "io.DDD.Attendance.tests.\(UUID().uuidString)")
+    return KeychainStorage(
+      service: "io.DDD.Attendance.tests.\(UUID().uuidString)",
+      client: InMemoryKeychainClient()
+    )
+  }
+}
+
+private final class InMemoryKeychainClient: KeychainClient, @unchecked Sendable {
+  private var values: [String: Data] = [:]
+
+  func update(_ data: Data, service: String, account: String) -> OSStatus {
+    let key = storageKey(service: service, account: account)
+    guard values[key] != nil else { return errSecItemNotFound }
+    values[key] = data
+    return errSecSuccess
+  }
+
+  func add(_ data: Data, service: String, account: String) -> OSStatus {
+    let key = storageKey(service: service, account: account)
+    guard values[key] == nil else { return errSecDuplicateItem }
+    values[key] = data
+    return errSecSuccess
+  }
+
+  func load(service: String, account: String) -> KeychainLoadResult {
+    guard let data = values[storageKey(service: service, account: account)] else {
+      return KeychainLoadResult(status: errSecItemNotFound, data: nil)
+    }
+    return KeychainLoadResult(status: errSecSuccess, data: data)
+  }
+
+  func delete(service: String, account: String) -> OSStatus {
+    let removed = values.removeValue(forKey: storageKey(service: service, account: account))
+    return removed == nil ? errSecItemNotFound : errSecSuccess
+  }
+
+  private func storageKey(service: String, account: String) -> String {
+    return "\(service):\(account)"
   }
 }
