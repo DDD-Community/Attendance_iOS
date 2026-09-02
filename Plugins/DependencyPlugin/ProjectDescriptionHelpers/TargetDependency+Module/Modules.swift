@@ -52,6 +52,7 @@ public enum DataModule: String, CaseIterable {
 }
 
 public enum ServiceModule: String, CaseIterable {
+  case assembly = "ServiceAssembly"
   case api = "API"
   case apiEndpoint = "APIEndpoint"
   case auth = "DDDAuth"
