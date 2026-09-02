@@ -180,7 +180,6 @@ struct DDDDesignKitTests {
   }
 
   private func render<V: View>(_ view: V) {
-    _ = view.body
     let controller = UIHostingController(rootView: view)
     controller.view.frame = CGRect(x: 0, y: 0, width: 390, height: 844)
     controller.view.setNeedsLayout()

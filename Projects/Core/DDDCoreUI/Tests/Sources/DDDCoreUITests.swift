@@ -53,11 +53,10 @@ struct DDDCoreUITests {
   @Test("뒤로가기 gesture는 이전 화면이 있을 때만 시작한다")
   func popGestureRequiresPreviousController() {
     let navigationController = UINavigationController(rootViewController: UIViewController())
-    let gesture = UIPanGestureRecognizer()
 
-    #expect(navigationController.gestureRecognizerShouldBegin(gesture) == false)
+    #expect(navigationController.canBeginInteractivePopGesture == false)
     navigationController.pushViewController(UIViewController(), animated: false)
-    #expect(navigationController.gestureRecognizerShouldBegin(gesture))
+    #expect(navigationController.canBeginInteractivePopGesture)
   }
 
   @Test("화면 크기 토큰이 main screen 값과 일치한다")
