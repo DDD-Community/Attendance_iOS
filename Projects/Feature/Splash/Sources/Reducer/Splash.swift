@@ -77,6 +77,7 @@ public struct Splash {
   
   // MARK: - NavigationAction
   
+  @CasePathable
   public enum NavigationAction: Equatable {
     case presentLogin
     case presentStaff
