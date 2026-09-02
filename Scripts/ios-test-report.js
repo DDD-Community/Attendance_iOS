@@ -31,7 +31,6 @@ function findProjectManifests(root) {
       if (!entry.isDirectory()) continue;
 
       const child = path.join(directory, entry.name);
-      if (entry.name === "TestHost") continue;
 
       const manifest = path.join(child, "Project.swift");
       if (fs.existsSync(manifest)) manifests.push(manifest);

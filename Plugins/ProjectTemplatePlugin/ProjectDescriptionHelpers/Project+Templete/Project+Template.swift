@@ -227,13 +227,11 @@ public extension Project {
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
         buildableFolders: ["Tests"],
-        // Swift Testing 번들도 Xcode test runner의 host bootstrap 경로를 거친다.
-        // Xcode 26.3의 Sharing → SwiftUI 로딩 충돌을 피하도록 모든 모듈 테스트가
-        // TCA를 선행 로드하는 하나의 최소 Host를 공유한다.
+        // 호스트 앱 없이 로직 테스트로 돈다. 호스트를 두면 테스트마다 앱 프로세스를
+        // 부팅해야 하고, 크래시가 났을 때 원인이 테스트인지 호스트인지 가려진다.
         // Testing 이 있으면 테스트가 그 목을 그대로 쓴다.
         dependencies: [
-          .target(name: name),
-          .project(target: "DDDTestHost", path: .relativeToRoot("Projects/TestHost"))
+          .target(name: name)
         ] + testDependencies + (hasTesting ? [.target(name: "\(name)Testing")] : []),
         settings: testTargetSettings
       )

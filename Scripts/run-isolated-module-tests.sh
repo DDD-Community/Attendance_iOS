@@ -31,7 +31,7 @@ trap shutdown_test_simulator EXIT
 
 rm -rf "$RESULT_BUNDLE" "$TEST_RUN_REPORT_PATH" TuistTestRun.log
 
-# 모든 테스트 타깃은 DDDTestHost 또는 DDDTCAHost를 사용한다.
+# 모듈 테스트는 호스트 앱 없이 로직 테스트로 돈다.
 # 하나의 Stage workspace scheme으로 실행하면 SPM/TCA 그래프를 한 번만 빌드하면서도
 # xcresult에 모듈별 테스트 케이스와 커버리지가 함께 기록된다.
 #
