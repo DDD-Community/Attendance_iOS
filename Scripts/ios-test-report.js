@@ -111,6 +111,30 @@ function readCoverage(bundle) {
   }
 }
 
+function readDashboardURL(reportPath, pathSegment) {
+  if (!reportPath || !fs.existsSync(reportPath)) return null;
+
+  try {
+    const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+    const urls = [];
+    const visit = (value) => {
+      if (typeof value === "string") {
+        if (value.startsWith("https://")) urls.push(value);
+        return;
+      }
+      if (Array.isArray(value)) {
+        value.forEach(visit);
+        return;
+      }
+      if (value && typeof value === "object") Object.values(value).forEach(visit);
+    };
+    visit(report);
+    return urls.find((url) => url.includes(pathSegment)) || null;
+  } catch {
+    return null;
+  }
+}
+
 // 빌드가 깨지면 테스트가 0개로 끝나 실패 원인이 안 보인다
 function readBuildErrors(bundle) {
   try {
@@ -302,7 +326,7 @@ function renderCoverage(coverage) {
   return lines;
 }
 
-function renderReport({ summary, coverage, buildErrors, outcome, runUrl, sha }) {
+function renderReport({ summary, coverage, buildErrors, outcome, runUrl, sha, testRunUrl, buildRunUrl }) {
   const lines = [MARKER, ""];
   const footer = [`\`${sha.slice(0, 7)}\``, `[워크플로 로그](${runUrl})`].join(" · ");
 
@@ -342,6 +366,8 @@ function renderReport({ summary, coverage, buildErrors, outcome, runUrl, sha }) 
   if (summary.device) {
     meta.push(`${summary.device.modelName} (${summary.device.platform} ${summary.device.osVersion})`);
   }
+  if (testRunUrl) meta.push(`[Tuist 테스트 실행](${testRunUrl})`);
+  if (buildRunUrl) meta.push(`[Tuist 빌드 실행](${buildRunUrl})`);
   meta.push(footer);
   lines.push(meta.join(" · "), "");
 
@@ -356,6 +382,8 @@ module.exports = async ({ github, context, core }) => {
   const summaries = bundles.map(readSummary).filter(Boolean);
   const coverage = mergeCoverage(bundles.map(readCoverage));
   const buildErrors = bundles.flatMap(readBuildErrors);
+  const testRunUrl = readDashboardURL(process.env.TEST_RUN_REPORT_PATH, "/tests/test-runs/");
+  const buildRunUrl = readDashboardURL(process.env.BUILD_RUN_REPORT_PATH, "/builds/build-runs/");
 
   const body = renderReport({
     summary: summaries.length > 0 ? mergeSummaries(summaries) : null,
@@ -364,6 +392,8 @@ module.exports = async ({ github, context, core }) => {
     outcome: process.env.TEST_OUTCOME || "unknown",
     runUrl: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
     sha: context.payload.pull_request.head.sha,
+    testRunUrl,
+    buildRunUrl,
   });
 
   const target = {
@@ -387,4 +417,5 @@ module.exports = async ({ github, context, core }) => {
 module.exports.__test__ = {
   internalCoverageTargetNames,
   mergeCoverage,
+  readDashboardURL,
 };

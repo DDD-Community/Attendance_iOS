@@ -21,5 +21,6 @@ let project = Project.makeModule(
     .SPM.googleSignIn
   ],
   sources: ["Sources/**"],
-  hasTests: true
+  hasTests: true,
+  hasTesting: true
 )

@@ -1,7 +1,11 @@
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
 const test = require("node:test");
 
-const { internalCoverageTargetNames, mergeCoverage } = require("./ios-test-report.js").__test__;
+const { internalCoverageTargetNames, mergeCoverage, readDashboardURL } =
+  require("./ios-test-report.js").__test__;
 
 test("프로젝트 매니페스트에서 자사 커버리지 대상을 구성한다", () => {
   const targets = internalCoverageTargetNames();
@@ -35,4 +39,25 @@ test("커버리지 리포트는 내부 모듈만 집계한다", () => {
   );
   assert.equal(coverage.coveredLines, 35);
   assert.equal(coverage.executableLines, 350);
+});
+
+test("Tuist run report에서 테스트와 빌드 dashboard URL을 찾는다", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "tuist-run-report-"));
+  const reportPath = path.join(directory, "run-report.json");
+  fs.writeFileSync(
+    reportPath,
+    JSON.stringify({
+      test: { url: "https://tuist.dev/DDD2026/attendance/tests/test-runs/test-id" },
+      build: { nested: ["https://tuist.dev/DDD2026/attendance/builds/build-runs/build-id"] },
+    }),
+  );
+
+  assert.equal(
+    readDashboardURL(reportPath, "/tests/test-runs/"),
+    "https://tuist.dev/DDD2026/attendance/tests/test-runs/test-id",
+  );
+  assert.equal(
+    readDashboardURL(reportPath, "/builds/build-runs/"),
+    "https://tuist.dev/DDD2026/attendance/builds/build-runs/build-id",
+  );
 });

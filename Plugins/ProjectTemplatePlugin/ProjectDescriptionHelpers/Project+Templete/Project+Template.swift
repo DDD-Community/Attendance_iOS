@@ -236,8 +236,9 @@ public extension Project {
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
         buildableFolders: ["Tests"],
-        // Xcode 26.3의 host-less XCTest는 TCA의 Sharing → SwiftUI를 로드하는 중
-        // LocalStatusKit 메타데이터 탐색에서 충돌한다. TCA 모듈만 전용 호스트에서 먼저 로드하고,
+        // Swift Testing 번들도 Xcode test runner의 host bootstrap 경로를 거친다.
+        // Xcode 26.3은 Sharing → SwiftUI를 로드하는 중 LocalStatusKit 메타데이터 탐색에서
+        // 충돌할 수 있어 TCA 모듈만 전용 호스트에서 먼저 로드하고,
         // 나머지 모듈은 경량 호스트를 사용해 불필요한 SwiftSyntax/TCA 빌드를 피한다.
         // Testing 이 있으면 테스트가 그 목을 그대로 쓴다.
         dependencies: [

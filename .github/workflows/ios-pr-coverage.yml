@@ -26,6 +26,8 @@ jobs:
       TUIST_BUILD_VALUE_PR_URL: ${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
+      TEST_RUN_REPORT_PATH: TestRunReport.json
+      BUILD_RUN_REPORT_PATH: BuildRunReport.json
 
     steps:
       - uses: actions/checkout@v4
@@ -98,7 +100,12 @@ jobs:
             "$CI_DERIVED_DATA/Logs" \
             "$CI_DERIVED_DATA/SourcePackages" \
             "$CI_DERIVED_DATA/info.plist"
-          rm -rf TestResults TestResults.xcresult BundleBuildResults.xcresult
+          rm -rf \
+            TestResults \
+            TestResults.xcresult \
+            BundleBuildResults.xcresult \
+            "$TEST_RUN_REPORT_PATH" \
+            "$BUILD_RUN_REPORT_PATH"
 
       # Xcode 업데이트 뒤에도 러너에 실제 설치된 최신 iPhone runtime을 사용한다.
       - name: Select simulator
@@ -118,31 +125,6 @@ jobs:
           # 한 번만 빌드·실행해 모듈별 tuist test 반복 비용을 제거한다.
           ./Scripts/run-isolated-module-tests.sh
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ github.run_id }}
-          path: |
-            TestResults.xcresult
-            TuistTestRun.log
-            TestLogs
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Report to PR
-        if: steps.tests.outcome != 'cancelled'
-        uses: actions/github-script@v7
-        env:
-          RESULT_BUNDLE_DIR: TestResults.xcresult
-          TEST_OUTCOME: ${{ steps.tests.outcome }}
-        with:
-          script: |
-            // github-script 의 require 는 액션 디렉토리 기준으로 경로를 풀어서
-            // 상대경로가 먹지 않는다. 워크스페이스 절대경로로 지정한다.
-            const report = require(`${process.env.GITHUB_WORKSPACE}/Scripts/ios-test-report.js`)
-            await report({ github, context, core })
-
       # tuist test 실패 시 Test Insights만 업로드될 수 있으므로, 남은 xcactivitylog를
       # 명시적으로 분석해 Builds 표에도 실패한 Stage 빌드를 기록한다.
       - name: Report failed build to Tuist
@@ -154,6 +136,7 @@ jobs:
 
       # 테스트 빌드의 DerivedData를 재사용해 추가 컴파일을 줄이고 PR 크기 변화를 기록한다.
       - name: Build app for bundle insights
+        id: app-build
         if: steps.tests.outcome == 'success'
         run: |
           mise exec -- tuist xcodebuild build \
@@ -163,17 +146,51 @@ jobs:
             -destination "$SIMULATOR_DESTINATION" \
             -derivedDataPath "$CI_DERIVED_DATA" \
             -resultBundlePath BundleBuildResults.xcresult \
+            --run-report-path "$BUILD_RUN_REPORT_PATH" \
             ONLY_ACTIVE_ARCH=YES \
             COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
 
+          if [[ ! -s "$BUILD_RUN_REPORT_PATH" ]]; then
+            echo "Tuist build run이 서버 dashboard URL을 기록하지 못했습니다: $BUILD_RUN_REPORT_PATH" >&2
+            exit 1
+          fi
+
       - name: Inspect bundle size
-        if: steps.tests.outcome == 'success'
+        if: steps.tests.outcome == 'success' && steps.app-build.outcome == 'success'
         continue-on-error: true
         run: |
           mise exec -- tuist inspect bundle DDDAttendance \
             --platforms ios \
             --configuration Stage \
             --derived-data-path "$CI_DERIVED_DATA"
+
+      - name: Upload test and run reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}
+          path: |
+            TestResults.xcresult
+            BundleBuildResults.xcresult
+            TestRunReport.json
+            BuildRunReport.json
+            TuistTestRun.log
+            TestLogs
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Report to PR
+        if: always() && steps.tests.outcome != 'cancelled'
+        uses: actions/github-script@v7
+        env:
+          RESULT_BUNDLE_DIR: TestResults.xcresult
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+        with:
+          script: |
+            // github-script 의 require 는 액션 디렉토리 기준으로 경로를 풀어서
+            // 상대경로가 먹지 않는다. 워크스페이스 절대경로로 지정한다.
+            const report = require(`${process.env.GITHUB_WORKSPACE}/Scripts/ios-test-report.js`)
+            await report({ github, context, core })
 
       - name: Clean CI DerivedData
         if: always()
@@ -184,7 +201,10 @@ jobs:
             "$CI_DERIVED_DATA/Logs" \
             "$CI_DERIVED_DATA/SourcePackages" \
             "$CI_DERIVED_DATA/info.plist"
-          rm -rf BundleBuildResults.xcresult
+          rm -rf \
+            BundleBuildResults.xcresult \
+            "$TEST_RUN_REPORT_PATH" \
+            "$BUILD_RUN_REPORT_PATH"
 
       - name: Fail if tests failed
         if: steps.tests.outcome != 'success'
