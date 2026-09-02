@@ -124,8 +124,8 @@ jobs:
         id: tests
         continue-on-error: true
         run: |
-          # 모듈 테스트는 별도 DDDTestHost 없이 DDDAttendance 앱을 공용 host로 사용한다.
-          # Stage workspace scheme에서 한 번만 빌드·실행해 모듈별 tuist test 반복 비용을 제거한다.
+          # 모듈 테스트는 별도 host 없이 Stage workspace scheme에서 한 번만 실행한다.
+          # Point-Free Sharing은 정적으로 링크해 Apple Sharing.framework와의 충돌을 피한다.
           ./Scripts/run-isolated-module-tests.sh
 
       # tuist test 실패 시 Test Insights만 업로드될 수 있으므로, 남은 xcactivitylog를
