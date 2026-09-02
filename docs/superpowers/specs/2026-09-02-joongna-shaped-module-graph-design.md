@@ -103,6 +103,36 @@ DDDDesignKit.xcscheme
   명시적 스킴을 따로 정의해야 한다. 이는 "Demo 를 CI 필수 빌드에서 제외할지" 결정과 맞물린다.
 - `X` 스킴 빌드가 이제 Demo 까지 빌드하므로, 모듈 단위 빌드 시간이 늘어난다.
 
+### Interface 와 Testing 은 한 세트다
+
+`XTesting` 은 일반 타깃이라 `@testable` 을 쓸 수 없다. 대상 모듈의 **public API 만** 참조할 수 있다.
+
+Splash 파일럿에서 `SplashFixture.completedState()` 가
+`'staffRole' is inaccessible due to 'internal' protection level` 로 컴파일에 실패했다.
+`Splash.State` 의 프로퍼티가 internal 이기 때문이다. 선택지는 둘뿐이다.
+
+- 대상 모듈의 State/프로퍼티를 public 으로 넓힌다 → 캡슐화 손해
+- Testing 은 public 계약 기준의 더블만 담는다 → **그 계약이 곧 Interface 다**
+
+Joongna 그래프에서 `XTesting` 이 `X` 가 아니라 `XInterface` 를 가리키는 이유가 이것이다.
+Interface 없이 Testing 만 도입하면 public 타입 픽스처 몇 개짜리로 쪼그라든다.
+실제로 `SplashTesting` 은 `Entity` 픽스처 2개만 남았다.
+
+### Feature Interface 는 현재 구조에서 끊을 엣지가 없다
+
+Splash 의 유일한 소비자는 다른 피처가 아니라 `Projects/App` 이다.
+`AppReducer.swift` 가 `Splash.State`(19행), `Splash.Action`(78행), `Splash()`(155행),
+`SplashView` 를 직접 조립한다. 이들은 위 규약상 Interface 에 넣지 않는 항목이므로,
+`SplashInterface` 를 만들어도 App 은 여전히 구현 모듈을 의존한다.
+
+즉 Interface 도입이 의미를 가지려면 **App 이 피처를 구현째로 조립하는 방식부터 바꿔야 한다.**
+그건 이 설계의 범위를 넘는 아키텍처 변경이다.
+
+### 그래서 Splash 파일럿은 Testing + Demo 만 만들었다
+
+Interface 는 만들지 않았다. 지금 만들면 끊는 엣지가 없고, 나중에 App 조립 방식을
+바꿀 때 다시 갈아엎어야 한다.
+
 ## 열려 있는 위험
 
 - **Feature 간 의존 엣지가 현재 0개다.** Interface 로 끊을 대상이 없으므로 이번 재편의
