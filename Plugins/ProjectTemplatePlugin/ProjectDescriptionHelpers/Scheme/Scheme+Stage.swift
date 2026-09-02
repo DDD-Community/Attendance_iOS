@@ -31,7 +31,7 @@ public extension Scheme {
         runPostActionsOnFailure: true
       ),
       testAction: .targets(
-        allModuleTestTargets(),
+        allModuleTestTargets(appName: name),
         configuration: .stage,
         postActions: [
           .executionAction(
@@ -49,7 +49,7 @@ public extension Scheme {
     )
   }
 
-  private static func allModuleTestTargets() -> [TestableTarget] {
+  private static func allModuleTestTargets(appName: String) -> [TestableTarget] {
     // 저장소 루트를 CWD 로 잡으면 안 된다. `tuist test --path <repo>` 처럼
     // 작업 디렉토리가 저장소 루트가 아닌 채로 매니페스트가 평가되면 Projects 를 못 찾고,
     // 아래 `?? []` 에 걸려 테스트 0개짜리 초록불이 나온다(실제 CI 에서 발생).
@@ -72,11 +72,6 @@ public extension Scheme {
 
       let projectURL = url.deletingLastPathComponent()
       let manifestURL = projectURL.appendingPathComponent("Project.swift")
-      guard projectURL.lastPathComponent != "App" else {
-        // 모든 모듈 테스트가 DDDAttendance를 공용 host로 사용한다. App 테스트까지
-        // 같은 action에 중복 포함하면 App State 종료 뒤 testmanagerd 대기가 재발할 수 있다.
-        return nil
-      }
       return FileManager.default.fileExists(atPath: manifestURL.path) ? projectURL : nil
     } ?? []
 
@@ -87,11 +82,12 @@ public extension Scheme {
           with: ""
         )
         let moduleName = projectURL.lastPathComponent
+        let testTargetName = moduleName == "App" ? "\(appName)Tests" : "\(moduleName)Tests"
 
         return .testableTarget(
           target: .project(
             path: .relativeToRoot(relativeProjectPath),
-            target: "\(moduleName)Tests"
+            target: testTargetName
           )
         )
       }
