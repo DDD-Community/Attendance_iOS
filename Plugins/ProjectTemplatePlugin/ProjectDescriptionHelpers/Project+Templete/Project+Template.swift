@@ -158,6 +158,7 @@ public extension Project {
     hasInterface: Bool = false,
     interfaceDependencies: [ProjectDescription.TargetDependency] = [],
     hasTesting: Bool = false,
+    testingDependencies: [ProjectDescription.TargetDependency] = [],
     hasDemo: Bool = false,
     demoDependencies: [ProjectDescription.TargetDependency] = [],
     forceLoadInTests: Bool = false,
@@ -204,7 +205,8 @@ public extension Project {
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
         buildableFolders: ["Testing"],
-        dependencies: hasInterface ? [.target(name: "\(name)Interface")] : [.target(name: name)],
+        dependencies: (hasInterface ? [.target(name: "\(name)Interface")] : [.target(name: name)])
+          + testingDependencies,
         settings: suppressWarningsSettings
       ))
     }

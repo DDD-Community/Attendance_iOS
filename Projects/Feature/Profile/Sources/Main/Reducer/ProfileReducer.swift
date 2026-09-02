@@ -12,6 +12,7 @@ import DDDSharedUI
 import UseCase
 
 import ComposableArchitecture
+import ProfileInterface
 import DDDDesignKit
 import Entity
 
@@ -115,14 +116,8 @@ public struct ProfileReducer: Sendable {
 
   // MARK: - 네비게이션 연결 액션
 
-  @CasePathable
-  public enum NavigationAction: Equatable {
-    case presentLogOut
-    case presentCreateByApp
-    case presentPrivacyPolicy
-    case presentEditGeneration
-    case presentAppPeedBackWeb
-  }
+  /// 이동 계약은 ProfileInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias NavigationAction = ProfileNavigation
 
   @CasePathable
   public enum ScopeAction {

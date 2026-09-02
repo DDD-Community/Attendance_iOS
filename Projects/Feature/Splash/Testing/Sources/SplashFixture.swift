@@ -2,32 +2,28 @@
 //  SplashFixture.swift
 //  SplashTesting
 //
-//  Splash 테스트·데모가 공유하는 고정 데이터.
-//  각 테스트가 같은 엔티티를 다시 만들면 필드가 늘어날 때마다 흩어진 정의를 모두 고쳐야 한다.
+//  Created by DDD on 2026-09-02
 //
-//  Splash.State 팩토리는 두지 않는다. State 의 프로퍼티가 internal 이라
-//  @testable 없이는 접근할 수 없고, 픽스처 하나 때문에 State 를 public 으로
-//  넓히는 건 대가가 크다. 상태 조립은 @testable 을 쓸 수 있는 테스트 쪽에 남긴다.
+//  Splash 전용 테스트 더블.
+//
+//  도메인 엔티티 픽스처는 EntityTesting 의 EntityFixture 에 있다.
+//  여기 다시 두면 같은 값이 두 곳에 생겨 필드 변경 시 양쪽을 고쳐야 한다.
 //
 
+import DomainInterface
 import Entity
+import EntityTesting
 
-public enum SplashFixture {
-  public static let memberProfile = ProfileEntity(
-    userID: 1,
-    name: "김철수",
-    generation: "2기",
-    team: .ios1,
-    jobRole: .ios,
-    role: .member,
-    manger: nil
-  )
+/// 항상 같은 결과만 돌려주는 앱 업데이트 스텁.
+/// Splash 는 실행 즉시 업데이트를 확인하므로 테스트·데모에서 이 더블이 필요하다.
+public struct StubAppUpdateRepository: AppUpdateInterface {
+  private let info: AppUpdateInfo
 
-  public static let updateAvailable = AppUpdateInfo(
-    currentVersion: "1.0.0",
-    latestVersion: "1.2.3",
-    releaseNotes: "[v 1.2.3]\n- bug fixes",
-    appStoreUrl: "https://apps.apple.com/app/id123",
-    isUpdateAvailable: true
-  )
+  public init(info: AppUpdateInfo = EntityFixture.upToDate) {
+    self.info = info
+  }
+
+  public func checkForUpdate() async throws(AppUpdateError) -> AppUpdateInfo {
+    info
+  }
 }

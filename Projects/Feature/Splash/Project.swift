@@ -18,6 +18,15 @@ let project = Project.makeModule(
   ],
   sources: ["Sources/**"],
   hasTests: true,
+  hasInterface: true,
+  interfaceDependencies: [
+    .SPM.composableArchitecture
+  ],
   hasTesting: true,
+  testingDependencies: [
+    .domain(.entity),
+    .domain(.entity, .testing),
+    .domain(.domainInterface)
+  ],
   hasDemo: true
 )

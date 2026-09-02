@@ -7,6 +7,7 @@
 
 import Foundation
 import ComposableArchitecture
+import ProfileInterface
 
 import DDDSharedUI
 
@@ -45,10 +46,8 @@ public struct CreateApp {
   }
   
   //MARK: - NavigationAction
-  public enum NavigationAction: Equatable {
-    case presentWeb
-
-  }
+  /// 이동 계약은 ProfileInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias NavigationAction = CreateAppNavigation
   
   
   public var body: some ReducerOf<Self> {

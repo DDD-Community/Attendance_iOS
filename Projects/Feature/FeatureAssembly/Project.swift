@@ -17,7 +17,6 @@ let project = Project.makeModule(
     .feature(.profile),
     .feature(.web),
     .feature(.sharedUI),
-    .dataAssembly
   ],
   sources: ["Sources/**"]
 )

@@ -13,6 +13,7 @@ import DDDSharedUI
 import UseCase
 
 import ComposableArchitecture
+import MemberInterface
 
 @Reducer
 public struct MemberMain {
@@ -95,10 +96,8 @@ public struct MemberMain {
     case onResume
   }
 
-  public enum NavigationAction: Equatable {
-    case routeToQRCode
-    case routeToProfile
-  }
+  /// 이동 계약은 MemberInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias NavigationAction = MemberMainNavigation
 
   @Reducer(state: .equatable)
   public enum Destination {

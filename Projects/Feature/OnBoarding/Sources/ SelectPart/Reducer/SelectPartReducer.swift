@@ -12,6 +12,7 @@ import DDDCoreUtility
 import Entity
 
 import ComposableArchitecture
+import OnBoardingInterface
 
 @Reducer
 public struct SelectPartReducer {
@@ -60,11 +61,8 @@ public struct SelectPartReducer {
   
   // MARK: - NavigationAction
   
-  public enum NavigationAction: Equatable {
-    case presentManaging
-    case presentSelectTeam
-    case presentNextStep
-  }
+  /// 이동 계약은 OnBoardingInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias NavigationAction = SelectPartNavigation
 
 
   nonisolated enum CancelID: Hashable {

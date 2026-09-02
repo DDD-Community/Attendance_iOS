@@ -15,6 +15,7 @@ import UseCase
 
 import AuthenticationServices
 import ComposableArchitecture
+import AuthInterface
 import DDDDesignKit
 
 @Reducer
@@ -78,13 +79,8 @@ public struct Login {
   }
 
   // MARK: - NavigationAction
-  @CasePathable
-  public enum NavigationAction: Equatable {
-    case presentSignUpInviteView
-    case presentStaffMain
-    case presentMemberMain
-    case presentWeb
-  }
+  /// 이동 계약은 AuthInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias NavigationAction = LoginNavigation
 
   @CasePathable
   public enum ScopeAction {

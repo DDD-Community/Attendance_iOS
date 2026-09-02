@@ -13,6 +13,7 @@ import Entity
 import DDDSharedUI
 
 import ComposableArchitecture
+import MemberInterface
 
 @Reducer
 public struct MemberQRCode {
@@ -53,9 +54,8 @@ public struct MemberQRCode {
     case onGenerateQRCodeImage(Result<SwiftUI.Image?, QRCodeError>)
   }
 
-  public enum NavigationAction: Equatable {
-    case back
-  }
+  /// 이동 계약은 MemberInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias NavigationAction = MemberQRCodeNavigation
 
   @Dependency(\.qrCodeUseCase) private var qrCodeUseCase
 

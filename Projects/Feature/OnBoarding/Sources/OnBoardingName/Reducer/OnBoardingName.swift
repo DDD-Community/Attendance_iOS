@@ -11,6 +11,7 @@ import DDDCoreUtility
 import Entity
 
 import ComposableArchitecture
+import OnBoardingInterface
 
 @Reducer
 public struct OnBoardingName {
@@ -45,10 +46,8 @@ public struct OnBoardingName {
 
   
   // MARK: - NavigationAction
-  @CasePathable
-  public enum NavigationAction: Equatable {
-    case presentSignUpPart
-  }
+  /// 이동 계약은 OnBoardingInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias NavigationAction = OnBoardingNameNavigation
   
   public var body: some Reducer<State, Action> {
     BindingReducer()

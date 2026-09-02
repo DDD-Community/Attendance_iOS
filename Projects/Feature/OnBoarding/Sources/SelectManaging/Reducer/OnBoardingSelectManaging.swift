@@ -12,6 +12,7 @@ import UseCase
 import DDDCoreUtility
 
 import ComposableArchitecture
+import OnBoardingInterface
 
 @Reducer
 public struct SelectManagingReducer {
@@ -80,12 +81,8 @@ public struct SelectManagingReducer {
 
   // MARK: - NavigationAction
 
-  public enum NavigationAction: Equatable {
-    case presentManager
-    case presentMember
-    case presentSelectTeam
-    case presentProfile
-  }
+  /// 이동 계약은 OnBoardingInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias NavigationAction = SelectManagingNavigation
 
   nonisolated enum CancelID: Hashable, CaseIterable {
     case fetchMangerList

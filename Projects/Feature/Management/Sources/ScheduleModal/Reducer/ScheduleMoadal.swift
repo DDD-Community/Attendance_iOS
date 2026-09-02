@@ -12,6 +12,7 @@ import DDDSharedUI
 import UseCase
 
 import ComposableArchitecture
+import ManagementInterface
 import Entity
 
 @Reducer
@@ -58,9 +59,8 @@ public struct ScheduleModal {
 
   // MARK: - NavigationAction
 
-  public enum NavigationAction: Equatable {
-    case selectScheduleCompleted(selectedSchedule: Schedule)
-  }
+  /// 이동 계약은 ManagementInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias NavigationAction = ScheduleModalNavigation
 
   nonisolated enum ScheduleMoadalCancel: Hashable {
     case fetchSchedule

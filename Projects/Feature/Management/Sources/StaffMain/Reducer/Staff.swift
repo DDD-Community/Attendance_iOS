@@ -12,6 +12,7 @@ import DDDSharedUI
 import Entity
 
 import ComposableArchitecture
+import ManagementInterface
 
 @Reducer
 public struct Staff {
@@ -75,11 +76,8 @@ public struct Staff {
   }
   
   // MARK: - 네비게이션 연결 액션
-  public enum NavigationAction: Equatable {
-    case presentSchedule
-    case presentManagerProfile
-    
-  }
+  /// 이동 계약은 ManagementInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias NavigationAction = StaffNavigation
   
   @Reducer(state: .equatable)
   public enum Destination {
