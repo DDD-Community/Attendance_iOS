@@ -15,19 +15,26 @@ public struct AppUpdateInfo: Codable, Equatable, Sendable {
     public let releaseNotes: String?
     public let appStoreUrl: String
     public let isUpdateAvailable: Bool
+    /// 사용자에게 보여줄 버전.
+    /// 릴리스 노트에 `[v 1.0.2]` 처럼 실제 배포 버전이 적혀 있으면 그것을 쓰고,
+    /// 없으면 서버가 준 latestVersion 을 그대로 쓴다.
+    /// 해석 규칙은 AppUpdateUseCase 가 갖는다. 서버 원본 값은 latestVersion 에 남긴다.
+    public let displayVersion: String
 
     public init(
         currentVersion: String,
         latestVersion: String,
         releaseNotes: String?,
         appStoreUrl: String,
-        isUpdateAvailable: Bool
+        isUpdateAvailable: Bool,
+        displayVersion: String? = nil
     ) {
         self.currentVersion = currentVersion
         self.latestVersion = latestVersion
         self.releaseNotes = releaseNotes
         self.appStoreUrl = appStoreUrl
         self.isUpdateAvailable = isUpdateAvailable
+        self.displayVersion = displayVersion ?? latestVersion
     }
 }
 

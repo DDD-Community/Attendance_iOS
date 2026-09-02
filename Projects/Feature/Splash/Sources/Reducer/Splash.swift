@@ -15,6 +15,7 @@ import UseCase
 import DDDCoreUtility
 
 import ComposableArchitecture
+import SplashInterface
 
 @Reducer
 public struct Splash {
@@ -77,12 +78,9 @@ public struct Splash {
   
   // MARK: - NavigationAction
   
-  @CasePathable
-  public enum NavigationAction: Equatable {
-    case presentLogin
-    case presentStaff
-    case presentMember
-  }
+  /// 이동 계약은 SplashInterface 에 있다. 호출부(`.navigation(.presentStaff)`)를
+  /// 그대로 두기 위해 여기서는 별칭만 받는다.
+  public typealias NavigationAction = SplashNavigation
   
   nonisolated enum CancelID: Hashable {
     case fetchProfile
@@ -239,13 +237,9 @@ extension Splash {
           DDDLogger.debug("[Splash] App update available: \(updateInfo.latestVersion)", category: .app)
           state.appStoreUrl = updateInfo.appStoreUrl
           
-          // 릴리즈 노트에서 실제 버전 추출
-          let actualVersion = extractVersionFromReleaseNotes(
-            releaseNotes: updateInfo.releaseNotes,
-            fallbackVersion: updateInfo.latestVersion
-          )
+
           
-          let message = "새로운 버전 \(actualVersion)이 출시되었습니다!\n\n더 나은 경험을 위해 지금 업데이트하세요!"
+          let message = "새로운 버전 \(updateInfo.displayVersion)이 출시되었습니다!\n\n더 나은 경험을 위해 지금 업데이트하세요!"
           
           state.customAlert = .alert(
             title: "새로운 버전이 출시되었어요!",
@@ -285,10 +279,10 @@ extension Splash {
       return .none
       
     case .presentStaff:
-      return .none // fetchUser는 이미 onAppear에서 처리됨
+      return .none
       
     case .presentMember:
-      return .none // fetchUser는 이미 onAppear에서 처리됨
+      return .none
     }
   }
   
@@ -307,32 +301,4 @@ extension Splash {
     }
   }
   
-  private func extractVersionFromReleaseNotes(
-    releaseNotes: String?,
-    fallbackVersion: String
-  ) -> String {
-    guard let releaseNotes = releaseNotes else {
-      return fallbackVersion
-    }
-    
-    // "[v 1.0.2]" 또는 "v 1.0.2" 패턴에서 버전 추출
-    let patterns = [
-      #"\[v\s*([0-9]+\.[0-9]+\.[0-9]+)\]"#, // [v 1.0.2]
-      #"v\s*([0-9]+\.[0-9]+\.[0-9]+)"#, // v 1.0.2
-    ]
-    
-    for pattern in patterns {
-      if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
-        let range = NSRange(location: 0, length: releaseNotes.count)
-        if let match = regex.firstMatch(in: releaseNotes, range: range) {
-          let versionRange = Range(match.range(at: 1), in: releaseNotes)
-          if let versionRange = versionRange {
-            return String(releaseNotes[versionRange])
-          }
-        }
-      }
-    }
-    
-    return fallbackVersion
-  }
 }

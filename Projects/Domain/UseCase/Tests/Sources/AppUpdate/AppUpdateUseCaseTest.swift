@@ -45,6 +45,65 @@ struct AppUpdateUseCaseTest {
     #expect(result == nil)
   }
 
+  @Test("릴리스 노트의 [v x.y.z] 를 표시 버전으로 쓴다")
+  func prefersVersionInReleaseNotes() async throws {
+    let info = AppUpdateInfo(
+      currentVersion: "1.0.0",
+      latestVersion: "1.1.0",
+      releaseNotes: "[v 1.0.2]\n- 버그 수정",
+      appStoreUrl: "https://apps.apple.com/app/id1",
+      isUpdateAvailable: true
+    )
+
+    let result = try await withDependencies {
+      $0.appUpdateRepository = AppUpdateRepositoryStub(result: .success(info))
+    } operation: {
+      try await AppUpdateUseCaseImpl().checkForUpdate()
+    }
+
+    // 서버 원본은 그대로 두고 표시 버전만 노트 값으로 바뀐다
+    #expect(result?.displayVersion == "1.0.2")
+    #expect(result?.latestVersion == "1.1.0")
+  }
+
+  @Test("접두 대괄호가 없는 v x.y.z 도 인식한다")
+  func acceptsBareVersionPattern() async throws {
+    let info = AppUpdateInfo(
+      currentVersion: "1.0.0",
+      latestVersion: "1.1.0",
+      releaseNotes: "v 2.3.4 릴리스",
+      appStoreUrl: "https://apps.apple.com/app/id1",
+      isUpdateAvailable: true
+    )
+
+    let result = try await withDependencies {
+      $0.appUpdateRepository = AppUpdateRepositoryStub(result: .success(info))
+    } operation: {
+      try await AppUpdateUseCaseImpl().checkForUpdate()
+    }
+
+    #expect(result?.displayVersion == "2.3.4")
+  }
+
+  @Test("릴리스 노트에 버전이 없으면 latestVersion 을 그대로 쓴다")
+  func fallsBackToLatestVersion() async throws {
+    let info = AppUpdateInfo(
+      currentVersion: "1.0.0",
+      latestVersion: "1.1.0",
+      releaseNotes: "버그를 고쳤습니다",
+      appStoreUrl: "https://apps.apple.com/app/id1",
+      isUpdateAvailable: true
+    )
+
+    let result = try await withDependencies {
+      $0.appUpdateRepository = AppUpdateRepositoryStub(result: .success(info))
+    } operation: {
+      try await AppUpdateUseCaseImpl().checkForUpdate()
+    }
+
+    #expect(result?.displayVersion == "1.1.0")
+  }
+
   @Test("Repository 오류를 그대로 전달한다")
   func forwardsRepositoryError() async {
     await #expect(throws: AppUpdateError.lookupFailed) {
