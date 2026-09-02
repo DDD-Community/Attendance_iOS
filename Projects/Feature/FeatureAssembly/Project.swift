@@ -17,9 +17,6 @@ let project = Project.makeModule(
     .feature(.profile),
     .feature(.web),
     .feature(.sharedUI),
-    // 조립 루트로서 계층별 Assembly 를 모두 링크한다. UseCase 의 liveValue 가
-    // 여기서 앱 링크 그래프에 들어간다(App 은 FeatureAssembly 하나만 안다).
-    .domainAssembly,
     .dataAssembly
   ],
   sources: ["Sources/**"]
