@@ -9,7 +9,6 @@ import DDDCoreUI
 import SwiftUI
 
 import DDDDesignKit
-import Model
 
 import ComposableArchitecture
 
