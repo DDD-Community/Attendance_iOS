@@ -2,8 +2,7 @@
 //  DependencyValues+Auth.swift
 //  FeatureAssembly
 //
-//  Auth·OAuth 구현 등록.
-//  인터페이스(TestDependencyKey)에 실제 구현(liveValue)을 붙이는 조립 지점.
+//  Created by DDD on 9/2/26.
 //
 
 import Dependencies

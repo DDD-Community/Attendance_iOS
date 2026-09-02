@@ -21,9 +21,9 @@ private let suppressWarningsSettings: ProjectDescription.Settings = .settings(
 
 private let appTargetSettings: ProjectDescription.Settings = .settings(
   base: [
-    // DataAssembly는 FeatureAssembly를 통해 링크되는 정적 프레임워크다.
-    // 직접 호출되지 않는 DependencyKey.liveValue도 제거되지 않도록 조립 모듈만 강제 링크한다.
-    "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip -force_load $(BUILT_PRODUCTS_DIR)/DataAssembly.framework/DataAssembly",
+    // FeatureAssembly에 모인 DependencyKey.liveValue 등록이 dead strip되지 않도록
+    // 앱의 composition root만 강제 링크한다.
+    "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip -force_load $(BUILT_PRODUCTS_DIR)/FeatureAssembly.framework/FeatureAssembly -force_load $(BUILT_PRODUCTS_DIR)/UseCase.framework/UseCase",
     "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
   ],
   configurations: XCConfig.configurations
@@ -158,7 +158,8 @@ public extension Project {
     hasInterface: Bool = false,
     interfaceDependencies: [ProjectDescription.TargetDependency] = [],
     hasTesting: Bool = false,
-    requiresTCAHost: Bool = false
+    requiresTCAHost: Bool = false,
+    forceLoadInTests: Bool = false
   ) -> Project {
     // Interface 타깃은 Interface/ 폴더가 실제로 있을 때만 만든다(buildableFolders 는 폴더가 없으면 generate 실패).
     let interfaceTarget: Target? = hasInterface ? .target(
@@ -216,6 +217,13 @@ public extension Project {
         }
       }
       let testHostName = requiresTCAHost || hasDirectTCADependency ? "DDDTCAHost" : "DDDTestHost"
+      let testTargetSettings: ProjectDescription.Settings = forceLoadInTests ? .settings(
+        base: [
+          "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip -force_load $(BUILT_PRODUCTS_DIR)/\(name).framework/\(name)",
+          "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
+        ],
+        configurations: XCConfig.configurations
+      ) : suppressWarningsSettings
 
       let appTestTarget: Target = .target(
         name: "\(name)Tests",
@@ -233,7 +241,7 @@ public extension Project {
           .target(name: name),
           .project(target: testHostName, path: .relativeToRoot("Projects/TestHost"))
         ] + (hasTesting ? [.target(name: "\(name)Testing")] : []),
-        settings: suppressWarningsSettings
+        settings: testTargetSettings
       )
       targets.append(appTestTarget)
     }

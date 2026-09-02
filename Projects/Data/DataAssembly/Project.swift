@@ -2,7 +2,7 @@
 //  Project.swift
 //  DataAssembly
 //
-//  Created by DDD on 9/1/26.
+//  Created by DDD on 9/2/26.
 //
 
 import DependencyPlugin
@@ -15,12 +15,9 @@ let project = Project.makeModule(
   bundleId: .appBundleID(name: ".DataAssembly"),
   product: .staticFramework,
   settings: .moduleSettings,
-  // DomainAssembly가 제공하는 도메인 단일 진입점에 Repository 구현을 바인딩한다.
-  // FeatureAssembly가 조립 사슬에 포함하고 Domain 계층은 이 모듈을 알지 않는다.
+  // DataAssembly는 Data 모듈의 진입점만 제공한다.
+  // DomainInterface의 라이브 구현 등록은 FeatureAssembly가 담당한다.
   dependencies: [
-    .domainAssembly,
-    .service,
-    .core(.network, .interface),
     .data(.model),
     .data(.repository)
   ],

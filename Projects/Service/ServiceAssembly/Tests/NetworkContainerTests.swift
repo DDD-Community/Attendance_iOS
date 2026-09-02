@@ -5,6 +5,8 @@
 //  Created by DDD on 9/1/26.
 //
 
+import Dependencies
+import DomainInterface
 import Testing
 @testable import ServiceAssembly
 
@@ -31,5 +33,16 @@ struct NetworkContainerTests {
     let second = NetworkContainer.keychainManager as AnyObject
 
     #expect(first === second)
+  }
+
+  @Test
+  func KeychainManager_라이브_구현은_ServiceAssembly에서_해결된다() {
+    withDependencies {
+      $0.context = .live
+    } operation: {
+      @Dependency(\.keychainManager) var keychainManager
+
+      _ = keychainManager
+    }
   }
 }

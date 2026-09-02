@@ -54,8 +54,7 @@ public extension TargetDependency {
     return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
 
-  /// Model·Repository 를 묶고 DomainInterface 에 구현을 바인딩하는 조립 모듈.
-  /// 구현 등록이 필요한 쪽(FeatureAssembly/App)만 의존한다.
+  /// Model·Repository를 하나의 Data 진입점으로 제공하는 엄브렐러 모듈.
   static var dataAssembly: Self {
     return .data(.assembly)
   }

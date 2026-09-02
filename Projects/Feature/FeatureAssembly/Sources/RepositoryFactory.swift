@@ -2,7 +2,7 @@
 //  RepositoryFactory.swift
 //  FeatureAssembly
 //
-//  Created by DDD on 9/1/26.
+//  Created by DDD on 9/2/26.
 //
 
 import DDDNetworkInterface
@@ -10,6 +10,7 @@ import DomainInterface
 import Repository
 import ServiceAssembly
 
+/// FeatureAssembly에서 Domain 인터페이스와 Data 구현을 연결하는 Repository 팩토리입니다.
 enum RepositoryFactory {
   static var attendance: any AttendanceInterface {
     return AttendanceRepositoryImpl(client: networkClient)

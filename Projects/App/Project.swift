@@ -15,8 +15,7 @@ let project = Project.makeAppModule(
   product: .app,
   settings: .appMainSetting,
   scripts: [],
-  // App 은 Feature·Data 조립 레이어를 병렬로 연결하는 최종 Composition Root 다.
-  // Domain 계층이 Data 구현을 알지 않도록 라이브 구현 링크 책임을 여기에 둔다.
+  // App은 FeatureAssembly 하나만 알고, Repository·Service 구현 조립은 하위 Assembly가 담당한다.
   dependencies: [
     .featureAssembly,
   ],

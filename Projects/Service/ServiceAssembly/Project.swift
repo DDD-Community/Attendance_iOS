@@ -6,6 +6,7 @@
 //
 
 import DependencyPlugin
+import DependencyPackagePlugin
 import Foundation
 import ProjectDescription
 import ProjectTemplatePlugin
@@ -19,7 +20,8 @@ let project = Project.makeModule(
     .core(.assembly),
     .core(.storage, .interface),
     .service(.auth, .implementation),
-    .domain(.domainInterface)
+    .domain(.domainInterface),
+    .SPM.dependencies
   ],
   sources: ["Sources/**"],
   hasTests: true,
