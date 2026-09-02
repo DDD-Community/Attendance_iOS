@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-readonly TEST_SCHEME="${TEST_SCHEME:-DDDAttendance-AllTests-Stage}"
+readonly TEST_SCHEME="${TEST_SCHEME:-DDDAttendance-Stage}"
 readonly CONFIGURATION="${CONFIGURATION:-Stage}"
 readonly SIMULATOR_DESTINATION="${SIMULATOR_DESTINATION:?SIMULATOR_DESTINATION is required}"
 readonly CI_DERIVED_DATA="${CI_DERIVED_DATA:?CI_DERIVED_DATA is required}"
