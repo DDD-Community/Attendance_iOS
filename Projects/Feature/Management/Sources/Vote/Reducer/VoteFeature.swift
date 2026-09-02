@@ -61,6 +61,7 @@ public struct VoteFeature {
     case retry(AsyncAction)
   }
 
+  @CasePathable
   public enum AsyncAction: Equatable {
     case fetchVotes
     case fetchParticipation
