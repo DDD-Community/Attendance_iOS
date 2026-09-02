@@ -143,6 +143,15 @@ jobs:
             const report = require(`${process.env.GITHUB_WORKSPACE}/Scripts/ios-test-report.js`)
             await report({ github, context, core })
 
+      # tuist test 실패 시 Test Insights만 업로드될 수 있으므로, 남은 xcactivitylog를
+      # 명시적으로 분석해 Builds 표에도 실패한 Stage 빌드를 기록한다.
+      - name: Report failed build to Tuist
+        if: steps.tests.outcome == 'failure'
+        continue-on-error: true
+        run: |
+          mise exec -- tuist inspect build \
+            --derived-data-path "$CI_DERIVED_DATA"
+
       # 테스트 빌드의 DerivedData를 재사용해 추가 컴파일을 줄이고 PR 크기 변화를 기록한다.
       - name: Build app for bundle insights
         if: steps.tests.outcome == 'success'
