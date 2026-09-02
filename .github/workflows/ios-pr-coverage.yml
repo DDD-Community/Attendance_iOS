@@ -103,7 +103,7 @@ jobs:
       # Xcode 업데이트 뒤에도 러너에 실제 설치된 최신 iPhone runtime을 사용한다.
       - name: Select simulator
         run: |
-          SIMULATOR_DESTINATION="$(xcrun simctl list devices available --json | python3 Scripts/select-ios-simulator.py)"
+          SIMULATOR_DESTINATION="$(python3 Scripts/select-ios-simulator.py)"
           echo "SIMULATOR_DESTINATION=$SIMULATOR_DESTINATION" >> "$GITHUB_ENV"
 
       - name: Run tests

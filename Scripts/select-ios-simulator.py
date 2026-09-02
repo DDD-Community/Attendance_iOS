@@ -4,6 +4,7 @@
 
 import json
 import re
+import subprocess
 import sys
 
 
@@ -11,7 +12,20 @@ def runtime_version(identifier: str) -> tuple[int, ...]:
     return tuple(map(int, re.findall(r"\d+", identifier)))
 
 
-devices_by_runtime = json.load(sys.stdin).get("devices", {})
+def load_simulators() -> dict:
+    if not sys.stdin.isatty():
+        stdin = sys.stdin.read().strip()
+        if stdin:
+            return json.loads(stdin)
+
+    output = subprocess.check_output(
+        ["xcrun", "simctl", "list", "devices", "available", "--json"],
+        text=True,
+    )
+    return json.loads(output)
+
+
+devices_by_runtime = load_simulators().get("devices", {})
 for runtime in sorted(devices_by_runtime, key=runtime_version, reverse=True):
     for device in devices_by_runtime[runtime]:
         if device.get("isAvailable") and device.get("name", "").startswith("iPhone"):
