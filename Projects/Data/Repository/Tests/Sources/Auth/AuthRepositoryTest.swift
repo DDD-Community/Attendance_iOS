@@ -56,7 +56,7 @@ struct AuthRepositoryTest {
     let mockRepository = MockAuthRepository.failure(MockAuthError.invalidToken)
 
     // When & Then
-    await #expect(throws: MockAuthError.invalidToken) {
+    await #expect(throws: MockAuthError.invalidToken.authError) {
       try await mockRepository.login(provider: .google, token: "invalid_token")
     }
     #expect(mockRepository.loginCallCount == 1)
@@ -68,7 +68,7 @@ struct AuthRepositoryTest {
     let mockRepository = MockAuthRepository.failure(MockAuthError.networkError)
 
     // When & Then
-    await #expect(throws: MockAuthError.networkError) {
+    await #expect(throws: MockAuthError.networkError.authError) {
       try await mockRepository.login(provider: .google, token: "test_token")
     }
     #expect(mockRepository.loginCallCount == 1)
@@ -96,7 +96,7 @@ struct AuthRepositoryTest {
     let mockRepository = MockAuthRepository.failure(MockAuthError.tokenExpired)
 
     // When & Then
-    await #expect(throws: MockAuthError.tokenExpired) {
+    await #expect(throws: MockAuthError.tokenExpired.authError) {
       try await mockRepository.refresh()
     }
     #expect(mockRepository.refreshCallCount == 1)
@@ -125,7 +125,7 @@ struct AuthRepositoryTest {
     let mockRepository = MockAuthRepository.failure(MockAuthError.serverError)
 
     // When & Then
-    await #expect(throws: MockAuthError.serverError) {
+    await #expect(throws: MockAuthError.serverError.authError) {
       try await mockRepository.logout()
     }
     #expect(mockRepository.logoutCallCount == 1)
@@ -155,7 +155,7 @@ struct AuthRepositoryTest {
     let mockRepository = MockAuthRepository.failure(MockAuthError.unauthorized)
 
     // When & Then
-    await #expect(throws: MockAuthError.unauthorized) {
+    await #expect(throws: MockAuthError.unauthorized.authError) {
       try await mockRepository.withDraw(token: "invalid_token")
     }
     #expect(mockRepository.withDrawCallCount == 1)
@@ -238,19 +238,19 @@ struct AuthRepositoryTest {
     let mockRepository = MockAuthRepository.failure(MockAuthError.serverError)
 
     // When & Then
-    await #expect(throws: MockAuthError.serverError) {
+    await #expect(throws: MockAuthError.serverError.authError) {
       try await mockRepository.login(provider: .google, token: "test_token")
     }
 
-    await #expect(throws: MockAuthError.serverError) {
+    await #expect(throws: MockAuthError.serverError.authError) {
       try await mockRepository.refresh()
     }
 
-    await #expect(throws: MockAuthError.serverError) {
+    await #expect(throws: MockAuthError.serverError.authError) {
       try await mockRepository.logout()
     }
 
-    await #expect(throws: MockAuthError.serverError) {
+    await #expect(throws: MockAuthError.serverError.authError) {
       try await mockRepository.withDraw(token: "test_token")
     }
 
@@ -315,7 +315,7 @@ struct AuthRepositoryTest {
     #expect(mockRepository.loginCallCount == 0)
 
     // 실제 호출 시 실패하는지 확인
-    await #expect(throws: MockAuthError.networkError) {
+    await #expect(throws: MockAuthError.networkError.authError) {
       try await mockRepository.login(provider: .google, token: "test_token")
     }
     #expect(mockRepository.loginCallCount == 1)

@@ -11,8 +11,10 @@ let project = Project.makeModule(
   settings: .moduleSettings,
   dependencies: [
     .ui(.sharedUI),
+    .data(.model),
     .domainAssembly
   ],
   sources: ["Sources/**"],
-  hasTests: true
+  hasTests: true,
+  requiresTCAHost: true
 )

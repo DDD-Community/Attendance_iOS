@@ -155,4 +155,21 @@ enum MockAuthError: Error, Equatable {
   case serverError
   case invalidCredentials
   case userNotFound
+
+  var authError: AuthError {
+    switch self {
+    case .invalidToken, .invalidCredentials:
+      return .invalidCredential("invalid token")
+    case .tokenExpired:
+      return .refreshTokenExpired
+    case .networkError:
+      return .networkError("network error")
+    case .unauthorized:
+      return .accountDeletionNotAllowed
+    case .serverError:
+      return .backendError("server error")
+    case .userNotFound:
+      return .backendError("user not found")
+    }
+  }
 }

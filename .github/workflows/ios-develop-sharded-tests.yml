@@ -99,7 +99,7 @@ jobs:
         run: |
           mise exec -- tuist xcodebuild build-for-testing \
             -workspace DDDAttendance.xcworkspace \
-            -scheme DDDAttendance-Stage \
+            -scheme DDDAttendance-AllTests-Stage \
             -configuration Stage \
             -destination "$SIMULATOR_DESTINATION" \
             -derivedDataPath "$CI_DERIVED_DATA" \
@@ -113,7 +113,7 @@ jobs:
       - name: Build app for bundle insights
         run: |
           mise exec -- tuist xcodebuild build \
-            -workspace DDDAttendance.xcworkspace \
+            -project Projects/App/DDDAttendance.xcodeproj \
             -scheme DDDAttendance-Stage \
             -configuration Stage \
             -destination "$SIMULATOR_DESTINATION" \

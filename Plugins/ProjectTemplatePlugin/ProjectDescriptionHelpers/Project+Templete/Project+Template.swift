@@ -82,14 +82,14 @@ public extension Project {
       packages: packages,
       settings: settings,
       targets: targets,
-      schemes: schemes.isEmpty ? appEnvironmentSchemes(name: name) : schemes,
+      schemes: schemes.isEmpty ? appEnvironmentSchemes(name: name, hasTests: hasTests) : schemes,
       fileHeaderTemplate: .default
     )
   }
 
   /// 단일 앱 타깃을 환경별 config 로 빌드하는 스킴들.
   /// 스킴 이름은 기존 CI(fastlane STAGE_SCHEME/PROD_SCHEME)와 호환되도록 유지한다.
-  private static func appEnvironmentSchemes(name: String) -> [Scheme] {
+  private static func appEnvironmentSchemes(name: String, hasTests: Bool) -> [Scheme] {
     func envScheme(_ schemeName: String, config: ConfigurationName) -> Scheme {
       return .scheme(
         name: schemeName,
@@ -105,6 +105,11 @@ public extension Project {
           ],
           runPostActionsOnFailure: true
         ),
+        testAction: hasTests ? .targets(
+          [.testableTarget(target: .target("\(name)Tests"))],
+          configuration: config,
+          options: .options(coverage: true)
+        ) : nil,
         runAction: .runAction(configuration: config),
         archiveAction: .archiveAction(configuration: config),
         profileAction: .profileAction(configuration: config),
@@ -112,8 +117,7 @@ public extension Project {
       )
     }
     return [
-      // Stage 는 여러 프로젝트의 테스트를 포함해야 하므로 WorkSpace.swift 에서 정의한다.
-      // 앱 프로젝트에는 배포용 Prod 스킴만 둬 같은 이름의 Stage 스킴 충돌을 막는다.
+      envScheme("\(name)-Stage", config: .stage),
       envScheme("\(name)-Prod", config: .prod)
     ]
   }
@@ -137,7 +141,8 @@ public extension Project {
     hasTests: Bool = false,
     hasInterface: Bool = false,
     interfaceDependencies: [ProjectDescription.TargetDependency] = [],
-    hasTesting: Bool = false
+    hasTesting: Bool = false,
+    requiresTCAHost: Bool = false
   ) -> Project {
     // Interface 타깃은 Interface/ 폴더가 실제로 있을 때만 만든다(buildableFolders 는 폴더가 없으면 generate 실패).
     let interfaceTarget: Target? = hasInterface ? .target(
@@ -186,7 +191,7 @@ public extension Project {
     }
 
     if hasTests {
-      let requiresTCAHost = dependencies.contains { dependency in
+      let hasDirectTCADependency = dependencies.contains { dependency in
         switch dependency {
         case let .external(name, _):
           return name == "ComposableArchitecture"
@@ -194,7 +199,7 @@ public extension Project {
           return false
         }
       }
-      let testHostName = requiresTCAHost ? "DDDTCAHost" : "DDDTestHost"
+      let testHostName = requiresTCAHost || hasDirectTCADependency ? "DDDTCAHost" : "DDDTestHost"
 
       let appTestTarget: Target = .target(
         name: "\(name)Tests",

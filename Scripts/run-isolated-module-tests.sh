@@ -2,7 +2,7 @@
 
 set -uo pipefail
 
-readonly APP_SCHEME="${APP_SCHEME:-DDDAttendance}"
+readonly APP_SCHEME="${APP_SCHEME:-DDDAttendance-Stage}"
 readonly CONFIGURATION="${CONFIGURATION:-Stage}"
 readonly SIMULATOR_DESTINATION="${SIMULATOR_DESTINATION:?SIMULATOR_DESTINATION is required}"
 readonly CI_DERIVED_DATA="${CI_DERIVED_DATA:?CI_DERIVED_DATA is required}"
@@ -24,7 +24,7 @@ run_module_tests() {
   mise exec -- tuist test "$scheme" \
     --configuration "$CONFIGURATION" \
     --no-selective-testing \
-    --inspect-mode remote \
+    --inspect-mode off \
     --result-bundle-path "$result_bundle" \
     --path "$PWD" \
     -- \
@@ -32,7 +32,7 @@ run_module_tests() {
     -derivedDataPath "$derived_data" \
     -enableCodeCoverage YES \
     -retry-tests-on-failure \
-    -test-iterations 3 \
+    -test-iterations 2 \
     -collect-test-diagnostics never \
     ONLY_ACTIVE_ARCH=YES \
     COMPILATION_CACHE_ENABLE_CACHING="$compilation_cache_enabled"
@@ -56,23 +56,23 @@ fi
 
 rm -rf "$RESULTS_DIRECTORY" "$MERGED_RESULT_BUNDLE" "$LOGS_DIRECTORY"
 mkdir -p "$RESULTS_DIRECTORY" "$CI_DERIVED_DATA" "$LOGS_DIRECTORY"
+rm -rf \
+  "$CI_DERIVED_DATA/Modules/Build" \
+  "$CI_DERIVED_DATA/Modules/Index.noindex" \
+  "$CI_DERIVED_DATA/Modules/Logs" \
+  "$CI_DERIVED_DATA/Modules/SourcePackages" \
+  "$CI_DERIVED_DATA/Modules/info.plist"
 
 for scheme in "${test_schemes[@]}"; do
   safe_scheme="${scheme//[^[:alnum:]_-]/_}"
-  derived_data="$CI_DERIVED_DATA/$safe_scheme"
+  # 모든 테스트는 전용 호스트 앱에서 실행되므로 Products를 안전하게 공유할 수 있다.
+  # 모듈마다 TCA/SPM 의존성을 다시 빌드하지 않고 앞 스킴의 산출물을 재사용한다.
+  derived_data="$CI_DERIVED_DATA/Modules"
   result_bundle="$RESULTS_DIRECTORY/$safe_scheme.xcresult"
   build_log="$LOGS_DIRECTORY/$safe_scheme.log"
 
-  # Xcode 26.3은 host-less 테스트가 Sharing.framework가 있는 공용 Products를 보면
-  # XCTest의 LocalStatusKit 클래스 탐색 중 충돌한다. 스킴별 Products를 격리한다.
   mkdir -p "$derived_data"
-  rm -rf \
-    "$derived_data/Build" \
-    "$derived_data/Index.noindex" \
-    "$derived_data/Logs" \
-    "$derived_data/SourcePackages" \
-    "$derived_data/info.plist" \
-    "$result_bundle"
+  rm -rf "$result_bundle"
 
   echo "▶︎ $scheme 테스트 시작"
   if run_module_tests "$scheme" "$result_bundle" "$derived_data" 2>&1 | tee "$build_log"; then

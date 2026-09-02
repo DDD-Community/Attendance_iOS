@@ -17,7 +17,7 @@ public extension Scheme {
     )
 
     return .scheme(
-      name: "\(name)-Stage",
+      name: "\(name)-AllTests-Stage",
       shared: true,
       buildAction: .buildAction(
         targets: [appTarget],

@@ -38,7 +38,7 @@ final class MockAuthRepository: AuthInterface {
 
   func configureFailure(_ error: Error) {
     shouldSucceed = false
-    errorToThrow = AuthError.from(error)
+    errorToThrow = (error as? MockAuthError)?.authError ?? AuthError.from(error)
   }
 
   func reset() {

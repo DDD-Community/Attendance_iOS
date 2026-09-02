@@ -112,8 +112,8 @@ jobs:
         run: |
           # Xcode 26.3에서 host-less 모듈 테스트가 앱의 Sharing.framework와 같은
           # Products 디렉터리를 공유하면 XCTest가 시작 전에 충돌한다.
-          # 각 모듈을 tuist test로 실행해 Test Insights와 최적화 기준을 저장하고,
-          # 분리된 xcresult를 합쳐 전체 커버리지 Run도 한 번 업로드한다.
+          # 각 모듈을 tuist test로 실행하되 빌드 산출물은 공유하고,
+          # 분리된 xcresult를 합쳐 Test Insights와 전체 커버리지를 한 번만 업로드한다.
           ./Scripts/run-isolated-module-tests.sh
 
       - name: Upload test results
@@ -143,9 +143,10 @@ jobs:
 
       # 테스트 빌드의 DerivedData를 재사용해 추가 컴파일을 줄이고 PR 크기 변화를 기록한다.
       - name: Build app for bundle insights
+        if: steps.tests.outcome == 'success'
         run: |
           mise exec -- tuist xcodebuild build \
-            -workspace DDDAttendance.xcworkspace \
+            -project Projects/App/DDDAttendance.xcodeproj \
             -scheme DDDAttendance-Stage \
             -configuration Stage \
             -destination "$SIMULATOR_DESTINATION" \
@@ -155,6 +156,7 @@ jobs:
             COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
 
       - name: Inspect bundle size
+        if: steps.tests.outcome == 'success'
         continue-on-error: true
         run: |
           mise exec -- tuist inspect bundle DDDAttendance \

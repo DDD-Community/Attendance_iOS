@@ -38,7 +38,7 @@ struct RepositoryIntegrationTest {
     // When
     _ = try await mockAuth1.login(provider: .google, token: "token1")
 
-    await #expect(throws: MockAuthError.networkError) {
+    await #expect(throws: MockAuthError.networkError.authError) {
       try await mockAuth2.login(provider: .apple, token: "token2")
     }
 
@@ -167,7 +167,7 @@ struct RepositoryIntegrationTest {
 
     // 2. 실패 상태로 변경
     mockRepository.configureFailure(MockAuthError.invalidToken)
-    await #expect(throws: MockAuthError.invalidToken) {
+    await #expect(throws: MockAuthError.invalidToken.authError) {
       try await mockRepository.login(provider: .apple, token: "fail_token")
     }
     #expect(mockRepository.loginCallCount == 2)
@@ -233,7 +233,7 @@ struct RepositoryIntegrationTest {
       let mockRepository = MockAuthRepository.failure(errorType)
 
       // When & Then
-      await #expect(throws: errorType) {
+      await #expect(throws: errorType.authError) {
         try await mockRepository.login(provider: .google, token: "test_token")
       }
       #expect(mockRepository.loginCallCount == 1)
@@ -286,7 +286,7 @@ struct RepositoryIntegrationTest {
     let successResult = try await successMock.login(provider: .google, token: "test")
     #expect(successResult.name == "Test User")
 
-    await #expect(throws: MockAuthError.networkError) {
+    await #expect(throws: MockAuthError.networkError.authError) {
       try await failureMock.login(provider: .google, token: "test")
     }
   }
