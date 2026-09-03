@@ -13,7 +13,7 @@ import Sharing
 import DDDCoreLogger
 
 /// 통합 OAuth UseCase - 로그인/회원가입 플로우를 하나로 통합
-public struct UnifiedOAuthUseCase {
+public struct UnifiedOAuthUseCase: UnifiedOAuthUseCaseInterface {
   @Dependency(\.authRepository) private var authRepository: AuthInterface
   @Dependency(\.appleOAuthProvider) private var appleProvider: AppleOAuthProviderInterface
   @Dependency(\.googleOAuthProvider) private var googleProvider: GoogleOAuthProviderInterface
@@ -22,21 +22,6 @@ public struct UnifiedOAuthUseCase {
   @Shared(.appStorage("appleUserName")) var savedAppleUserName: String?
 
   public init() {}
-}
-
-// MARK: - Dependencies Registration
-
-extension UnifiedOAuthUseCase: DependencyKey {
-  public static let liveValue = UnifiedOAuthUseCase()
-  public static let testValue = UnifiedOAuthUseCase()
-  public static let previewValue = UnifiedOAuthUseCase()
-}
-
-public extension DependencyValues {
-  var unifiedOAuthUseCase: UnifiedOAuthUseCase {
-    get { self[UnifiedOAuthUseCase.self] }
-    set { self[UnifiedOAuthUseCase.self] = newValue }
-  }
 }
 
 // MARK: - Public Interface

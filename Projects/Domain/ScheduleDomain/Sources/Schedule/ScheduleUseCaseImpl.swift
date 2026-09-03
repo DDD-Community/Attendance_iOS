@@ -8,7 +8,7 @@
 import Dependencies
 import ScheduleDomainInterface
 
-public struct ScheduleUseCaseImpl: ScheduleInterface {
+public struct ScheduleUseCaseImpl: ScheduleUseCaseInterface {
   @Dependency(\.scheduleRepository) var repository
 
   public init() {}
@@ -23,18 +23,5 @@ public struct ScheduleUseCaseImpl: ScheduleInterface {
 
   public func getSchedule() async throws(ScheduleError) -> [Schedule] {
     return try await repository.getSchedule()
-  }
-}
-
-extension ScheduleUseCaseImpl: DependencyKey {
-  public static var liveValue: ScheduleInterface = ScheduleUseCaseImpl()
-  public static var testValue: ScheduleInterface = ScheduleUseCaseImpl()
-  public static var previewValue: ScheduleInterface = liveValue
-}
-
-public extension DependencyValues {
-  var scheduleUseCase: ScheduleInterface {
-    get { self[ScheduleUseCaseImpl.self] }
-    set { self[ScheduleUseCaseImpl.self] = newValue }
   }
 }

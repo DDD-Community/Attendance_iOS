@@ -9,10 +9,10 @@ import Foundation
 import SwiftUI
 
 import ComposableArchitecture
-import AttendanceDomain
-import QRCodeDomain
-import ScheduleDomain
-import VoteDomain
+import AttendanceDomainInterface
+import QRCodeDomainInterface
+import ScheduleDomainInterface
+import VoteDomainInterface
 
 // MARK: - Fixture
 
@@ -87,7 +87,7 @@ enum EntityFixtureSchedule {
 
 // MARK: - Attendance UseCase Stub
 
-struct ManagementSupportAttendanceUseCase: AttendanceInterface, @unchecked Sendable {
+struct ManagementSupportAttendanceUseCase: AttendanceUseCaseInterface, @unchecked Sendable {
   var countResult: Result<AttendanceCount, AttendanceError> = .success(ManagementSupportFixture.attendanceCount)
   var teamsResult: Result<[SelectTeamEntity], AttendanceError> = .success(ManagementSupportFixture.teams)
   var attendanceResult: Result<[Attendance], AttendanceError> = .success(ManagementSupportFixture.attendances)
@@ -135,7 +135,7 @@ struct ManagementSupportAttendanceUseCase: AttendanceInterface, @unchecked Senda
 
 // MARK: - Schedule UseCase Stub
 
-struct ManagementSupportScheduleUseCase: ScheduleInterface, @unchecked Sendable {
+struct ManagementSupportScheduleUseCase: ScheduleUseCaseInterface, @unchecked Sendable {
   var scheduleResult: Result<[Schedule], ScheduleError> = .success(ManagementSupportFixture.schedules)
   var cachedSchedule: [Schedule]?
 
@@ -153,7 +153,7 @@ struct ManagementSupportScheduleUseCase: ScheduleInterface, @unchecked Sendable 
 
 // MARK: - QRCode UseCase Stub
 
-struct ManagementSupportQRCodeUseCase: QRCodeInterface, @unchecked Sendable {
+struct ManagementSupportQRCodeUseCase: QRCodeUseCaseInterface, @unchecked Sendable {
   var createResult: Result<String, QRCodeError> = .success("qr-payload")
   var validateResult: Result<QRValidateEntity, QRCodeError> = .success(ManagementSupportFixture.qrValidateSuccess)
 

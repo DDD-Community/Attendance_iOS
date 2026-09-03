@@ -9,7 +9,7 @@ import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
-import ScheduleDomain
+import ScheduleDomainInterface
 
 import ComposableArchitecture
 import ManagementInterface

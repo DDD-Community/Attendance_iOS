@@ -7,8 +7,8 @@
 //
 
 import ComposableArchitecture
-import OnBoardingDomain
-import ProfileDomain
+import OnBoardingDomainInterface
+import ProfileDomainInterface
 import Testing
 
 @testable import OnBoarding
@@ -23,7 +23,7 @@ struct OnBoardingViewRenderTests {
     let store = Store(initialState: InviteCodeReducer.State()) {
       InviteCodeReducer()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository()
+      $0.onBoardingUseCase = StubOnBoardingRepository()
     }
 
     OnBoardingViewRenderer.render(InviteCodeView(store: store, backAction: {}))
@@ -41,7 +41,7 @@ struct OnBoardingViewRenderTests {
     let store = Store(initialState: state) {
       InviteCodeReducer()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository()
+      $0.onBoardingUseCase = StubOnBoardingRepository()
     }
 
     OnBoardingViewRenderer.render(InviteCodeView(store: store, backAction: {}))
@@ -56,7 +56,7 @@ struct OnBoardingViewRenderTests {
     let store = Store(initialState: state) {
       InviteCodeReducer()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository()
+      $0.onBoardingUseCase = StubOnBoardingRepository()
     }
 
     OnBoardingViewRenderer.render(InviteCodeView(store: store, backAction: {}))
@@ -96,7 +96,7 @@ struct OnBoardingViewRenderTests {
     let store = Store(initialState: state) {
       SelectPartReducer()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(jobs: OnBoardingCoverageFixture.jobs)
+      $0.onBoardingUseCase = StubOnBoardingRepository(jobs: OnBoardingCoverageFixture.jobs)
     }
 
     OnBoardingViewRenderer.render(SelectPartView(store: store, backAction: {}))
@@ -112,7 +112,7 @@ struct OnBoardingViewRenderTests {
     let store = Store(initialState: state) {
       SelectPartReducer()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(jobs: OnBoardingCoverageFixture.jobs)
+      $0.onBoardingUseCase = StubOnBoardingRepository(jobs: OnBoardingCoverageFixture.jobs)
     }
 
     OnBoardingViewRenderer.render(SelectPartView(store: store, backAction: {}))
@@ -128,7 +128,7 @@ struct OnBoardingViewRenderTests {
     let store = Store(initialState: state) {
       SelectManagingReducer()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
+      $0.onBoardingUseCase = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
     }
 
     OnBoardingViewRenderer.render(SelectManagingView(store: store, backAction: {}))
@@ -144,7 +144,7 @@ struct OnBoardingViewRenderTests {
     let store = Store(initialState: state) {
       SelectManagingReducer()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
+      $0.onBoardingUseCase = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
     }
 
     OnBoardingViewRenderer.render(SelectManagingView(store: store, backAction: {}))
@@ -159,7 +159,7 @@ struct OnBoardingViewRenderTests {
     let store = Store(initialState: state) {
       SelectManagingReducer()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
+      $0.onBoardingUseCase = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
     }
 
     OnBoardingViewRenderer.render(SelectManagingView(store: store, backAction: {}))
@@ -175,7 +175,7 @@ struct OnBoardingViewRenderTests {
     let store = Store(initialState: state) {
       SelectTeam()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(teams: OnBoardingCoverageFixture.teams)
+      $0.onBoardingUseCase = StubOnBoardingRepository(teams: OnBoardingCoverageFixture.teams)
       $0.signUpUseCase = StubSignUpUseCase()
       $0.profileUseCase = StubProfileUseCase()
     }
@@ -194,7 +194,7 @@ struct OnBoardingViewRenderTests {
     let store = Store(initialState: state) {
       SelectTeam()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(teams: OnBoardingCoverageFixture.teams)
+      $0.onBoardingUseCase = StubOnBoardingRepository(teams: OnBoardingCoverageFixture.teams)
       $0.signUpUseCase = StubSignUpUseCase()
       $0.profileUseCase = StubProfileUseCase()
     }
@@ -219,7 +219,7 @@ struct OnBoardingViewRenderTests {
     let store = Store(initialState: state) {
       SelectTeam()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(teams: OnBoardingCoverageFixture.teams)
+      $0.onBoardingUseCase = StubOnBoardingRepository(teams: OnBoardingCoverageFixture.teams)
       $0.signUpUseCase = StubSignUpUseCase()
       $0.profileUseCase = StubProfileUseCase()
     }

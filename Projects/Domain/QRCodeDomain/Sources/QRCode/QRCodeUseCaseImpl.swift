@@ -11,7 +11,7 @@ import SwiftUI
 import QRCodeDomainInterface
 
 
-public struct QRCodeUseCaseImpl: QRCodeInterface {
+public struct QRCodeUseCaseImpl: QRCodeUseCaseInterface {
   @Dependency(\.qrCodeRepository) var repository
 
   public init() { }
@@ -29,18 +29,5 @@ public struct QRCodeUseCaseImpl: QRCodeInterface {
     from code: String
   ) async throws(QRCodeError) -> QRValidateEntity {
     return try await repository.qrValidateCheck(from: code)
-  }
-}
-
-extension QRCodeUseCaseImpl: DependencyKey {
-  public static var liveValue: QRCodeInterface = QRCodeUseCaseImpl()
-  public static var testValue: QRCodeInterface = QRCodeUseCaseImpl()
-  public static var previewValue: QRCodeInterface = liveValue
-}
-
-public extension DependencyValues {
-  var qrCodeUseCase: QRCodeInterface {
-    get { self[QRCodeUseCaseImpl.self] }
-    set { self[QRCodeUseCaseImpl.self] = newValue }
   }
 }

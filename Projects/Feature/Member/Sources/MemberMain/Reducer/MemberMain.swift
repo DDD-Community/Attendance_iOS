@@ -9,10 +9,10 @@ import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
-import AttendanceDomain
-import MyPageDomain
-import ProfileDomain
-import VoteDomain
+import AttendanceDomainInterface
+import MyPageDomainInterface
+import ProfileDomainInterface
+import VoteDomainInterface
 
 import ComposableArchitecture
 import MemberInterface

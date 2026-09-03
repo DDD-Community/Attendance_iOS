@@ -7,12 +7,8 @@
 
 import DDDCoreLogger
 import ComposableArchitecture
-import AuthDomain
+import AuthDomainInterface
 import OnBoardingDomainInterface
-
-public protocol SignUpUseCaseInterface: Sendable {
-  func registerUser(userSession: UserSession) async throws(SignUpError) -> SignUpUser
-}
 
 
 public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
@@ -62,18 +58,5 @@ public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
     }
 
     return signUpUser
-  }
-}
-
-extension SignUpUseCaseImpl: DependencyKey {
-  public static var liveValue: SignUpUseCaseInterface = SignUpUseCaseImpl()
-  public static var testValue: SignUpUseCaseInterface = SignUpUseCaseImpl()
-  public static var previewValue: SignUpUseCaseInterface = liveValue
-}
-
-public extension DependencyValues {
-  var signUpUseCase: SignUpUseCaseInterface {
-    get { self[SignUpUseCaseImpl.self] }
-    set { self[SignUpUseCaseImpl.self] = newValue }
   }
 }

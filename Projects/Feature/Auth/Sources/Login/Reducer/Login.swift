@@ -9,7 +9,7 @@ import DDDCoreLogger
 import Foundation
 
 import DDDCoreUtility
-import AuthDomain
+import AuthDomainInterface
 
 import AuthenticationServices
 import ComposableArchitecture

@@ -9,10 +9,6 @@ import AppUpdateDomainInterface
 import Foundation
 import ComposableArchitecture
 
-public protocol AppUpdateUseCaseInterface: Sendable {
-  func checkForUpdate() async throws(AppUpdateError) -> AppUpdateInfo?
-}
-
 public struct AppUpdateUseCaseImpl: AppUpdateUseCaseInterface {
   @Dependency(\.appUpdateRepository) var repository
 
@@ -73,18 +69,5 @@ private extension AppUpdateInfo {
     }
 
     return nil
-  }
-}
-
-extension AppUpdateUseCaseImpl: DependencyKey {
-  public static var liveValue: AppUpdateUseCaseInterface = AppUpdateUseCaseImpl()
-  public static var testValue: AppUpdateUseCaseInterface = AppUpdateUseCaseImpl()
-  public static var previewValue: AppUpdateUseCaseInterface = liveValue
-}
-
-public extension DependencyValues {
-  var appUpdateUseCase: AppUpdateUseCaseInterface {
-    get { self[AppUpdateUseCaseImpl.self] }
-    set { self[AppUpdateUseCaseImpl.self] = newValue }
   }
 }

@@ -6,11 +6,6 @@
 import MyPageDomainInterface
 import Dependencies
 
-public protocol MyPageUseCaseInterface: Sendable {
-  func fetchAttendances() async throws(MyPageError) -> AttendanceSummaryResponse
-  func fetchSchedules() async throws(MyPageError) -> [AttendanceMyScheduleResponse]
-}
-
 public struct MyPageUseCaseImpl: MyPageUseCaseInterface {
   private let repository: any MyPageInterface
 
@@ -24,22 +19,5 @@ public struct MyPageUseCaseImpl: MyPageUseCaseInterface {
 
   public func fetchSchedules() async throws(MyPageError) -> [AttendanceMyScheduleResponse] {
     try await repository.fetchSchedules()
-  }
-}
-
-extension MyPageUseCaseImpl: DependencyKey {
-  public static var liveValue: any MyPageUseCaseInterface {
-    @Dependency(\.myPageRepository) var repository
-    return MyPageUseCaseImpl(repository: repository)
-  }
-
-  public static var testValue: any MyPageUseCaseInterface = liveValue
-  public static var previewValue: any MyPageUseCaseInterface = liveValue
-}
-
-public extension DependencyValues {
-  var myPageUseCase: any MyPageUseCaseInterface {
-    get { self[MyPageUseCaseImpl.self] }
-    set { self[MyPageUseCaseImpl.self] = newValue }
   }
 }

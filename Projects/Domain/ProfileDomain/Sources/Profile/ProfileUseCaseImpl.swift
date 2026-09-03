@@ -9,13 +9,6 @@ import ProfileDomainInterface
 
 import ComposableArchitecture
 
-public protocol ProfileUseCaseInterface: Sendable {
-  func getProfile() async throws(ProfileError) -> ProfileEntity
-  func getCachedProfile() async -> ProfileEntity?
-  func refreshProfile() async throws(ProfileError) -> ProfileEntity
-  func editUser(userSession: UserSession) async throws(EditProfileError) -> ProfileEntity
-}
-
 public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
   @Dependency(\.profileRepository) var repository
   @Shared(.appStorage("staffRole")) var staffRole: Staff?
@@ -97,18 +90,5 @@ public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
         $0.inviteCode = inviteCode
       }
     }
-  }
-}
-
-extension ProfileUseCaseImpl: DependencyKey {
-  public static var liveValue: ProfileUseCaseInterface = ProfileUseCaseImpl()
-  public static var testValue: ProfileUseCaseInterface = ProfileUseCaseImpl()
-  public static var previewValue: ProfileUseCaseInterface = liveValue
-}
-
-public extension DependencyValues {
-  var profileUseCase: ProfileUseCaseInterface {
-    get { self[ProfileUseCaseImpl.self] }
-    set { self[ProfileUseCaseImpl.self] = newValue }
   }
 }

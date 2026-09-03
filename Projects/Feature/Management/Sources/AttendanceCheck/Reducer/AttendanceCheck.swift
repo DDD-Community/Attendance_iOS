@@ -11,8 +11,8 @@ import Foundation
 import DDDSharedUI
 
 import ComposableArchitecture
-import AttendanceDomain
-import ScheduleDomain
+import AttendanceDomainInterface
+import ScheduleDomainInterface
 
 @Reducer
 public struct AttendanceCheck {

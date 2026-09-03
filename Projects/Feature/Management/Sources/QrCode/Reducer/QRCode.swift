@@ -9,7 +9,7 @@ import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
-import QRCodeDomain
+import QRCodeDomainInterface
 
 import ComposableArchitecture
 import Vision

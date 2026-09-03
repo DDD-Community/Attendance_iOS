@@ -6,8 +6,8 @@
 //
 
 import ComposableArchitecture
-import OnBoardingDomain
-import ProfileDomain
+import OnBoardingDomainInterface
+import ProfileDomainInterface
 import Testing
 
 @testable import OnBoarding
@@ -87,7 +87,7 @@ struct InviteCodeReducerTests {
     let store = TestStore(initialState: state) {
       InviteCodeReducer()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(verifiedCode: verification)
+      $0.onBoardingUseCase = StubOnBoardingRepository(verifiedCode: verification)
     }
 
     await store.send(.async(.verifyInviteCode(code: "ABCD")))
@@ -109,7 +109,7 @@ struct InviteCodeReducerTests {
     let store = TestStore(initialState: InviteCodeReducer.State()) {
       InviteCodeReducer()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(failure: .invalidCode)
+      $0.onBoardingUseCase = StubOnBoardingRepository(failure: .invalidCode)
     }
 
     await store.send(.async(.verifyInviteCode(code: "0000")))

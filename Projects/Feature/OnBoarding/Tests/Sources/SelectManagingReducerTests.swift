@@ -6,8 +6,8 @@
 //
 
 import ComposableArchitecture
-import OnBoardingDomain
-import ProfileDomain
+import OnBoardingDomainInterface
+import ProfileDomainInterface
 import Testing
 
 @testable import OnBoarding
@@ -22,7 +22,7 @@ struct SelectManagingReducerTests {
     let store = TestStore(initialState: SelectManagingReducer.State()) {
       SelectManagingReducer()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
+      $0.onBoardingUseCase = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
     }
 
     await store.send(.view(.onAppear))
@@ -52,7 +52,7 @@ struct SelectManagingReducerTests {
     let store = TestStore(initialState: SelectManagingReducer.State()) {
       SelectManagingReducer()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(failure: .verifyFailed)
+      $0.onBoardingUseCase = StubOnBoardingRepository(failure: .verifyFailed)
     }
 
     let expected = SignUpError.from(OnBoardingError.verifyFailed)

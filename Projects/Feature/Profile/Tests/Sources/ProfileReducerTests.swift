@@ -8,8 +8,8 @@
 
 import ComposableArchitecture
 import Testing
-import AuthDomain
-import ProfileDomain
+import AuthDomainInterface
+import ProfileDomainInterface
 
 @testable import Profile
 

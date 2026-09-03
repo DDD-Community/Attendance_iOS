@@ -113,16 +113,3 @@ public struct VoteUseCaseImpl: VoteUseCaseInterface {
     try await repository.fetchMyResponse(voteId: voteId)
   }
 }
-
-extension VoteUseCaseImpl: DependencyKey {
-  public static var liveValue: VoteUseCaseInterface = VoteUseCaseImpl()
-  public static var testValue: VoteUseCaseInterface = VoteUseCaseImpl()
-  public static var previewValue: VoteUseCaseInterface = liveValue
-}
-
-public extension DependencyValues {
-  var voteUseCase: VoteUseCaseInterface {
-    get { self[VoteUseCaseImpl.self] }
-    set { self[VoteUseCaseImpl.self] = newValue }
-  }
-}

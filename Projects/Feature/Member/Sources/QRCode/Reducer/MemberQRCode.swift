@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 
 import DDDSharedUI
-import QRCodeDomain
+import QRCodeDomainInterface
 
 import ComposableArchitecture
 import MemberInterface

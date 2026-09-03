@@ -44,7 +44,7 @@ enum ProfileViewRenderer {
       ProfileReducer()
     } withDependencies: {
       $0.profileUseCase = profileUseCase
-      $0.authRepository = authRepository
+      $0.authUseCase = authRepository
       $0.continuousClock = ImmediateClock()
     }
   }

@@ -7,13 +7,13 @@
 //
 
 import ComposableArchitecture
-import OnBoardingDomain
-import ProfileDomain
+import OnBoardingDomainInterface
+import ProfileDomainInterface
 import Foundation
 
 // MARK: - UseCase Stub
 
-struct StubOnBoardingRepository: OnBoardingInterface, @unchecked Sendable {
+struct StubOnBoardingRepository: OnBoardingInterface, OnBoardingUseCaseInterface, @unchecked Sendable {
   var teams: [SelectTeamEntity] = []
   var jobs: [SelectJob] = []
   var managings: [SelectManaging] = []
@@ -69,7 +69,7 @@ struct StubProfileUseCase: ProfileUseCaseInterface, @unchecked Sendable {
     profile
   }
 
-  func editUser(userSession _: UserSession) async throws(EditProfileError) -> ProfileEntity {
+  func editProfile(input _: EditProfileInput) async throws(EditProfileError) -> ProfileEntity {
     if let editFailure = editFailure { throw editFailure }
     return profile
   }

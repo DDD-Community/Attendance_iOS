@@ -9,8 +9,8 @@ import DDDCoreLogger
 import Foundation
 
 import DDDCoreUtility
-import OnBoardingDomain
-import ProfileDomain
+import OnBoardingDomainInterface
+import ProfileDomainInterface
 
 import ComposableArchitecture
 import OnBoardingInterface
@@ -240,7 +240,9 @@ extension SelectTeam {
           userSession = state.userSession
         ] send in
           let editProfileResult = await Result {
-            return try await profileUseCase.editUser(userSession: userSession)
+            return try await profileUseCase.editProfile(
+              input: EditProfileInput(userSession: userSession)
+            )
           }
           .mapError(ProfileError.from)
           return await send(.inner(.editProfileResponse(editProfileResult)))
@@ -329,5 +331,18 @@ extension SelectTeam {
         }
 
     }
+  }
+}
+
+private extension EditProfileInput {
+  init(userSession: UserSession) {
+    self.init(
+      name: userSession.name,
+      generationId: userSession.generationId,
+      jobRole: userSession.selectPart,
+      teamId: userSession.selectTeamId,
+      managerRoles: userSession.userRole == .manager ? userSession.managing : nil,
+      inviteCode: userSession.inviteCode
+    )
   }
 }

@@ -12,7 +12,7 @@ let project = Project.makeModule(
   dependencies: [
     .ui(.sharedUI),
     .core(.logger),
-    .domain(.auth)
+    .domain(.auth, .interface)
   ],
   sources: ["Sources/**"],
   hasTests: true,

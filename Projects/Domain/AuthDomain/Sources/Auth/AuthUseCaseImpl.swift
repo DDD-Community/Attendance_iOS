@@ -10,7 +10,7 @@ import AuthDomainInterface
 import ComposableArchitecture
 import Foundation
 
-public struct AuthUseCaseImpl: AuthInterface {
+public struct AuthUseCaseImpl: AuthUseCaseInterface {
   @Dependency(\.authRepository) var authRepository
   @Shared(.appStorage("staffRole")) var staffRole: Staff?
   @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
@@ -45,18 +45,5 @@ public struct AuthUseCaseImpl: AuthInterface {
 
   public func updateSessionCredential(with tokens: AuthTokens) async {
     await authRepository.updateSessionCredential(with: tokens)
-  }
-}
-
-extension AuthUseCaseImpl: DependencyKey {
-  public static var liveValue = AuthUseCaseImpl()
-  public static var testValue = AuthUseCaseImpl()
-  public static var previewValue = AuthUseCaseImpl()
-}
-
-public extension DependencyValues {
-  var authUseCase: AuthUseCaseImpl {
-    get { self[AuthUseCaseImpl.self] }
-    set { self[AuthUseCaseImpl.self] = newValue }
   }
 }

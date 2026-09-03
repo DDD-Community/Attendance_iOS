@@ -10,7 +10,7 @@ import AttendanceDomainInterface
 import OnBoardingDomainInterface
 
 
-public struct AttendanceUseCaseImpl: AttendanceInterface {
+public struct AttendanceUseCaseImpl: AttendanceUseCaseInterface {
   @Dependency(\.attendanceRepository) var repository
   
   public init() { }
@@ -39,18 +39,5 @@ public struct AttendanceUseCaseImpl: AttendanceInterface {
     input: EditAttendanceInput
   ) async throws(AttendanceError) -> EditAttendance {
     return try await repository.editAttendance(input: input)
-  }
-}
-
-extension AttendanceUseCaseImpl: DependencyKey {
-  public static var liveValue: AttendanceInterface = AttendanceUseCaseImpl()
-  public static var testValue: AttendanceInterface = AttendanceUseCaseImpl()
-  public static var previewValue: AttendanceInterface = liveValue
-}
-
-public extension DependencyValues {
-  var attendanceUseCase: AttendanceInterface {
-    get { self[AttendanceUseCaseImpl.self] }
-    set { self[AttendanceUseCaseImpl.self] = newValue }
   }
 }

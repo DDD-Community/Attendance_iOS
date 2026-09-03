@@ -11,7 +11,7 @@ import Foundation
 import DDDSharedUI
 
 import ComposableArchitecture
-import ScheduleDomain
+import ScheduleDomainInterface
 
 @Reducer
 public struct ScheduleReducer {

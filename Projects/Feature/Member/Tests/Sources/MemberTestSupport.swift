@@ -7,11 +7,11 @@
 //
 
 import ComposableArchitecture
-import AttendanceDomain
-import MyPageDomain
-import ProfileDomain
-import QRCodeDomain
-import VoteDomain
+import AttendanceDomainInterface
+import MyPageDomainInterface
+import ProfileDomainInterface
+import QRCodeDomainInterface
+import VoteDomainInterface
 import Foundation
 import SwiftUI
 
@@ -392,7 +392,7 @@ final class StubProfileUseCase: ProfileUseCaseInterface, @unchecked Sendable {
     try await getProfile()
   }
 
-  func editUser(userSession _: UserSession) async throws(EditProfileError) -> ProfileEntity {
+  func editProfile(input _: EditProfileInput) async throws(EditProfileError) -> ProfileEntity {
     throw .invalidTeam
   }
 }
@@ -428,7 +428,7 @@ final class StubMyPageUseCase: MyPageUseCaseInterface, @unchecked Sendable {
 
 // MARK: - QRCode UseCase Stub
 
-final class StubQRCodeUseCase: QRCodeInterface, @unchecked Sendable {
+final class StubQRCodeUseCase: QRCodeUseCaseInterface, @unchecked Sendable {
   private let createResult: Result<String, QRCodeError>
 
   init(createResult: Result<String, QRCodeError>) {

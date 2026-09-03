@@ -11,8 +11,8 @@
 //
 
 import ComposableArchitecture
-import AuthDomain
-import ProfileDomain
+import AuthDomainInterface
+import ProfileDomainInterface
 import Foundation
 
 // MARK: - 공유 픽스처
@@ -123,14 +123,14 @@ struct StubProfileUseCase: ProfileUseCaseInterface {
     }
   }
 
-  func editUser(userSession _: UserSession) async throws(EditProfileError) -> ProfileEntity {
+  func editProfile(input _: EditProfileInput) async throws(EditProfileError) -> ProfileEntity {
     throw .profileUpdateFailed
   }
 }
 
 // MARK: - AuthRepository 스텁
 
-struct StubAuthRepository: AuthInterface {
+struct StubAuthRepository: AuthInterface, AuthUseCaseInterface {
   let withdrawResult: Result<WithdrawEntity, AuthError>
   let logoutResult: Result<AuthExitEntity, AuthError>
 

@@ -9,7 +9,7 @@ import DDDCoreLogger
 import ComposableArchitecture
 import DDDDesignKit
 import Foundation
-import VoteDomain
+import VoteDomainInterface
 
 @Reducer
 public struct VoteFeature {

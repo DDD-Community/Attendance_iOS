@@ -7,8 +7,8 @@
 
 import Foundation
 
-import OnBoardingDomain
-import ProfileDomain
+import OnBoardingDomainInterface
+import ProfileDomainInterface
 import DDDCoreUtility
 
 import ComposableArchitecture
@@ -224,7 +224,9 @@ extension SelectManagingReducer {
         userSession = state.userSession
       ] send in
         let editProfileResult = await Result {
-          try await profileUseCase.editUser(userSession: userSession)
+          try await profileUseCase.editProfile(
+            input: EditProfileInput(userSession: userSession)
+          )
         }
         .mapError(ProfileError.from)
         return await send(.inner(.editProfileResponse(editProfileResult)))
@@ -308,5 +310,18 @@ extension SelectManagingReducer {
         return .none
       }
     }
+  }
+}
+
+private extension EditProfileInput {
+  init(userSession: UserSession) {
+    self.init(
+      name: userSession.name,
+      generationId: userSession.generationId,
+      jobRole: userSession.selectPart,
+      teamId: userSession.selectTeamId,
+      managerRoles: userSession.userRole == .manager ? userSession.managing : nil,
+      inviteCode: userSession.inviteCode
+    )
   }
 }

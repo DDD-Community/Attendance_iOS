@@ -9,8 +9,8 @@ import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
-import AuthDomain
-import ProfileDomain
+import AuthDomainInterface
+import ProfileDomainInterface
 
 import ComposableArchitecture
 import ProfileInterface

@@ -9,7 +9,7 @@ import Dependencies
 import OnBoardingDomainInterface
 
 
-public struct OnBoardingUseCaseImpl: OnBoardingInterface {
+public struct OnBoardingUseCaseImpl: OnBoardingUseCaseInterface {
   @Dependency(\.onBoardingRepository) var repository
 
   public init() {}
@@ -33,18 +33,5 @@ public struct OnBoardingUseCaseImpl: OnBoardingInterface {
 
   public func fetchManaging() async throws(OnBoardingError) -> [SelectManaging] {
     return try await repository.fetchManaging()
-  }
-}
-
-extension OnBoardingUseCaseImpl: DependencyKey {
-  public static var liveValue = OnBoardingUseCaseImpl()
-  public static var testValue = OnBoardingUseCaseImpl()
-  public static var previewValue = OnBoardingUseCaseImpl()
-}
-
-public extension DependencyValues {
-  var onBoardingUseCase: OnBoardingUseCaseImpl {
-    get { self[OnBoardingUseCaseImpl.self] }
-    set { self[OnBoardingUseCaseImpl.self] = newValue }
   }
 }

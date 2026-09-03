@@ -8,8 +8,8 @@
 //  네트워크를 타지 않으면서 성공/실패/스트림 경로를 모두 지정할 수 있게 값 타입으로 둔다.
 //
 
-import ScheduleDomain
-import VoteDomain
+import ScheduleDomainInterface
+import VoteDomainInterface
 import Foundation
 
 // MARK: - VoteUseCaseInterface 스텁
@@ -106,7 +106,7 @@ struct ManagementVoteUseCaseStub: VoteUseCaseInterface, @unchecked Sendable {
 // MARK: - ScheduleInterface 스텁
 
 /// `cached` 가 nil 이면 캐시 미스, 빈 배열이면 "캐시는 있지만 비어있음" 경로를 태운다.
-struct ManagementScheduleUseCaseStub: ScheduleInterface, @unchecked Sendable {
+struct ManagementScheduleUseCaseStub: ScheduleUseCaseInterface, @unchecked Sendable {
   var schedules: [Schedule] = []
   var error: ScheduleError?
   var cached: [Schedule]?

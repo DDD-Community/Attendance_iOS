@@ -6,8 +6,8 @@
 //
 
 import ComposableArchitecture
-import OnBoardingDomain
-import ProfileDomain
+import OnBoardingDomainInterface
+import ProfileDomainInterface
 import Testing
 
 @testable import OnBoarding
@@ -56,7 +56,7 @@ struct SelectTeamReducerTests {
     let store = TestStore(initialState: SelectTeam.State()) {
       SelectTeam()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(teams: OnBoardingCoverageFixture.teams)
+      $0.onBoardingUseCase = StubOnBoardingRepository(teams: OnBoardingCoverageFixture.teams)
     }
 
     await store.send(.view(.onAppear))
@@ -74,7 +74,7 @@ struct SelectTeamReducerTests {
     let store = TestStore(initialState: SelectTeam.State()) {
       SelectTeam()
     } withDependencies: {
-      $0.onBoardingRepository = StubOnBoardingRepository(failure: .networkError)
+      $0.onBoardingUseCase = StubOnBoardingRepository(failure: .networkError)
     }
 
     await store.send(.view(.onAppear))

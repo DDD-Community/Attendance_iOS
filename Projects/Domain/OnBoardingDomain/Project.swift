@@ -11,7 +11,7 @@ let project = Project.makeModule(
   dependencies: [
     .core(.logger),
     .serviceAssembly,
-    .domain(.auth),
+    .domain(.auth, .interface),
     .SPM.dependencies
   ],
   hasTests: true,
