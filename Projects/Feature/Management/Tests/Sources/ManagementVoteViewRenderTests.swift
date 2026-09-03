@@ -12,6 +12,7 @@ import ComposableArchitecture
 import DDDDesignKit
 import SwiftUI
 import Testing
+import VoteDomainInterface
 
 @testable import Management
 

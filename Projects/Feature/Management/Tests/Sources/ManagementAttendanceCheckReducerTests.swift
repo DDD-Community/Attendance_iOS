@@ -7,7 +7,9 @@
 //  AttendanceCheck 의 view / async / inner / destination / modal 분기를 TestStore 로 훑는다.
 //
 
+import AttendanceDomainInterface
 import ComposableArchitecture
+import OnBoardingDomainInterface
 import Testing
 
 @testable import Management
