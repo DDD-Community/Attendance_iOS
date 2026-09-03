@@ -87,7 +87,8 @@ public extension Project {
       settings: settings,
       targets: targets,
       schemes: schemes.isEmpty ? appEnvironmentSchemes(name: name, hasTests: hasTests) : schemes,
-      fileHeaderTemplate: .default
+      fileHeaderTemplate: .default,
+      additionalFiles: hasTests ? ["Tests/*.xctestplan"] : []
     )
   }
 
