@@ -17,7 +17,13 @@ struct MemberMainReducerCoverageTests {
 
   @Test("onAppear 는 프로필·출석·일정·투표 조회를 모두 마치고 화면 상태를 채운다")
   func onAppear_모든조회성공_상태를채운다() async {
-    let store = makeStore()
+    let store = makeStore(
+      dependencies: {
+        $0.stubMemberUseCases(
+          vote: StubVoteUseCase(activeVote: .success(MemberTestFixture.activeVote))
+        )
+      }
+    )
     store.exhaustivity = .off
 
     await store.send(.view(.onAppear))
@@ -229,7 +235,13 @@ struct MemberMainReducerCoverageTests {
 
   @Test("onResume 은 프로필·일정·투표 조회를 순차적으로 다시 수행한다")
   func onResume_재조회수행() async {
-    let store = makeStore()
+    let store = makeStore(
+      dependencies: {
+        $0.stubMemberUseCases(
+          vote: StubVoteUseCase(activeVote: .success(MemberTestFixture.activeVote))
+        )
+      }
+    )
     store.exhaustivity = .off
 
     await store.send(.inner(.onResume))

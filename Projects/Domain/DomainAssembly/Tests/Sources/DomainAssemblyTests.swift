@@ -21,6 +21,30 @@ import VoteDomain
 
 @Suite("DomainAssembly")
 struct DomainAssemblyTests {
+  @Test("Apple OAuth Provider가 앱 조립을 통해 라이브 구현으로 해석된다")
+  func appleProviderResolvesFromApplicationAssembly() {
+    withDependencies {
+      $0 = .live
+      DomainDependencyAssembly.register(into: &$0)
+    } operation: {
+      @Dependency(\.appleOAuthProvider) var provider
+
+      #expect(provider is AppleOAuthProvider)
+    }
+  }
+
+  @Test("Google OAuth Provider가 앱 조립을 통해 라이브 구현으로 해석된다")
+  func googleProviderResolvesFromApplicationAssembly() {
+    withDependencies {
+      $0 = .live
+      DomainDependencyAssembly.register(into: &$0)
+    } operation: {
+      @Dependency(\.googleOAuthProvider) var provider
+
+      #expect(provider is GoogleOAuthProvider)
+    }
+  }
+
   @Test("DomainAssembly는 도메인별 UseCase 구현을 등록한다")
   func registersUseCaseDependencies() {
     withDependencies {

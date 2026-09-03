@@ -20,7 +20,7 @@ struct MockRepositoryTests {
     let entity = try await repository.login(provider: .google, token: "token")
 
     #expect(entity.provider == .google)
-    #expect(entity.role == .member)
+    #expect(entity.role == nil)
     #expect(entity.token.accessToken.isEmpty == false)
   }
 

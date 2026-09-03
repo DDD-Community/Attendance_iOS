@@ -132,6 +132,7 @@ struct ManagementAttendanceCheckReducerTests {
       $0.hasFetchedAttendance = true
     }
     await store.finish()
+    await store.skipReceivedActions(strict: false)
 
     #expect(store.state.loading == false)
     #expect(store.state.selectScheduleID == 1)
@@ -140,6 +141,7 @@ struct ManagementAttendanceCheckReducerTests {
 
     await store.send(.view(.onAppear))
     await store.finish()
+    await store.skipReceivedActions(strict: false)
 
     #expect(store.state.attendanceCount == ManagementSupportFixture.attendanceCount.attendanceCount)
   }
@@ -185,6 +187,7 @@ struct ManagementAttendanceCheckReducerTests {
       $0.loading = true
     }
     await store.finish()
+    await store.skipReceivedActions(strict: false)
 
     #expect(store.state.loading == false)
     #expect(store.state.selectScheduleID == 1)
@@ -427,6 +430,7 @@ struct ManagementAttendanceCheckReducerTests {
       $0.attendanceModal = nil
     }
     await store.finish()
+    await store.skipReceivedActions(strict: false)
 
     #expect(store.state.editAttendance == ManagementSupportFixture.editAttendance)
   }

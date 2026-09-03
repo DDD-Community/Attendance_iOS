@@ -13,28 +13,6 @@ import Testing
 
 @Suite("OAuth 라이브 의존성 등록", .serialized)
 struct OAuthDependencyRegistrationTests {
-  @Test("Apple OAuth Provider가 라이브 구현으로 해석된다")
-  func appleProviderResolvesFromLiveContext() {
-    withDependencies {
-      $0 = .live
-    } operation: {
-      @Dependency(\.appleOAuthProvider) var provider
-
-      #expect(provider is AppleOAuthProvider)
-    }
-  }
-
-  @Test("Google OAuth Provider가 라이브 구현으로 해석된다")
-  func googleProviderResolvesFromLiveContext() {
-    withDependencies {
-      $0 = .live
-    } operation: {
-      @Dependency(\.googleOAuthProvider) var provider
-
-      #expect(provider is GoogleOAuthProvider)
-    }
-  }
-
   @Test("Google 로그인 결과가 프로필 API 역할 선택값을 갱신한다")
   @MainActor
   func googleLoginSynchronizesPersistedRole() async throws {

@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import Foundation
 import OnBoardingDomainInterface
 import ProfileDomainInterface
 import Testing
@@ -157,15 +158,16 @@ struct SelectTeamReducerTests {
 
   @Test("기수 변경 중이면 가입 완료가 프로필 수정을 호출하고 운영진 홈으로 이동한다")
   func editGenerationSignUpEditsProfile() async {
-    var state = SelectTeam.State()
-    state.userSession.userRole = .member
-    state.editGeneration = true
-
     let profile = OnBoardingCoverageFixture.managerProfile
+    let appStorage = UserDefaults.inMemory
+    let inMemoryStorage = InMemoryStorage()
+    appStorage.set(true, forKey: "editGeneration")
 
-    let store = TestStore(initialState: state) {
+    let store = TestStore(initialState: SelectTeam.State()) {
       SelectTeam()
     } withDependencies: {
+      $0.defaultAppStorage = appStorage
+      $0.defaultInMemoryStorage = inMemoryStorage
       $0.profileUseCase = StubProfileUseCase(profile: profile)
     }
 

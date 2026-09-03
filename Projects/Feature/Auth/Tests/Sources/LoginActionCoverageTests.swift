@@ -36,7 +36,7 @@ struct LoginActionCoverageTests {
   /// 소셜 버튼 탭이 곧바로 async 로그인 액션으로 위임되는지 확인한다.
   @Test("signInWithSocial 은 async 로그인 액션으로 위임된다")
   func view_signInWithSocial_forwardsToAsyncLogin() async {
-    let store = Self.makeStore()
+    let store = Self.makeStore(oauthOutcome: .success(LoginTestFixture.member))
     store.exhaustivity = .off
 
     await store.send(.view(.signInWithSocial(social: .google)))
@@ -103,7 +103,7 @@ struct LoginActionCoverageTests {
   /// Google 로그인 정상 플로우가 세션 provider 를 갱신하고 멤버 화면으로 이동하는지 확인한다.
   @Test("google 로그인 성공은 provider 를 갱신하고 멤버 메인으로 이동한다")
   func async_login_google_success_navigatesToMemberMain() async {
-    let store = Self.makeStore()
+    let store = Self.makeStore(oauthOutcome: .success(LoginTestFixture.member))
     store.exhaustivity = .off
 
     await store.send(.async(.login(socialType: .google)))
@@ -292,6 +292,7 @@ private extension LoginActionCoverageTests {
   /// 평가된다. State 를 미리 만들어 넘기면 추적기에 등록되지 않으므로 반드시 클로저 안에서 조립한다.
   static func makeStore(
     clock: TestClock<Duration> = TestClock(),
+    oauthOutcome: Result<LoginEntity, AuthError>? = nil,
     configureState: (inout Login.State) -> Void = { _ in }
   ) -> TestStore<Login.State, Login.Action> {
     let appStorage = UserDefaults.inMemory
@@ -309,7 +310,24 @@ private extension LoginActionCoverageTests {
       $0.defaultAppStorage = appStorage
       $0.defaultInMemoryStorage = inMemoryStorage
       $0.continuousClock = clock
+      if let oauthOutcome {
+        $0.unifiedOAuthUseCase = StubUnifiedOAuthUseCase(outcome: oauthOutcome)
+      }
     }
+  }
+}
+
+/// 기본 testValue 는 항상 실패를 돌려주므로, 로그인 성공 경로를 태우려면 결과를 주입해야 한다.
+private struct StubUnifiedOAuthUseCase: UnifiedOAuthUseCaseInterface {
+  let outcome: Result<LoginEntity, AuthError>
+
+  func processOAuthFlow(
+    with _: SocialType,
+    appleCredential _: ASAuthorizationAppleIDCredential?,
+    nonce _: String?,
+    googleToken _: String?
+  ) async -> Result<LoginEntity, AuthError> {
+    outcome
   }
 }
 

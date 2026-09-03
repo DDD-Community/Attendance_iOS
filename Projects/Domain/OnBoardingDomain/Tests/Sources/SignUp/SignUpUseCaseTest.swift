@@ -119,7 +119,7 @@ struct SignUpUseCaseTest {
   ) async throws -> SignUpUser {
     try await withDependencies {
       $0.signUpRepository = repository
-      $0.authRepository = authRepository
+      $0.authUseCase = authRepository
     } operation: {
       try await SignUpUseCaseImpl().registerUser(userSession: session)
     }
