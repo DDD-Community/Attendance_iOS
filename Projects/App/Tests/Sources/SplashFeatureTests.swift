@@ -7,7 +7,6 @@
 //
 
 import DomainInterface
-import EntityTesting
 import FeatureAssembly
 import Testing
 
@@ -20,7 +19,15 @@ struct SplashFeatureTests {
   func upToDateMemberNavigatesToMemberAfterProfileFetch() async {
     var state = SplashFeature.State()
     state.staffRole = .member
-    state.profileModel = EntityFixture.memberProfile
+    state.profileModel = .init(
+      userID: 1,
+      name: "김철수",
+      generation: "2기",
+      team: .ios1,
+      jobRole: .ios,
+      role: .member,
+      manger: nil
+    )
     state.profileFetchCompleted = true
 
     let store = TestStore(initialState: state) {
@@ -39,7 +46,13 @@ struct SplashFeatureTests {
       SplashFeature()
     }
 
-    await store.send(.inner(.checkAppUpdateResponse(.success(EntityFixture.updateAvailable)))) {
+    await store.send(.inner(.checkAppUpdateResponse(.success(.init(
+      currentVersion: "1.0.0",
+      latestVersion: "1.2.3",
+      releaseNotes: "[v 1.2.3]\n- bug fixes",
+      appStoreUrl: "https://apps.apple.com/app/id123",
+      isUpdateAvailable: true
+    ))))) {
       $0.isUpdateCheckCompleted = true
       $0.appStoreUrl = "https://apps.apple.com/app/id123"
       $0.customAlert = .alert(

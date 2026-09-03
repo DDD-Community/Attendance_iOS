@@ -2,7 +2,6 @@ import Foundation
 import ProjectDescription
 import DependencyPlugin
 import ProjectTemplatePlugin
-import ProjectTemplatePlugin
 import DependencyPackagePlugin
 
 let project = Project.makeModule(
@@ -13,6 +12,5 @@ let project = Project.makeModule(
   dependencies: [
   ],
   sources: ["Sources/**"],
-  hasTests: true,
-  hasTesting: true
+  hasTests: true
 )

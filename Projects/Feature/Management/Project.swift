@@ -14,15 +14,11 @@ let project = Project.makeModule(
     .feature(.sharedUI),
     .domainAssembly
   ],
-  testDependencies: [
-    .domain(.entity, .testing)
-  ],
   sources: ["Sources/**"],
   hasTests: true,
   hasInterface: true,
   interfaceDependencies: [
-    .SPM.composableArchitecture,
-    .domain(.entity)
+    .SPM.composableArchitecture
   ],
   hasDemo: true
 )

@@ -14,6 +14,7 @@ let workspace = Workspace(
     "Projects/**"
   ],
   schemes: [.stageWorkspace(name: Project.Environment.appName)],
+  additionalFiles: ["Projects/App/Tests/DDDAttendance.xctestplan"],
   // 커버리지 대상은 스킴과 관련된 타깃으로 Tuist 가 알아서 좁힌다.
   // 예전에는 자사 모듈 25개를 손으로 나열했지만, 모듈을 추가·개명할 때마다
   // 목록이 실제 타깃과 어긋나 generate 가 깨졌다.

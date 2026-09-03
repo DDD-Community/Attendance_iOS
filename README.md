@@ -142,8 +142,8 @@ flowchart TD
 ### 모듈 그래프
 
 ~~~bash
-./make graph       # 외부 패키지를 제외한 전체 모듈 그래프
-./make graph:prod  # 외부 패키지와 테스트 타깃을 제외한 제품 그래프
+./make graph       # 외부 패키지를 제외하고 Tests·Demo를 포함한 전체 모듈 그래프
+./make graph:prod  # 외부 패키지와 Tests·Demo를 제외한 제품 그래프
 ~~~
 
 ![Dependency Graph](graph.png)

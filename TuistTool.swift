@@ -192,14 +192,14 @@ private func defaultCaseName(for moduleName: String) -> String {
 /// `anchor` 가 들어간 첫 줄 바로 아래에 `line` 을 끼워 넣는다.
 /// `guardText` 가 이미 파일에 있으면 재실행해도 중복으로 쌓이지 않는다.
 
-/// Demo 앱을 뺀 모듈 그래프를 만든다.
+/// 내부 모듈 그래프를 만든다.
 ///
-/// Demo 는 피처마다 하나씩 있는데 다른 모듈이 Demo 를 의존하지 않는다.
-/// 그래프에 넣으면 노드만 늘고 계층 구조가 안 보인다.
-///
-/// tuist graph 에는 특정 타깃을 빼는 옵션이 없다(--skip-test-targets 등만 있다).
-/// 그래서 dot 으로 뽑아 Demo 노드를 걸러낸 뒤 graphviz 로 직접 렌더링한다.
-private func renderGraphWithoutDemo(
+/// 기본 그래프는 Joongna 와 동일하게 Tests·Demo까지 포함해 각 모듈의 진입점을
+/// 함께 보여준다. 배포 구조만 확인하는 `graph:prod`에서는 Tests와 Demo를 제외한다.
+/// Tuist에는 Demo 타깃만 제외하는 옵션이 없어 production 그래프에 한해서
+/// dot에서 Demo 노드와 간선을 걷어낸다.
+private func renderGraph(
+  excludesDemo: Bool,
   extraTuistArguments: [String],
   forwardedArguments: [String]
 ) -> Int32 {
@@ -230,30 +230,37 @@ private func renderGraphWithoutDemo(
     return 1
   }
 
-  // 노드 선언(`AuthDemo [..]`)과 엣지(`AuthDemo -> Auth`) 양쪽에서
-  // 이름이 Demo 로 끝나는 줄을 지운다. dot 출력은 식별자에 따옴표를 붙이지 않는다.
-  let filtered = rawGraph
-    .split(separator: "\n", omittingEmptySubsequences: false)
-    .filter { line in
-      line.range(of: #"\b[A-Za-z0-9_]+Demo\b"#, options: .regularExpression) == nil
-    }
-    .joined(separator: "\n")
+  let graph: String
+  if excludesDemo {
+    // 노드 선언(`AuthDemo [..]`)과 엣지(`AuthDemo -> Auth`) 양쪽에서
+    // 이름이 Demo 로 끝나는 줄을 지운다. dot 출력은 식별자에 따옴표를 붙이지 않는다.
+    graph = rawGraph
+      .split(separator: "\n", omittingEmptySubsequences: false)
+      .filter { line in
+        line.range(of: #"\b[A-Za-z0-9_]+Demo\b"#, options: .regularExpression) == nil
+      }
+      .joined(separator: "\n")
+  } else {
+    graph = rawGraph
+  }
 
-  let filteredURL = workDirectory.appendingPathComponent("graph-without-demo.dot")
+  let renderedGraphURL = workDirectory.appendingPathComponent("rendered-graph.dot")
   do {
-    try filtered.write(to: filteredURL, atomically: true, encoding: .utf8)
+    try graph.write(to: renderedGraphURL, atomically: true, encoding: .utf8)
   } catch {
-    FileHandle.standardError.write(Data("필터링한 dot 을 쓰지 못했습니다: \(error)\n".utf8))
+    FileHandle.standardError.write(Data("렌더링할 dot 을 쓰지 못했습니다: \(error)\n".utf8))
     return 1
   }
 
-  let renderStatus = run("dot", arguments: ["-Tpng", filteredURL.path, "-o", "graph.png"])
+  let renderStatus = run("dot", arguments: ["-Tpng", renderedGraphURL.path, "-o", "graph.png"])
   guard renderStatus == 0 else {
     FileHandle.standardError.write(Data("graphviz 렌더링에 실패했습니다. `brew install graphviz` 가 필요합니다.\n".utf8))
     return renderStatus
   }
 
-  print("graph.png 를 만들었습니다 (Demo 제외)")
+  print(excludesDemo
+    ? "graph.png 를 만들었습니다 (Tests·Demo 제외)"
+    : "graph.png 를 만들었습니다 (Tests·Demo 포함)")
   return 0
 }
 
@@ -394,7 +401,7 @@ private func printHelp() {
     (DDDNetwork → network). 규칙과 다르면 --case 로 직접 지정한다.
 
     의존성 그래프:
-      ./make graph          # 외부 패키지·Demo 를 제외한 모듈 그래프 생성
+      ./make graph          # 외부 패키지를 제외하고 Tests·Demo를 포함한 모듈 그래프 생성
       ./make graph:prod     # 외부 패키지·Demo·테스트 타깃을 제외한 그래프 생성
     """
   )
@@ -488,13 +495,15 @@ private func execute(_ command: Command, forwardedArguments: [String]) -> Int32 
     return scaffoldModule(layer: .ui, arguments: forwardedArguments)
 
   case .graph:
-    return renderGraphWithoutDemo(
+    return renderGraph(
+      excludesDemo: false,
       extraTuistArguments: [],
       forwardedArguments: forwardedArguments
     )
 
   case .productionGraph:
-    return renderGraphWithoutDemo(
+    return renderGraph(
+      excludesDemo: true,
       extraTuistArguments: ["--skip-test-targets"],
       forwardedArguments: forwardedArguments
     )

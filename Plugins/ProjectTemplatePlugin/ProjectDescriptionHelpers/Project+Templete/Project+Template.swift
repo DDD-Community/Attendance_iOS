@@ -66,7 +66,10 @@ public extension Project {
         bundleId: "\(bundleId).\(name)Tests",
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
-        buildableFolders: ["Tests"],
+        // 테스트 플랜은 Tests 루트에 두되 test bundle의 리소스로 복사하지 않는다.
+        // 실제 Swift Testing 소스만 동기화하면 workspace test plan이 다른 프로젝트의
+        // 테스트 타깃을 안정적으로 참조할 수 있다.
+        buildableFolders: ["Tests/Sources"],
         dependencies: [.target(name: name)] + testDependencies,
         settings: suppressWarningsSettings
       )
