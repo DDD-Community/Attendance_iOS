@@ -24,7 +24,7 @@ let tuist = Tuist(
     ],
     generationOptions: .options(
       optionalAuthentication: true,
-      // 로컬과 CI 모두 `tuist setup cache`로 실행한 Xcode Compilation Cache를 사용한다.
+      // Xcode Compilation Cache는 `tuist setup cache`, 바이너리 캐시는 `tuist cache warm`으로 준비한다.
       enableCaching: true
     ),
     installOptions: .options(),

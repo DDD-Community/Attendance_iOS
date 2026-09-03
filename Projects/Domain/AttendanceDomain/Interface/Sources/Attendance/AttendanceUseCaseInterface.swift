@@ -6,6 +6,7 @@
 //
 
 import Dependencies
+import OnBoardingDomainInterface
 
 public protocol AttendanceUseCaseInterface: Sendable {
   func adminAttendanceCount(scheduleId: Int) async throws(AttendanceError) -> AttendanceCount

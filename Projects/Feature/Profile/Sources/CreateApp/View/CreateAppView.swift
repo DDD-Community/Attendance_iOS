@@ -9,6 +9,7 @@ import SwiftUI
 
 import ComposableArchitecture
 import DDDDesignKit
+import ProfileDomainInterface
 import SwiftUIX
 
 struct CreateAppView: View {

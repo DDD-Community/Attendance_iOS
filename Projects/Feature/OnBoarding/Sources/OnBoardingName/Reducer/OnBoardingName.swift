@@ -11,6 +11,7 @@ import DDDCoreUtility
 
 import ComposableArchitecture
 import OnBoardingInterface
+import AuthDomainInterface
 
 @Reducer
 public struct OnBoardingName {

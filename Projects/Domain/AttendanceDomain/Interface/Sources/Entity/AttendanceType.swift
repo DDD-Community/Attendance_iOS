@@ -1,6 +1,6 @@
 //
 //  AttendanceType.swift
-//  AttendanceDomain
+//  AttendanceDomainInterface
 //
 //  Created by DDD on 7/14/24.
 //

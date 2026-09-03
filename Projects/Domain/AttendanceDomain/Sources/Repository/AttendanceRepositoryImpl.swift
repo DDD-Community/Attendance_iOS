@@ -36,7 +36,7 @@ final public class AttendanceRepositoryImpl: AttendanceInterface, Sendable {
     do {
       let dto = try await client.send(
         AttendanceRequest.fetchTeams,
-        as: SelectTeamsDTO.self
+        as: [AttendanceTeamDTO].self
       )
       return dto.toDomain()
     } catch {

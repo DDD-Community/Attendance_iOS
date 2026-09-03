@@ -101,6 +101,10 @@ extension MemberCoordinator {
         .cancel(id: ProfileReducer.CancelID.logoutUser)
       )
 
+    case .routeAction(id: _, action: .qrCode(.delegate(.back))):
+      state.routes.goBack()
+      return .send(.inner(.onResume))
+
     case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
       state.routes.goBackToRoot()
       return .concatenate(
@@ -190,7 +194,7 @@ extension MemberCoordinator {
   public enum MemberScreen {
     case member(MemberMain)
     case profile(ProfileCoordinator)
-    case qrCode(MemberQRCode)
+    case qrCode(MemberQRCodeFeature)
   }
 }
 

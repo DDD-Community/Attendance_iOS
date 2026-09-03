@@ -13,7 +13,10 @@ let project = Project.makeModule(
     .ui(.sharedUI),
     .feature(.sharedUI),
     .core(.logger),
+    .domain(.auth, .interface),
     .domain(.attendance, .interface),
+    .domain(.onBoarding, .interface),
+    .domain(.profile, .interface),
     .domain(.qrCode, .interface),
     .domain(.schedule, .interface),
     .domain(.vote, .interface)

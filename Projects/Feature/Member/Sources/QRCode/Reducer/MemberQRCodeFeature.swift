@@ -1,10 +1,11 @@
 //
-//  MemberQRCode.swift
+//  MemberQRCodeFeature.swift
 //  Presentation
 //
 //  Created by DDD on 5/18/25.
 //
 
+import AuthDomainInterface
 import DDDCoreLogger
 import Foundation
 import SwiftUI
@@ -16,7 +17,7 @@ import ComposableArchitecture
 import MemberInterface
 
 @Reducer
-public struct MemberQRCode {
+public struct MemberQRCodeFeature {
   public init() {}
 
   @ObservableState
@@ -83,7 +84,7 @@ public struct MemberQRCode {
   }
 }
 
-extension MemberQRCode {
+extension MemberQRCodeFeature {
   private func handleViewAction(
     state: inout State,
     action: View

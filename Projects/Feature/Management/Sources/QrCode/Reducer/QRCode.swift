@@ -68,7 +68,7 @@ public struct QRCode {
 
   //MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
-    case qrCodeValidateResponse(Result<QRValidateEntity, AttendanceError>)
+    case qrCodeValidateResponse(Result<QRValidateEntity, QRCodeError>)
   }
 
   //MARK: - DelegateAction
@@ -138,7 +138,7 @@ extension QRCode {
         let qrCodeValidateResult = await Result {
           try await qrCodeUseCase.qrValidateCheck(from: scannedText)
         }
-          .mapError(AttendanceError.from)
+          .mapError(QRCodeError.from)
         return await send(.inner(.qrCodeValidateResponse(qrCodeValidateResult)))
       }
       .debounce(id: QRCodeCancel(), for: 0.3, scheduler: mainQueue)
@@ -179,7 +179,7 @@ extension QRCode {
 
           // 전송 실패는 도메인이 구분하지 않으므로 서버가 준 거절 사유만 따로 보여준다.
           switch error {
-          case let .rejected(message):
+          case let .validationFailed(message):
             alertTitle = "QR 출석실패"
             alertMessage = message
           default:

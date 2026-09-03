@@ -10,6 +10,7 @@ import SwiftUI
 import DDDDesignKit
 
 import ComposableArchitecture
+import AttendanceDomainInterface
 
 struct QRScannerView: View {
   var onClose: (() -> Void)?

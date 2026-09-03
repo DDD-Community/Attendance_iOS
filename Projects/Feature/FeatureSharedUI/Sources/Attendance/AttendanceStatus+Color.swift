@@ -7,6 +7,7 @@
 
 import DDDDesignKit
 import SwiftUI
+import AttendanceDomainInterface
 
 
 public extension AttendanceStatus {

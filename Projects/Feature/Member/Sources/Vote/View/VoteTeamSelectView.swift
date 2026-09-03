@@ -8,6 +8,7 @@
 import SwiftUI
 
 import DDDDesignKit
+import VoteDomainInterface
 
 /// [멤버] 투표 1단계 — 팀 선택 화면 (Figma: iOS/투표_1단계(팀 선택))
 struct VoteTeamSelectView: View {

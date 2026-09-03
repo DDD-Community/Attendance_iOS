@@ -8,6 +8,7 @@
 import SwiftUI
 
 import DDDDesignKit
+import VoteDomainInterface
 
 extension View {
   func nonParticipantsModal(

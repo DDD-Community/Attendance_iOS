@@ -8,6 +8,7 @@
 import SwiftUI
 
 import DDDDesignKit
+import VoteDomainInterface
 
 /// 팀 투표 1단계의 부문(질문) 한 개 블록.
 /// 질문 + 선택 카운트 + 팀 리스트 + 이유 입력으로 구성된다.

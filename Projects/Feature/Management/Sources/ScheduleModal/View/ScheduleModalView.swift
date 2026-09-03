@@ -8,6 +8,7 @@
 import SwiftUI
 import ComposableArchitecture
 import DDDSharedUI
+import ScheduleDomainInterface
 
 @ViewAction(for: ScheduleModal.self)
 public struct ScheduleModalView: View {

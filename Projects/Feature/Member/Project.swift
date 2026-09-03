@@ -12,6 +12,7 @@ let project = Project.makeModule(
   dependencies: [
     .ui(.sharedUI),
     .core(.logger),
+    .domain(.auth, .interface),
     .domain(.attendance, .interface),
     .domain(.myPage, .interface),
     .domain(.profile, .interface),

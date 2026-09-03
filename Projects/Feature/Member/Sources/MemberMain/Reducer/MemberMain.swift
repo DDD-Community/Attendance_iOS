@@ -16,6 +16,7 @@ import VoteDomainInterface
 
 import ComposableArchitecture
 import MemberInterface
+import ScheduleDomainInterface
 
 @Reducer
 public struct MemberMain {
@@ -103,7 +104,7 @@ public struct MemberMain {
 
   @Reducer(state: .equatable)
   public enum Destination {
-    case qrcode(MemberQRCode)
+    case qrcode(MemberQRCodeFeature)
   }
 
   @Dependency(\.profileUseCase) var profileUseCase

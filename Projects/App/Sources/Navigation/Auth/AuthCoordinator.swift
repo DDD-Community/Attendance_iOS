@@ -6,6 +6,7 @@
 //
 
 import Auth
+import AuthDomainInterface
 import Foundation
 
 import DDDCoreUtility

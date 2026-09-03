@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import ScheduleDomainInterface
 
 @CasePathable
 public enum ScheduleModalDelegate: Equatable, Sendable {

@@ -111,28 +111,27 @@ struct ManagementQRCodeReducerTests {
 
     await store.send(.async(.qrCodeValidate))
 
-    // QRCodeError 는 도메인 에러가 아니라 AttendanceError.from 이 .unknown 으로 흡수한다.
     await store.receive(\.inner) {
       $0.isUseQRCode = true
       $0.alert = AlertState {
-        TextState("QR 인식 실패")
+        TextState("QR 출석실패")
       } actions: {
         ButtonState(action: .confirmTapped) {
           TextState("확인")
         }
       } message: {
-        TextState(AttendanceError.unknown.errorDescription ?? "QR 코드를 다시 스캔해 주세요")
+        TextState("검증 실패")
       }
     }
   }
 
-  @Test("rejected 에러는 서버 메시지를 그대로 알럿에 싣는다")
-  func rejectedErrorShowsServerMessage() async {
+  @Test("validationFailed 에러는 서버 메시지를 그대로 알럿에 싣는다")
+  func validationFailedErrorShowsServerMessage() async {
     let store = TestStore(initialState: QRCode.State()) {
       QRCode()
     }
 
-    await store.send(.inner(.qrCodeValidateResponse(.failure(.rejected("이미 출석했습니다"))))) {
+    await store.send(.inner(.qrCodeValidateResponse(.failure(.validationFailed("이미 출석했습니다"))))) {
       $0.isUseQRCode = true
       $0.alert = AlertState {
         TextState("QR 출석실패")
