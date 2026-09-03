@@ -11,6 +11,7 @@ import Foundation
 import DDDSharedUI
 
 import ComposableArchitecture
+import DomainInterface
 import UseCase
 import Entity
 

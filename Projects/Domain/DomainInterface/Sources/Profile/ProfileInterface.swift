@@ -22,7 +22,7 @@ public protocol ProfileInterface: Sendable {
 public enum ProfileRepositoryDependency: TestDependencyKey {
 
   public static var testValue: ProfileInterface {
-    DefaultProfileRepositoryImpl()
+    MockProfileRepository()
   }
 
   public static var previewValue: ProfileInterface = testValue

@@ -42,7 +42,6 @@ extension QRCodeUseCaseImpl: DependencyKey {
 public extension DependencyValues {
   var qrCodeUseCase: QRCodeInterface {
     get { self[QRCodeUseCaseImpl.self] }
-    set { self[QRCodeUseCaseImpl.self] = newValue  }
+    set { self[QRCodeUseCaseImpl.self] = newValue }
   }
 }
-

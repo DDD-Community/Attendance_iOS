@@ -43,27 +43,4 @@ struct AuthDependencyContractTests {
     }
   }
 
-  @Test("MockKeychainManager success는 저장한 토큰을 다시 반환한다")
-  func mockKeychainManagerReturnsSavedTokens() {
-    let keychain = MockKeychainManager.success()
-
-    keychain.save(accessToken: "access-token", refreshToken: "refresh-token")
-
-    #expect(keychain.accessToken() == "access-token")
-    #expect(keychain.refreshToken() == "refresh-token")
-    #expect(keychain.getSaveCallCount() == 1)
-    #expect(keychain.getGetCallCount() == 2)
-  }
-
-  @Test("MockKeychainManager clear는 저장된 토큰을 제거한다")
-  func mockKeychainManagerClearRemovesTokens() {
-    let keychain = MockKeychainManager.success()
-    keychain.save(accessToken: "access-token", refreshToken: "refresh-token")
-
-    keychain.clear()
-
-    #expect(keychain.getStoredAccessToken() == nil)
-    #expect(keychain.getStoredRefreshToken() == nil)
-    #expect(keychain.getClearCallCount() == 1)
-  }
 }

@@ -9,6 +9,7 @@ import Dependencies
 import Testing
 
 @testable import DomainAssembly
+@testable import UseCase
 
 @Suite("DomainAssembly")
 struct DomainAssemblyTests {

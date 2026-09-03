@@ -17,7 +17,6 @@ import Dependencies
 import APIEndpoint
 
 public final class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
-  @Dependency(\.keychainManager) private var keychainManager
   @Dependency(\.profileLocalDataSource) private var profileLocalDataSource
   @Dependency(\.scheduleLocalDataSource) private var scheduleLocalDataSource
 
@@ -51,7 +50,7 @@ public final class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
 
   // MARK: - 토큰 재발급
   public func refresh() async throws(AuthError) -> AuthTokens {
-    let refreshToken = keychainManager.refreshToken() ?? ""
+    let refreshToken = await authService.refreshToken ?? ""
 
     do {
       let dto = try await client.send(

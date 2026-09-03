@@ -15,7 +15,7 @@ import Testing
 struct LiveDependencyRegistrationTests {
   /// live context 에서 Repository liveValue 가 전부 해석되는지 확인한다.
   /// 조립 모듈의 등록이 dead strip 으로 링크에서 빠지면 여기서 먼저 깨진다.
-  /// keychainManager 는 ServiceAssembly 소관이라 NetworkContainerTests 가 검증한다.
+  /// authService 는 ServiceAssembly 소관이라 NetworkContainerTests 가 검증한다.
   @Test("모든 Repository가 live context에서 등록된다")
   func resolvesAllLiveDependencies() {
     withDependencies {

@@ -10,6 +10,7 @@ import ComposableArchitecture
 import DDDDesignKit
 import Entity
 import Foundation
+import DomainInterface
 import UseCase
 
 /// [멤버] 투표 참여 플로우 리듀서.

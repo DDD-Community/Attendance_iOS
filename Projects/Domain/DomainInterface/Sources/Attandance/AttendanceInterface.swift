@@ -23,7 +23,7 @@ public protocol AttendanceInterface: Sendable {
 public enum AttendanceRepositoryDependency: TestDependencyKey {
   
   public static var testValue: AttendanceInterface {
-    DefaultAttendanceRepositoryImpl()
+    MockAttendanceRepository()
   }
   
   public static var previewValue: AttendanceInterface = testValue

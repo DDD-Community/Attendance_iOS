@@ -10,6 +10,7 @@ import ComposableArchitecture
 import DDDDesignKit
 import Entity
 import Foundation
+import DomainInterface
 import UseCase
 
 @Reducer

@@ -18,7 +18,7 @@ public protocol AppleAuthRequestInterface: Sendable {
 public enum AppleAuthRequestDependency: TestDependencyKey {
 
   public static var testValue: AppleAuthRequestInterface {
-    DefaultAppleAuthRequestImpl()
+    MockAppleAuthRequest()
   }
 
   public static var previewValue: AppleAuthRequestInterface = testValue

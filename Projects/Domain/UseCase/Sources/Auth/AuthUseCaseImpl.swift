@@ -50,9 +50,9 @@ public struct AuthUseCaseImpl: AuthInterface {
 }
 
 extension AuthUseCaseImpl: DependencyKey {
-  static public var liveValue = AuthUseCaseImpl()
-  static public var testValue = AuthUseCaseImpl()
-  static public var previewValue = AuthUseCaseImpl()
+  public static var liveValue = AuthUseCaseImpl()
+  public static var testValue = AuthUseCaseImpl()
+  public static var previewValue = AuthUseCaseImpl()
 }
 
 public extension DependencyValues {

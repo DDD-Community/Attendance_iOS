@@ -1,5 +1,5 @@
 //
-//  DefaultRepositoryTests.swift
+//  MockRepositoryTests.swift
 //  DomainInterfaceTests
 //
 //  Created by DDD on 2026-09-02
@@ -11,11 +11,11 @@ import Testing
 
 @testable import DomainInterface
 
-@Suite("DomainInterface Default Repository")
-struct DefaultRepositoryTests {
-  @Test("DefaultAuthRepositoryImpl 로그인은 요청 provider를 그대로 보존한다")
-  func defaultAuthLoginKeepsProvider() async throws {
-    let repository = DefaultAuthRepositoryImpl()
+@Suite("DomainInterface Mock Repository")
+struct MockRepositoryTests {
+  @Test("MockAuthRepository 로그인은 요청 provider를 그대로 보존한다")
+  func mockAuthLoginKeepsProvider() async throws {
+    let repository = MockAuthRepository()
 
     let entity = try await repository.login(provider: .google, token: "token")
 
@@ -24,9 +24,9 @@ struct DefaultRepositoryTests {
     #expect(entity.token.accessToken.isEmpty == false)
   }
 
-  @Test("DefaultAppUpdateRepositoryImpl은 업데이트 없음 상태를 반환한다")
-  func defaultAppUpdateReportsNoUpdate() async throws {
-    let repository = DefaultAppUpdateRepositoryImpl()
+  @Test("MockAppUpdateRepository은 업데이트 없음 상태를 반환한다")
+  func mockAppUpdateReportsNoUpdate() async throws {
+    let repository = MockAppUpdateRepository()
 
     let info = try await repository.checkForUpdate()
 

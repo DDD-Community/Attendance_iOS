@@ -164,27 +164,4 @@ struct MockImplementationsCoverageTests {
     }
   }
 
-  @Test("Keychain mock의 성공과 실패 구성")
-  func keychainPaths() {
-    let keychain = MockKeychainManager.success()
-    keychain.saveAccessToken("a")
-    keychain.saveRefreshToken("r")
-    #expect(keychain.accessToken() == "a")
-    #expect(keychain.refreshToken() == "r")
-    keychain.clear()
-    #expect(keychain.getStoredAccessToken() == nil)
-
-    let failure = MockKeychainManager.failure()
-    failure.save(accessToken: "a", refreshToken: "r")
-    #expect(failure.accessToken() == nil)
-    failure.clear()
-    #expect(failure.getStoredAccessToken() == nil)
-
-    let saveFailure = MockKeychainManager.saveFailure()
-    saveFailure.save(accessToken: "a", refreshToken: "r")
-    #expect(saveFailure.getStoredAccessToken() == nil)
-    #expect(MockKeychainManager.getFailure().refreshToken() == nil)
-    keychain.reset()
-    #expect(keychain.getSaveCallCount() == 0)
-  }
 }

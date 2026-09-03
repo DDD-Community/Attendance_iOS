@@ -12,7 +12,10 @@ let project = Project.makeModule(
   dependencies: [
     .ui(.sharedUI),
     .feature(.sharedUI),
-    .domainAssembly
+    .core(.logger),
+    .domain(.domainInterface),
+    .domain(.entity),
+    .domain(.useCase)
   ],
   sources: ["Sources/**"],
   hasTests: true,

@@ -32,22 +32,19 @@ struct AuthRepositoryImplTests {
 
   @Test("토큰 재발급 성공과 오류 매핑")
   func refreshPaths() async throws {
-    let keychain = MockKeychainManager.success()
-    keychain.saveRefreshToken("stored-refresh")
-    let tokens = try await withDependencies {
-      $0.keychainManager = keychain
-    } operation: {
-      try await makeRepository(client: StubNetworkClient(json: #"{"accessToken":"new-a","refreshToken":"new-r"}"#), authService: AuthServiceSpy()) { AuthRepositoryImpl() }.refresh()
-    }
+    let service = AuthServiceSpy(refreshToken: "stored-refresh")
+    let tokens = try await makeRepository(
+      client: StubNetworkClient(json: #"{"accessToken":"new-a","refreshToken":"new-r"}"#),
+      authService: service
+    ) { AuthRepositoryImpl() }.refresh()
     #expect(tokens.accessToken == "new-a")
 
     for (status, expected) in [(401, AuthError.refreshTokenExpired), (503, .tokenRefreshFailed)] {
       await #expect(throws: expected) {
-        try await withDependencies {
-          $0.keychainManager = keychain
-        } operation: {
-          try await makeRepository(client: StubNetworkClient(error: .response(.init(httpStatus: status))), authService: AuthServiceSpy()) { AuthRepositoryImpl() }.refresh()
-        }
+        try await makeRepository(
+          client: StubNetworkClient(error: .response(.init(httpStatus: status))),
+          authService: service
+        ) { AuthRepositoryImpl() }.refresh()
       }
     }
   }
@@ -121,7 +118,13 @@ struct AuthRepositoryImplTests {
 private actor AuthServiceSpy: AuthService {
   var signedInTokens: [String] = []
   var signOutCount = 0
+  var storedRefreshToken: String?
   var isLoggedIn: Bool { !signedInTokens.isEmpty }
+  var refreshToken: String? { storedRefreshToken }
+
+  init(refreshToken: String? = nil) {
+    storedRefreshToken = refreshToken
+  }
 
   func signIn(accessToken: String, refreshToken: String) {
     signedInTokens = [accessToken, refreshToken]

@@ -35,6 +35,10 @@ public struct UnimplementedAuthService: AuthService {
     get async { reportUnimplemented() }
   }
 
+  public var refreshToken: String? {
+    get async { reportUnimplemented() }
+  }
+
   public func signIn(accessToken: String, refreshToken: String) async {
     reportUnimplemented()
   }

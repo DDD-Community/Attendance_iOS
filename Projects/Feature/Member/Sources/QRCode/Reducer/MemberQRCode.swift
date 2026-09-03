@@ -9,8 +9,10 @@ import DDDCoreLogger
 import Foundation
 import SwiftUI
 
-import Entity
 import DDDSharedUI
+import DomainInterface
+import UseCase
+import Entity
 
 import ComposableArchitecture
 import MemberInterface

@@ -1,5 +1,5 @@
 //
-//  DefaultAppUpdateRepositoryImpl.swift
+//  MockAppUpdateRepository.swift
 //  DomainInterface
 //
 //  Created by DDD on 3/9/26.
@@ -8,7 +8,7 @@
 import Foundation
 import Entity
 
-public final class DefaultAppUpdateRepositoryImpl: AppUpdateInterface {
+public final class MockAppUpdateRepository: AppUpdateInterface {
     public init() {}
 
     public func checkForUpdate() async throws(AppUpdateError) -> AppUpdateInfo {

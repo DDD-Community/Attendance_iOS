@@ -20,11 +20,11 @@ public protocol SignUpInterface: Sendable {
 public enum SignUpRepositoryDependency: TestDependencyKey {
 
   public static var testValue: SignUpInterface {
-    DefaultSignUpRepositoryImpl.success()
+    MockSignUpRepository.success()
   }
 
   public static var previewValue: SignUpInterface {
-    DefaultSignUpRepositoryImpl.success()
+    MockSignUpRepository.success()
   }
 }
 

@@ -14,7 +14,7 @@ import Entity
 import Model
 import APIEndpoint
 
-final public class MyPageRepositoryImpl: MyPageRepositoryInterface {
+final public class MyPageRepositoryImpl: MyPageInterface {
   @Dependency(\.networkClient) private var client
 
   public init() {}

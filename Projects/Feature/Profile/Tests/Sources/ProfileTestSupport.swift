@@ -7,14 +7,14 @@
 //
 //  Profile 테스트가 공유하는 스텁과 픽스처.
 //  ProfileUseCase 는 프로토콜이라 그대로 대체하고,
-//  AuthUseCaseImpl 은 구체 타입이라 authRepository 를 갈아끼운 인스턴스를 만들어 주입한다.
+//  Feature 테스트는 DomainInterface 계약만 스텁으로 교체한다.
 //
 
 import ComposableArchitecture
 import DomainInterface
+import UseCase
 import Entity
 import Foundation
-import UseCase
 
 // MARK: - 공유 픽스처
 
@@ -81,16 +81,6 @@ enum ProfileTestSupport {
     detail: nil
   )
 
-  /// authRepository 를 스텁으로 고정한 AuthUseCaseImpl 을 만든다.
-  /// `@Dependency` 는 인스턴스 생성 시점의 컨텍스트를 캡처하므로 반드시 withDependencies 안에서 만들어야 한다.
-  @MainActor
-  static func makeAuthUseCase(_ repository: StubAuthRepository) -> AuthUseCaseImpl {
-    withDependencies {
-      $0.authRepository = repository
-    } operation: {
-      AuthUseCaseImpl()
-    }
-  }
 }
 
 // MARK: - ProfileUseCase 스텁

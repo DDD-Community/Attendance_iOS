@@ -20,7 +20,10 @@ let project = Project.makeModule(
     .feature(.profile),
     .feature(.web),
     .feature(.sharedUI),
+    .domain(.domainInterface),
+    .domain(.entity),
     .domain(.useCase),
+    .service(.auth, .interface),
     .core(.logger),
     .ui(.animation),
     .SPM.dependencies

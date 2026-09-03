@@ -8,14 +8,12 @@
 
 import ComposableArchitecture
 import DomainInterface
+import UseCase
 import Entity
 import Foundation
-import UseCase
 
-// MARK: - Repository Stub
+// MARK: - UseCase Stub
 
-/// `OnBoardingUseCaseImpl` 이 구조체(프로토콜 아님)라 직접 교체할 수 없어
-/// 그 아래 레포지토리(`\.onBoardingRepository`)를 스텁으로 갈아끼운다.
 struct StubOnBoardingRepository: DomainInterface.OnBoardingInterface, @unchecked Sendable {
   var teams: [SelectTeamEntity] = []
   var jobs: [SelectJob] = []

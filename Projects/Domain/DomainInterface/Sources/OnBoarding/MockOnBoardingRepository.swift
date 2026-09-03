@@ -1,5 +1,5 @@
 //
-//  DefaultOnBoardingRepositoryImpl.swift
+//  MockOnBoardingRepository.swift
 //  DomainInterface
 //
 //  Created by DDD on 12/30/25.
@@ -39,7 +39,7 @@ public extension OnBoardingError {
   }
 }
 
-public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchecked Sendable {
+public final class MockOnBoardingRepository: OnBoardingInterface, @unchecked Sendable {
   
 
   // MARK: - Configuration
@@ -347,40 +347,40 @@ public final class DefaultOnBoardingRepositoryImpl: OnBoardingInterface, @unchec
 
 // MARK: - Convenience Static Methods
 
-public extension DefaultOnBoardingRepositoryImpl {
+public extension MockOnBoardingRepository {
 
   /// Creates a pre-configured instance for success scenario with member role
-  static func success() -> DefaultOnBoardingRepositoryImpl {
-    return DefaultOnBoardingRepositoryImpl(configuration: .success)
+  static func success() -> MockOnBoardingRepository {
+    return MockOnBoardingRepository(configuration: .success)
   }
 
   /// Creates a pre-configured instance for failure scenario
-  static func failure() -> DefaultOnBoardingRepositoryImpl {
-    return DefaultOnBoardingRepositoryImpl(configuration: .failure)
+  static func failure() -> MockOnBoardingRepository {
+    return MockOnBoardingRepository(configuration: .failure)
   }
 
   /// Creates a pre-configured instance for invalid code scenario
-  static func invalidCode() -> DefaultOnBoardingRepositoryImpl {
-    return DefaultOnBoardingRepositoryImpl(configuration: .invalidCode)
+  static func invalidCode() -> MockOnBoardingRepository {
+    return MockOnBoardingRepository(configuration: .invalidCode)
   }
 
   /// Creates a pre-configured instance for member role scenario
-  static func memberRole() -> DefaultOnBoardingRepositoryImpl {
-    return DefaultOnBoardingRepositoryImpl(configuration: .memberRole)
+  static func memberRole() -> MockOnBoardingRepository {
+    return MockOnBoardingRepository(configuration: .memberRole)
   }
 
   /// Creates a pre-configured instance for manager role scenario
-  static func managerRole() -> DefaultOnBoardingRepositoryImpl {
-    return DefaultOnBoardingRepositoryImpl(configuration: .managerRole)
+  static func managerRole() -> MockOnBoardingRepository {
+    return MockOnBoardingRepository(configuration: .managerRole)
   }
 
   /// Creates a pre-configured instance for network error scenario
-  static func networkError() -> DefaultOnBoardingRepositoryImpl {
-    return DefaultOnBoardingRepositoryImpl(configuration: .networkError)
+  static func networkError() -> MockOnBoardingRepository {
+    return MockOnBoardingRepository(configuration: .networkError)
   }
 
   /// Creates a pre-configured instance with custom delay
-  static func withDelay(_ delay: TimeInterval) -> DefaultOnBoardingRepositoryImpl {
-    return DefaultOnBoardingRepositoryImpl(configuration: .customDelay(delay))
+  static func withDelay(_ delay: TimeInterval) -> MockOnBoardingRepository {
+    return MockOnBoardingRepository(configuration: .customDelay(delay))
   }
 }

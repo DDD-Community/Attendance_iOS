@@ -37,14 +37,14 @@ public struct OnBoardingUseCaseImpl: OnBoardingInterface {
   }
 }
 
-extension OnBoardingUseCaseImpl : DependencyKey {
-  static public var liveValue = OnBoardingUseCaseImpl()
-  static public var testValue = OnBoardingUseCaseImpl()
-  static public var previewValue = OnBoardingUseCaseImpl()
+extension OnBoardingUseCaseImpl: DependencyKey {
+  public static var liveValue = OnBoardingUseCaseImpl()
+  public static var testValue = OnBoardingUseCaseImpl()
+  public static var previewValue = OnBoardingUseCaseImpl()
 }
 
 public extension DependencyValues {
-   var onBoardingUseCase: OnBoardingUseCaseImpl {
+  var onBoardingUseCase: OnBoardingUseCaseImpl {
     get { self[OnBoardingUseCaseImpl.self] }
     set { self[OnBoardingUseCaseImpl.self] = newValue }
   }

@@ -22,7 +22,7 @@ public protocol QRCodeInterface: Sendable {
 public enum QRCodeRepositoryDependency: TestDependencyKey {
 
   public static var testValue: QRCodeInterface {
-    DefaultQRCodeRepositoryImpl()
+    MockQRCodeRepository()
   }
 
   public static var previewValue: QRCodeInterface = testValue

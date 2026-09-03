@@ -26,8 +26,7 @@ public extension DependencyValues {
   mutating func registerProfileUseCases() {
     profileUseCase = resolve { ProfileUseCaseImpl() }
     appUpdateUseCase = resolve { AppUpdateUseCaseImpl() }
-    fetchMyAttendancesUseCase = FetchMyAttendancesUseCaseImpl(repository: myPageRepository)
-    fetchMySchedulesUseCase = FetchMySchedulesUseCaseImpl(repository: myPageRepository)
+    myPageUseCase = MyPageUseCaseImpl(repository: myPageRepository)
   }
 
   /// 온보딩 도메인의 UseCase 구현을 등록합니다.

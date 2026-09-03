@@ -11,7 +11,7 @@ import Foundation
 import ComposableArchitecture
 
 public protocol AppUpdateUseCaseInterface: Sendable {
-    func checkForUpdate() async throws(AppUpdateError) -> AppUpdateInfo?
+  func checkForUpdate() async throws(AppUpdateError) -> AppUpdateInfo?
 }
 
 public struct AppUpdateUseCaseImpl: AppUpdateUseCaseInterface {

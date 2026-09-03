@@ -10,8 +10,8 @@ import Foundation
 
 import DDDCoreUtility
 import DomainInterface
-import Entity
 import UseCase
+import Entity
 
 import AuthenticationServices
 import ComposableArchitecture

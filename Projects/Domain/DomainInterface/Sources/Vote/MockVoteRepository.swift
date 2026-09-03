@@ -1,5 +1,5 @@
 //
-//  DefaultVoteRepositoryImpl.swift
+//  MockVoteRepository.swift
 //  DomainInterface
 //
 //  Created by DDD on 6/11/26.
@@ -7,7 +7,7 @@
 
 import Entity
 
-public final class DefaultVoteRepositoryImpl: VoteInterface {
+public final class MockVoteRepository: VoteInterface {
   public init() {}
 
   public func fetchVotes() async throws(VoteError) -> [Vote] { [] }

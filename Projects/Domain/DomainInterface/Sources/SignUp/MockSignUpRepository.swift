@@ -1,5 +1,5 @@
 //
-//  DefaultSignUpRepositoryImpl.swift
+//  MockSignUpRepository.swift
 //  DomainInterface
 //
 //  Created by DDD on 7/23/25.
@@ -10,7 +10,7 @@ import Foundation
 import Entity
 
 /// SignUp Repository의 기본 구현체 (테스트/프리뷰용)
-final public class DefaultSignUpRepositoryImpl: SignUpInterface, @unchecked Sendable {
+final public class MockSignUpRepository: SignUpInterface, @unchecked Sendable {
 
   // MARK: - Configuration
   public enum Configuration {
@@ -144,35 +144,35 @@ final public class DefaultSignUpRepositoryImpl: SignUpInterface, @unchecked Send
 
 // MARK: - Convenience Static Methods
 
-public extension DefaultSignUpRepositoryImpl {
+public extension MockSignUpRepository {
 
   /// Creates a pre-configured instance for success scenario
-  static func success() -> DefaultSignUpRepositoryImpl {
-    return DefaultSignUpRepositoryImpl(configuration: .success)
+  static func success() -> MockSignUpRepository {
+    return MockSignUpRepository(configuration: .success)
   }
 
   /// Creates a pre-configured instance for failure scenario
-  static func failure() -> DefaultSignUpRepositoryImpl {
-    return DefaultSignUpRepositoryImpl(configuration: .failure)
+  static func failure() -> MockSignUpRepository {
+    return MockSignUpRepository(configuration: .failure)
   }
 
   /// Creates a pre-configured instance for invalid invite code scenario
-  static func invalidInviteCode() -> DefaultSignUpRepositoryImpl {
-    return DefaultSignUpRepositoryImpl(configuration: .invalidInviteCode)
+  static func invalidInviteCode() -> MockSignUpRepository {
+    return MockSignUpRepository(configuration: .invalidInviteCode)
   }
 
   /// Creates a pre-configured instance for expired invite code scenario
-  static func expiredInviteCode() -> DefaultSignUpRepositoryImpl {
-    return DefaultSignUpRepositoryImpl(configuration: .expiredInviteCode)
+  static func expiredInviteCode() -> MockSignUpRepository {
+    return MockSignUpRepository(configuration: .expiredInviteCode)
   }
 
   /// Creates a pre-configured instance for network error scenario
-  static func networkError() -> DefaultSignUpRepositoryImpl {
-    return DefaultSignUpRepositoryImpl(configuration: .networkError)
+  static func networkError() -> MockSignUpRepository {
+    return MockSignUpRepository(configuration: .networkError)
   }
 
   /// Creates a pre-configured instance with custom delay
-  static func withDelay(_ delay: TimeInterval) -> DefaultSignUpRepositoryImpl {
-    return DefaultSignUpRepositoryImpl(configuration: .customDelay(delay))
+  static func withDelay(_ delay: TimeInterval) -> MockSignUpRepository {
+    return MockSignUpRepository(configuration: .customDelay(delay))
   }
 }

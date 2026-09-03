@@ -9,6 +9,7 @@
 import ComposableArchitecture
 import Entity
 import Testing
+import DomainInterface
 import UseCase
 
 @testable import Profile

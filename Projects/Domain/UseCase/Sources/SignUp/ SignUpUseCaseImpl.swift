@@ -10,12 +10,10 @@ import ComposableArchitecture
 import DomainInterface
 import Entity
 
-
 public protocol SignUpUseCaseInterface: Sendable {
-  func registerUser(
-    userSession: UserSession
-  ) async throws(SignUpError) -> SignUpUser
+  func registerUser(userSession: UserSession) async throws(SignUpError) -> SignUpUser
 }
+
 
 public struct SignUpUseCaseImpl: SignUpUseCaseInterface {
   @Dependency(\.signUpRepository) var repository

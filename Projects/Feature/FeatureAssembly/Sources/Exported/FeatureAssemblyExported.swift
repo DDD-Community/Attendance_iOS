@@ -11,7 +11,9 @@
 @_exported import DDDAnimation
 @_exported import DDDDesignKit
 @_exported import DDDSharedUI
+@_exported import DDDAuthInterface
 @_exported import FeatureSharedUI
+@_exported import DomainInterface
 @_exported import Entity
 @_exported import UseCase
 @_exported import SwiftUIX

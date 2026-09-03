@@ -22,7 +22,7 @@ public protocol OnBoardingInterface: Sendable {
 public enum OnBoardingRepositoryDependency: TestDependencyKey {
 
   public static var testValue: OnBoardingInterface {
-    DefaultOnBoardingRepositoryImpl()
+    MockOnBoardingRepository()
   }
 
   public static var previewValue: OnBoardingInterface = testValue

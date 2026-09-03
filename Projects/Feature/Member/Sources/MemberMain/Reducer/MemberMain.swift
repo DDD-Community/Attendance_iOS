@@ -10,8 +10,8 @@ import Foundation
 
 import DDDSharedUI
 import DomainInterface
-import Entity
 import UseCase
+import Entity
 
 import ComposableArchitecture
 import MemberInterface
@@ -105,10 +105,9 @@ public struct MemberMain {
     case qrcode(MemberQRCode)
   }
 
-  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
-  @Dependency(AttendanceUseCaseImpl.self) var attendanceUseCase
-  @Dependency(\.fetchMyAttendancesUseCase) var fetchMyAttendancesUseCase
-  @Dependency(\.fetchMySchedulesUseCase) var fetchMySchedulesUseCase
+  @Dependency(\.profileUseCase) var profileUseCase
+  @Dependency(\.attendanceUseCase) var attendanceUseCase
+  @Dependency(\.myPageUseCase) var myPageUseCase
   @Dependency(\.voteUseCase) var voteUseCase
 
   public var body: some Reducer<State, Action> {
@@ -329,7 +328,7 @@ extension MemberMain {
     case .fetchAttendances:
       return .run { send in
         let result = await Result {
-          try await fetchMyAttendancesUseCase.execute()
+          try await myPageUseCase.fetchAttendances()
         }
 
         switch result {
@@ -345,7 +344,7 @@ extension MemberMain {
     case .fetchSchedule:
       return .run { send in
         let result = await Result {
-          try await fetchMySchedulesUseCase.execute()
+          try await myPageUseCase.fetchSchedules()
         }
 
         switch result {

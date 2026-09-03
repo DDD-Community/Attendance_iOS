@@ -58,7 +58,7 @@ public protocol VoteInterface: Sendable {
 public enum VoteRepositoryDependency: TestDependencyKey {
 
   public static var testValue: VoteInterface {
-    DefaultVoteRepositoryImpl()
+    MockVoteRepository()
   }
 
   public static var previewValue: VoteInterface = testValue

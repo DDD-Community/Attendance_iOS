@@ -10,6 +10,7 @@ import SwiftUI
 
 import ComposableArchitecture
 import DomainInterface
+import UseCase
 import Entity
 
 // MARK: - Fixture

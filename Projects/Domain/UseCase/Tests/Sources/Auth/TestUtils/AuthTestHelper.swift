@@ -19,34 +19,14 @@ struct AuthTestHelper {
     // MARK: - Dependency Setup
     static func withMockDependencies<T>(
         mockAuthRepository: MockAuthRepository,
-        mockKeychainManager: MockKeychainManager,
         mockUserSession: MockUserSession? = nil,
         operation: @MainActor () async throws -> T
     ) async rethrows -> T {
 
         return try await withDependencies {
             $0.authRepository = mockAuthRepository
-            $0.keychainManager = mockKeychainManager
         } operation: {
             try await operation()
-        }
-    }
-
-    // MARK: - Test State Management
-    @MainActor
-    static func createTestAuthUseCase(
-        with mockRepository: MockAuthRepository,
-        and mockKeychain: MockKeychainManager,
-        initialStaffRole: Entity.Staff? = nil,
-        initialUserSession: Entity.UserSession = .empty
-    ) -> (AuthUseCaseImpl, MockAuthRepository, MockKeychainManager) {
-
-        return withDependencies {
-            $0.authRepository = mockRepository
-            $0.keychainManager = mockKeychain
-        } operation: {
-            let useCase = AuthUseCaseImpl()
-            return (useCase, mockRepository, mockKeychain)
         }
     }
 
@@ -216,14 +196,4 @@ struct AuthTestHelper {
         return (result, duration)
     }
 
-    // MARK: - Mock Reset Utilities
-    static func resetAllMocks(
-        repository: MockAuthRepository,
-        keychain: MockKeychainManager,
-        userSession: MockUserSession
-    ) {
-        repository.reset()
-        keychain.reset()
-        userSession.reset()
-    }
 }

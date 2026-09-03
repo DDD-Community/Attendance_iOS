@@ -35,6 +35,10 @@ actor DDDAuth: AuthService, AuthenticatedClientProvider {
     return store.load() != nil
   }
 
+  var refreshToken: String? {
+    return store.load()?.refreshToken
+  }
+
   /// 새 로그인 토큰을 저장하고 이후 인증 요청에 즉시 반영한다.
   func signIn(accessToken: String, refreshToken: String) {
     store.allowSaves()

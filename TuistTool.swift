@@ -194,10 +194,9 @@ private func defaultCaseName(for moduleName: String) -> String {
 
 /// 내부 모듈 그래프를 만든다.
 ///
-/// 기본 그래프는 Joongna 와 동일하게 Tests·Demo까지 포함해 각 모듈의 진입점을
-/// 함께 보여준다. 배포 구조만 확인하는 `graph:prod`에서는 Tests와 Demo를 제외한다.
-/// Tuist에는 Demo 타깃만 제외하는 옵션이 없어 production 그래프에 한해서
-/// dot에서 Demo 노드와 간선을 걷어낸다.
+/// 기본 그래프는 Tests·Testing·Interface 까지 포함해 각 모듈의 진입점을 함께 보여주되
+/// Demo 앱은 제외한다. 배포 구조만 확인하는 `graph:prod`에서는 Tests까지 함께 제외한다.
+/// Tuist에는 Demo 타깃만 제외하는 옵션이 없어 dot에서 Demo 노드와 간선을 걷어낸다.
 private func renderGraph(
   excludesDemo: Bool,
   extraTuistArguments: [String],
@@ -258,9 +257,10 @@ private func renderGraph(
     return renderStatus
   }
 
-  print(excludesDemo
+  let skipsTests = extraTuistArguments.contains("--skip-test-targets")
+  print(skipsTests
     ? "graph.png 를 만들었습니다 (Tests·Demo 제외)"
-    : "graph.png 를 만들었습니다 (Tests·Demo 포함)")
+    : "graph.png 를 만들었습니다 (Demo 제외, Tests·Testing·Interface 포함)")
   return 0
 }
 
@@ -401,7 +401,7 @@ private func printHelp() {
     (DDDNetwork → network). 규칙과 다르면 --case 로 직접 지정한다.
 
     의존성 그래프:
-      ./make graph          # 외부 패키지를 제외하고 Tests·Demo를 포함한 모듈 그래프 생성
+      ./make graph          # 외부 패키지·Demo를 제외하고 Tests·Testing·Interface를 포함한 모듈 그래프 생성
       ./make graph:prod     # 외부 패키지·Demo·테스트 타깃을 제외한 그래프 생성
     """
   )
@@ -496,7 +496,7 @@ private func execute(_ command: Command, forwardedArguments: [String]) -> Int32 
 
   case .graph:
     return renderGraph(
-      excludesDemo: false,
+      excludesDemo: true,
       extraTuistArguments: [],
       forwardedArguments: forwardedArguments
     )

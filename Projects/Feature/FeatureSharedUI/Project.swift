@@ -17,7 +17,7 @@ let project = Project.makeModule(
   settings: .moduleSettings,
   dependencies: [
     .ui(.sharedUI),
-    .domainAssembly
+    .domain(.entity)
   ],
   sources: ["Sources/**"]
 )

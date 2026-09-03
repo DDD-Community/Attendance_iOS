@@ -9,6 +9,7 @@ import DDDCoreLogger
 import Foundation
 
 import DDDCoreUtility
+import DomainInterface
 import UseCase
 import Entity
 

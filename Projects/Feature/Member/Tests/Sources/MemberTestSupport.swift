@@ -8,9 +8,11 @@
 
 import ComposableArchitecture
 import DomainInterface
+import UseCase
 import Entity
 import Foundation
 import SwiftUI
+import DomainInterface
 import UseCase
 
 @testable import Member
@@ -397,30 +399,27 @@ final class StubProfileUseCase: ProfileUseCaseInterface, @unchecked Sendable {
 
 // MARK: - MyPage UseCase Stubs
 
-final class StubFetchMyAttendancesUseCase: FetchMyAttendancesUseCase, @unchecked Sendable {
-  private let result: Result<AttendanceSummaryResponse, MyPageError>
+final class StubMyPageUseCase: MyPageInterface, @unchecked Sendable {
+  private let attendances: Result<AttendanceSummaryResponse, MyPageError>
+  private let schedules: Result<[AttendanceMyScheduleResponse], MyPageError>
 
-  init(result: Result<AttendanceSummaryResponse, MyPageError>) {
-    self.result = result
+  init(
+    attendances: Result<AttendanceSummaryResponse, MyPageError>,
+    schedules: Result<[AttendanceMyScheduleResponse], MyPageError>
+  ) {
+    self.attendances = attendances
+    self.schedules = schedules
   }
 
-  func execute() async throws(MyPageError) -> AttendanceSummaryResponse {
-    switch result {
+  func fetchAttendances() async throws(MyPageError) -> AttendanceSummaryResponse {
+    switch attendances {
     case let .success(value): return value
     case let .failure(error): throw error
     }
   }
-}
 
-final class StubFetchMySchedulesUseCase: FetchMySchedulesUseCase, @unchecked Sendable {
-  private let result: Result<[AttendanceMyScheduleResponse], MyPageError>
-
-  init(result: Result<[AttendanceMyScheduleResponse], MyPageError>) {
-    self.result = result
-  }
-
-  func execute() async throws(MyPageError) -> [AttendanceMyScheduleResponse] {
-    switch result {
+  func fetchSchedules() async throws(MyPageError) -> [AttendanceMyScheduleResponse] {
+    switch schedules {
     case let .success(value): return value
     case let .failure(error): throw error
     }
@@ -465,9 +464,8 @@ extension DependencyValues {
       = .success(MemberTestFixture.scheduleResponses),
     vote: StubVoteUseCase = StubVoteUseCase()
   ) {
-    self[ProfileUseCaseImpl.self] = StubProfileUseCase(profile: profile)
-    fetchMyAttendancesUseCase = StubFetchMyAttendancesUseCase(result: attendances)
-    fetchMySchedulesUseCase = StubFetchMySchedulesUseCase(result: schedules)
+    profileUseCase = StubProfileUseCase(profile: profile)
+    myPageUseCase = StubMyPageUseCase(attendances: attendances, schedules: schedules)
     voteUseCase = vote
   }
 }

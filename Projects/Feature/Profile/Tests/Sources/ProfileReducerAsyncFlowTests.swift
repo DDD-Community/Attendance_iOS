@@ -12,6 +12,7 @@
 import ComposableArchitecture
 import Entity
 import Testing
+import DomainInterface
 import UseCase
 
 @testable import Profile
@@ -135,7 +136,7 @@ struct ProfileReducerAsyncFlowTests {
     let store = TestStore(initialState: initialState) {
       ProfileReducer()
     } withDependencies: {
-      $0.authUseCase = ProfileTestSupport.makeAuthUseCase(StubAuthRepository())
+      $0.authRepository = StubAuthRepository()
     }
 
     await store.send(.scope(.customAlert(.presented(.confirmTapped)))) {
@@ -156,8 +157,8 @@ struct ProfileReducerAsyncFlowTests {
     let store = TestStore(initialState: ProfileReducer.State()) {
       ProfileReducer()
     } withDependencies: {
-      $0.authUseCase = ProfileTestSupport.makeAuthUseCase(
-        StubAuthRepository(withdrawResult: .success(ProfileTestSupport.withdrawRejected))
+      $0.authRepository = StubAuthRepository(
+        withdrawResult: .success(ProfileTestSupport.withdrawRejected)
       )
     }
 
@@ -175,9 +176,7 @@ struct ProfileReducerAsyncFlowTests {
     let store = TestStore(initialState: ProfileReducer.State()) {
       ProfileReducer()
     } withDependencies: {
-      $0.authUseCase = ProfileTestSupport.makeAuthUseCase(
-        StubAuthRepository(withdrawResult: .failure(error))
-      )
+      $0.authRepository = StubAuthRepository(withdrawResult: .failure(error))
     }
 
     await store.send(.async(.deleteUser))
@@ -205,7 +204,7 @@ struct ProfileReducerAsyncFlowTests {
     let store = TestStore(initialState: initialState) {
       ProfileReducer()
     } withDependencies: {
-      $0.authUseCase = ProfileTestSupport.makeAuthUseCase(StubAuthRepository())
+      $0.authRepository = StubAuthRepository()
     }
 
     await store.send(.scope(.customAlert(.presented(.confirmTapped)))) {
@@ -228,9 +227,7 @@ struct ProfileReducerAsyncFlowTests {
     let store = TestStore(initialState: ProfileReducer.State()) {
       ProfileReducer()
     } withDependencies: {
-      $0.authUseCase = ProfileTestSupport.makeAuthUseCase(
-        StubAuthRepository(logoutResult: .failure(error))
-      )
+      $0.authRepository = StubAuthRepository(logoutResult: .failure(error))
     }
 
     await store.send(.async(.logout))

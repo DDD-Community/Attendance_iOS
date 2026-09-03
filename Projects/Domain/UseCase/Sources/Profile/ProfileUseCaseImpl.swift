@@ -13,9 +13,7 @@ public protocol ProfileUseCaseInterface: Sendable {
   func getProfile() async throws(ProfileError) -> ProfileEntity
   func getCachedProfile() async -> ProfileEntity?
   func refreshProfile() async throws(ProfileError) -> ProfileEntity
-  func editUser(
-    userSession: UserSession
-  ) async throws(EditProfileError) -> ProfileEntity
+  func editUser(userSession: UserSession) async throws(EditProfileError) -> ProfileEntity
 }
 
 public struct ProfileUseCaseImpl: ProfileUseCaseInterface {

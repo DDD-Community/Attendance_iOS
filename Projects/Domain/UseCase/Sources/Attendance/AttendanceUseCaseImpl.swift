@@ -43,9 +43,9 @@ public struct AttendanceUseCaseImpl: AttendanceInterface {
 }
 
 extension AttendanceUseCaseImpl: DependencyKey {
-  static public var liveValue: AttendanceInterface = AttendanceUseCaseImpl()
-  static public var testValue:  AttendanceInterface = AttendanceUseCaseImpl()
-  static public var previewValue: AttendanceInterface = liveValue
+  public static var liveValue: AttendanceInterface = AttendanceUseCaseImpl()
+  public static var testValue: AttendanceInterface = AttendanceUseCaseImpl()
+  public static var previewValue: AttendanceInterface = liveValue
 }
 
 public extension DependencyValues {

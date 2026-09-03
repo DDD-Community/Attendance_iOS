@@ -20,7 +20,6 @@ let project = Project.makeModule(
     .core(.assembly),
     .core(.storage, .interface),
     .service(.auth, .implementation),
-    .domain(.domainInterface),
     .SPM.dependencies
   ],
   sources: ["Sources/**"],

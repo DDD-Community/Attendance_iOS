@@ -18,12 +18,10 @@ final class AuthUseCaseTest {
 
   // MARK: - Test Dependencies
   private var mockAuthRepository: MockAuthRepository!
-  private var mockKeychainManager: MockKeychainManager!
   private var mockUserSession: MockUserSession!
 
   init() async {
     mockAuthRepository = await MockAuthRepository.success()
-    mockKeychainManager = await MockKeychainManager.success()
     mockUserSession = await MockUserSession.success()
   }
 
@@ -41,7 +39,6 @@ final class AuthUseCaseTest {
     // When: Apple 로그인 실행
     let result = try await AuthTestHelper.withMockDependencies(
       mockAuthRepository: mockAuthRepository,
-      mockKeychainManager: mockKeychainManager,
       mockUserSession: mockUserSession
     ) {
       let useCase = AuthUseCaseImpl()
@@ -73,7 +70,6 @@ final class AuthUseCaseTest {
     // When: Google 로그인 실행
     let result = try await AuthTestHelper.withMockDependencies(
       mockAuthRepository: mockAuthRepository,
-      mockKeychainManager: mockKeychainManager,
       mockUserSession: mockUserSession
     ) {
       let useCase = AuthUseCaseImpl()
@@ -104,7 +100,6 @@ final class AuthUseCaseTest {
     // When: Google 로그인 실행
     let result = try await AuthTestHelper.withMockDependencies(
       mockAuthRepository: mockAuthRepository,
-      mockKeychainManager: mockKeychainManager,
       mockUserSession: mockUserSession
     ) {
       let useCase = AuthUseCaseImpl()
@@ -134,7 +129,6 @@ final class AuthUseCaseTest {
     await #expect(throws: AuthError.invalidCredential("invalid token")) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
-        mockKeychainManager: mockKeychainManager
       ) {
         let useCase = AuthUseCaseImpl()
         _ = try await useCase.login(provider: .google, token: invalidToken)
@@ -154,7 +148,6 @@ final class AuthUseCaseTest {
     await #expect(throws: AuthError.unknownError("네트워크 요청에 실패했습니다")) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
-        mockKeychainManager: mockKeychainManager
       ) {
         let useCase = AuthUseCaseImpl()
         _ = try await useCase.login(provider: .apple, token: AuthTestFixture.TestTokens.validAppleToken)
@@ -172,7 +165,6 @@ final class AuthUseCaseTest {
     // When: 토큰 갱신 실행
     let result = try await AuthTestHelper.withMockDependencies(
       mockAuthRepository: mockAuthRepository,
-      mockKeychainManager: mockKeychainManager
     ) {
       let useCase = AuthUseCaseImpl()
       return try await useCase.refresh()
@@ -192,7 +184,6 @@ final class AuthUseCaseTest {
     // When: 로그아웃 실행
     let result = try await AuthTestHelper.withMockDependencies(
       mockAuthRepository: mockAuthRepository,
-      mockKeychainManager: mockKeychainManager,
       mockUserSession: mockUserSession
     ) {
       let useCase = AuthUseCaseImpl()
@@ -214,7 +205,6 @@ final class AuthUseCaseTest {
     // When: 세션 자격증명 업데이트 실행
     try await AuthTestHelper.withMockDependencies(
       mockAuthRepository: mockAuthRepository,
-      mockKeychainManager: mockKeychainManager
     ) {
       let useCase = AuthUseCaseImpl()
       await useCase.updateSessionCredential(with: testTokens)
@@ -237,7 +227,6 @@ final class AuthUseCaseTest {
     // When: 회원탈퇴 실행
     let result = try await AuthTestHelper.withMockDependencies(
       mockAuthRepository: mockAuthRepository,
-      mockKeychainManager: mockKeychainManager
     ) {
       let useCase = AuthUseCaseImpl()
       return try await useCase.withDraw(token: withdrawToken)
@@ -258,7 +247,6 @@ final class AuthUseCaseTest {
     await #expect(throws: AuthError.accountDeletionNotAllowed) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
-        mockKeychainManager: mockKeychainManager
       ) {
         let useCase = AuthUseCaseImpl()
         _ = try await useCase.withDraw(token: AuthTestFixture.TestTokens.withdrawToken)
@@ -276,7 +264,6 @@ final class AuthUseCaseTest {
     // When: Apple 로그인 실행
     let result = try await AuthTestHelper.withMockDependencies(
       mockAuthRepository: mockAuthRepository,
-      mockKeychainManager: mockKeychainManager
     ) {
       let useCase = AuthUseCaseImpl()
       return try await useCase.login(provider: .apple, token: AuthTestFixture.TestTokens.validAppleToken)
@@ -299,7 +286,6 @@ final class AuthUseCaseTest {
       {
         try await AuthTestHelper.withMockDependencies(
           mockAuthRepository: self.mockAuthRepository,
-          mockKeychainManager: self.mockKeychainManager
         ) {
           let useCase = AuthUseCaseImpl()
           return try await useCase.login(
@@ -331,7 +317,6 @@ final class AuthUseCaseTest {
     // When: Apple 로그인 실행
     let result = try await AuthTestHelper.withMockDependencies(
       mockAuthRepository: mockAuthRepository,
-      mockKeychainManager: mockKeychainManager
     ) {
       let useCase = AuthUseCaseImpl()
       return try await useCase.login(provider: .apple, token: AuthTestFixture.TestTokens.validAppleToken)
@@ -352,7 +337,6 @@ final class AuthUseCaseTest {
     await #expect(throws: AuthError.refreshTokenExpired) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
-        mockKeychainManager: mockKeychainManager
       ) {
         let useCase = AuthUseCaseImpl()
         _ = try await useCase.refresh()
@@ -373,7 +357,6 @@ final class AuthUseCaseTest {
     await #expect(throws: AuthError.logoutFailed) {
       try await AuthTestHelper.withMockDependencies(
         mockAuthRepository: mockAuthRepository,
-        mockKeychainManager: mockKeychainManager
       ) {
         let useCase = AuthUseCaseImpl()
         _ = try await useCase.logout()
@@ -394,7 +377,6 @@ final class AuthUseCaseTest {
     // When: 전체 인증 플로우 실행
     let loginResult = try await AuthTestHelper.withMockDependencies(
       mockAuthRepository: mockAuthRepository,
-      mockKeychainManager: mockKeychainManager
     ) {
       let useCase = AuthUseCaseImpl()
       return try await useCase.login(provider: .google, token: AuthTestFixture.TestTokens.validGoogleToken)
@@ -407,7 +389,6 @@ final class AuthUseCaseTest {
     // When: 토큰 갱신 실행
     let refreshResult = try await AuthTestHelper.withMockDependencies(
       mockAuthRepository: mockAuthRepository,
-      mockKeychainManager: mockKeychainManager
     ) {
       let useCase = AuthUseCaseImpl()
       return try await useCase.refresh()
@@ -419,7 +400,6 @@ final class AuthUseCaseTest {
     // When: 로그아웃 실행
     let logoutResult = try await AuthTestHelper.withMockDependencies(
       mockAuthRepository: mockAuthRepository,
-      mockKeychainManager: mockKeychainManager
     ) {
       let useCase = AuthUseCaseImpl()
       return try await useCase.logout()

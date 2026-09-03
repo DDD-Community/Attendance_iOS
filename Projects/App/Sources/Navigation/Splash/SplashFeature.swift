@@ -85,7 +85,7 @@ public struct SplashFeature: Sendable {
   @Dependency(\.appUpdateUseCase) var appUpdateUseCase
   @Dependency(\.openURL) var openURL
   @Dependency(\.mainQueue) var mainQueue
-  @Dependency(\.keychainManager) var keychainManager
+  @Dependency(\.authService) var authService
   
   public var body: some Reducer<State, Action> {
     BindingReducer()
@@ -215,7 +215,7 @@ extension SplashFeature {
         // 토큰 만료나 인증 에러의 경우 로그인으로 이동
         // 다른 네트워크 에러의 경우에도 안전하게 로그인으로 이동
         return .run { send in
-          keychainManager.clear()
+          await authService.signOut()
           await send(.delegate(.presentLogin))
         }
       }

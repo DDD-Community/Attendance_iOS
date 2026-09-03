@@ -65,18 +65,18 @@ struct SplashFeatureTests {
     }
   }
 
-  @Test("프로필 조회 실패는 저장된 인증 정보를 지우고 로그인 화면으로 이동한다")
-  func profileFetchFailureClearsKeychainAndNavigatesToLogin() async {
-    let keychain = KeychainSpy()
+  @Test("프로필 조회 실패는 인증 세션을 종료하고 로그인 화면으로 이동한다")
+  func profileFetchFailureSignsOutAndNavigatesToLogin() async {
+    let authService = AuthServiceSpy()
     let store = TestStore(initialState: SplashFeature.State()) {
       SplashFeature()
     } withDependencies: {
-      $0.keychainManager = keychain
+      $0.authService = authService
     }
 
     await store.send(.inner(.fetchUserResponse(.failure(.invalidSession))))
     await store.receive(\.delegate.presentLogin)
-    #expect(keychain.didClear)
+    #expect(authService.didSignOut)
   }
 
   @Test("업데이트 팝업 취소 시 프로필 fetch가 끝났으면 현재 역할에 맞춰 이동한다")
@@ -107,16 +107,14 @@ private extension SplashFeatureTests {
 
 }
 
-private final class KeychainSpy: KeychainManaging, @unchecked Sendable {
-  private(set) var didClear = false
+private final class AuthServiceSpy: AuthService, @unchecked Sendable {
+  private(set) var didSignOut = false
+  var isLoggedIn: Bool { get async { false } }
+  var refreshToken: String? { get async { nil } }
 
-  func save(accessToken _: String, refreshToken _: String) {}
-  func saveAccessToken(_: String) {}
-  func saveRefreshToken(_: String) {}
-  func accessToken() -> String? { nil }
-  func refreshToken() -> String? { nil }
+  func signIn(accessToken _: String, refreshToken _: String) async {}
 
-  func clear() {
-    didClear = true
+  func signOut() async {
+    didSignOut = true
   }
 }

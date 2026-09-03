@@ -23,7 +23,7 @@ public protocol AuthInterface: Sendable {
 public enum AuthRepositoryDependency: TestDependencyKey {
 
   public static var testValue: AuthInterface {
-    DefaultAuthRepositoryImpl()
+    MockAuthRepository()
   }
 
   public static var previewValue: AuthInterface = testValue

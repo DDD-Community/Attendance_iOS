@@ -1,35 +1,29 @@
 //
-//  MyPageRepositoryInterface.swift
+//  MyPageInterface.swift
 //  DomainInterface
 //
 //  Created by DDD on 1/12/26.
 //
 
+import Dependencies
+import Entity
 import Foundation
 
-import Dependencies
-
-import Entity
-
-
-public protocol MyPageRepositoryInterface: Sendable {
-  /// 출석 현황 요약 조회
+public protocol MyPageInterface: Sendable {
   func fetchAttendances() async throws(MyPageError) -> AttendanceSummaryResponse
-  /// 전체 스케줄/출석 현황 조회
   func fetchSchedules() async throws(MyPageError) -> [AttendanceMyScheduleResponse]
 }
 
 public enum MyPageRepositoryDependency: TestDependencyKey {
-  
-  public static var testValue: any MyPageRepositoryInterface {
-    DefaultMyPageRepository()
+  public static var testValue: any MyPageInterface {
+    MockMyPageRepository()
   }
-  
-  public static let previewValue: any MyPageRepositoryInterface = testValue
+
+  public static let previewValue: any MyPageInterface = testValue
 }
 
 public extension DependencyValues {
-  var myPageRepository: any MyPageRepositoryInterface {
+  var myPageRepository: any MyPageInterface {
     get { self[MyPageRepositoryDependency.self] }
     set { self[MyPageRepositoryDependency.self] = newValue }
   }

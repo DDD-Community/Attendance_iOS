@@ -1,5 +1,5 @@
 //
-//  DefaultQRCodeRepositoryImpl.swift
+//  MockQRCodeRepository.swift
 //  Repository
 //
 //  Created by DDD on 7/23/25.
@@ -9,7 +9,7 @@ import SwiftUI
 
 import Entity
 
-final public class DefaultQRCodeRepositoryImpl: QRCodeInterface {
+final public class MockQRCodeRepository: QRCodeInterface {
   
   public init() {}
   

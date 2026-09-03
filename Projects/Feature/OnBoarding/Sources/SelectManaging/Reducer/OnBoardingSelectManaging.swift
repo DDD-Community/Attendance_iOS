@@ -8,6 +8,7 @@
 import Foundation
 
 import Entity
+import DomainInterface
 import UseCase
 import DDDCoreUtility
 

@@ -1,5 +1,5 @@
 //
-//  DefaultScheduleRepositoryImpl.swift
+//  MockScheduleRepository.swift
 //  Repository
 //
 //  Created by DDD on 7/23/25.
@@ -7,7 +7,7 @@
 
 import Entity
 
-public final class DefaultScheduleRepositoryImpl: ScheduleInterface {
+public final class MockScheduleRepository: ScheduleInterface {
   public init() {}
 
   public func getCachedSchedule() async -> [Schedule]? {

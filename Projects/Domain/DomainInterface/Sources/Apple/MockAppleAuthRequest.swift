@@ -1,5 +1,5 @@
 //
-//  DefaultAppleAuthRequestImpl.swift
+//  MockAppleAuthRequest.swift
 //  DomainInterface
 //
 //  Created by DDD on 12/26/25.
@@ -12,7 +12,7 @@ import CryptoKit
 
 
 /// Default fallback implementation of AppleAuthRequestInterface
-public struct DefaultAppleAuthRequestImpl: AppleAuthRequestInterface {
+public struct MockAppleAuthRequest: AppleAuthRequestInterface {
 
   public init() {}
 

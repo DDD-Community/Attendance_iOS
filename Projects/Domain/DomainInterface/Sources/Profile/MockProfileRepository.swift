@@ -1,5 +1,5 @@
 //
-//  DefaultProfileRepositoryImpl.swift
+//  MockProfileRepository.swift
 //  Repository
 //
 //  Created by DDD on 7/23/25.
@@ -8,7 +8,7 @@
 import Entity
 
 /// Mock 구현체 - 테스트/프리뷰용 ProfileRepository
-public final class DefaultProfileRepositoryImpl: ProfileInterface {
+public final class MockProfileRepository: ProfileInterface {
   private let mockUserType: MockUserType
 
   public init(mockUserType: MockUserType = .member) {
@@ -91,7 +91,7 @@ public enum MockUserType {
   case staff
 }
 
-private extension DefaultProfileRepositoryImpl {
+private extension MockProfileRepository {
   func createMemberProfile() -> ProfileEntity {
     return ProfileEntity(
       userID: 0,

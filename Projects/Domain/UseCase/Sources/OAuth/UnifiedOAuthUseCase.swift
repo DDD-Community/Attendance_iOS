@@ -25,6 +25,21 @@ public struct UnifiedOAuthUseCase {
   public init() {}
 }
 
+// MARK: - Dependencies Registration
+
+extension UnifiedOAuthUseCase: DependencyKey {
+  public static let liveValue = UnifiedOAuthUseCase()
+  public static let testValue = UnifiedOAuthUseCase()
+  public static let previewValue = UnifiedOAuthUseCase()
+}
+
+public extension DependencyValues {
+  var unifiedOAuthUseCase: UnifiedOAuthUseCase {
+    get { self[UnifiedOAuthUseCase.self] }
+    set { self[UnifiedOAuthUseCase.self] = newValue }
+  }
+}
+
 // MARK: - Public Interface
 
 public extension UnifiedOAuthUseCase {
@@ -141,20 +156,5 @@ private extension UnifiedOAuthUseCase {
     let role = loginEntity.role ?? .member
     $userSession.withLock { $0.userRole = role }
     $staffRole.withLock { $0 = role }
-  }
-}
-
-// MARK: - Dependencies Registration
-
-extension UnifiedOAuthUseCase: DependencyKey {
-  public static let liveValue = UnifiedOAuthUseCase()
-  public static let testValue = UnifiedOAuthUseCase()
-  public static let previewValue = UnifiedOAuthUseCase()
-}
-
-extension DependencyValues {
-  public var unifiedOAuthUseCase: UnifiedOAuthUseCase {
-    get { self[UnifiedOAuthUseCase.self] }
-    set { self[UnifiedOAuthUseCase.self] = newValue }
   }
 }

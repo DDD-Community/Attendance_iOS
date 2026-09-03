@@ -19,7 +19,7 @@ public protocol AppUpdateInterface: Sendable {
 public enum AppUpdateRepositoryDependency: TestDependencyKey {
 
   public static var testValue: AppUpdateInterface {
-    DefaultAppUpdateRepositoryImpl()
+    MockAppUpdateRepository()
   }
 
   public static var previewValue: AppUpdateInterface = testValue

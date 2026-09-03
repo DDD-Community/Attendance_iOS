@@ -18,13 +18,11 @@ struct MyPageUseCaseTest {
 
     // MARK: - Test Dependencies
     private var mockMyPageRepository: MockMyPageRepository!
-    private var fetchMyAttendancesUseCase: FetchMyAttendancesUseCaseImpl!
-    private var fetchMySchedulesUseCase: FetchMySchedulesUseCaseImpl!
+    private var myPageUseCase: MyPageUseCaseImpl!
 
     init() async {
         mockMyPageRepository = MockMyPageRepository()
-        fetchMyAttendancesUseCase = FetchMyAttendancesUseCaseImpl(repository: mockMyPageRepository)
-        fetchMySchedulesUseCase = FetchMySchedulesUseCaseImpl(repository: mockMyPageRepository)
+        myPageUseCase = MyPageUseCaseImpl(repository: mockMyPageRepository)
     }
 
     // MARK: - Core MyPage Tests (10 Test Cases)
@@ -43,7 +41,7 @@ struct MyPageUseCaseTest {
         let result = try await withDependencies {
             $0.myPageRepository = mockMyPageRepository
         } operation: {
-            return try await fetchMyAttendancesUseCase.execute()
+            return try await myPageUseCase.fetchAttendances()
         }
 
         // Then: 출석 통계 검증
@@ -63,7 +61,7 @@ struct MyPageUseCaseTest {
             try await withDependencies {
                 $0.myPageRepository = mockMyPageRepository
             } operation: {
-                _ = try await fetchMyAttendancesUseCase.execute()
+                _ = try await myPageUseCase.fetchAttendances()
             }
         }
 
@@ -84,7 +82,7 @@ struct MyPageUseCaseTest {
         let result = try await withDependencies {
             $0.myPageRepository = mockMyPageRepository
         } operation: {
-            return try await fetchMySchedulesUseCase.execute()
+            return try await myPageUseCase.fetchSchedules()
         }
 
         // Then: 일정 목록 검증
@@ -106,7 +104,7 @@ struct MyPageUseCaseTest {
             try await withDependencies {
                 $0.myPageRepository = mockMyPageRepository
             } operation: {
-                _ = try await fetchMySchedulesUseCase.execute()
+                _ = try await myPageUseCase.fetchSchedules()
             }
         }
     }
@@ -125,7 +123,7 @@ struct MyPageUseCaseTest {
         let result = try await withDependencies {
             $0.myPageRepository = mockMyPageRepository
         } operation: {
-            return try await fetchMyAttendancesUseCase.execute()
+            return try await myPageUseCase.fetchAttendances()
         }
 
         // Then: 빈 통계 검증
@@ -143,7 +141,7 @@ struct MyPageUseCaseTest {
         let result = try await withDependencies {
             $0.myPageRepository = mockMyPageRepository
         } operation: {
-            return try await fetchMySchedulesUseCase.execute()
+            return try await myPageUseCase.fetchSchedules()
         }
 
         // Then: 빈 결과 검증
@@ -164,7 +162,7 @@ struct MyPageUseCaseTest {
         let result = try await withDependencies {
             $0.myPageRepository = mockMyPageRepository
         } operation: {
-            return try await fetchMyAttendancesUseCase.execute()
+            return try await myPageUseCase.fetchAttendances()
         }
 
         // Then: 출석률 계산 검증 (클라이언트에서 계산)
@@ -192,7 +190,7 @@ struct MyPageUseCaseTest {
         let result = try await withDependencies {
             $0.myPageRepository = mockMyPageRepository
         } operation: {
-            return try await fetchMySchedulesUseCase.execute()
+            return try await myPageUseCase.fetchSchedules()
         }
 
         // Then: 상태별 분석 검증
@@ -223,7 +221,7 @@ struct MyPageUseCaseTest {
         let result = try await withDependencies {
             $0.myPageRepository = mockMyPageRepository
         } operation: {
-            return try await fetchMyAttendancesUseCase.execute()
+            return try await myPageUseCase.fetchAttendances()
         }
 
         // Then: 대량 데이터 처리 검증
@@ -256,7 +254,7 @@ struct MyPageUseCaseTest {
                 try await withDependencies {
                     $0.myPageRepository = mockMyPageRepository
                 } operation: {
-                    return try await fetchMyAttendancesUseCase.execute()
+                    return try await myPageUseCase.fetchAttendances()
                 }
             }
 
@@ -264,7 +262,7 @@ struct MyPageUseCaseTest {
                 try await withDependencies {
                     $0.myPageRepository = mockMyPageRepository
                 } operation: {
-                    return try await fetchMySchedulesUseCase.execute()
+                    return try await myPageUseCase.fetchSchedules()
                 }
             }
 
@@ -296,7 +294,7 @@ struct MyPageUseCaseTest {
 
 // MARK: - Mock Repository
 @MainActor
-class MockMyPageRepository: MyPageRepositoryInterface {
+class MockMyPageRepository: MyPageInterface {
 
     // MARK: - Call Tracking
     var fetchAttendancesCallCount = 0
@@ -344,4 +342,3 @@ class MockMyPageRepository: MyPageRepositoryInterface {
         schedulesResponse = .failure(Entity.MyPageError.loadFailed)
     }
 }
-

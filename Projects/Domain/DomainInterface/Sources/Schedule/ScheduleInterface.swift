@@ -20,7 +20,7 @@ public protocol ScheduleInterface: Sendable {
 public enum ScheduleRepositoryDependency: TestDependencyKey {
 
   public static var testValue: ScheduleInterface {
-    DefaultScheduleRepositoryImpl()
+    MockScheduleRepository()
   }
 
   public static var previewValue: ScheduleInterface = testValue
