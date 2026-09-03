@@ -180,9 +180,13 @@ jobs:
             "$BUNDLE_PAYLOAD/Payload" \
             DDDAttendance-Stage.ipa
 
-          # IPA를 검사해야 압축 후 Download size까지 Tuist와 PR 리포트에 기록된다.
+          # IPA를 검사해야 압축 후 Download size까지 PR 리포트에 기록된다.
           mise exec -- tuist inspect bundle DDDAttendance-Stage.ipa --json \
             > "$BUNDLE_INSPECT_REPORT_PATH"
+
+          # --json은 로컬 출력만 만들고 서버에 업로드하지 않으므로,
+          # Tuist Run Report의 Bundles 섹션을 위해 한 번 더 등록한다.
+          mise exec -- tuist inspect bundle DDDAttendance-Stage.ipa
 
       - name: Upload test and run reports
         id: upload-test-reports
