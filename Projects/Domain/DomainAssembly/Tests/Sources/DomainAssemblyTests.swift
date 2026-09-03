@@ -5,15 +5,30 @@
 //  Created by DDD on 2026-09-02
 //
 
+import Dependencies
 import Testing
 
 @testable import DomainAssembly
 
 @Suite("DomainAssembly")
 struct DomainAssemblyTests {
-  @Test("DomainAssembly bootstrap은 UseCase 등록을 유지한다")
-  func bootstrapsUseCaseDependencies() {
-    DomainDependencyAssembly.bootstrap()
+  @Test("DomainAssembly는 도메인별 UseCase 구현을 등록한다")
+  func registersUseCaseDependencies() {
+    withDependencies {
+      DomainDependencyAssembly.register(into: &$0)
+    } operation: {
+      @Dependency(\.attendanceUseCase) var attendanceUseCase
+      @Dependency(\.authUseCase) var authUseCase
+      @Dependency(\.profileUseCase) var profileUseCase
+      @Dependency(\.onBoardingUseCase) var onBoardingUseCase
+      @Dependency(\.voteUseCase) var voteUseCase
+
+      #expect(attendanceUseCase is AttendanceUseCaseImpl)
+      #expect(authUseCase is AuthUseCaseImpl)
+      #expect(profileUseCase is ProfileUseCaseImpl)
+      #expect(onBoardingUseCase is OnBoardingUseCaseImpl)
+      #expect(voteUseCase is VoteUseCaseImpl)
+    }
   }
 
   @Test("DomainAssembly는 Entity 타입을 재수출한다")

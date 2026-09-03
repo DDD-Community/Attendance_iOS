@@ -1,6 +1,6 @@
 //
-//  Staff.swift
-//  DDDAttendance
+//  StaffFeature.swift
+//  Management
 //
 //  Created by DDD on 6/6/24.
 //
@@ -15,7 +15,7 @@ import ComposableArchitecture
 import ManagementInterface
 
 @Reducer
-public struct Staff {
+public struct StaffFeature {
   public init() {}
   
   @ObservableState
@@ -76,7 +76,7 @@ public struct Staff {
   }
   
   // MARK: - 네비게이션 연결 액션
-  /// 이동 계약은 ManagementInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  /// 이동 계약은 ManagementInterface에 두어 앱이 구체 구현 없이 이벤트를 받을 수 있게 한다.
   public typealias DelegateAction = StaffDelegate
   
   @Reducer(state: .equatable)
@@ -131,7 +131,7 @@ public struct Staff {
   }
 }
 
-extension Staff {
+extension StaffFeature {
   private func handleViewAction(
     state: inout State,
     action: View

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum Staff: String, CaseIterable , Equatable{
+public enum Staff: String, CaseIterable, Equatable, Sendable {
   case member
   case manager
 

@@ -1,30 +1,20 @@
 //
-//  Splash.swift
-//  Presentation
+//  SplashFeature.swift
+//  DDDAttendance
 //
 //  Created by DDD on 10/29/24.
 //
 
-import DDDCoreLogger
 import Foundation
-
-import DDDDesignKit
-import Entity
-import DDDSharedUI
-import UseCase
-import DDDCoreUtility
-
-import ComposableArchitecture
-import SplashInterface
+import FeatureAssembly
 
 @Reducer
-public struct Splash {
+public struct SplashFeature: Sendable {
   public init() {}
   
   @ObservableState
   public struct State: Equatable {
-    @Shared(.inMemory("User")) var user: User = .shared
-    @Shared(.appStorage("staffRole")) var staffRole: Staff?
+    @Shared(.appStorage("staffRole")) var staffRole: Entity.Staff?
     var profileModel: ProfileEntity?
     
     // 앱 업데이트 관련
@@ -78,9 +68,12 @@ public struct Splash {
   
   // MARK: - DelegateAction
   
-  /// 이동 계약은 SplashInterface 에 있다. 호출부(`.delegate(.presentStaff)`)를
-  /// 그대로 두기 위해 여기서는 별칭만 받는다.
-  public typealias DelegateAction = SplashDelegate
+  @CasePathable
+  public enum DelegateAction: Equatable, Sendable {
+    case presentLogin
+    case presentStaff
+    case presentMember
+  }
   
   nonisolated enum CancelID: Hashable {
     case fetchProfile
@@ -139,7 +132,7 @@ public struct Splash {
   }
 }
 
-extension Splash {
+extension SplashFeature {
   private func handleViewAction(
     state: inout State,
     action: View

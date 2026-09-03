@@ -58,7 +58,7 @@ struct AuthRepositoryImplTests {
   ])
   func logoutResponses(status: Int, json: String) async throws {
     let service = AuthServiceSpy()
-    let result = try await makeRepository(
+    let result = try await makeAuthRepository(
       client: StubNetworkClient(statusCode: status, json: json), service: service
     ).logout()
     if (200 ... 299).contains(status) {
@@ -71,7 +71,7 @@ struct AuthRepositoryImplTests {
   @Test("로그아웃 전송 실패는 logoutFailed")
   func logoutFailure() async {
     await #expect(throws: AuthError.logoutFailed) {
-      try await makeRepository(client: failingClient(), service: AuthServiceSpy()).logout()
+      try await makeAuthRepository(client: failingClient(), service: AuthServiceSpy()).logout()
     }
   }
 
@@ -80,7 +80,7 @@ struct AuthRepositoryImplTests {
     (400, #"{"message":"denied"}"#), (400, "plain error")
   ])
   func withdrawResponses(status: Int, json: String) async throws {
-    let result = try await makeRepository(
+    let result = try await makeAuthRepository(
       client: StubNetworkClient(statusCode: status, json: json), service: AuthServiceSpy()
     ).withDraw(token: "oauth")
     #expect(result.isSuccess == (200 ... 299).contains(status))
@@ -89,7 +89,7 @@ struct AuthRepositoryImplTests {
   @Test("회원 탈퇴 전송 실패는 accountDeletionFailed")
   func withdrawFailure() async {
     await #expect(throws: AuthError.accountDeletionFailed) {
-      try await makeRepository(client: failingClient(), service: AuthServiceSpy()).withDraw(token: "oauth")
+      try await makeAuthRepository(client: failingClient(), service: AuthServiceSpy()).withDraw(token: "oauth")
     }
   }
 
@@ -101,8 +101,8 @@ struct AuthRepositoryImplTests {
     #expect(await service.signedInTokens == ["a", "r"])
   }
 
-  private func makeRepository(
-    client: some DDDRequestClient,
+  private func makeAuthRepository(
+    client: any DDDNetworkClient,
     service: AuthServiceSpy
   ) async -> AuthRepositoryImpl {
     await withDependencies {

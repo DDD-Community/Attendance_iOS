@@ -11,7 +11,6 @@ import ProjectDescription
 
 public enum FeatureModule: String, CaseIterable {
   case sharedUI = "FeatureSharedUI"
-  case splash = "Splash"
   case auth = "Auth"
   case management = "Management"
   case profile = "Profile"

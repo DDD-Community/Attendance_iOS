@@ -18,10 +18,9 @@ struct LiveDependencyRegistrationTests {
   /// keychainManager 는 ServiceAssembly 소관이라 NetworkContainerTests 가 검증한다.
   @Test("모든 Repository가 live context에서 등록된다")
   func resolvesAllLiveDependencies() {
-    DataDependencyAssembly.bootstrap()
-
     withDependencies {
       $0.context = .live
+      DataDependencyAssembly.register(into: &$0)
     } operation: {
       @Dependency(\.attendanceRepository) var attendanceRepository
       @Dependency(\.scheduleRepository) var scheduleRepository
@@ -37,19 +36,19 @@ struct LiveDependencyRegistrationTests {
       @Dependency(\.appUpdateRepository) var appUpdateRepository
       @Dependency(\.voteRepository) var voteRepository
 
-      _ = attendanceRepository
-      _ = scheduleRepository
-      _ = qrCodeRepository
-      _ = authRepository
-      _ = googleOAuthRepository
-      _ = appleOAuthRepository
-      _ = appleAuthRequest
-      _ = onBoardingRepository
-      _ = signUpRepository
-      _ = profileRepository
-      _ = myPageRepository
-      _ = appUpdateRepository
-      _ = voteRepository
+      #expect(attendanceRepository is AttendanceRepositoryImpl)
+      #expect(scheduleRepository is ScheduleRepositoryImpl)
+      #expect(qrCodeRepository is QRCodeRepositoryImpl)
+      #expect(authRepository is AuthRepositoryImpl)
+      #expect(googleOAuthRepository is GoogleOAuthRepositoryImpl)
+      #expect(appleOAuthRepository is AppleOAuthRepositoryImpl)
+      #expect(appleAuthRequest is AppleLoginRepositoryImpl)
+      #expect(onBoardingRepository is OnBoardingRepositoryImpl)
+      #expect(signUpRepository is SignUpRepositoryImpl)
+      #expect(profileRepository is ProfileRepositoryImpl)
+      #expect(myPageRepository is MyPageRepositoryImpl)
+      #expect(appUpdateRepository is AppUpdateRepositoryImpl)
+      #expect(voteRepository is VoteRepositoryImpl)
     }
   }
 }

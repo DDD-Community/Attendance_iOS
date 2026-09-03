@@ -36,15 +36,18 @@ struct NetworkContainerTests {
   }
 
   @Test
-  func KeychainManager_라이브_구현은_ServiceAssembly에서_해결된다() {
-    ServiceDependencyAssembly.bootstrap()
-
+  func 라이브_서비스는_ServiceAssembly에서_동일한_인스턴스로_등록된다() {
     withDependencies {
       $0.context = .live
+      ServiceDependencyAssembly.register(into: &$0)
     } operation: {
+      @Dependency(\.networkClient) var networkClient
+      @Dependency(\.authService) var authService
       @Dependency(\.keychainManager) var keychainManager
 
-      _ = keychainManager
+      #expect(networkClient as AnyObject === NetworkContainer.authenticatedClient as AnyObject)
+      #expect(authService as AnyObject === NetworkContainer.authService as AnyObject)
+      #expect(keychainManager as AnyObject === NetworkContainer.keychainManager as AnyObject)
     }
   }
 }

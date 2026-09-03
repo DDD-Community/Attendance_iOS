@@ -1,5 +1,5 @@
 //
-//  StaffReducerTests.swift
+//  StaffFeatureTests.swift
 //  ManagementTests
 //
 //  Created by DDD on 2026-09-02.
@@ -12,12 +12,12 @@ import Testing
 @testable import Management
 
 @MainActor
-@Suite("Staff")
-struct StaffReducerTests {
+@Suite("StaffFeature")
+struct StaffFeatureTests {
   @Test("toggleDropDown은 드롭다운 펼침 상태를 반전한다")
   func toggleDropDownTogglesExpandedState() async {
-    let store = TestStore(initialState: Staff.State()) {
-      Staff()
+    let store = TestStore(initialState: StaffFeature.State()) {
+      StaffFeature()
     }
 
     await store.send(.view(.toggleDropDown)) {
@@ -27,10 +27,10 @@ struct StaffReducerTests {
 
   @Test("selectDropDownItem은 선택 값을 저장하고 드롭다운을 닫는다")
   func selectDropDownItemStoresSelectionAndClosesDropdown() async {
-    var state = Staff.State()
+    var state = StaffFeature.State()
     state.isExpandedDropDown = true
     let store = TestStore(initialState: state) {
-      Staff()
+      StaffFeature()
     }
 
     await store.send(.view(.selectDropDownItem(.vote))) {
@@ -41,10 +41,10 @@ struct StaffReducerTests {
 
   @Test("presentQrcode는 기존 드롭다운을 닫고 QR destination을 표시한다")
   func presentQRCodeClosesDropdownAndPresentsDestination() async {
-    var state = Staff.State()
+    var state = StaffFeature.State()
     state.isExpandedDropDown = true
     let store = TestStore(initialState: state) {
-      Staff()
+      StaffFeature()
     }
 
     await store.send(.view(.presentQrcode)) {

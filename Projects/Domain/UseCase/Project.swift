@@ -11,7 +11,8 @@ let project = Project.makeModule(
   settings: .moduleSettings,
   dependencies: [
     .core(.logger),
-    .domain(.domainInterface)
+    .domain(.domainInterface),
+    .SPM.dependencies
 
   ],
   sources: ["Sources/**"],

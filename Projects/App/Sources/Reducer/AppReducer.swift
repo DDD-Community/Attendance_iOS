@@ -16,13 +16,13 @@ public struct AppReducer: Sendable {
 
   @ObservableState
   public enum State {
-    case splash(Splash.State)
+    case splash(SplashFeature.State)
     case auth(AuthCoordinator.State)
     case staff(StaffCoordinator.State)
     case member(MemberCoordinator.State)
 
     public init() {
-      self = .splash(Splash.State())
+      self = .splash(SplashFeature.State())
     }
 
     // Animation identifier for SwiftUI transitions
@@ -75,7 +75,7 @@ public struct AppReducer: Sendable {
   //MARK: - 스코프 액션
   @CasePathable
   public enum ScopeAction {
-    case splash(Splash.Action)
+    case splash(SplashFeature.Action)
     case auth(AuthCoordinator.Action)
     case staff(StaffCoordinator.Action)
     case member(MemberCoordinator.Action)
@@ -152,7 +152,7 @@ public struct AppReducer: Sendable {
     }
     // 🔥 TCA 해결책 5: 강화된 ifCaseLet 체인 - 상태 불일치 방어
     .ifCaseLet(\.splash, action: \.scope.splash) {
-      Splash()
+      SplashFeature()
     }
     .ifCaseLet(\.auth, action: \.scope.auth) {
       AuthCoordinator()

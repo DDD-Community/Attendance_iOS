@@ -1,25 +1,20 @@
 //
 //  SplashView.swift
-//  Presentation
+//  DDDAttendance
 //
 //  Created by DDD on 10/29/24.
 //
 
+import FeatureAssembly
 import SwiftUI
 
-import DDDDesignKit
-import DDDSharedUI
-
-import ComposableArchitecture
-import DDDAnimation
-
-@ViewAction(for: Splash.self)
+@ViewAction(for: SplashFeature.self)
 public struct SplashView: View {
-  @Bindable public var store: StoreOf<Splash>
+  @Bindable public var store: StoreOf<SplashFeature>
   @State private var isAnimating = false // GIF 애니메이션 상태 관리
 
   public init(
-    store: StoreOf<Splash>
+    store: StoreOf<SplashFeature>
   ) {
     self.store = store
   }
@@ -48,5 +43,3 @@ public struct SplashView: View {
     .dddAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
   }
 }
-
-

@@ -19,6 +19,11 @@ let project = Project.makeAppModule(
   dependencies: [
     .featureAssembly,
   ],
+  testDependencies: [
+    .featureAssembly,
+    .domain(.entity, .testing),
+    .domain(.domainInterface)
+  ],
   sources: ["Sources/**"],
   resources: ["Resources/**"],
   infoPlist: .appInfoPlist,

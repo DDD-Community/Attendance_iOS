@@ -6,6 +6,7 @@
 //
 
 import DependencyPlugin
+import DependencyPackagePlugin
 import Foundation
 import ProjectDescription
 import ProjectTemplatePlugin
@@ -20,7 +21,8 @@ let project = Project.makeModule(
     .core(.logger),
     .domain(.entity),
     .domain(.domainInterface),
-    .domain(.useCase)
+    .domain(.useCase),
+    .SPM.dependencies
   ],
   sources: ["Sources/**"],
   hasTests: true

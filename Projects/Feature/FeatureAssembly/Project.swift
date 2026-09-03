@@ -1,4 +1,5 @@
 import DependencyPlugin
+import DependencyPackagePlugin
 import Foundation
 import ProjectDescription
 import ProjectTemplatePlugin
@@ -13,13 +14,16 @@ let project = Project.makeModule(
     .dataAssembly,
     .domainAssembly,
     .feature(.auth),
-    .feature(.splash),
     .feature(.management),
     .feature(.member),
     .feature(.onBoarding),
     .feature(.profile),
     .feature(.web),
-    .feature(.sharedUI)
+    .feature(.sharedUI),
+    .domain(.useCase),
+    .core(.logger),
+    .ui(.animation),
+    .SPM.dependencies
   ],
   sources: ["Sources/**"]
 )

@@ -204,7 +204,7 @@ extension StaffCoordinator {
 extension StaffCoordinator {
   @Reducer
   public enum CoreMemberScreen {
-    case coreMember(Staff)
+    case coreMember(StaffFeature)
     case profile(ProfileCoordinator)
   }
 }

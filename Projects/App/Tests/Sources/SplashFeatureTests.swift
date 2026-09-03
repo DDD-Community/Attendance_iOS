@@ -1,31 +1,30 @@
 //
-//  SplashReducerTests.swift
-//  SplashTests
+//  SplashFeatureTests.swift
+//  DDDAttendanceTests
 //
 //  Created by DDD on 2026-09-02
 //  Copyright © 2026 DDD , Ltd. All rights reserved.
 //
 
-import ComposableArchitecture
 import DomainInterface
-import Entity
 import EntityTesting
+import FeatureAssembly
 import Testing
 
-@testable import Splash
+@testable import DDDAttendance
 
 @MainActor
-@Suite("Splash")
-struct SplashReducerTests {
+@Suite("SplashFeature")
+struct SplashFeatureTests {
   @Test("업데이트가 없고 멤버 프로필 fetch가 끝났으면 멤버 화면으로 이동한다")
   func upToDateMemberNavigatesToMemberAfterProfileFetch() async {
-    var state = Splash.State()
+    var state = SplashFeature.State()
     state.staffRole = .member
     state.profileModel = EntityFixture.memberProfile
     state.profileFetchCompleted = true
 
     let store = TestStore(initialState: state) {
-      Splash()
+      SplashFeature()
     }
 
     await store.send(.inner(.checkAppUpdateResponse(.success(nil)))) {
@@ -36,8 +35,8 @@ struct SplashReducerTests {
 
   @Test("업데이트가 필요하면 앱스토어 URL을 저장하고 업데이트 팝업을 표시한다")
   func updateAvailablePresentsUpdateAlert() async {
-    let store = TestStore(initialState: Splash.State()) {
-      Splash()
+    let store = TestStore(initialState: SplashFeature.State()) {
+      SplashFeature()
     }
 
     await store.send(.inner(.checkAppUpdateResponse(.success(EntityFixture.updateAvailable)))) {
@@ -56,8 +55,8 @@ struct SplashReducerTests {
   @Test("프로필 조회 실패는 저장된 인증 정보를 지우고 로그인 화면으로 이동한다")
   func profileFetchFailureClearsKeychainAndNavigatesToLogin() async {
     let keychain = KeychainSpy()
-    let store = TestStore(initialState: Splash.State()) {
-      Splash()
+    let store = TestStore(initialState: SplashFeature.State()) {
+      SplashFeature()
     } withDependencies: {
       $0.keychainManager = keychain
     }
@@ -69,7 +68,7 @@ struct SplashReducerTests {
 
   @Test("업데이트 팝업 취소 시 프로필 fetch가 끝났으면 현재 역할에 맞춰 이동한다")
   func cancelUpdateAlertNavigatesAfterProfileFetchCompleted() async {
-    var state = Splash.State()
+    var state = SplashFeature.State()
     state.staffRole = .manager
     state.customAlert = .alert(
       title: "새로운 버전이 출시되었어요!",
@@ -81,7 +80,7 @@ struct SplashReducerTests {
     state.profileFetchCompleted = true
 
     let store = TestStore(initialState: state) {
-      Splash()
+      SplashFeature()
     }
 
     await store.send(.scope(.customAlert(.presented(.cancelTapped)))) {
@@ -91,7 +90,7 @@ struct SplashReducerTests {
   }
 }
 
-private extension SplashReducerTests {
+private extension SplashFeatureTests {
 
 }
 

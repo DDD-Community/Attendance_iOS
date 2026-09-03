@@ -17,6 +17,7 @@ let project = Project.makeModule(
     .data(.model),
     .domain(.domainInterface),
     .domain(.entity),
+    .SPM.dependencies,
     .SPM.composableArchitecture,
     .SPM.googleSignIn
   ],

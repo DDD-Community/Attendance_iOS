@@ -31,6 +31,7 @@ public extension Project {
     settings: ProjectDescription.Settings,
     scripts: [ProjectDescription.TargetScript] = [],
     dependencies: [ProjectDescription.TargetDependency] = [],
+    testDependencies: [ProjectDescription.TargetDependency] = [],
     sources _: ProjectDescription.SourceFilesList = ["Sources/**"],
     resources: ProjectDescription.ResourceFileElements? = nil,
     infoPlist: ProjectDescription.InfoPlist = .default,
@@ -66,7 +67,7 @@ public extension Project {
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
         buildableFolders: ["Tests"],
-        dependencies: [.target(name: name)],
+        dependencies: [.target(name: name)] + testDependencies,
         settings: suppressWarningsSettings
       )
       targets.append(appTestTarget)

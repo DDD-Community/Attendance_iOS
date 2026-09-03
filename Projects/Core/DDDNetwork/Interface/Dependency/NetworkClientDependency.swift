@@ -6,13 +6,8 @@
 //
 //  네트워크 클라이언트의 DependencyKey.
 //
-//  예전에는 Repository 마다 생성자로 client 를 받았고, RepositoryFactory 가
-//  같은 `client: networkClient` 를 아홉 번 반복해 넘겼다. 조립 지점이 한 곳뿐이라
-//  호출부마다 다른 클라이언트를 넣는 일이 없었으므로 생성자 주입의 이점을 쓰지 않았다.
-//  UseCase·Repository 가 이미 DependencyValues 로 등록되는 것과도 방식이 어긋났다.
-//
-//  liveValue 는 인증 헤더를 붙이는 실제 클라이언트라 상위 조립 레이어(ServiceAssembly)가
-//  등록한다. 여기서는 계약과 테스트값만 둔다.
+//  실제 인증 클라이언트는 ServiceAssembly가 `DependencyValues`에 등록한다.
+//  Interface 모듈에는 계약과 테스트 기본값만 둔다.
 //
 
 import Dependencies

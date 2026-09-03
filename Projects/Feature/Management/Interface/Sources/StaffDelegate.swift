@@ -1,5 +1,5 @@
 //
-//  ManagementDelegate.swift
+//  StaffDelegate.swift
 //  ManagementInterface
 //
 //  Created by DDD on 2026-09-02
@@ -11,16 +11,10 @@
 //
 
 import ComposableArchitecture
-import Entity
 import Foundation
 
 @CasePathable
 public enum StaffDelegate: Equatable, Sendable {
   case presentSchedule
   case presentManagerProfile
-}
-
-@CasePathable
-public enum ScheduleModalDelegate: Equatable, Sendable {
-  case selectScheduleCompleted(selectedSchedule: Schedule)
 }
