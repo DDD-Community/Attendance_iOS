@@ -9,7 +9,6 @@ import Auth
 import Foundation
 
 import DDDCoreUtility
-import Entity
 
 import ComposableArchitecture
 import TCAFlow

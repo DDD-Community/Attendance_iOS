@@ -9,12 +9,10 @@ import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
-import DomainInterface
-import UseCase
+import ScheduleDomain
 
 import ComposableArchitecture
 import ManagementInterface
-import Entity
 
 @Reducer
 public struct ScheduleModal {

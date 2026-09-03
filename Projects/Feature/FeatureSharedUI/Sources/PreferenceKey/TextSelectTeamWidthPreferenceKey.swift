@@ -6,7 +6,6 @@
 //
 
 import DDDDesignKit
-import Entity
 import SwiftUI
 
 public struct TextWidthPreferenceKey: PreferenceKey {

@@ -8,10 +8,8 @@
 import DDDCoreLogger
 import ComposableArchitecture
 import DDDDesignKit
-import Entity
 import Foundation
-import DomainInterface
-import UseCase
+import VoteDomain
 
 /// [멤버] 투표 참여 플로우 리듀서.
 /// 진행 중 투표 조회 → 템플릿 로드 → 1단계(팀 선택) → 2단계(피드백) → 제출.

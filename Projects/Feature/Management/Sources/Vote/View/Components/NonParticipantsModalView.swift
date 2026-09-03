@@ -8,7 +8,6 @@
 import SwiftUI
 
 import DDDDesignKit
-import Entity
 
 extension View {
   func nonParticipantsModal(

@@ -7,14 +7,13 @@
 //
 
 import ComposableArchitecture
-import DomainInterface
-import UseCase
-import Entity
+import OnBoardingDomain
+import ProfileDomain
 import Foundation
 
 // MARK: - UseCase Stub
 
-struct StubOnBoardingRepository: DomainInterface.OnBoardingInterface, @unchecked Sendable {
+struct StubOnBoardingRepository: OnBoardingInterface, @unchecked Sendable {
   var teams: [SelectTeamEntity] = []
   var jobs: [SelectJob] = []
   var managings: [SelectManaging] = []

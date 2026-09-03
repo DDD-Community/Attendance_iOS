@@ -9,13 +9,12 @@ import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
-import DomainInterface
-import UseCase
+import AuthDomain
+import ProfileDomain
 
 import ComposableArchitecture
 import ProfileInterface
 import DDDDesignKit
-import Entity
 
 @Reducer
 public struct ProfileReducer: Sendable {

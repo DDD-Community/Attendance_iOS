@@ -19,6 +19,7 @@ let project = Project.makeModule(
   dependencies: [
     .core(.assembly),
     .core(.storage, .interface),
+    .service(.apiEndpoint),
     .service(.auth, .implementation),
     .SPM.dependencies
   ],

@@ -8,7 +8,6 @@
 import SwiftUI
 
 import DDDDesignKit
-import Entity
 
 import ComposableArchitecture
 

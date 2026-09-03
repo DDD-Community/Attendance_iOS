@@ -7,9 +7,17 @@
 
 import Dependencies
 import Testing
+import AppUpdateDomain
+import AttendanceDomain
+import AuthDomain
+import MyPageDomain
+import OnBoardingDomain
+import ProfileDomain
+import QRCodeDomain
+import ScheduleDomain
+import VoteDomain
 
 @testable import DomainAssembly
-@testable import UseCase
 
 @Suite("DomainAssembly")
 struct DomainAssemblyTests {
@@ -39,8 +47,8 @@ struct DomainAssemblyTests {
     #expect(type.description == "APPLE")
   }
 
-  @Test("DomainAssembly는 DomainInterface mock을 재수출한다")
-  func reexportsDomainInterfaceMocks() async throws {
+  @Test("DomainAssembly는 도메인별 interface mock을 재수출한다")
+  func reexportsDomainMocks() async throws {
     let repository = MockAuthRepository.success()
     let entity = try await repository.login(provider: .apple, token: "token")
 

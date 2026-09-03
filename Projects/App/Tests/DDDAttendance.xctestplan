@@ -118,13 +118,6 @@
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Data\/DataAssembly\/DataAssembly.xcodeproj",
-        "identifier" : "00105E102EE31401CB4119BC",
-        "name" : "DataAssemblyTests"
-      }
-    },
-    {
-      "target" : {
         "containerPath" : "container:Projects\/Domain\/DomainAssembly\/DomainAssembly.xcodeproj",
         "identifier" : "B818473DEC42016D408C6812",
         "name" : "DomainAssemblyTests"
@@ -132,16 +125,65 @@
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Domain\/DomainInterface\/DomainInterface.xcodeproj",
-        "identifier" : "03D903CD4D01BDA717836266",
-        "name" : "DomainInterfaceTests"
+        "containerPath" : "container:Projects\/Domain\/AppUpdateDomain\/AppUpdateDomain.xcodeproj",
+        "identifier" : "215E4CDF3A2C040615CBD630",
+        "name" : "AppUpdateDomainTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Domain\/Entity\/Entity.xcodeproj",
-        "identifier" : "ACA09057B39B93DFEB1C02D7",
-        "name" : "EntityTests"
+        "containerPath" : "container:Projects\/Domain\/AttendanceDomain\/AttendanceDomain.xcodeproj",
+        "identifier" : "10A36B786245199BDA96F082",
+        "name" : "AttendanceDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Projects\/Domain\/AuthDomain\/AuthDomain.xcodeproj",
+        "identifier" : "92D89059A9988A659FDC727D",
+        "name" : "AuthDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Projects\/Domain\/MyPageDomain\/MyPageDomain.xcodeproj",
+        "identifier" : "B4D88C6252F542B952D3764C",
+        "name" : "MyPageDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Projects\/Domain\/OnBoardingDomain\/OnBoardingDomain.xcodeproj",
+        "identifier" : "3EAFA0DD3DDFCF4D446338F4",
+        "name" : "OnBoardingDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Projects\/Domain\/ProfileDomain\/ProfileDomain.xcodeproj",
+        "identifier" : "B8EDCA1021C8B80C2B8D721C",
+        "name" : "ProfileDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Projects\/Domain\/QRCodeDomain\/QRCodeDomain.xcodeproj",
+        "identifier" : "6543D195E7F156971C0C1D9A",
+        "name" : "QRCodeDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Projects\/Domain\/ScheduleDomain\/ScheduleDomain.xcodeproj",
+        "identifier" : "8A25F60678AB104A5E8AF4EE",
+        "name" : "ScheduleDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Projects\/Domain\/VoteDomain\/VoteDomain.xcodeproj",
+        "identifier" : "4CA5294BC083D71B37819FE0",
+        "name" : "VoteDomainTests"
       }
     },
     {
@@ -160,13 +202,6 @@
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Data\/Model\/Model.xcodeproj",
-        "identifier" : "48DE3287DCFA681CD6445474",
-        "name" : "ModelTests"
-      }
-    },
-    {
-      "target" : {
         "containerPath" : "container:Projects\/Feature\/OnBoarding\/OnBoarding.xcodeproj",
         "identifier" : "424CA1D69824F799A6BE14EC",
         "name" : "OnBoardingTests"
@@ -181,23 +216,9 @@
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Data\/Repository\/Repository.xcodeproj",
-        "identifier" : "E227DA11F88E56EFAEBAD447",
-        "name" : "RepositoryTests"
-      }
-    },
-    {
-      "target" : {
         "containerPath" : "container:Projects\/Service\/ServiceAssembly\/ServiceAssembly.xcodeproj",
         "identifier" : "221DF709E8C424F75EB43F24",
         "name" : "ServiceAssemblyTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Domain\/UseCase\/UseCase.xcodeproj",
-        "identifier" : "3DF3057AD58FAE5A14CAF9E4",
-        "name" : "UseCaseTests"
       }
     },
     {

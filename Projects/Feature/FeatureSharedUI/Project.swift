@@ -17,7 +17,8 @@ let project = Project.makeModule(
   settings: .moduleSettings,
   dependencies: [
     .ui(.sharedUI),
-    .domain(.entity)
+    .domain(.attendance),
+    .domain(.onBoarding)
   ],
   sources: ["Sources/**"]
 )

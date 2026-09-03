@@ -11,9 +11,8 @@ import Foundation
 import DDDSharedUI
 
 import ComposableArchitecture
-import DomainInterface
-import UseCase
-import Entity
+import AttendanceDomain
+import ScheduleDomain
 
 @Reducer
 public struct AttendanceCheck {
@@ -105,7 +104,7 @@ public struct AttendanceCheck {
     case fetchScheduleResponse(Result<[Schedule], ScheduleError>)
     case attendanceCountResponse(Result<AttendanceCount, AttendanceError>)
     case fetchTeamsResponse(Result<[SelectTeamEntity], AttendanceError>)
-    case attendanceResponse(teamId: Int, Result<[Entity.Attendance], AttendanceError>)
+    case attendanceResponse(teamId: Int, Result<[Attendance], AttendanceError>)
     case attendanceStatusResponse(Result<[AttendanceStatus], AttendanceError>)
     case editAttendanceResponse(Result<EditAttendance, AttendanceError>)
   }

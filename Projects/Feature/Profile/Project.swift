@@ -12,9 +12,8 @@ let project = Project.makeModule(
   dependencies: [
     .ui(.sharedUI),
     .core(.logger),
-    .domain(.domainInterface),
-    .domain(.entity),
-    .domain(.useCase)
+    .domain(.auth),
+    .domain(.profile)
   ],
   sources: ["Sources/**"],
   hasTests: true,

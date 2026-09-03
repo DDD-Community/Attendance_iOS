@@ -10,7 +10,6 @@
 
 import ComposableArchitecture
 import DDDDesignKit
-import Entity
 import Testing
 
 @testable import Management

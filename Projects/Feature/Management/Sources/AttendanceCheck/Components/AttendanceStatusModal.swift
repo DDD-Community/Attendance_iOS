@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Entity
 import DDDDesignKit
 
 public struct AttendanceStatusModal: View {

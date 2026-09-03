@@ -9,9 +9,7 @@ import DDDCoreLogger
 import Foundation
 
 import DDDCoreUtility
-import DomainInterface
-import UseCase
-import Entity
+import OnBoardingDomain
 
 import ComposableArchitecture
 import OnBoardingInterface

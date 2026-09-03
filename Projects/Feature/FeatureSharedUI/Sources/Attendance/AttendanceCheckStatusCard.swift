@@ -7,7 +7,6 @@
 
 import DDDDesignKit
 import SwiftUI
-import Entity
 
 public struct AttendanceCheckStatusCard: View {
   private let attendanceStatus: AttendanceStatus

@@ -14,7 +14,7 @@ public struct SplashFeature: Sendable {
   
   @ObservableState
   public struct State: Equatable {
-    @Shared(.appStorage("staffRole")) var staffRole: Entity.Staff?
+    @Shared(.appStorage("staffRole")) var staffRole: Staff?
     var profileModel: ProfileEntity?
     
     // 앱 업데이트 관련

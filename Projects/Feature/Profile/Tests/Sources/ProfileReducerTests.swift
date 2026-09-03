@@ -7,10 +7,9 @@
 //
 
 import ComposableArchitecture
-import Entity
 import Testing
-import DomainInterface
-import UseCase
+import AuthDomain
+import ProfileDomain
 
 @testable import Profile
 

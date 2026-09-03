@@ -8,7 +8,6 @@
 import SwiftUI
 
 import DDDDesignKit
-import Entity
 
 /// 피드백 2단계의 질문 한 개 블록. 질문 타입(MULTI_SELECT/LONG_TEXT/BOOLEAN)에 맞춰 렌더링.
 struct FeedbackQuestionView: View {

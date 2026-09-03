@@ -8,16 +8,15 @@
 //  네트워크를 타지 않으면서 성공/실패/스트림 경로를 모두 지정할 수 있게 값 타입으로 둔다.
 //
 
-import DomainInterface
-import UseCase
-import Entity
+import ScheduleDomain
+import VoteDomain
 import Foundation
 
-// MARK: - VoteInterface 스텁
+// MARK: - VoteUseCaseInterface 스텁
 
 /// VoteFeature 가 쓰는 6개 경로(목록/참여현황/스트림/미참여자/시작/종료)만 제어한다.
 /// 나머지 멤버 API 는 이 화면에서 호출되지 않으므로 `.unknown` 을 던져 오호출을 드러낸다.
-struct ManagementVoteUseCaseStub: VoteInterface, @unchecked Sendable {
+struct ManagementVoteUseCaseStub: VoteUseCaseInterface, @unchecked Sendable {
   var votes: [Vote] = []
   var votesError: VoteError?
   var participation: VoteParticipation?

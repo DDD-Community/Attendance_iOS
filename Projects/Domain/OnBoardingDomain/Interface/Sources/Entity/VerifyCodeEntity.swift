@@ -1,0 +1,23 @@
+import AuthDomainInterface
+import ProfileDomainInterface
+//
+//  VerifyCodeEntity.swift
+//  Entity
+//
+//  Created by DDD on 12/30/25.
+//
+
+import Foundation
+
+public struct VerifyCodeEntity: Equatable {
+  public let generationID: Int
+  public let type: Staff
+
+  public init(
+    generationID: Int,
+    type: Staff
+  ) {
+    self.generationID = generationID
+    self.type = type
+  }
+}

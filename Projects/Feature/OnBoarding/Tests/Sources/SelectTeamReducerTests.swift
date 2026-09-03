@@ -6,12 +6,9 @@
 //
 
 import ComposableArchitecture
-import DomainInterface
-import UseCase
-import Entity
+import OnBoardingDomain
+import ProfileDomain
 import Testing
-import DomainInterface
-import UseCase
 
 @testable import OnBoarding
 

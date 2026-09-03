@@ -7,9 +7,8 @@
 
 import Foundation
 
-import Entity
-import DomainInterface
-import UseCase
+import OnBoardingDomain
+import ProfileDomain
 import DDDCoreUtility
 
 import ComposableArchitecture

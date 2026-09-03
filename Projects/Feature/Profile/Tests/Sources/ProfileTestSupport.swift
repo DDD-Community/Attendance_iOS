@@ -11,9 +11,8 @@
 //
 
 import ComposableArchitecture
-import DomainInterface
-import UseCase
-import Entity
+import AuthDomain
+import ProfileDomain
 import Foundation
 
 // MARK: - 공유 픽스처

@@ -6,7 +6,6 @@
 //
 
 import ComposableArchitecture
-import Entity
 
 @CasePathable
 public enum ScheduleModalDelegate: Equatable, Sendable {

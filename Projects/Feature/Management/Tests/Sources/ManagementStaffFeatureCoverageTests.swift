@@ -110,7 +110,9 @@ struct ManagementStaffFeatureCoverageTests {
     }
 
     await store.send(.destination(.presented(.qrcode(.view(.stopScanning))))) {
-      $0.destination?.qrcode?.isScanning = false
+      var qrCodeState = QRCode.State()
+      qrCodeState.isScanning = false
+      $0.destination = .qrcode(qrCodeState)
     }
   }
 

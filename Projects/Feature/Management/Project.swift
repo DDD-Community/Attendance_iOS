@@ -13,9 +13,10 @@ let project = Project.makeModule(
     .ui(.sharedUI),
     .feature(.sharedUI),
     .core(.logger),
-    .domain(.domainInterface),
-    .domain(.entity),
-    .domain(.useCase)
+    .domain(.attendance),
+    .domain(.qrCode),
+    .domain(.schedule),
+    .domain(.vote)
   ],
   sources: ["Sources/**"],
   hasTests: true,

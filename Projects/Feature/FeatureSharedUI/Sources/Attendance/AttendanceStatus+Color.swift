@@ -8,7 +8,6 @@
 import DDDDesignKit
 import SwiftUI
 
-import Entity
 
 public extension AttendanceStatus {
     func backgroundColor(

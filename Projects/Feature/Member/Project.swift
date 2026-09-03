@@ -12,9 +12,11 @@ let project = Project.makeModule(
   dependencies: [
     .ui(.sharedUI),
     .core(.logger),
-    .domain(.domainInterface),
-    .domain(.entity),
-    .domain(.useCase)
+    .domain(.attendance),
+    .domain(.myPage),
+    .domain(.profile),
+    .domain(.qrCode),
+    .domain(.vote)
   ],
   sources: ["Sources/**"],
   hasTests: true,

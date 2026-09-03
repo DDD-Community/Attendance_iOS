@@ -55,15 +55,6 @@ public extension TargetDependency {
     return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
 
-  static func data(_ module: DataModule, _ target: ModuleTarget = .implementation) -> Self {
-    return .moduleDependency(name: module.rawValue, path: module.path, target: target)
-  }
-
-  /// Model·Repository를 하나의 Data 진입점으로 제공하는 엄브렐러 모듈.
-  static var dataAssembly: Self {
-    return .data(.assembly)
-  }
-
   static func service(_ module: ServiceModule, _ target: ModuleTarget = .implementation) -> Self {
     return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
@@ -77,8 +68,7 @@ public extension TargetDependency {
     return .moduleDependency(name: module.rawValue, path: module.path, target: target)
   }
 
-  /// Entity·DomainInterface·UseCase 를 재수출하는 조립 모듈.
-  /// 피처는 도메인 개별 모듈이 아니라 이 문 하나만 본다.
+  /// 도메인 구현을 런타임에 조립하는 App 진입 경계.
   static var domainAssembly: Self {
     return .domain(.assembly)
   }

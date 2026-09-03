@@ -9,9 +9,10 @@ import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
-import DomainInterface
-import UseCase
-import Entity
+import AttendanceDomain
+import MyPageDomain
+import ProfileDomain
+import VoteDomain
 
 import ComposableArchitecture
 import MemberInterface

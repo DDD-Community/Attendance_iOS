@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 
 import DDDSharedUI
-import Entity
 
 import ComposableArchitecture
 import ManagementInterface

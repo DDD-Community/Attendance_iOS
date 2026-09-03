@@ -10,8 +10,7 @@ let project = Project.makeModule(
   product: .staticFramework,
   settings: .moduleSettings,
   dependencies: [
-    // App은 이 모듈의 bootstrap 하나만 호출하고, Data/Domain 조립은 아래로 전파된다.
-    .dataAssembly,
+    // App은 이 모듈의 bootstrap 하나만 호출하고, DomainAssembly가 컨텍스트 구현을 조립한다.
     .domainAssembly,
     .feature(.auth),
     .feature(.management),
@@ -20,9 +19,15 @@ let project = Project.makeModule(
     .feature(.profile),
     .feature(.web),
     .feature(.sharedUI),
-    .domain(.domainInterface),
-    .domain(.entity),
-    .domain(.useCase),
+    .domain(.appUpdate),
+    .domain(.auth),
+    .domain(.attendance),
+    .domain(.myPage),
+    .domain(.onBoarding),
+    .domain(.profile),
+    .domain(.qrCode),
+    .domain(.schedule),
+    .domain(.vote),
     .service(.auth, .interface),
     .core(.logger),
     .ui(.animation),

@@ -10,7 +10,6 @@
 
 import AuthenticationServices
 import ComposableArchitecture
-import Entity
 import Foundation
 import Testing
 

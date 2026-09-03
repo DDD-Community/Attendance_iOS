@@ -11,7 +11,6 @@ import SwiftUI
 import DDDDesignKit
 
 import ComposableArchitecture
-import Entity
 
 @ViewAction(for: MemberMain.self)
 public struct MemberMainView: View {

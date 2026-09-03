@@ -7,13 +7,13 @@
 //
 
 import ComposableArchitecture
-import DomainInterface
-import UseCase
-import Entity
+import AttendanceDomain
+import MyPageDomain
+import ProfileDomain
+import QRCodeDomain
+import VoteDomain
 import Foundation
 import SwiftUI
-import DomainInterface
-import UseCase
 
 @testable import Member
 
@@ -273,9 +273,9 @@ enum MemberTestFixture {
 
 // MARK: - Vote UseCase Stub
 
-/// `VoteInterface` 중 멤버 플로우가 실제로 쓰는 4개 메서드만 결과를 주입받는다.
+/// `VoteUseCaseInterface` 중 멤버 플로우가 실제로 쓰는 메서드 결과를 주입받는다.
 /// 운영진 전용 메서드는 호출될 일이 없으므로 실패로 고정한다.
-final class StubVoteUseCase: VoteInterface, @unchecked Sendable {
+final class StubVoteUseCase: VoteUseCaseInterface, @unchecked Sendable {
   private let activeVoteResult: Result<ActiveVote, VoteError>
   private let teamTemplateResult: Result<TeamVoteTemplateInfo, VoteError>
   private let feedbackTemplateResult: Result<FeedbackTemplateInfo, VoteError>
@@ -399,7 +399,7 @@ final class StubProfileUseCase: ProfileUseCaseInterface, @unchecked Sendable {
 
 // MARK: - MyPage UseCase Stubs
 
-final class StubMyPageUseCase: MyPageInterface, @unchecked Sendable {
+final class StubMyPageUseCase: MyPageUseCaseInterface, @unchecked Sendable {
   private let attendances: Result<AttendanceSummaryResponse, MyPageError>
   private let schedules: Result<[AttendanceMyScheduleResponse], MyPageError>
 

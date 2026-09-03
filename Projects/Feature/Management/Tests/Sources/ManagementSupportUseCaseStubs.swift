@@ -9,9 +9,10 @@ import Foundation
 import SwiftUI
 
 import ComposableArchitecture
-import DomainInterface
-import UseCase
-import Entity
+import AttendanceDomain
+import QRCodeDomain
+import ScheduleDomain
+import VoteDomain
 
 // MARK: - Fixture
 

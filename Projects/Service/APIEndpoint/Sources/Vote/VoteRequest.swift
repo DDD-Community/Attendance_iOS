@@ -8,8 +8,8 @@
 import API
 import Alamofire
 import DDDNetworkInterface
-import Entity
 import Foundation
+import VoteDomainInterface
 
 public enum VoteRequest: DDDDataRequest, Sendable {
   case list
