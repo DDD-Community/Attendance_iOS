@@ -20,212 +20,212 @@
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:Projects\/Service\/APIEndpoint\/APIEndpoint.xcodeproj",
-        "identifier" : "9F29EBA035376AB47820DAD4",
-        "name" : "APIEndpointTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Service\/API\/API.xcodeproj",
-        "identifier" : "FD9B4FE2EA3923F7DD822AD4",
-        "name" : "APITests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Feature\/Auth\/Auth.xcodeproj",
-        "identifier" : "64266547C98E573BC9E38F40",
-        "name" : "AuthTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Core\/CoreAssembly\/CoreAssembly.xcodeproj",
-        "identifier" : "CCB9372E197172D37648EB7D",
-        "name" : "CoreAssemblyTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/UI\/DDDAnimation\/DDDAnimation.xcodeproj",
-        "identifier" : "E5627EC907107C38AC7F737A",
-        "name" : "DDDAnimationTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/App\/DDDAttendance.xcodeproj",
-        "identifier" : "40DADAB0CB941E14D773495D",
-        "name" : "DDDAttendanceTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Service\/DDDAuth\/DDDAuth.xcodeproj",
-        "identifier" : "722D2C3B81F5D46F79CE3347",
-        "name" : "DDDAuthTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Core\/DDDCoreLogger\/DDDCoreLogger.xcodeproj",
-        "identifier" : "BB372C2CA95D84479C61D8D3",
-        "name" : "DDDCoreLoggerTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Core\/DDDCoreUI\/DDDCoreUI.xcodeproj",
-        "identifier" : "53B6EA3F41F42B86EA7EF11E",
-        "name" : "DDDCoreUITests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Core\/DDDCoreUtility\/DDDCoreUtility.xcodeproj",
-        "identifier" : "EAAE37E3438A21C8DAF0978F",
-        "name" : "DDDCoreUtilityTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/UI\/DDDDesignKit\/DDDDesignKit.xcodeproj",
-        "identifier" : "799D6D463986645624D43CE6",
-        "name" : "DDDDesignKitTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Core\/DDDNetwork\/DDDNetwork.xcodeproj",
-        "identifier" : "1C759A600050AAFFCE49C31F",
-        "name" : "DDDNetworkTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/UI\/DDDSharedUI\/DDDSharedUI.xcodeproj",
+        "containerPath" : "container:..\/UI\/DDDSharedUI\/DDDSharedUI.xcodeproj",
         "identifier" : "D5DEEF66E7D740E7403221A7",
         "name" : "DDDSharedUITests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Core\/DDDStorage\/DDDStorage.xcodeproj",
-        "identifier" : "CD93EAC20F7D51EC202DAA3A",
-        "name" : "DDDStorageTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Domain\/DomainAssembly\/DomainAssembly.xcodeproj",
-        "identifier" : "B818473DEC42016D408C6812",
-        "name" : "DomainAssemblyTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Domain\/AppUpdateDomain\/AppUpdateDomain.xcodeproj",
-        "identifier" : "215E4CDF3A2C040615CBD630",
-        "name" : "AppUpdateDomainTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Domain\/AttendanceDomain\/AttendanceDomain.xcodeproj",
+        "containerPath" : "container:..\/Domain\/AttendanceDomain\/AttendanceDomain.xcodeproj",
         "identifier" : "10A36B786245199BDA96F082",
         "name" : "AttendanceDomainTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Domain\/AuthDomain\/AuthDomain.xcodeproj",
-        "identifier" : "92D89059A9988A659FDC727D",
-        "name" : "AuthDomainTests"
+        "containerPath" : "container:..\/Service\/APIEndpoint\/APIEndpoint.xcodeproj",
+        "identifier" : "9F29EBA035376AB47820DAD4",
+        "name" : "APIEndpointTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Domain\/MyPageDomain\/MyPageDomain.xcodeproj",
+        "containerPath" : "container:..\/Service\/API\/API.xcodeproj",
+        "identifier" : "FD9B4FE2EA3923F7DD822AD4",
+        "name" : "APITests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/DDDCoreLogger\/DDDCoreLogger.xcodeproj",
+        "identifier" : "BB372C2CA95D84479C61D8D3",
+        "name" : "DDDCoreLoggerTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Domain\/MyPageDomain\/MyPageDomain.xcodeproj",
         "identifier" : "B4D88C6252F542B952D3764C",
         "name" : "MyPageDomainTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Domain\/OnBoardingDomain\/OnBoardingDomain.xcodeproj",
-        "identifier" : "3EAFA0DD3DDFCF4D446338F4",
-        "name" : "OnBoardingDomainTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Domain\/ProfileDomain\/ProfileDomain.xcodeproj",
-        "identifier" : "B8EDCA1021C8B80C2B8D721C",
-        "name" : "ProfileDomainTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Domain\/QRCodeDomain\/QRCodeDomain.xcodeproj",
-        "identifier" : "6543D195E7F156971C0C1D9A",
-        "name" : "QRCodeDomainTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Domain\/ScheduleDomain\/ScheduleDomain.xcodeproj",
-        "identifier" : "8A25F60678AB104A5E8AF4EE",
-        "name" : "ScheduleDomainTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Domain\/VoteDomain\/VoteDomain.xcodeproj",
-        "identifier" : "4CA5294BC083D71B37819FE0",
-        "name" : "VoteDomainTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:Projects\/Feature\/Management\/Management.xcodeproj",
+        "containerPath" : "container:..\/Feature\/Management\/Management.xcodeproj",
         "identifier" : "5B1090D5D87AF350ED19323A",
         "name" : "ManagementTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Feature\/Member\/Member.xcodeproj",
-        "identifier" : "92339243F4E3E9D97CD4B5CD",
-        "name" : "MemberTests"
+        "containerPath" : "container:..\/Domain\/QRCodeDomain\/QRCodeDomain.xcodeproj",
+        "identifier" : "6543D195E7F156971C0C1D9A",
+        "name" : "QRCodeDomainTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Feature\/OnBoarding\/OnBoarding.xcodeproj",
-        "identifier" : "424CA1D69824F799A6BE14EC",
-        "name" : "OnBoardingTests"
+        "containerPath" : "container:..\/UI\/DDDDesignKit\/DDDDesignKit.xcodeproj",
+        "identifier" : "799D6D463986645624D43CE6",
+        "name" : "DDDDesignKitTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Feature\/Profile\/Profile.xcodeproj",
-        "identifier" : "68EACFC189B2CF16BE7CDC81",
-        "name" : "ProfileTests"
+        "containerPath" : "container:..\/Core\/DDDCoreUtility\/DDDCoreUtility.xcodeproj",
+        "identifier" : "EAAE37E3438A21C8DAF0978F",
+        "name" : "DDDCoreUtilityTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Service\/ServiceAssembly\/ServiceAssembly.xcodeproj",
+        "containerPath" : "container:..\/Core\/DDDCoreUI\/DDDCoreUI.xcodeproj",
+        "identifier" : "53B6EA3F41F42B86EA7EF11E",
+        "name" : "DDDCoreUITests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Service\/DDDAuth\/DDDAuth.xcodeproj",
+        "identifier" : "722D2C3B81F5D46F79CE3347",
+        "name" : "DDDAuthTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Feature\/Auth\/Auth.xcodeproj",
+        "identifier" : "64266547C98E573BC9E38F40",
+        "name" : "AuthTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Domain\/AuthDomain\/AuthDomain.xcodeproj",
+        "identifier" : "92D89059A9988A659FDC727D",
+        "name" : "AuthDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Domain\/ScheduleDomain\/ScheduleDomain.xcodeproj",
+        "identifier" : "8A25F60678AB104A5E8AF4EE",
+        "name" : "ScheduleDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Service\/ServiceAssembly\/ServiceAssembly.xcodeproj",
         "identifier" : "221DF709E8C424F75EB43F24",
         "name" : "ServiceAssemblyTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:Projects\/Feature\/Web\/Web.xcodeproj",
+        "containerPath" : "container:..\/Domain\/DomainAssembly\/DomainAssembly.xcodeproj",
+        "identifier" : "B818473DEC42016D408C6812",
+        "name" : "DomainAssemblyTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Domain\/OnBoardingDomain\/OnBoardingDomain.xcodeproj",
+        "identifier" : "3EAFA0DD3DDFCF4D446338F4",
+        "name" : "OnBoardingDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Domain\/AppUpdateDomain\/AppUpdateDomain.xcodeproj",
+        "identifier" : "215E4CDF3A2C040615CBD630",
+        "name" : "AppUpdateDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Domain\/VoteDomain\/VoteDomain.xcodeproj",
+        "identifier" : "4CA5294BC083D71B37819FE0",
+        "name" : "VoteDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:DDDAttendance.xcodeproj",
+        "identifier" : "40DADAB0CB941E14D773495D",
+        "name" : "DDDAttendanceTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/DDDNetwork\/DDDNetwork.xcodeproj",
+        "identifier" : "1C759A600050AAFFCE49C31F",
+        "name" : "DDDNetworkTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Feature\/Web\/Web.xcodeproj",
         "identifier" : "6D382536AF2997299B8D088A",
         "name" : "WebTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Feature\/OnBoarding\/OnBoarding.xcodeproj",
+        "identifier" : "424CA1D69824F799A6BE14EC",
+        "name" : "OnBoardingTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Domain\/ProfileDomain\/ProfileDomain.xcodeproj",
+        "identifier" : "B8EDCA1021C8B80C2B8D721C",
+        "name" : "ProfileDomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/UI\/DDDAnimation\/DDDAnimation.xcodeproj",
+        "identifier" : "E5627EC907107C38AC7F737A",
+        "name" : "DDDAnimationTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Feature\/Profile\/Profile.xcodeproj",
+        "identifier" : "68EACFC189B2CF16BE7CDC81",
+        "name" : "ProfileTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/CoreAssembly\/CoreAssembly.xcodeproj",
+        "identifier" : "CCB9372E197172D37648EB7D",
+        "name" : "CoreAssemblyTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Feature\/Member\/Member.xcodeproj",
+        "identifier" : "92339243F4E3E9D97CD4B5CD",
+        "name" : "MemberTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/Core\/DDDStorage\/DDDStorage.xcodeproj",
+        "identifier" : "CD93EAC20F7D51EC202DAA3A",
+        "name" : "DDDStorageTests"
       }
     }
   ],
