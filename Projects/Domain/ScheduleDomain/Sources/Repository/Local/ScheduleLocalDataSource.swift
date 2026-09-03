@@ -29,6 +29,7 @@ public actor ScheduleLocalDataSource: ScheduleLocalDataSourceProtocol {
         self.container = try ModelContainer(
           for: schema,
           configurations: ModelConfiguration(
+            "ScheduleCache",
             isStoredInMemoryOnly: false
           )
         )

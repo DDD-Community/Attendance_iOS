@@ -30,6 +30,7 @@ public actor ProfileLocalDataSource: ProfileLocalDataSourceProtocol {
         self.container = try ModelContainer(
           for: schema,
           configurations: ModelConfiguration(
+            "ProfileCache",
             isStoredInMemoryOnly: false
           )
         )
