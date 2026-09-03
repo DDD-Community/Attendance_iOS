@@ -8,8 +8,9 @@
 import DDDCoreLogger
 import Foundation
 
-import Entity
 import DDDSharedUI
+import DomainInterface
+import Entity
 import UseCase
 
 import ComposableArchitecture
