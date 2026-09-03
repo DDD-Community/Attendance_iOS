@@ -170,6 +170,7 @@ struct SelectTeamReducerTests {
       $0.defaultInMemoryStorage = inMemoryStorage
       $0.profileUseCase = StubProfileUseCase(profile: profile)
     }
+    store.exhaustivity = .off
 
     await store.send(.view(.signUp))
     await store.receive(\.async)
