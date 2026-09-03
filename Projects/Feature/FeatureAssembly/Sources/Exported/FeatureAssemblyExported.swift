@@ -6,12 +6,6 @@
 //
 
 @_exported import ComposableArchitecture
-@_exported import DDDCoreUtility
-@_exported import DDDCoreLogger
-@_exported import DDDAnimation
-@_exported import DDDDesignKit
-@_exported import DDDSharedUI
-@_exported import DDDAuthInterface
 @_exported import FeatureSharedUI
 @_exported import AppUpdateDomain
 @_exported import AttendanceDomain
