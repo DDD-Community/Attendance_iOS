@@ -78,4 +78,4 @@ if [[ ! "$test_count" =~ ^[0-9]+$ ]] || (( test_count == 0 )); then
   exit 1
 fi
 
-echo "전체 모듈 테스트 $test_count개를 $TEST_SCHEME 스킴의 $TEST_PLAN 플랜으로 실행했습니다."
+echo "전체 모듈 테스트 ${test_count}개를 $TEST_SCHEME 스킴의 $TEST_PLAN 플랜으로 실행했습니다."

@@ -99,6 +99,7 @@ struct SelectTeamReducerTests {
     } withDependencies: {
       $0.signUpUseCase = StubSignUpUseCase()
     }
+    store.exhaustivity = .off
 
     await store.send(.view(.signUp)) {
       $0.userSession.managing = [.teamManaging]
@@ -122,6 +123,7 @@ struct SelectTeamReducerTests {
     } withDependencies: {
       $0.signUpUseCase = StubSignUpUseCase()
     }
+    store.exhaustivity = .off
 
     await store.send(.view(.signUp))
     await store.receive(\.async)

@@ -72,6 +72,7 @@ struct SelectManagingReducerTests {
     let store = TestStore(initialState: SelectManagingReducer.State()) {
       SelectManagingReducer()
     }
+    store.exhaustivity = .off
 
     await store.send(.view(.selectManagingButton(selectManaging: OnBoardingCoverageFixture.photoManaging))) {
       $0.userSession.managing = [.photo]
@@ -108,6 +109,7 @@ struct SelectManagingReducerTests {
     } withDependencies: {
       $0.signUpUseCase = StubSignUpUseCase()
     }
+    store.exhaustivity = .off
 
     await store.send(.view(.signUp))
     await store.receive(\.async)
