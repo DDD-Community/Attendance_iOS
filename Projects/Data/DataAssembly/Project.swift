@@ -5,8 +5,8 @@
 //  Created by DDD on 9/2/26.
 //
 
-import DependencyPlugin
 import DependencyPackagePlugin
+import DependencyPlugin
 import Foundation
 import ProjectDescription
 import ProjectTemplatePlugin
@@ -29,6 +29,5 @@ let project = Project.makeModule(
     .SPM.dependencies
   ],
   sources: ["Sources/**"],
-  hasTests: true,
-  forceLoadInTests: true
+  hasTests: true
 )

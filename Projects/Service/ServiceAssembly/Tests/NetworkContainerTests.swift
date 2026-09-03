@@ -7,8 +7,8 @@
 
 import Dependencies
 import DomainInterface
-import Testing
 @testable import ServiceAssembly
+import Testing
 
 struct NetworkContainerTests {
   @Test
@@ -37,6 +37,8 @@ struct NetworkContainerTests {
 
   @Test
   func KeychainManager_라이브_구현은_ServiceAssembly에서_해결된다() {
+    ServiceDependencyAssembly.bootstrap()
+
     withDependencies {
       $0.context = .live
     } operation: {

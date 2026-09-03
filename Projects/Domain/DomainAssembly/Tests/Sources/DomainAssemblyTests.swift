@@ -11,6 +11,11 @@ import Testing
 
 @Suite("DomainAssembly")
 struct DomainAssemblyTests {
+  @Test("DomainAssembly bootstrap은 UseCase 등록을 유지한다")
+  func bootstrapsUseCaseDependencies() {
+    DomainDependencyAssembly.bootstrap()
+  }
+
   @Test("DomainAssembly는 Entity 타입을 재수출한다")
   func reexportsEntityTypes() {
     let type = SocialType.apple

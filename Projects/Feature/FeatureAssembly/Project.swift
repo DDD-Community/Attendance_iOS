@@ -1,17 +1,17 @@
+import DependencyPlugin
 import Foundation
 import ProjectDescription
-import DependencyPlugin
 import ProjectTemplatePlugin
 
 let project = Project.makeModule(
   name: "FeatureAssembly",
   bundleId: .appBundleID(name: ".FeatureAssembly"),
   product: .staticFramework,
-  settings:  .moduleSettings,
+  settings: .moduleSettings,
   dependencies: [
-    // App의 live DependencyKey 구현을 링크한다. DataAssembly가 ServiceAssembly를
-    // 의존하므로 둘 다 App 빌드 그래프와 -force_load 입력에 포함된다.
+    // App은 이 모듈의 bootstrap 하나만 호출하고, Data/Domain 조립은 아래로 전파된다.
     .dataAssembly,
+    .domainAssembly,
     .feature(.auth),
     .feature(.splash),
     .feature(.management),
@@ -19,7 +19,7 @@ let project = Project.makeModule(
     .feature(.onBoarding),
     .feature(.profile),
     .feature(.web),
-    .feature(.sharedUI),
+    .feature(.sharedUI)
   ],
   sources: ["Sources/**"]
 )

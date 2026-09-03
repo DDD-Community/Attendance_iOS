@@ -114,22 +114,22 @@ extension ProfileCoordinator {
       case .routeAction(id: _, action: .web(.backToRoot)):
         return .send(.view(.backAction))
 
-      case .routeAction(id: _, action: .onBoarding(.delegate(.presentLogin))):
+      case .routeAction(id: _, action: .onBoarding(.navigation(.presentLogin))):
         return .send(.navigation(.presentLogin))
 
-      case .routeAction(id: _, action: .onBoarding(.delegate(.backToRoot))):
+      case .routeAction(id: _, action: .onBoarding(.navigation(.backToRoot))):
         state.routes.goBackTo(\.profile)
         return .none
 
-      case .routeAction(id: _, action: .onBoarding(.delegate(.presentProfile))):
+      case .routeAction(id: _, action: .onBoarding(.navigation(.presentProfile))):
         state.routes.goBackTo(\.profile)
         return .none
 
       // 기수변경으로 역할이 바뀐 경우 상위(Member/Staff)로 전파해 홈 전환
-      case .routeAction(id: _, action: .onBoarding(.delegate(.presentStaff))):
+      case .routeAction(id: _, action: .onBoarding(.navigation(.presentStaff))):
         return .send(.navigation(.presentStaff))
 
-      case .routeAction(id: _, action: .onBoarding(.delegate(.presentMember))):
+      case .routeAction(id: _, action: .onBoarding(.navigation(.presentMember))):
         return .send(.navigation(.presentMember))
 
     default:

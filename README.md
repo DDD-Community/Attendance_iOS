@@ -215,7 +215,7 @@ Xcode에서 **DDDAttendance-Stage** 스킴과 사용할 iPhone 시뮬레이터�
 
 ~~~bash
 ./make setup                     # Mise 도구, 의존성, 워크스페이스 준비
-./make generate                  # Xcode 프로젝트 생성
+./make generate                  # Demo 앱을 포함해 Xcode 프로젝트 생성
 ./make build                     # clean → install → generate
 ./make install                   # 의존성 설치 후 generate
 ./make test                      # 전체 테스트

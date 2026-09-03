@@ -275,22 +275,22 @@ public struct AppReducer: Sendable {
     case .splash(.delegate(.presentMember)):
       return .send(.view(.presentMember))
 
-    case .auth(.delegate(.presentStaff)):
+    case .auth(.navigation(.presentStaff)):
       return .send(.view(.presentStaff))
 
-    case .auth(.delegate(.presentMember)):
+    case .auth(.navigation(.presentMember)):
       return .send(.view(.presentMember))
 
-    case .staff(.delegate(.presentLogin)):
+    case .staff(.navigation(.presentLogin)):
       return .send(.view(.presentAuth))
 
-    case .staff(.delegate(.presentMember)):
+    case .staff(.navigation(.presentMember)):
       return .send(.view(.presentMember))
 
-    case .member(.delegate(.presentLogin)):
+    case .member(.navigation(.presentLogin)):
       return .send(.view(.presentAuth))
 
-    case .member(.delegate(.presentStaff)):
+    case .member(.navigation(.presentStaff)):
       return .send(.view(.presentStaff))
 
     default:

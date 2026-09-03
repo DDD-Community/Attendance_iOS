@@ -19,15 +19,6 @@ private let suppressWarningsSettings: ProjectDescription.Settings = .settings(
   configurations: XCConfig.configurations
 )
 
-private let appTargetSettings: ProjectDescription.Settings = .settings(
-  base: [
-    // 계층별 DependencyKey.liveValue가 dead strip되지 않도록 DI 조립 모듈을 링크한다.
-    "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip -force_load $(BUILT_PRODUCTS_DIR)/DataAssembly.framework/DataAssembly -force_load $(BUILT_PRODUCTS_DIR)/ServiceAssembly.framework/ServiceAssembly -force_load $(BUILT_PRODUCTS_DIR)/UseCase.framework/UseCase",
-    "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
-  ],
-  configurations: XCConfig.configurations
-)
-
 public extension Project {
   static func makeAppModule(
     name: String = Environment.appName,
@@ -58,7 +49,7 @@ public extension Project {
       entitlements: entitlements,
       scripts: scripts,
       dependencies: dependencies,
-      settings: appTargetSettings
+      settings: suppressWarningsSettings
     )
 
     // 단일 타깃 + 다중 config 구조.
@@ -160,9 +151,7 @@ public extension Project {
     hasTesting: Bool = false,
     testingDependencies: [ProjectDescription.TargetDependency] = [],
     hasDemo: Bool = false,
-    demoDependencies: [ProjectDescription.TargetDependency] = [],
-    forceLoadInTests: Bool = false,
-    forceLoadDependenciesInTests: [String] = []
+    demoDependencies: [ProjectDescription.TargetDependency] = []
   ) -> Project {
     // Interface 타깃은 Interface/ 폴더가 실제로 있을 때만 만든다(buildableFolders 는 폴더가 없으면 generate 실패).
     let interfaceTarget: Target? = hasInterface ? .target(
@@ -230,17 +219,6 @@ public extension Project {
     }
 
     if hasTests {
-      let forceLoadFlags = ([name] + forceLoadDependenciesInTests)
-        .map { "-force_load $(BUILT_PRODUCTS_DIR)/\($0).framework/\($0)" }
-        .joined(separator: " ")
-      let testTargetSettings: ProjectDescription.Settings = forceLoadInTests ? .settings(
-        base: [
-          "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip \(forceLoadFlags)",
-          "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
-        ],
-        configurations: XCConfig.configurations
-      ) : suppressWarningsSettings
-
       let appTestTarget: Target = .target(
         name: "\(name)Tests",
         destinations: destinations,
@@ -258,24 +236,44 @@ public extension Project {
         dependencies: [
           .target(name: name)
         ] + testDependencies + (hasTesting ? [.target(name: "\(name)Testing")] : []),
-        settings: testTargetSettings
+        settings: suppressWarningsSettings
       )
       targets.append(appTestTarget)
+    }
+
+    let generatedSchemes: [Scheme]
+    let projectOptions: Project.Options
+    if hasDemo {
+      // 자동 스킴은 구현/Interface/Demo를 하나의 BuildAction에 묶는다.
+      // 그 결과 일반 모듈 빌드와 Xcode의 workspace build-info 수집까지 Demo 앱을
+      // 따라가므로, Demo가 있는 프로젝트는 실행 목적별 스킴을 명시적으로 분리한다.
+      generatedSchemes = schemes + [
+        .module(name: name, hasTests: hasTests),
+        .demo(name: "\(name)Demo")
+      ]
+      projectOptions = .options(
+        automaticSchemesOptions: .disabled,
+        defaultKnownRegions: ["en", "ko"],
+        developmentRegion: "ko"
+      )
+    } else {
+      generatedSchemes = schemes
+      projectOptions = .options(
+        automaticSchemesOptions: .enabled(codeCoverageEnabled: true),
+        defaultKnownRegions: ["en", "ko"],
+        developmentRegion: "ko"
+      )
     }
 
     return Project(
       name: name,
       // tuist test 는 모듈별 자동 생성 스킴으로 도는데, 여기서 커버리지를 켜지 않으면
       // 결과 번들에 커버리지가 담기지 않아 리포트가 비어 나온다.
-      options: .options(
-        automaticSchemesOptions: .enabled(codeCoverageEnabled: true),
-        defaultKnownRegions: ["en", "ko"],
-        developmentRegion: "ko"
-      ),
+      options: projectOptions,
       packages: packages,
       settings: settings,
       targets: targets,
-      schemes: schemes,
+      schemes: generatedSchemes,
       fileHeaderTemplate: .default
     )
   }

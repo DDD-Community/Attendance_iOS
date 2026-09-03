@@ -18,6 +18,8 @@ struct LiveDependencyRegistrationTests {
   /// keychainManager 는 ServiceAssembly 소관이라 NetworkContainerTests 가 검증한다.
   @Test("모든 Repository가 live context에서 등록된다")
   func resolvesAllLiveDependencies() {
+    DataDependencyAssembly.bootstrap()
+
     withDependencies {
       $0.context = .live
     } operation: {

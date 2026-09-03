@@ -18,7 +18,9 @@ extension Settings {
     return SettingsDictionary()
       .setProductName(appName)
       .setCFBundleDisplayName(displayName)
-      .setOtherLdFlags("-ObjC -all_load -w -Wl,-no_warn_unused_dylibs")
+      // Assembly bootstrap이 필요한 Swift conformance를 명시적으로 보존하므로
+      // 모든 정적 오브젝트를 강제로 링크하는 -all_load는 사용하지 않는다.
+      .setOtherLdFlags("$(inherited) -ObjC -w -Wl,-no_warn_unused_dylibs -dead_strip")
       .setDebugInformationFormat("dwarf-with-dsym")
       .setProvisioningProfileSpecifier(provisioningProfile)
       .setSkipInstall(setSkipInstall)

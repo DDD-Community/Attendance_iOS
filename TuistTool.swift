@@ -13,6 +13,7 @@ private enum Command: String {
   case build
   case install
   case cache
+  case cacheSetup = "cache:setup"
   case test
   case format
   case lint
@@ -347,11 +348,11 @@ private func printHelp() {
 
     기본 명령어:
       ./make setup          # mise 도구 설치 + 의존성 설치 + 프로젝트 생성
-      ./make generate       # 프로젝트 생성 (Demo 앱 제외)
-      DEMO=1 ./make generate  # Demo 앱까지 포함해 생성
+      ./make generate       # Demo 앱을 포함해 프로젝트 생성
       ./make build          # 클린 + 의존성 설치 + 프로젝트 생성
       ./make install        # 의존성 설치 + 프로젝트 생성
       ./make cache          # 바이너리 캐시 생성
+      ./make cache:setup    # Xcode Compilation Cache 설정
       ./make test           # 전체 테스트 실행
       ./make format         # SwiftFormat 적용
       ./make lint           # SwiftFormat 검사
@@ -383,6 +384,11 @@ private func execute(_ command: Command, forwardedArguments: [String]) -> Int32 
   case .setup:
     let setupStatus = run("mise", arguments: ["install"])
     guard setupStatus == 0 else { return setupStatus }
+    // Xcode Compilation Cache 는 Tuist 계정 로그인과 네트워크가 필요하다.
+    // 실패해도 프로젝트 생성 자체는 막지 않고 경고만 남긴다.
+    if runTuist(arguments: ["setup", "cache"]) != 0 {
+      print("⚠️  tuist setup cache 실패 - 캐시 없이 계속한다. `tuist auth login` 후 ./make cache:setup 으로 다시 시도할 수 있다.")
+    }
     return installAndGenerate(forwardedArguments: forwardedArguments)
 
   case .generate:
@@ -400,6 +406,9 @@ private func execute(_ command: Command, forwardedArguments: [String]) -> Int32 
 
   case .cache:
     return runTuist(arguments: ["cache"] + forwardedArguments)
+
+  case .cacheSetup:
+    return runTuist(arguments: ["setup", "cache"] + forwardedArguments)
 
   case .test:
     return runTuist(arguments: ["test"] + forwardedArguments)

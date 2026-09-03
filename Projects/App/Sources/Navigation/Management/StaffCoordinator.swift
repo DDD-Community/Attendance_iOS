@@ -108,7 +108,7 @@ extension StaffCoordinator {
 
 
       // MARK: - 로그아웃
-    case .routeAction(id: _, action: .profile(.delegate(.presentLogin))):
+    case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
       state.routes.goBackToRoot()
       return .concatenate(
         .cancel(id: CancelID.allEffects),
@@ -123,7 +123,7 @@ extension StaffCoordinator {
       )
       .cancellable(id: CancelID.allEffects, cancelInFlight: true)
 
-      case .routeAction(id: _, action: .profile(.delegate(.presentRoot))):
+      case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
         return .concatenate(
           .cancel(id: CancelID.profileEffects),
           .cancel(id: ProfileReducer.CancelID.fetchProfile),
@@ -132,7 +132,7 @@ extension StaffCoordinator {
           .send(.view(.backAction))
         )
 
-      case .routeAction(id: _, action: .profile(.delegate(.presentMember))):
+      case .routeAction(id: _, action: .profile(.navigation(.presentMember))):
         return .concatenate(
           .cancel(id: CancelID.profileEffects),
           .cancel(id: ProfileReducer.CancelID.fetchProfile),
@@ -141,7 +141,7 @@ extension StaffCoordinator {
           .send(.navigation(.presentMember))
         )
 
-      case .routeAction(id: _, action: .profile(.delegate(.presentStaff))):
+      case .routeAction(id: _, action: .profile(.navigation(.presentStaff))):
         return .concatenate(
           .cancel(id: CancelID.profileEffects),
           .cancel(id: ProfileReducer.CancelID.fetchProfile),

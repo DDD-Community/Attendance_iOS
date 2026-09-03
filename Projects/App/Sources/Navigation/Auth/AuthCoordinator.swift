@@ -119,14 +119,14 @@ extension AuthCoordinator {
       case .routeAction(id: _, action: .web(.backToRoot)):
         return .send(.view(.backAction))
 
-      case .routeAction(id: _, action: .onboarding(.delegate(.backToRoot))):
+      case .routeAction(id: _, action: .onboarding(.navigation(.backToRoot))):
         state.routes.goBackTo(\.login)
         return .none
 
-      case .routeAction(id: _, action: .onboarding(.delegate(.presentStaff))):
+      case .routeAction(id: _, action: .onboarding(.navigation(.presentStaff))):
         return .send(.navigation(.presentStaff))
 
-      case .routeAction(id: _, action: .onboarding(.delegate(.presentMember))):
+      case .routeAction(id: _, action: .onboarding(.navigation(.presentMember))):
         return .send(.navigation(.presentMember))
 
       default:
