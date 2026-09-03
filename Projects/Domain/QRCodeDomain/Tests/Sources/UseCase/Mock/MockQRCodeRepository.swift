@@ -1,4 +1,5 @@
 import SwiftUI
+import AttendanceDomainInterface
 import QRCodeDomainInterface
 
 @MainActor

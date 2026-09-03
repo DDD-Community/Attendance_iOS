@@ -8,6 +8,7 @@
 
 import ComposableArchitecture
 import Testing
+import VoteDomainInterface
 
 @testable import Management
 

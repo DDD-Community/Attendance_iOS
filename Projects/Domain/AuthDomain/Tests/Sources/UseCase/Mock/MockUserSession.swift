@@ -1,4 +1,5 @@
 import Foundation
+import AuthDomainInterface
 
 @MainActor
 final class MockUserSession {

@@ -1,5 +1,6 @@
 import Testing
 import SwiftUI
+import AttendanceDomainInterface
 import QRCodeDomainInterface
 import Dependencies
 @testable import QRCodeDomain

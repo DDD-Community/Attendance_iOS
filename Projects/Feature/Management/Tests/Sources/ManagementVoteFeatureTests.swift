@@ -11,6 +11,7 @@
 import ComposableArchitecture
 import DDDDesignKit
 import Testing
+import VoteDomainInterface
 
 @testable import Management
 

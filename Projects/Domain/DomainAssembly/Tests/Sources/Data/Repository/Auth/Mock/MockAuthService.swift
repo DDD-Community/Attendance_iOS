@@ -7,6 +7,7 @@
 
 import Foundation
 import APIEndpoint
+import AuthDomainInterface
 
 @MainActor
 final class MockAuthService {

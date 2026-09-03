@@ -47,8 +47,8 @@ struct SignUpUseCaseTest {
     #expect(repository.lastInput?.managerRoles == nil)
     #expect(repository.lastInput?.token == "google-token")
     #expect(repository.lastInput?.oauthRefreshToken == nil)
-    #expect(authRepository.lastLoginProvider == .google)
-    #expect(authRepository.lastLoginToken == "google-token")
+    #expect(authRepository.getLastLoginProvider() == .google)
+    #expect(authRepository.getLastLoginToken() == "google-token")
   }
 
   @Test("Apple 운영진 가입은 관리 권한과 Apple 토큰을 전달한다")
@@ -75,15 +75,14 @@ struct SignUpUseCaseTest {
     #expect(repository.lastInput?.managerRoles == [.teamManaging, .scheduleReminder])
     #expect(repository.lastInput?.token == "apple-id-token")
     #expect(repository.lastInput?.oauthRefreshToken == "apple-refresh-token")
-    #expect(authRepository.lastLoginProvider == .apple)
-    #expect(authRepository.lastLoginToken == "apple-id-token")
+    #expect(authRepository.getLastLoginProvider() == .apple)
+    #expect(authRepository.getLastLoginToken() == "apple-id-token")
   }
 
   @Test("가입 후 로그인 실패는 가입 성공을 취소하지 않는다")
   func ignoresBestEffortLoginFailure() async throws {
     let repository = SignUpRepositorySpy()
-    let authRepository = MockAuthRepository()
-    authRepository.configureLoginFailure(AuthError.invalidCredential("expired"))
+    let authRepository = MockAuthRepository.invalidToken()
 
     let result = try await execute(
       session: makeSession(selectTeamId: 1),
@@ -93,7 +92,7 @@ struct SignUpUseCaseTest {
 
     #expect(result == repository.response)
     #expect(repository.callCount == 1)
-    #expect(authRepository.loginCallCount == 1)
+    #expect(authRepository.getLoginCallCount() == 1)
   }
 
   @Test("가입 요청 실패는 오류를 전달하고 로그인하지 않는다")
@@ -110,7 +109,7 @@ struct SignUpUseCaseTest {
     }
 
     #expect(repository.callCount == 1)
-    #expect(authRepository.loginCallCount == 0)
+    #expect(authRepository.getLoginCallCount() == 0)
   }
 
   private func execute(

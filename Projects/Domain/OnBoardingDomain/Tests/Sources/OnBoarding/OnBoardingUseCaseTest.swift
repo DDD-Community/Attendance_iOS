@@ -16,10 +16,10 @@ import ComposableArchitecture
 struct OnBoardingUseCaseTest {
 
     // MARK: - Test Dependencies
-    private var mockOnBoardingRepository: MockOnBoardingRepository!
+    private var mockOnBoardingRepository: OnBoardingRepositorySpy!
 
     init() async {
-        mockOnBoardingRepository = MockOnBoardingRepository()
+        mockOnBoardingRepository = OnBoardingRepositorySpy()
     }
 
     // MARK: - Core OnBoarding Tests (15 Test Cases)
@@ -111,9 +111,9 @@ struct OnBoardingUseCaseTest {
     func test_fetch_jobs_success() async throws {
         // Given: 성공적인 직무 목록 설정
         let expectedJobs = [
-            SelectJob(jobKeys: "developer", job: .developer),
+            SelectJob(jobKeys: "developer", job: .ios),
             SelectJob(jobKeys: "designer", job: SelectParts.designer),
-            SelectJob(jobKeys: "planner", job: .planner),
+            SelectJob(jobKeys: "planner", job: .pm),
             SelectJob(jobKeys: "backend", job: .backend)
         ]
         mockOnBoardingRepository.configureJobsSuccess(expectedJobs)
@@ -173,10 +173,10 @@ struct OnBoardingUseCaseTest {
 
         // Then: 팀 목록 검증
         #expect(result.count == 4, "4개의 팀이 조회되어야 함")
-        #expect(result[0].name == "IOS 1팀", "IOS 1팀이 포함되어야 함")
-        #expect(result[1].name == "IOS 2팀", "IOS 2팀이 포함되어야 함")
-        #expect(result[2].name == "AND 1팀", "AND 1팀이 포함되어야 함")
-        #expect(result[3].name == "WEB 1팀", "WEB 1팀이 포함되어야 함")
+        #expect(result[0].teams.description == "IOS 1팀", "IOS 1팀이 포함되어야 함")
+        #expect(result[1].teams.description == "IOS 2팀", "IOS 2팀이 포함되어야 함")
+        #expect(result[2].teams.description == "AND 1팀", "AND 1팀이 포함되어야 함")
+        #expect(result[3].teams.description == "WEB 1팀", "WEB 1팀이 포함되어야 함")
         #expect(mockOnBoardingRepository.lastFetchTeamsGenerationId == generationId, "올바른 기수 ID가 전달되어야 함")
         #expect(mockOnBoardingRepository.fetchTeamsCallCount == 1, "Repository가 한 번 호출되어야 함")
     }
@@ -201,10 +201,10 @@ struct OnBoardingUseCaseTest {
     func test_fetch_managing_success() async throws {
         // Given: 성공적인 관리 권한 목록 설정
         let expectedManaging = [
-            SelectManaging(id: "TEAM_MANAGING", name: "팀매니징", description: "팀매니징"),
-            SelectManaging(id: "SCHEDULE_REMINDER", name: "일정 리마인드", description: "일정 리마인드"),
-            SelectManaging(id: "PHOTO", name: "사진 촬영", description: "사진 촬영"),
-            SelectManaging(id: "LOCATION_RENTAL", name: "장소 대관", description: "장소 대관")
+            SelectManaging(managingKeys: "TEAM_MANAGING", managing: .teamManaging),
+            SelectManaging(managingKeys: "SCHEDULE_REMINDER", managing: .scheduleReminder),
+            SelectManaging(managingKeys: "PHOTO", managing: .photo),
+            SelectManaging(managingKeys: "LOCATION_RENTAL", managing: .locationRental)
         ]
         mockOnBoardingRepository.configureManagingSuccess(expectedManaging)
 
@@ -218,10 +218,10 @@ struct OnBoardingUseCaseTest {
 
         // Then: 관리 권한 목록 검증
         #expect(result.count == 4, "4개의 관리 권한이 조회되어야 함")
-        #expect(result[0].name == "팀매니징", "팀매니징 권한이 포함되어야 함")
-        #expect(result[1].name == "일정 리마인드", "일정 리마인드 권한이 포함되어야 함")
-        #expect(result[2].name == "사진 촬영", "사진 촬영 권한이 포함되어야 함")
-        #expect(result[3].name == "장소 대관", "장소 대관 권한이 포함되어야 함")
+        #expect(result[0].managing.desc == "팀매니징", "팀매니징 권한이 포함되어야 함")
+        #expect(result[1].managing.desc == "일정 리마인드", "일정 리마인드 권한이 포함되어야 함")
+        #expect(result[2].managing.desc == "사진 촬영", "사진 촬영 권한이 포함되어야 함")
+        #expect(result[3].managing.desc == "장소 대관", "장소 대관 권한이 포함되어야 함")
         #expect(mockOnBoardingRepository.fetchManagingCallCount == 1, "Repository가 한 번 호출되어야 함")
     }
 
@@ -253,7 +253,7 @@ struct OnBoardingUseCaseTest {
 
         // 2. 직무 목록
         let jobs = [
-            SelectJob(jobKeys: "developer", job: .developer),
+            SelectJob(jobKeys: "developer", job: .ios),
             SelectJob(jobKeys: "designer", job: SelectParts.designer)
         ]
         mockOnBoardingRepository.configureJobsSuccess(jobs)
@@ -267,8 +267,8 @@ struct OnBoardingUseCaseTest {
 
         // 4. 관리 권한 목록 (Manager인 경우)
         let managing = [
-            SelectManaging(id: "TEAM_MANAGING", name: "팀매니징", description: "팀매니징"),
-            SelectManaging(id: "PHOTO", name: "사진 촬영", description: "사진 촬영")
+            SelectManaging(managingKeys: "TEAM_MANAGING", managing: .teamManaging),
+            SelectManaging(managingKeys: "PHOTO", managing: .photo)
         ]
         mockOnBoardingRepository.configureManagingSuccess(managing)
 
@@ -330,7 +330,7 @@ struct OnBoardingUseCaseTest {
     func test_job_team_combination_validation() async throws {
         // Given: 특정 직무와 팀 조합 설정
         let developerJobs = [
-            SelectJob(jobKeys: "developer", job: .developer),
+            SelectJob(jobKeys: "developer", job: .ios),
             SelectJob(jobKeys: "backend", job: .backend)
         ]
         let techTeams = [
@@ -355,11 +355,11 @@ struct OnBoardingUseCaseTest {
         }
 
         // Then: 직무/팀 조합 검증
-        let developerJob = jobs.first { $0.job == .developer }
+        let developerJob = jobs.first { $0.job == .ios }
         let backendJob = jobs.first { $0.job == .backend }
-        let iosTeam = teams.first { $0.name.contains("IOS") }  // "IOS"로 수정
-        let androidTeam = teams.first { $0.name.contains("AND") }  // "AND"로 수정
-        let webTeam = teams.first { $0.name.contains("WEB") }
+        let iosTeam = teams.first { $0.teams.description.contains("IOS") }
+        let androidTeam = teams.first { $0.teams.description.contains("AND") }
+        let webTeam = teams.first { $0.teams.description.contains("WEB") }
 
         #expect(developerJob != nil, "개발자 직무가 있어야 함")
         #expect(backendJob != nil, "백엔드 직무가 있어야 함")
@@ -401,7 +401,7 @@ struct OnBoardingUseCaseTest {
     @Test("TC-015: 동시 온보딩 요청 처리")
     func test_concurrent_onboarding_requests() async throws {
         // Given: 동시 요청을 위한 데이터 설정
-        let testJobs = [SelectJob(jobKeys: "developer", job: .developer)]
+        let testJobs = [SelectJob(jobKeys: "developer", job: .ios)]
         let testTeams = [SelectTeamEntity(teamId: 1, teams: SelectTeams.ios1)]
 
         mockOnBoardingRepository.configureJobsSuccess(testJobs)
@@ -446,7 +446,7 @@ struct OnBoardingUseCaseTest {
         #expect(results.0.count == 1, "직무 목록이 올바르게 반환되어야 함")
         #expect(results.1.count == 1, "팀 목록이 올바르게 반환되어야 함")
         #expect(results.0.first?.jobKeys == "developer", "개발자 직무가 반환되어야 함")
-        #expect(results.1.first?.name == "IOS 1팀", "IOS 1팀이 반환되어야 함")
+        #expect(results.1.first?.teams.description == "IOS 1팀", "IOS 1팀이 반환되어야 함")
 
         #expect(mockOnBoardingRepository.fetchJobsCallCount == 1, "직무 Repository가 호출되어야 함")
         #expect(mockOnBoardingRepository.fetchTeamsCallCount == 1, "팀 Repository가 호출되어야 함")
@@ -456,7 +456,7 @@ struct OnBoardingUseCaseTest {
 // MARK: - Test Data Structures
 // MARK: - Mock Repository
 @MainActor
-class MockOnBoardingRepository: OnBoardingInterface {
+class OnBoardingRepositorySpy: OnBoardingInterface {
 
     // MARK: - Call Tracking
     var verifyCodeCallCount = 0

@@ -10,6 +10,7 @@ import Testing
 @testable import AuthDomainInterface
 
 @Suite("Auth Dependency Contract")
+@MainActor
 struct AuthDependencyContractTests {
   @Test("MockAuthRepository success는 로그인 결과와 호출 횟수를 기록한다")
   func mockAuthRepositorySuccessRecordsLoginCall() async throws {

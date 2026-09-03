@@ -8,6 +8,7 @@
 import Testing
 import Foundation
 import ComposableArchitecture
+import OnBoardingDomainInterface
 @testable import AttendanceDomain
 @testable import AttendanceDomainInterface
 

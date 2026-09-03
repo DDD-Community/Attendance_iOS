@@ -17,7 +17,6 @@ struct OAuthDependencyRegistrationTests {
   func appleProviderResolvesFromLiveContext() {
     withDependencies {
       $0 = .live
-      $0.registerAuthUseCases()
     } operation: {
       @Dependency(\.appleOAuthProvider) var provider
 
@@ -29,7 +28,6 @@ struct OAuthDependencyRegistrationTests {
   func googleProviderResolvesFromLiveContext() {
     withDependencies {
       $0 = .live
-      $0.registerAuthUseCases()
     } operation: {
       @Dependency(\.googleOAuthProvider) var provider
 

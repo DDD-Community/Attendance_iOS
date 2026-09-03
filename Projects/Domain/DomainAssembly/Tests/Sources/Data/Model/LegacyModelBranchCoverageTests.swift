@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import DDDNetworkInterface
 
 @testable import AppUpdateDomain
 @testable import AttendanceDomain

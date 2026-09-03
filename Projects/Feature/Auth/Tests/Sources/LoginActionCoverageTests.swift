@@ -10,6 +10,7 @@
 
 import AuthenticationServices
 import ComposableArchitecture
+import AuthDomainInterface
 import Foundation
 import Testing
 

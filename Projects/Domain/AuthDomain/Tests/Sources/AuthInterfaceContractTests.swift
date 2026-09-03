@@ -9,6 +9,7 @@ import Testing
 
 @testable import AuthDomainInterface
 
+@MainActor
 struct DomainInterfaceContractTests {
   @Test("Auth 기본 목은 토큰 만료를 typed AuthError로 노출한다")
   func authMockExposesRefreshTokenExpiredError() async {

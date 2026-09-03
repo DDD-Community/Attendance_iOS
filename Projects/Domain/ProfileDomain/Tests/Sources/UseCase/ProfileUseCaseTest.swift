@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import AuthDomainInterface
 @testable import ProfileDomainInterface
 import Foundation
 import Testing

@@ -1,5 +1,5 @@
 //
-//  MockAuthRepository.swift
+//  AuthRepositorySpy.swift
 //  Repository
 //
 //  Created by DDD on 4/17/26.
@@ -9,7 +9,7 @@ import Foundation
 import AuthDomainInterface
 
 @MainActor
-final class MockAuthRepository: AuthInterface {
+final class AuthRepositorySpy: AuthInterface {
 
   // MARK: - Call Tracking
   var loginCallCount = 0
@@ -122,15 +122,15 @@ final class MockAuthRepository: AuthInterface {
 
   // MARK: - Static Factory Methods
   @MainActor
-  static func success() -> MockAuthRepository {
-    let mock = MockAuthRepository()
+  static func success() -> AuthRepositorySpy {
+    let mock = AuthRepositorySpy()
     mock.configureSuccess()
     return mock
   }
 
   @MainActor
-  static func failure(_ error: AuthError) -> MockAuthRepository {
-    let mock = MockAuthRepository()
+  static func failure(_ error: AuthError) -> AuthRepositorySpy {
+    let mock = AuthRepositorySpy()
     mock.configureFailure(error)
     return mock
   }

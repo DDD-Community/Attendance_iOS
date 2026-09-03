@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import Testing
+import MyPageDomainInterface
 
 @testable import Member
 

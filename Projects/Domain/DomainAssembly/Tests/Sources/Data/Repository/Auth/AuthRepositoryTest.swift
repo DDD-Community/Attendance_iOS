@@ -26,7 +26,7 @@ struct AuthRepositoryTest {
   @Test("로그인 성공 테스트 - Google 로그인")
   func testLoginSuccess_Google() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // When
     let result = try await mockRepository.login(provider: .google, token: "google_test_token")
@@ -45,7 +45,7 @@ struct AuthRepositoryTest {
   @Test("로그인 성공 테스트 - Apple 로그인")
   func testLoginSuccess_Apple() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // When
     let result = try await mockRepository.login(provider: .apple, token: "apple_test_token")
@@ -60,7 +60,7 @@ struct AuthRepositoryTest {
   @Test("로그인 실패 테스트 - 잘못된 토큰")
   func testLoginFailure_InvalidToken() async throws {
     // Given
-    let mockRepository = MockAuthRepository.failure(MockAuthError.invalidToken.authError)
+    let mockRepository = AuthRepositorySpy.failure(MockAuthError.invalidToken.authError)
 
     // When & Then
     await #expect(throws: MockAuthError.invalidToken.authError) {
@@ -72,7 +72,7 @@ struct AuthRepositoryTest {
   @Test("로그인 실패 테스트 - 네트워크 오류")
   func testLoginFailure_NetworkError() async throws {
     // Given
-    let mockRepository = MockAuthRepository.failure(MockAuthError.networkError.authError)
+    let mockRepository = AuthRepositorySpy.failure(MockAuthError.networkError.authError)
 
     // When & Then
     await #expect(throws: MockAuthError.networkError.authError) {
@@ -86,7 +86,7 @@ struct AuthRepositoryTest {
   @Test("토큰 재발급 성공 테스트")
   func testRefreshSuccess() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // When
     let result = try await mockRepository.refresh()
@@ -100,7 +100,7 @@ struct AuthRepositoryTest {
   @Test("토큰 재발급 실패 테스트 - 만료된 토큰")
   func testRefreshFailure_ExpiredToken() async throws {
     // Given
-    let mockRepository = MockAuthRepository.failure(MockAuthError.tokenExpired.authError)
+    let mockRepository = AuthRepositorySpy.failure(MockAuthError.tokenExpired.authError)
 
     // When & Then
     await #expect(throws: MockAuthError.tokenExpired.authError) {
@@ -114,7 +114,7 @@ struct AuthRepositoryTest {
   @Test("로그아웃 성공 테스트")
   func testLogoutSuccess() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // When
     let result = try await mockRepository.logout()
@@ -129,7 +129,7 @@ struct AuthRepositoryTest {
   @Test("로그아웃 실패 테스트 - 서버 오류")
   func testLogoutFailure_ServerError() async throws {
     // Given
-    let mockRepository = MockAuthRepository.failure(MockAuthError.serverError.authError)
+    let mockRepository = AuthRepositorySpy.failure(MockAuthError.serverError.authError)
 
     // When & Then
     await #expect(throws: MockAuthError.serverError.authError) {
@@ -143,7 +143,7 @@ struct AuthRepositoryTest {
   @Test("계정 삭제 성공 테스트")
   func testWithdrawSuccess() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // When
     let result = try await mockRepository.withDraw(token: "withdraw_token")
@@ -159,7 +159,7 @@ struct AuthRepositoryTest {
   @Test("계정 삭제 실패 테스트 - 권한 없음")
   func testWithdrawFailure_Unauthorized() async throws {
     // Given
-    let mockRepository = MockAuthRepository.failure(MockAuthError.unauthorized.authError)
+    let mockRepository = AuthRepositorySpy.failure(MockAuthError.unauthorized.authError)
 
     // When & Then
     await #expect(throws: MockAuthError.unauthorized.authError) {
@@ -173,7 +173,7 @@ struct AuthRepositoryTest {
   @Test("세션 Credential 업데이트 테스트")
   func testUpdateSessionCredential() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
     let tokens = AuthTokens(
       accessToken: "new_access_token",
       refreshToken: "new_refresh_token",
@@ -195,7 +195,7 @@ struct AuthRepositoryTest {
   @Test("동시 로그인 요청 테스트")
   func testConcurrentLoginRequests() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // When
     async let result1 = mockRepository.login(provider: .google, token: "token1")
@@ -214,7 +214,7 @@ struct AuthRepositoryTest {
   @Test("전체 인증 플로우 테스트 - 로그인부터 로그아웃까지")
   func testFullAuthFlow() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // When & Then
     // 1. 로그인
@@ -242,7 +242,7 @@ struct AuthRepositoryTest {
   @Test("다양한 에러 상황 테스트")
   func testErrorHandling() async throws {
     // Given
-    let mockRepository = MockAuthRepository.failure(MockAuthError.serverError.authError)
+    let mockRepository = AuthRepositorySpy.failure(MockAuthError.serverError.authError)
 
     // When & Then
     await #expect(throws: MockAuthError.serverError.authError) {
@@ -273,7 +273,7 @@ struct AuthRepositoryTest {
   @Test("Mock Repository 상태 초기화 테스트")
   func testMockRepositoryStateReset() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // When - 첫 번째 호출
     _ = try await mockRepository.login(provider: .google, token: "first_token")
@@ -300,7 +300,7 @@ struct AuthRepositoryTest {
   @Test("Mock Repository success() 팩토리 메서드 테스트")
   func testMockRepositorySuccessFactory() async throws {
     // Given & When
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // Then
     #expect(mockRepository.shouldSucceed == true)
@@ -315,7 +315,7 @@ struct AuthRepositoryTest {
   @Test("Mock Repository failure() 팩토리 메서드 테스트")
   func testMockRepositoryFailureFactory() async throws {
     // Given & When
-    let mockRepository = MockAuthRepository.failure(MockAuthError.networkError.authError)
+    let mockRepository = AuthRepositorySpy.failure(MockAuthError.networkError.authError)
 
     // Then
     #expect(mockRepository.shouldSucceed == false)
@@ -333,7 +333,7 @@ struct AuthRepositoryTest {
   @Test("Mock Repository 호출 추적 정확성 테스트")
   func testMockRepositoryCallTrackingAccuracy() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // When - 다양한 메서드 호출
     _ = try await mockRepository.login(provider: .google, token: "token1")

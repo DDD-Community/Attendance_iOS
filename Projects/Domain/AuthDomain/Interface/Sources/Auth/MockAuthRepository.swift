@@ -34,6 +34,8 @@ public final class MockAuthRepository: AuthInterface, @unchecked Sendable {
     private var withdrawCallCount = 0
     private var updateCredentialCallCount = 0
     private var lastUpdatedTokens: AuthTokens?
+    private var lastLoginProvider: SocialType?
+    private var lastLoginToken: String?
 
     // MARK: - Public Configuration Methods
     public init(configuration: Configuration = .success) {
@@ -99,11 +101,15 @@ public final class MockAuthRepository: AuthInterface, @unchecked Sendable {
     public func getWithdrawCallCount() -> Int { withdrawCallCount }
     public func getUpdateCredentialCallCount() -> Int { updateCredentialCallCount }
     public func getLastUpdatedTokens() -> AuthTokens? { lastUpdatedTokens }
+    public func getLastLoginProvider() -> SocialType? { lastLoginProvider }
+    public func getLastLoginToken() -> String? { lastLoginToken }
 
     // MARK: - AuthInterface Implementation
 
     public func login(provider: SocialType, token: String) async throws(AuthError) -> LoginEntity {
         loginCallCount += 1
+        lastLoginProvider = provider
+        lastLoginToken = token
 
         // Apply delay for testing
         try? await Task.sleep(for: .milliseconds(10))

@@ -7,6 +7,8 @@
 
 import Foundation
 import Testing
+import AuthDomainInterface
+import VoteDomainInterface
 
 
 @Suite("Entity Contracts")

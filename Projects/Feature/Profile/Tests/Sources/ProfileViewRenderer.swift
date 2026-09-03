@@ -10,6 +10,7 @@
 //
 
 import ComposableArchitecture
+import ProfileDomainInterface
 import SwiftUI
 import UIKit
 

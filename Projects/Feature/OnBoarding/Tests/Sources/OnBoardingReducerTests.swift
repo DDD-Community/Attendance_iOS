@@ -8,6 +8,7 @@
 
 import ComposableArchitecture
 import Testing
+import OnBoardingDomainInterface
 
 @testable import OnBoarding
 

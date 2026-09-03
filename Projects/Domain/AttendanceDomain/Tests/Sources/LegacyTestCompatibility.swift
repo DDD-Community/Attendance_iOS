@@ -1,4 +1,7 @@
 import Testing
+import AttendanceDomainInterface
+import OnBoardingDomainInterface
+import ProfileDomainInterface
 
 extension Tag {
   @Tag static var unit: Self

@@ -1,5 +1,12 @@
+import AppUpdateDomainInterface
+import AttendanceDomainInterface
+import AuthDomainInterface
 import Foundation
+import OnBoardingDomainInterface
+import ProfileDomainInterface
+import ScheduleDomainInterface
 import Testing
+import VoteDomainInterface
 
 
 @Suite("Entity mapping behavior")

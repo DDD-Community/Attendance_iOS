@@ -17,6 +17,7 @@ let project = Project.makeModule(
     .domain(.myPage, .interface),
     .domain(.profile, .interface),
     .domain(.qrCode, .interface),
+    .domain(.schedule, .interface),
     .domain(.vote, .interface)
   ],
   sources: ["Sources/**"],

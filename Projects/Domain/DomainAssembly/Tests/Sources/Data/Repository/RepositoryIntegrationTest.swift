@@ -26,7 +26,7 @@ struct RepositoryIntegrationTest {
   @Test("모든 Mock Repository 초기화 테스트")
   func testAllMockRepositoryInitialization() async throws {
     // Given & When
-    let mockAuthRepository = MockAuthRepository.success()
+    let mockAuthRepository = AuthRepositorySpy.success()
 
     // Then
     #expect(mockAuthRepository != nil)
@@ -39,8 +39,8 @@ struct RepositoryIntegrationTest {
   @Test("Mock Repository들 간의 상태 독립성 테스트")
   func testMockRepositoryStateIndependence() async throws {
     // Given
-    let mockAuth1 = MockAuthRepository.success()
-    let mockAuth2 = MockAuthRepository.failure(MockAuthError.networkError.authError)
+    let mockAuth1 = AuthRepositorySpy.success()
+    let mockAuth2 = AuthRepositorySpy.failure(MockAuthError.networkError.authError)
 
     // When
     _ = try await mockAuth1.login(provider: .google, token: "token1")
@@ -66,7 +66,7 @@ struct RepositoryIntegrationTest {
   @Test("Mock Repository가 올바른 Interface를 준수하는지 확인")
   func testMockRepositoryInterfaceCompliance() async throws {
     // Given & When & Then - 컴파일 타임 검증
-    let mockAuth: AuthInterface = MockAuthRepository.success()
+    let mockAuth: AuthInterface = AuthRepositorySpy.success()
 
     #expect(mockAuth != nil)
 
@@ -78,7 +78,7 @@ struct RepositoryIntegrationTest {
   @Test("Mock Repository 메서드 존재성 테스트")
   func testMockRepositoryMethods() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
     let tokens = AuthTokens(accessToken: "access", refreshToken: "refresh")
 
     // When - 함수 값을 비교하지 않고 실제 인터페이스 계약을 호출해 검증
@@ -105,7 +105,7 @@ struct RepositoryIntegrationTest {
 
     // When - 여러 Mock Repository 생성
     let mockRepositories = (1...100).map { _ in
-      MockAuthRepository.success()
+      AuthRepositorySpy.success()
     }
 
     let endTime = Date()
@@ -123,7 +123,7 @@ struct RepositoryIntegrationTest {
   @Test("Mock Repository 메서드 호출 성능 테스트")
   func testMockRepositoryCallPerformance() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
     let startTime = Date()
 
     // When - 여러 번 메서드 호출
@@ -145,7 +145,7 @@ struct RepositoryIntegrationTest {
   func testMockRepositoryMemoryEfficiency() async throws {
     // Given & When - Mock Repository 인스턴스 여러 개 생성
     let repositories = (1...50).map { _ in
-      MockAuthRepository.success()
+      AuthRepositorySpy.success()
     }
 
     // Then - 모든 Repository가 정상 생성되고 독립적인지 확인
@@ -164,7 +164,7 @@ struct RepositoryIntegrationTest {
   @Test("Mock Repository 상태 전환 테스트")
   func testMockRepositoryStateTransition() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // When & Then - 성공 -> 실패 -> 성공
     // 1. 초기 성공 상태 테스트
@@ -191,7 +191,7 @@ struct RepositoryIntegrationTest {
   @Test("Mock Repository 복합 시나리오 테스트")
   func testMockRepositoryComplexScenario() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // When & Then - 전체 인증 플로우
     // 1. 로그인
@@ -237,7 +237,7 @@ struct RepositoryIntegrationTest {
 
     for errorType in errorTypes {
       // Given
-      let mockRepository = MockAuthRepository.failure(errorType.authError)
+      let mockRepository = AuthRepositorySpy.failure(errorType.authError)
 
       // When & Then
       await #expect(throws: errorType.authError) {
@@ -255,7 +255,7 @@ struct RepositoryIntegrationTest {
   @Test("Mock Repository 동시성 안전성 테스트")
   func testMockRepositoryConcurrencySafety() async throws {
     // Given
-    let mockRepository = MockAuthRepository.success()
+    let mockRepository = AuthRepositorySpy.success()
 
     // When - 동시에 여러 호출 실행
     async let result1 = mockRepository.login(provider: .google, token: "token1")
@@ -282,11 +282,11 @@ struct RepositoryIntegrationTest {
   func testMockRepositoryFactoryMethods() async throws {
     // Given & When & Then
     // 1. success() 팩토리 메서드
-    let successMock = MockAuthRepository.success()
+    let successMock = AuthRepositorySpy.success()
     #expect(successMock.shouldSucceed == true)
 
     // 2. failure() 팩토리 메서드
-    let failureMock = MockAuthRepository.failure(MockAuthError.networkError.authError)
+    let failureMock = AuthRepositorySpy.failure(MockAuthError.networkError.authError)
     #expect(failureMock.shouldSucceed == false)
 
     // 실제 동작 검증
