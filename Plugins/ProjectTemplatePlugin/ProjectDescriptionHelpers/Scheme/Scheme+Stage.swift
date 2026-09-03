@@ -30,9 +30,7 @@ public extension Scheme {
         runPostActionsOnFailure: true
       ),
       testAction: .testPlans(
-        // Tuist는 컨테이너 경로를 저장소 루트에서, Xcode는 실제 플랜 위치에서 해석한다.
-        // 실제 파일은 App/Tests에 유지하고 이 루트 호환 링크로 두 해석 기준을 연결한다.
-        [.relativeToRoot("DDDAttendance.xctestplan")],
+        [.relativeToRoot("Projects/App/Tests/DDDAttendance.xctestplan")],
         configuration: .stage,
         postActions: [
           .executionAction(
