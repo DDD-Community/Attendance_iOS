@@ -24,9 +24,11 @@ public struct ScheduleModalView: View {
         .edgesIgnoringSafeArea(.all)
 
       VStack {
-        if store.viewState == .loading {
+        switch store.viewState {
+        case .loading:
           ScheduleModalSkeletonView()
-        } else {
+
+        case .loaded:
           VStack(spacing: 0) {
             scheduleHeader()
 

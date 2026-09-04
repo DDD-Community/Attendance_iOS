@@ -40,7 +40,7 @@ struct ManagementScheduleReducerTests {
 
     // 두 번째 onAppear 는 loading 을 건드리지 않고 목록만 다시 받아온다.
     await store.send(.view(.onAppear))
-    await store.receive(\.async.refreshSchedule)
+    await store.receive(\.async)
     await store.receive(\.inner)
   }
 

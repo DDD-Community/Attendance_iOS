@@ -95,7 +95,7 @@ public struct ScheduleSkeletonView: View {
 
   private var listSkeleton: some View {
     LazyVStack(spacing: 16) {
-      ForEach(0..<5, id: \.self) { _ in
+      ForEach(0..<7, id: \.self) { _ in
         cardSkeleton
       }
     }
