@@ -97,7 +97,7 @@ flowchart TD
     FeatureAssembly --> Features[Feature modules]
     FeatureAssembly --> DomainAssembly
 
-    Features --> Domains[Domain modules]
+    Features --> DomainIface["*Domain / Interface"]
     Features --> UI[UI modules]
 
     DomainAssembly --> Domains
@@ -107,12 +107,12 @@ flowchart TD
     ServiceAssembly --> DDDAuth
     ServiceAssembly --> APIEndpoint
 
-    Domains --> APIEndpoint
-    Domains --> NetworkInterface[DDDNetworkInterface]
-    Domains --> StorageInterface[DDDStorageInterface]
+    Domains --> DomainIface
+    Domains --> ServiceAssembly
 
     DDDAuth --> DDDNetwork
-    DDDAuth --> StorageInterface
+    DDDAuth --> APIEndpoint
+    DDDAuth --> StorageInterface[DDDStorageInterface]
 
     CoreAssembly --> DDDNetwork
     CoreAssembly --> DDDStorage
@@ -145,7 +145,51 @@ flowchart TD
 ./make graph:prod  # 외부 패키지와 Tests·Demo를 제외한 제품 그래프
 ~~~
 
-![Dependency Graph](graph.png)
+TuistSpider에서 주요 조립 모듈을 기준으로 내부 의존성을 확장한 그래프입니다.
+
+<details>
+<summary>DDD 전체 모듈</summary>
+
+![DDD 전체 모듈 단계별 그래프](docs/graphs/DDDAttendance-grouped-DDDAttendance.png)
+
+![DDD 전체 모듈 그래프](docs/graphs/DDDAttendance-expanded-DDDAttendance.png)
+
+</details>
+
+<details>
+<summary>FeatureAssembly</summary>
+
+![FeatureAssembly 모듈 그래프](docs/graphs/DDDAttendance-expanded-FeatureAssembly.png)
+
+</details>
+
+<details>
+<summary>DomainAssembly</summary>
+
+![DomainAssembly 모듈 그래프](docs/graphs/DDDAttendance-expanded-DomainAssembly.png)
+
+</details>
+
+<details>
+<summary>ServiceAssembly</summary>
+
+![ServiceAssembly 모듈 그래프](docs/graphs/DDDAttendance-expanded-ServiceAssembly.png)
+
+</details>
+
+<details>
+<summary>CoreAssembly</summary>
+
+![CoreAssembly 모듈 그래프](docs/graphs/DDDAttendance-expanded-CoreAssembly.png)
+
+</details>
+
+<details>
+<summary>DDDSharedUI</summary>
+
+![DDDSharedUI 모듈 그래프](docs/graphs/DDDAttendance-expanded-DDDSharedUI.png)
+
+</details>
 
 ## 기술 스택
 
