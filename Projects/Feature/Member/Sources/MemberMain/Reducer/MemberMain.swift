@@ -8,8 +8,8 @@
 import DDDCoreLogger
 import Foundation
 
-import DDDSharedUI
 import AttendanceDomainInterface
+import DDDSharedUI
 import MyPageDomainInterface
 import ProfileDomainInterface
 import VoteDomainInterface
@@ -73,6 +73,7 @@ public struct MemberMain {
     var absentCount: Int = .zero
     var showAttendanceWarningIcon: Bool = false
     var isPresentAttendanceWarningAlert: Bool = false
+    var attendanceViewState: ViewState = .loading
 
     // 일정표
     var schedules: IdentifiedArrayOf<ScheduleModel> = .init(uniqueElements: [])
@@ -92,6 +93,7 @@ public struct MemberMain {
   @CasePathable
   public enum View {
     case onAppear
+    case onDisappear
     case didTapAbesentButton
     case didTapDismissAlertButton
     case toggleDropDown
@@ -210,6 +212,10 @@ extension MemberMain {
         .run { await $0(.async(.fetchActiveVote)) }
       )
 
+    case .onDisappear:
+      state.didAppear = false
+      return .none
+
     case .didTapAbesentButton:
       guard state.showAttendanceWarningIcon else {
         return .none
@@ -258,6 +264,7 @@ extension MemberMain {
 
       case let .failure(error):
         state.member = nil
+        state.attendanceViewState = .loaded
         finishLoading(state: &state, resource: .profileAndAttendance)
         DDDLogger.error("Failed Fetch User Profile: \(error)", category: .attendance)
         return .none
@@ -265,6 +272,7 @@ extension MemberMain {
 
     case let .onFetchAttendanceSummaryResponse(result):
       finishLoading(state: &state, resource: .profileAndAttendance)
+      state.attendanceViewState = .loaded
       switch result {
       case let .success(counts):
         state.presentCount = counts.totalAttended
@@ -318,12 +326,8 @@ extension MemberMain {
       }
 
     case .onResume:
-      beginLoading(state: &state)
-      return .concatenate(
-        .run { await $0(.async(.fetchCurrentUser)) },
-        .run { await $0(.async(.fetchSchedule)) },
-        .run { await $0(.async(.fetchActiveVote)) }
-      )
+      state.attendanceViewState = .loading
+      return .send(.async(.fetchAttendances))
     }
   }
 

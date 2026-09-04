@@ -70,7 +70,7 @@ public struct MemberMainView: View {
       send(.onAppear)
     }
     .onDisappear {
-      store.didAppear = false
+      send(.onDisappear)
     }
   }
 
@@ -187,7 +187,7 @@ public struct MemberMainView: View {
                 isSelected: tab == store.selectedHomeTab,
                 showsNewBadge: tab == .vote
               )
-          },
+            },
           onSelect: { entry in
             if let tab = MemberMain.HomeTab(rawValue: entry.id) {
               closeDropDown(.selectHomeTab(tab))
@@ -223,18 +223,27 @@ public struct MemberMainView: View {
           .pretendardFont(family: .Regular, size: 14)
           .foregroundStyle(.textSecondary)
 
-        AttendanceCard(
-          attendanceCount: store.presentCount,
-          lateCount: store.lateCount,
-          absentCount: store.absentCount,
-          showWarning: store.showAttendanceWarningIcon,
-          onTapAbsentButton: {
-            send(.didTapAbesentButton)
-          }
-        )
+        switch store.attendanceViewState {
+        case .loading:
+          MemberAttendanceCardSkeletonView()
+            .transition(.opacity)
+
+        case .loaded:
+          AttendanceCard(
+            attendanceCount: store.presentCount,
+            lateCount: store.lateCount,
+            absentCount: store.absentCount,
+            showWarning: store.showAttendanceWarningIcon,
+            onTapAbsentButton: {
+              send(.didTapAbesentButton)
+            }
+          )
+          .transition(.opacity)
+        }
       }
     }
     .padding(.top, 20)
+    .animation(.easeInOut(duration: 0.2), value: store.attendanceViewState)
   }
 
   private var generationScheduleListView: some View {

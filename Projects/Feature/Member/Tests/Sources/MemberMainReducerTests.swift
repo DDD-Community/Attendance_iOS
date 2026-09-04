@@ -6,8 +6,8 @@
 //
 
 import ComposableArchitecture
-import Testing
 import MyPageDomainInterface
+import Testing
 
 @testable import Member
 
@@ -39,6 +39,7 @@ struct MemberMainReducerTests {
     }
 
     await store.send(.inner(.onFetchAttendanceSummaryResponse(.success(summary)))) {
+      $0.attendanceViewState = .loaded
       $0.presentCount = 8
       $0.lateCount = 1
       $0.absentCount = 2
