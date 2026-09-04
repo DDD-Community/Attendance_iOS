@@ -28,6 +28,26 @@ public struct StaffFeature {
     var attendanceCheck = AttendanceCheck.State()
     var schedule = ScheduleReducer.State()
     var vote = VoteFeature.State()
+
+    /// 이 화면이 지금 무엇을 그려야 하는지.
+    /// 드롭다운으로 고른 탭의 자식 상태를 그대로 따른다.
+    public enum ViewState: Equatable {
+      case loading
+      case loaded
+    }
+
+    var viewState: ViewState {
+      let childIsLoading: Bool
+      switch selectDropDownItem {
+      case .attandance:
+        childIsLoading = attendanceCheck.viewState == .loading
+      case .schedule:
+        childIsLoading = schedule.viewState == .loading
+      case .vote:
+        childIsLoading = vote.viewState == .loading
+      }
+      return childIsLoading ? .loading : .loaded
+    }
     
     var qrcodeImage: ImageAsset = .qrCode
     var eventImage: ImageAsset = .eventGenerate

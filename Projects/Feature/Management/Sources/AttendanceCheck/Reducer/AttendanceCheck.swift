@@ -34,7 +34,17 @@ public struct AttendanceCheck {
     var dividerWidths: [Int: CGFloat] = [:]
     
     var isLoading: Bool = false
+    /// 이 화면이 지금 무엇을 그려야 하는지.
+    public enum ViewState: Equatable {
+      case loading
+      case loaded
+    }
+
     var loading: Bool = false
+
+    var viewState: ViewState {
+      loading ? .loading : .loaded
+    }
     var attendanceCount: Int = .zero
     var lateCount: Int = .zero
     var absentCount: Int = .zero

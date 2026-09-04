@@ -46,8 +46,10 @@ public struct StaffView: View {
     .overlay {
       if shouldShowSkeleton {
         skeletonView
+          .transition(.opacity)
       }
     }
+    .animation(.easeInOut(duration: 0.2), value: store.viewState)
     .allowsHitTesting(!shouldShowSkeleton)
     .onTapGesture {
       if store.isExpandedDropDown {
@@ -236,14 +238,7 @@ private extension StaffView {
   }
 
   var shouldShowSkeleton: Bool {
-    switch store.selectDropDownItem {
-    case .attandance:
-      return store.attendanceCheck.loading
-    case .schedule:
-      return store.schedule.loading
-    case .vote:
-      return store.vote.loading
-    }
+    store.viewState == .loading
   }
 
   @ViewBuilder

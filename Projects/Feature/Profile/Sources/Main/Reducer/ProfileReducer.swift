@@ -22,6 +22,12 @@ public struct ProfileReducer: Sendable {
 
   @ObservableState
   public struct State: Equatable {
+    /// 이 화면이 지금 무엇을 그려야 하는지.
+    public enum ViewState: Equatable {
+      case loading
+      case loaded
+    }
+
     var isLoading: Bool = false
     var managerProfileName: String = "의 프로필"
     var managerProfileRoleType: String = "직군"
@@ -51,6 +57,12 @@ public struct ProfileReducer: Sendable {
         role: userSession.userRole,
         manger: userSession.managing.isEmpty ? nil : userSession.managing
       )
+    }
+
+    /// SwiftData와 세션 모두 비어 있는 첫 프레임에 빈 이름("님")이 노출되지 않도록
+    /// 표시 가능한 프로필이 생길 때까지 loading 을 유지합니다.
+    var viewState: ViewState {
+      displayedProfile == nil && isLoading ? .loading : .loaded
     }
 
     var deleteUser: WithdrawEntity?

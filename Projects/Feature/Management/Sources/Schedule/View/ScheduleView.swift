@@ -22,7 +22,14 @@ struct ScheduleView: View {
   }
 
   var body: some View {
-    if store.loading {
+    content
+      .animation(.easeInOut(duration: 0.2), value: store.viewState)
+  }
+
+  // 스켈레톤과 본문 사이를 크로스페이드하려면 두 분기를 감싸는 공통 컨테이너가 필요하다.
+  @ViewBuilder
+  private var content: some View {
+    if store.viewState == .loading {
       ScheduleSkeletonView()
     } else {
       VStack(spacing: 0) {

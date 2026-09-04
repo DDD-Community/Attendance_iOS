@@ -60,9 +60,14 @@ public struct ProfileView: View {
 extension ProfileView {
   @ViewBuilder
   fileprivate func mangerProfileLoadingData() -> some View {
-    // SwiftData와 세션 모두 비어 있는 첫 프레임에 빈 이름("님")이 노출되지 않도록
-    // 표시 가능한 프로필이 생길 때까지 Skeleton을 유지한다.
-    if store.displayedProfile == nil  && store.isLoading {
+    mangerProfileLoadingContent()
+      .animation(.easeInOut(duration: 0.2), value: store.viewState)
+  }
+
+  // 스켈레톤과 본문 사이를 크로스페이드하려면 두 분기를 감싸는 공통 컨테이너가 필요하다.
+  @ViewBuilder
+  fileprivate func mangerProfileLoadingContent() -> some View {
+    if store.viewState == .loading {
       VStack {
         Spacer()
           .frame(height: 12)

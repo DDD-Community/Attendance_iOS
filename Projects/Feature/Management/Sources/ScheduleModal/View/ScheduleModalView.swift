@@ -24,7 +24,7 @@ public struct ScheduleModalView: View {
         .edgesIgnoringSafeArea(.all)
 
       VStack {
-        if store.loading {
+        if store.viewState == .loading {
           ScheduleModalSkeletonView()
         } else {
           VStack(spacing: 0) {
@@ -47,6 +47,7 @@ public struct ScheduleModalView: View {
           }
         }
       }
+      .animation(.easeInOut(duration: 0.2), value: store.viewState)
       .onAppear {
         store.send(.async(.fetchSchedule))
       }

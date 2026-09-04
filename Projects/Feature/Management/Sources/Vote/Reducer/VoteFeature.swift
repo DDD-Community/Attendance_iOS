@@ -17,7 +17,17 @@ public struct VoteFeature {
 
   @ObservableState
   public struct State: Equatable {
+    /// 이 화면이 지금 무엇을 그려야 하는지.
+    public enum ViewState: Equatable {
+      case loading
+      case loaded
+    }
+
     var loading: Bool = false
+
+    var viewState: ViewState {
+      loading ? .loading : .loaded
+    }
     var voteId: Int?
     var voteStatus: VoteStatus = .before
     var participation: VoteParticipation?

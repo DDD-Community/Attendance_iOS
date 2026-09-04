@@ -21,7 +21,17 @@ public struct ScheduleModal {
   @ObservableState
   public struct State: Equatable {
     var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
+    /// 이 화면이 지금 무엇을 그려야 하는지.
+    public enum ViewState: Equatable {
+      case loading
+      case loaded
+    }
+
     var loading: Bool = false
+
+    var viewState: ViewState {
+      loading ? .loading : .loaded
+    }
     var enableButton: Bool = false
     var selectedSchedule: Schedule?
 
