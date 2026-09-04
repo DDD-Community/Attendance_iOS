@@ -32,10 +32,13 @@ public struct SelectManagingView: View {
           store.send(.delegate(.presentBack))
         }
 
-        // 목록을 받아오는 동안에는 제목과 목록을 스켈레톤이 대신하고 버튼은 감춘다.
+        // 목록을 받아오는 동안 실제 화면과 같은 자리에서 스켈레톤을 보여준다.
         switch store.viewState {
         case .loading:
-          OnBoardingSelectSkeletonView()
+          OnBoardingSelectSkeletonView(
+            content: "담당 업무를 선택해주세요",
+            title: "프로젝트 참여하시는 직무를 선택해 주세요."
+          )
 
         case .loaded:
           signUpSelectManagingText()
