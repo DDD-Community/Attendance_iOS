@@ -10,8 +10,6 @@ import SwiftUI
 import DDDDesignKit
 
 public struct ProfileSkeletonView: View {
-  @State private var isAnimating = false
-
   public init() {}
 
   public var body: some View {
@@ -29,20 +27,6 @@ public struct ProfileSkeletonView: View {
       skeletonAppInfo()
 
       Spacer()
-    }
-    .onAppear {
-      // 효율적인 반복 제한 애니메이션 (CPU/배터리 최적화)
-      withAnimation(.easeInOut(duration: 1.2).repeatCount(8, autoreverses: true)) {
-        isAnimating = true
-      }
-
-      // 8초 후 애니메이션 자동 종료 (메모리 효율성)
-      Task {
-        try? await Task.sleep(for: .seconds(10))
-        withAnimation(.easeOut(duration: 0.3)) {
-          isAnimating = false
-        }
-      }
     }
   }
 }
@@ -170,15 +154,13 @@ extension ProfileSkeletonView {
 
   @ViewBuilder
   private func skeletonText(width: CGFloat, height: CGFloat) -> some View {
-    RoundedRectangle(cornerRadius: 4)
-      .fill(.gray90.opacity(isAnimating ? 0.3 : 0.7))
+    SkeletonView(.round(cornerRadius: DDDSize.radiusXs))
       .frame(width: width, height: height)
   }
 
   @ViewBuilder
   private func skeletonRoundedButton(width: CGFloat, height: CGFloat) -> some View {
-    RoundedRectangle(cornerRadius: 20)
-      .fill(.gray90.opacity(isAnimating ? 0.3 : 0.7))
+    SkeletonView(.round(cornerRadius: DDDSize.radius2xl))
       .frame(width: width, height: height)
   }
 }
