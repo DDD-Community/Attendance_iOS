@@ -36,6 +36,8 @@ public struct LoginView: View {
         socialLoginButton()
       }
     }
+    .accessibilityElement(children: .contain)
+    .accessibilityIdentifier("login_root")
     .dddToast()
     .dddAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
   }
@@ -49,6 +51,7 @@ extension LoginView {
         .resizable()
         .scaledToFit()
         .frame(width: 65, height: 72)
+        .accessibilityIdentifier("login_logo")
       
       Spacer()
     }
