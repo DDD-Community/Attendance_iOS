@@ -5,54 +5,45 @@
 //  Created by DDD on 11/3/24.
 //
 
-import DDDSharedUI
-import DDDCoreUI
-import SwiftUI
-import DDDDesignKit
 import ComposableArchitecture
-import DDDAnimation
+import DDDCoreUI
+import DDDDesignKit
+import DDDSharedUI
+import SwiftUI
 
 @ViewAction(for: SelectManagingFeature.self)
 public struct SelectManagingView: View {
   @Bindable public var store: StoreOf<SelectManagingFeature>
-  var backAction: () -> Void = {}
-  
-  public init(
-    store: StoreOf<SelectManagingFeature>,
-    backAction: @escaping () -> Void
-  ) {
+
+  public init(store: StoreOf<SelectManagingFeature>) {
     self.store = store
-    self.backAction = backAction
   }
-  
+
   public var body: some View {
     ZStack {
       Color.backGroundPrimary
         .edgesIgnoringSafeArea(.all)
-      
+
       VStack {
         Spacer()
           .frame(height: 12)
-        
-        StepNavigationBar(activeStep: 3, buttonAction: backAction)
-        
-        signUpSelectManagingText()
 
-        if store.viewState == .loading {
-          VStack {
-            Spacer()
+        StepNavigationBar(activeStep: 3) {
+          store.send(.delegate(.presentBack))
+        }
 
-            DDDAnimationView(.loading, isAnimating: .constant(store.viewState == .loading))
-              .frame(width: 200, height: 200)
+        // 목록을 받아오는 동안에는 제목과 목록을 스켈레톤이 대신하고 버튼은 감춘다.
+        switch store.viewState {
+        case .loading:
+          OnBoardingSelectSkeletonView()
 
-            Spacer()
-          }
-        } else {
+        case .loaded:
+          signUpSelectManagingText()
+
           selectManagingList()
 
           signUpSelectManageButton()
         }
-
       }
       .alert($store.scope(state: \.alert, action: \.scope.alert))
       .onAppear {
@@ -63,9 +54,7 @@ public struct SelectManagingView: View {
   }
 }
 
-
 extension SelectManagingView {
-  
   @ViewBuilder
   private func signUpSelectManagingText() -> some View {
     SignUpPartText(
@@ -74,22 +63,22 @@ extension SelectManagingView {
       subtitle: ""
     )
   }
-  
+
   @ViewBuilder
   private func selectManagingList() -> some View {
     VStack {
       Spacer()
         .frame(height: 40)
-      
+
       ScrollView {
         VStack {
           ForEach(store.selectMangers, id: \.managingKeys) { item in
             SelectPartItem(
               content: item.managing.desc,
-              isActive: store.userSession.managing.contains(item.managing)) {
-
-                send(.selectManagingButton(selectManaging: item))
-              }
+              isActive: store.userSession.managing.contains(item.managing)
+            ) {
+              send(.selectManagingButton(selectManaging: item))
+            }
           }
         }
       }
@@ -97,13 +86,12 @@ extension SelectManagingView {
       .frame(height: UIScreen.screenHeight * 0.6)
     }
   }
-  
-  
+
   @ViewBuilder
   private func signUpSelectManageButton() -> some View {
     VStack {
       Spacer()
-      
+
       CustomButton(
         action: {
           if store.userSession.managing.contains(.teamManaging) || store.userSession.userRole == .manager {
@@ -112,13 +100,13 @@ extension SelectManagingView {
             send(.signUp)
           }
         },
-        title: (store.userSession.managing.contains(.teamManaging) || store.userSession.userRole == .manager) ? "다음" : "가입완료",
+        title: (store.userSession.managing.contains(.teamManaging) || store.userSession.userRole == .manager) ? "다음" :
+          "가입완료",
         config: CustomButtonConfig.create()
       )
       .isEnable(!store.userSession.managing.isEmpty)
-      
+
       Spacer()
-      
     }
     .padding(.horizontal, 24)
   }

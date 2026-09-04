@@ -287,19 +287,22 @@ struct ManagementAttendanceCheckReducerTests {
     }
 
     await store.send(.inner(.attendanceResponse(teamId: 1, .success(ManagementSupportFixture.attendances)))) {
+      $0.viewState = .loaded
       $0.attendanceModel = ManagementSupportFixture.attendances
       $0.attendanceByTeam[1] = ManagementSupportFixture.attendances
       $0.selectPart = .ios1
     }
   }
 
-  @Test("출석 목록 실패는 상태를 건드리지 않는다")
-  func attendanceResponseFailureKeepsState() async {
+  @Test("출석 목록 재조회가 실패해도 로딩을 끝낸다")
+  func attendanceResponseFailureStopsLoading() async {
     let store = TestStore(initialState: AttendanceCheck.State()) {
       AttendanceCheck()
     }
 
-    await store.send(.inner(.attendanceResponse(teamId: 1, .failure(.loadFailed))))
+    await store.send(.inner(.attendanceResponse(teamId: 1, .failure(.loadFailed)))) {
+      $0.viewState = .loaded
+    }
   }
 
   @Test("출석 상태 조회 실패는 상태를 건드리지 않는다")
@@ -313,13 +316,17 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("출석 수정 성공은 통계와 목록을 다시 부른다")
   func editAttendanceSuccessRefetches() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
+    var state = AttendanceCheck.State()
+    state.viewState = .loaded
+
+    let store = TestStore(initialState: state) {
       AttendanceCheck()
     }
     store.exhaustivity = .off
 
     await store.send(.inner(.editAttendanceResponse(.success(ManagementSupportFixture.editAttendance)))) {
       $0.editAttendance = ManagementSupportFixture.editAttendance
+      $0.viewState = .loading
     }
     await store.finish()
   }

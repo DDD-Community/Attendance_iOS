@@ -18,5 +18,5 @@ public enum MemberMainDelegate: Equatable, Sendable {
 
 @CasePathable
 public enum MemberQRCodeDelegate: Equatable, Sendable {
-  case back
+  case presentBack
 }

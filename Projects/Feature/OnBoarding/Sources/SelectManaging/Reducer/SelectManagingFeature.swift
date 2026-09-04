@@ -188,6 +188,9 @@ extension SelectManagingFeature {
 //    )
 
     switch action {
+    case .presentBack:
+      return .none
+
     case .presentManager:
       return .none
 

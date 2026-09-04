@@ -179,6 +179,9 @@ extension InviteCodeFeature {
     action: DelegateAction
   ) -> Effect<Action> {
     switch action {
+    case .presentBack:
+      return .none
+
     case .presentSignUpName:
       return .none
     }

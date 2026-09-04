@@ -490,6 +490,8 @@ extension AttendanceCheck {
       }
 
     case .attendanceResponse(let teamId, let result):
+      // 출석 상태 수정 후 재조회의 성공 여부와 관계없이 skeleton을 내린다.
+      state.viewState = .loaded
       switch result {
       case .success(let data):
         state.attendanceModel = data
@@ -521,6 +523,7 @@ extension AttendanceCheck {
       switch result {
       case .success(let data):
         state.editAttendance = data
+        state.viewState = .loading
         return .merge(
           .run { await $0(.async(.fetchAttendanceCount)) },
           .run { await $0(.async(.fetchAttendance)) }

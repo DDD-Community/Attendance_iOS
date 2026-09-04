@@ -35,7 +35,7 @@ public struct MemberQRCodeView: View {
   private var navigationBar: some View {
     HStack {
       Button {
-        store.send(.delegate(.back))
+        store.send(.delegate(.presentBack))
       } label: {
         Image(asset: .arrowBackWhite)
           .resizable()
@@ -62,7 +62,9 @@ public struct MemberQRCodeView: View {
           .foregroundStyle(.textSecondary)
       }
 
-      if let image = store.qrCodeImage {
+      if store.viewState == .loading {
+        MemberQRCodeSkeletonView()
+      } else if let image = store.qrCodeImage {
         image
           .interpolation(.none)
           .resizable()
@@ -71,6 +73,11 @@ public struct MemberQRCodeView: View {
           .padding(10)
           .background(.white)
           .cornerRadius(24)
+      } else {
+        Text("QR 코드를 불러오지 못했어요.")
+          .dddFont(.body2NormalMedium)
+          .foregroundStyle(.textSecondary)
+          .frame(width: 270, height: 270)
       }
     }
     .padding(.top, 64)

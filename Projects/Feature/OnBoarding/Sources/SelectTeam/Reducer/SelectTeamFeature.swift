@@ -200,6 +200,9 @@ extension SelectTeamFeature {
     action: DelegateAction
   ) -> Effect<Action> {
     switch action {
+    case .presentBack:
+      return .none
+
     case .presentMember:
       return .none
 

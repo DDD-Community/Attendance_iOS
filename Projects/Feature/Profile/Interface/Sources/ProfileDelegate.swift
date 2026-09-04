@@ -12,6 +12,7 @@ import Foundation
 
 @CasePathable
 public enum ProfileDelegate: Equatable, Sendable {
+  case presentBack
   case presentLogOut
   case presentCreateByApp
   case presentPrivacyPolicy
@@ -21,5 +22,6 @@ public enum ProfileDelegate: Equatable, Sendable {
 
 @CasePathable
 public enum CreateAppDelegate: Equatable, Sendable {
+  case presentBack
   case presentWeb
 }

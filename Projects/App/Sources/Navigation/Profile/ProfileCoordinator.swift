@@ -84,6 +84,9 @@ extension ProfileCoordinator {
     action: IndexedRouterActionOf<ProfileScreen>
   ) -> Effect<Action> {
     switch action {
+    case .routeAction(id: _, action: .profile(.delegate(.presentBack))):
+      return .send(.navigation(.presentRoot))
+
     case .routeAction(id: _, action: .profile(.delegate(.presentLogOut))):
       return .concatenate(
         .cancel(id: ProfileReducer.CancelID.fetchProfile),

@@ -14,14 +14,9 @@ import SwiftUIX
 
 struct CreateAppView: View {
   @Bindable private var store: StoreOf<CreateApp>
-  private var closeAction:() -> Void = { }
-  
-  init(
-    store: StoreOf<CreateApp>,
-    closeAction: @escaping () -> Void
-  ) {
+
+  init(store: StoreOf<CreateApp>) {
     self.store = store
-    self.closeAction = closeAction
   }
   
   var body: some View {
@@ -132,7 +127,7 @@ extension CreateAppView {
         .frame(height: 8)
 
       CustomButton(
-        action: closeAction,
+        action: { store.send(.delegate(.presentBack)) },
         title: "닫기",
         config: CustomButtonConfig.createDateButton()
       )

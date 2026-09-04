@@ -26,7 +26,7 @@ struct ProfileViewRenderingTests {
     let store = ProfileViewRenderer.makeStore(state: emptySessionState(isLoading: true))
     defer { restoreSession(store) }
 
-    ProfileViewRenderer.render(ProfileView(store: store, backAction: {}))
+    ProfileViewRenderer.render(ProfileView(store: store))
   }
 
   @Test("표시할 프로필도 없고 로딩도 아니면 빈 프로필 카드를 그린다")
@@ -34,35 +34,35 @@ struct ProfileViewRenderingTests {
     let store = ProfileViewRenderer.makeStore(state: emptySessionState(isLoading: false))
     defer { restoreSession(store) }
 
-    ProfileViewRenderer.render(ProfileView(store: store, backAction: {}))
+    ProfileViewRenderer.render(ProfileView(store: store))
   }
 
   @Test("멤버 프로필은 멤버 전용 카드로 그려진다")
   func memberProfileRendersMemberCard() {
     let store = ProfileViewRenderer.makeStore(profile: ProfileTestSupport.memberProfile)
 
-    ProfileViewRenderer.render(ProfileView(store: store, backAction: {}))
+    ProfileViewRenderer.render(ProfileView(store: store))
   }
 
   @Test("담당 업무가 있는 운영진 프로필은 담당 업무 영역까지 그려진다")
   func managerProfileWithRolesRendersManagingSection() {
     let store = ProfileViewRenderer.makeStore(profile: ProfileTestSupport.managerProfile)
 
-    ProfileViewRenderer.render(ProfileView(store: store, backAction: {}))
+    ProfileViewRenderer.render(ProfileView(store: store))
   }
 
   @Test("담당 업무가 비어 있는 운영진 프로필은 담당 업무 영역 없이 그려진다")
   func managerProfileWithoutRolesSkipsManagingSection() {
     let store = ProfileViewRenderer.makeStore(profile: ProfileTestSupport.managerProfileWithoutRoles)
 
-    ProfileViewRenderer.render(ProfileView(store: store, backAction: {}))
+    ProfileViewRenderer.render(ProfileView(store: store))
   }
 
   @Test("팀이 없는 프로필도 카드가 깨지지 않고 그려진다")
   func profileWithoutTeamRendersCard() {
     let store = ProfileViewRenderer.makeStore(profile: ProfileTestSupport.memberProfileWithoutTeam)
 
-    ProfileViewRenderer.render(ProfileView(store: store, backAction: {}))
+    ProfileViewRenderer.render(ProfileView(store: store))
   }
 
   @Test("로딩 중이어도 이미 프로필이 있으면 스켈레톤 대신 카드를 그린다")
@@ -72,7 +72,7 @@ struct ProfileViewRenderingTests {
       isLoading: true
     )
 
-    ProfileViewRenderer.render(ProfileView(store: store, backAction: {}))
+    ProfileViewRenderer.render(ProfileView(store: store))
   }
 
   // MARK: - 알럿 / 모달
@@ -93,7 +93,7 @@ struct ProfileViewRenderingTests {
 
     let store = ProfileViewRenderer.makeStore(state: state)
 
-    ProfileViewRenderer.render(ProfileView(store: store, backAction: {}))
+    ProfileViewRenderer.render(ProfileView(store: store))
   }
 
   @Test("탈퇴 확인 팝업이 있으면 커스텀 알럿을 붙인 채로 그려진다")
@@ -104,7 +104,7 @@ struct ProfileViewRenderingTests {
 
     let store = ProfileViewRenderer.makeStore(state: state)
 
-    ProfileViewRenderer.render(ProfileView(store: store, backAction: {}))
+    ProfileViewRenderer.render(ProfileView(store: store))
   }
 
   @Test("로그아웃 확인 팝업이 있으면 커스텀 알럿을 붙인 채로 그려진다")
@@ -115,7 +115,7 @@ struct ProfileViewRenderingTests {
 
     let store = ProfileViewRenderer.makeStore(state: state)
 
-    ProfileViewRenderer.render(ProfileView(store: store, backAction: {}))
+    ProfileViewRenderer.render(ProfileView(store: store))
   }
 
   @Test("앱 피드백 모달이 열려 있으면 블러 배경과 시트를 함께 그린다")
@@ -126,7 +126,7 @@ struct ProfileViewRenderingTests {
 
     let store = ProfileViewRenderer.makeStore(state: state)
 
-    ProfileViewRenderer.render(ProfileView(store: store, backAction: {}))
+    ProfileViewRenderer.render(ProfileView(store: store))
   }
 
   // MARK: - 단독 컴포넌트
@@ -142,7 +142,7 @@ struct ProfileViewRenderingTests {
       CreateApp()
     }
 
-    ProfileViewRenderer.render(CreateAppView(store: store, closeAction: {}))
+    ProfileViewRenderer.render(CreateAppView(store: store))
   }
 
   // MARK: - Helper

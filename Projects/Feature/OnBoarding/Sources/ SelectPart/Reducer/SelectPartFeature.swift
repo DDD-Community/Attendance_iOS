@@ -136,6 +136,9 @@ extension SelectPartFeature {
     action: DelegateAction
   ) -> Effect<Action> {
     switch action {
+    case .presentBack:
+      return .none
+
     case .presentManaging:
       return .none
     case .presentSelectTeam:

@@ -26,8 +26,7 @@ struct OnBoardingDemoApp: App {
       SelectTeamView(
         store: Store(initialState: SelectTeamFeature.State()) {
           SelectTeamFeature()
-        },
-        backAction: {}
+        }
       )
     }
   }

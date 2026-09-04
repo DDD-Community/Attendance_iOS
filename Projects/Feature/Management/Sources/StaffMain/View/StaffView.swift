@@ -57,10 +57,7 @@ public struct StaffView: View {
       }
     }
     .sheet(item: $store.scope(state: \.destination?.qrcode, action: \.destination.qrcode)) { qrCodeStore in
-      QRScannerView(store: qrCodeStore) {
-        store.send(.view(.closeModal))
-        store.send(.attendanceCheck(.view(.onAppear)))
-      }
+      QRScannerView(store: qrCodeStore)
       .presentationDetents([.height(UIScreen.screenHeight * 0.85)])
       .presentationCornerRadius(20)
       .presentationDragIndicator(.hidden)

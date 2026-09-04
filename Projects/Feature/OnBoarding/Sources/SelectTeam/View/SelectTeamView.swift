@@ -5,52 +5,43 @@
 //  Created by DDD on 11/4/24.
 //
 
-import DDDSharedUI
 import DDDCoreUI
+import DDDSharedUI
 import SwiftUI
 
 import DDDDesignKit
 
 import ComposableArchitecture
-import DDDAnimation
 
 @ViewAction(for: SelectTeamFeature.self)
 public struct SelectTeamView: View {
   @Bindable public var store: StoreOf<SelectTeamFeature>
-  var backAction: () -> Void
-  
-  public init(
-    store: StoreOf<SelectTeamFeature>,
-    backAction: @escaping () -> Void
-  ) {
+
+  public init(store: StoreOf<SelectTeamFeature>) {
     self.store = store
-    self.backAction = backAction
   }
-  
+
   public var body: some View {
     ZStack {
       Color.backGroundPrimary
         .edgesIgnoringSafeArea(.all)
-      
+
       VStack {
         Spacer()
           .frame(height: 12)
-        
-        StepNavigationBar(activeStep: 3, buttonAction: backAction)
-        
-        signUpSelectTeamText()
 
+        StepNavigationBar(activeStep: 3) {
+          store.send(.delegate(.presentBack))
+        }
 
-        if store.viewState == .loading {
-          VStack {
-            Spacer()
+        // 목록을 받아오는 동안에는 제목과 목록을 스켈레톤이 대신하고 버튼은 감춘다.
+        switch store.viewState {
+        case .loading:
+          OnBoardingSelectSkeletonView()
 
-            DDDAnimationView(.loading, isAnimating: .constant(store.viewState == .loading))
-              .frame(width: 200, height: 200)
+        case .loaded:
+          signUpSelectTeamText()
 
-            Spacer()
-          }
-        } else {
           selectTeamList()
 
           signUpSelectTeamButton()
@@ -66,7 +57,6 @@ public struct SelectTeamView: View {
 }
 
 extension SelectTeamView {
-  
   @ViewBuilder
   private func signUpSelectTeamText() -> some View {
     SignUpPartText(
@@ -75,21 +65,22 @@ extension SelectTeamView {
       subtitle: ""
     )
   }
-  
+
   @ViewBuilder
   private func selectTeamList() -> some View {
     VStack {
       Spacer()
         .frame(height: 40)
-      
+
       ScrollView {
         VStack {
           ForEach(store.teams ?? [], id: \.teamId) { item in
             SelectTeamIteam(
               content: item.teams.selectTeamDescription,
-              isActive: item.teams == store.userSession.selectTeam) {
-                send(.selectTeamButton(selectTeam: item))
-              }
+              isActive: item.teams == store.userSession.selectTeam
+            ) {
+              send(.selectTeamButton(selectTeam: item))
+            }
           }
         }
       }
@@ -97,12 +88,12 @@ extension SelectTeamView {
       .frame(height: UIScreen.screenHeight * 0.6)
     }
   }
-  
+
   @ViewBuilder
   private func signUpSelectTeamButton() -> some View {
     VStack {
       Spacer()
-      
+
       CustomButton(
         action: {
           send(.signUp)
@@ -111,9 +102,8 @@ extension SelectTeamView {
         config: CustomButtonConfig.create()
       )
       .isEnable(store.activeButton)
-      
+
       Spacer()
-      
     }
     .padding(.horizontal, 24)
   }

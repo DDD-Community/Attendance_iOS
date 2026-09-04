@@ -95,6 +95,9 @@ extension OnBoardingNameFeature {
     action: DelegateAction
   ) -> Effect<Action> {
     switch action {
+    case .presentBack:
+      return .none
+
     case .presentSignUpPart:
       return .none
     }

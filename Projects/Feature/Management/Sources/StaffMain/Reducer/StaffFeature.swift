@@ -114,7 +114,11 @@ public struct StaffFeature {
       case .binding(\.isExpandedDropDown):
         return .none
         
-      case .destination(_):
+      case .destination(.presented(.qrcode(.delegate(.presentBack)))):
+        state.destination = nil
+        return .send(.attendanceCheck(.view(.onAppear)))
+
+      case .destination:
         return .none
         
         // MARK: - ViewAction

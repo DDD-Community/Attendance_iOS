@@ -24,6 +24,10 @@ struct ScheduleView: View {
   var body: some View {
     content
       .animation(.easeInOut(duration: 0.2), value: store.viewState)
+      // 스켈레톤 분기에서도 조회는 시작돼야 하므로 두 분기를 감싼 바깥에 둔다.
+      .onAppear {
+        send(.onAppear)
+      }
   }
 
   // 스켈레톤과 본문 사이를 크로스페이드하려면 두 분기를 감싸는 공통 컨테이너가 필요하다.
@@ -49,9 +53,6 @@ struct ScheduleView: View {
 
           // 스케줄 리스트
           scheduleListView()
-        }
-        .onAppear {
-          send(.onAppear)
         }
       }
     }

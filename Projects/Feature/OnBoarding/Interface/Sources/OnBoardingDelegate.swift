@@ -13,6 +13,7 @@ import Foundation
 
 @CasePathable
 public enum SelectTeamDelegate: Equatable, Sendable {
+  case presentBack
   case presentMember
   case presentManager
   case presentLogin
@@ -21,6 +22,7 @@ public enum SelectTeamDelegate: Equatable, Sendable {
 
 @CasePathable
 public enum SelectManagingDelegate: Equatable, Sendable {
+  case presentBack
   case presentManager
   case presentMember
   case presentLogin
@@ -30,6 +32,7 @@ public enum SelectManagingDelegate: Equatable, Sendable {
 
 @CasePathable
 public enum SelectPartDelegate: Equatable, Sendable {
+  case presentBack
   case presentManaging
   case presentSelectTeam
   case presentNextStep
@@ -37,10 +40,12 @@ public enum SelectPartDelegate: Equatable, Sendable {
 
 @CasePathable
 public enum OnBoardingNameDelegate: Equatable, Sendable {
+  case presentBack
   case presentSignUpPart
 }
 
 @CasePathable
 public enum InviteCodeDelegate: Equatable, Sendable {
+  case presentBack
   case presentSignUpName
 }

@@ -17,14 +17,9 @@ import ComposableArchitecture
 @ViewAction(for: OnBoardingNameFeature.self)
 public struct  OnBoardingNameView: View {
   @Bindable public var store: StoreOf<OnBoardingNameFeature>
-  var backAction: () -> Void = {}
-  
-  public init(
-    store: StoreOf<OnBoardingNameFeature>,
-    backAction: @escaping () -> Void
-  ) {
+
+  public init(store: StoreOf<OnBoardingNameFeature>) {
     self.store = store
-    self.backAction = backAction
   }
   
   
@@ -39,7 +34,9 @@ public struct  OnBoardingNameView: View {
           Spacer()
             .frame(height: 12)
           
-          StepNavigationBar(activeStep: 1, buttonAction: backAction)
+          StepNavigationBar(activeStep: 1) {
+            store.send(.delegate(.presentBack))
+          }
           
           ScrollView {
             signUpNameText()

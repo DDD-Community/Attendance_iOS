@@ -359,6 +359,9 @@ extension ProfileReducer {
     action: DelegateAction
   ) -> Effect<Action> {
     switch action {
+    case .presentBack:
+      return .none
+
     case .presentLogOut:
       return .none
 
@@ -416,6 +419,10 @@ extension ProfileReducer {
     action: PresentationAction<Destination.Action>
   ) -> Effect<Action> {
     switch action {
+    case .presented(.createApp(.delegate(.presentBack))):
+      state.destination = nil
+      return .none
+
     case .presented(.createApp(.delegate(.presentWeb))):
       state.destination = nil
       return .run { send in

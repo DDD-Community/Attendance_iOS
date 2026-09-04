@@ -40,6 +40,7 @@ struct MemberMainReducerCoverageTests {
     #expect(store.state.startDate == "2026.9.2")
     #expect(store.state.endDate == "2026.11.30")
     #expect(store.state.isVoteMenuAvailable)
+    #expect(store.state.viewState == .loaded)
   }
 
   @Test("이미 onAppear 를 처리했다면 두 번째 onAppear 는 아무 효과도 만들지 않는다")
@@ -251,6 +252,7 @@ struct MemberMainReducerCoverageTests {
     #expect(store.state.member == MemberTestFixture.profile)
     #expect(store.state.isVoteMenuAvailable)
     #expect(store.state.schedules.count == 3)
+    #expect(store.state.viewState == .loaded)
   }
 
   // MARK: - Async 실패 경로
@@ -276,6 +278,33 @@ struct MemberMainReducerCoverageTests {
     #expect(store.state.member == nil)
     #expect(store.state.schedules.isEmpty)
     #expect(!store.state.isVoteMenuAvailable)
+    #expect(store.state.viewState == .loaded)
+  }
+
+  @Test("멤버 홈은 프로필·출석·일정·투표 조회가 모두 끝날 때까지 로딩을 유지한다")
+  func loading_모든필수조회완료후종료() async {
+    var state = MemberMain.State()
+    state.pendingLoadingResources = [.profileAndAttendance, .schedule, .activeVote]
+
+    let store = makeStore(state: state)
+
+    await store.send(.inner(.onFetchSchedulesResponse(.success([])))) {
+      $0.pendingLoadingResources.remove(.schedule)
+    }
+    await store.send(.inner(.onFetchActiveVoteResponse(.success(MemberTestFixture.activeVote)))) {
+      $0.pendingLoadingResources.remove(.activeVote)
+      $0.isVoteMenuAvailable = true
+    }
+    await store.send(
+      .inner(.onFetchAttendanceSummaryResponse(.success(MemberTestFixture.attendanceSummary)))
+    ) {
+      $0.pendingLoadingResources.remove(.profileAndAttendance)
+      $0.viewState = .loaded
+      $0.presentCount = 8
+      $0.lateCount = 1
+      $0.absentCount = 2
+      $0.showAttendanceWarningIcon = true
+    }
   }
 
   // MARK: - Delegate 액션

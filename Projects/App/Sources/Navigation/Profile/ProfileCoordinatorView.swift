@@ -26,9 +26,7 @@ public struct ProfileCoordinatorView: View {
     TCAFlowRouter(store.scope(state: \.routes, action: \.router)) { screens in
       switch screens.case {
         case .profile(let profileStore):
-          ProfileView(store: profileStore) {
-            store.send(.navigation(.presentRoot))
-          }
+          ProfileView(store: profileStore)
           .navigationBarBackButtonHidden()
 
         case .web(let webStore):

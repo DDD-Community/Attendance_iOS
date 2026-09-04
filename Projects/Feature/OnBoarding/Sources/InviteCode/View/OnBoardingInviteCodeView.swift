@@ -17,14 +17,9 @@ import SwiftUIX
 public struct InviteCodeView : View {
   @Bindable public var store: StoreOf<InviteCodeFeature>
   @FocusState private var focusedField: InviteCodeFeature.FocusField?
-  var backAction: ()  -> Void = {}
-  
-  public init(
-    store: StoreOf<InviteCodeFeature>,
-    backAction: @escaping () -> Void
-  ) {
+
+  public init(store: StoreOf<InviteCodeFeature>) {
     self.store = store
-    self.backAction = backAction
   }
   
   public var body: some View {
@@ -38,7 +33,9 @@ public struct InviteCodeView : View {
           Spacer()
             .frame(height: 12)
           
-          NavigationBackButton(buttonAction: backAction)
+          NavigationBackButton {
+            store.send(.delegate(.presentBack))
+          }
           
           ScrollView{
             inviteCodeInPutTextView()

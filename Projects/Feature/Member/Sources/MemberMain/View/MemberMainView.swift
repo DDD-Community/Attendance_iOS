@@ -49,6 +49,14 @@ public struct MemberMainView: View {
     .overlay {
       dropDownInteractionBlocker
     }
+    .overlay {
+      if store.viewState == .loading {
+        MemberMainSkeletonView()
+          .transition(.opacity)
+      }
+    }
+    .animation(.easeInOut(duration: 0.2), value: store.viewState)
+    .allowsHitTesting(store.viewState == .loaded)
     .dddAlert(
       isPresented: store.isPresentAttendanceWarningAlert,
       title: "주의해주세요!",

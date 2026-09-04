@@ -101,7 +101,7 @@ extension MemberCoordinator {
         .cancel(id: ProfileReducer.CancelID.logoutUser)
       )
 
-    case .routeAction(id: _, action: .qrCode(.delegate(.back))):
+    case .routeAction(id: _, action: .qrCode(.delegate(.presentBack))):
       state.routes.goBack()
       return .send(.inner(.onResume))
 

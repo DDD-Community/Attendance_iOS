@@ -79,6 +79,16 @@ extension OnBoardingCoordinator {
     action: IndexedRouterActionOf<OnBoardingScreen>
   ) -> Effect<Action> {
     switch action {
+    case .routeAction(id: _, action: .InviteCode(.delegate(.presentBack))):
+      return .send(.navigation(.backToRoot))
+
+    case .routeAction(id: _, action: .onBoardingName(.delegate(.presentBack))),
+         .routeAction(id: _, action: .selectPart(.delegate(.presentBack))),
+         .routeAction(id: _, action: .selectManaging(.delegate(.presentBack))),
+         .routeAction(id: _, action: .selectTeam(.delegate(.presentBack))):
+      state.routes.goBack()
+      return .none
+
     // MARK: - 이름 입력
 
     case .routeAction(id: _, action: .InviteCode(.delegate(.presentSignUpName))):

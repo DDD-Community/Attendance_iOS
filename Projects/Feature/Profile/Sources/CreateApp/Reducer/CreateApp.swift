@@ -91,6 +91,9 @@ public struct CreateApp {
     action: DelegateAction
   ) -> Effect<Action> {
     switch action {
+      case .presentBack:
+        return .none
+
       case .presentWeb:
         return .none
     }
@@ -103,4 +106,3 @@ public struct CreateApp {
     
   }
 }
-

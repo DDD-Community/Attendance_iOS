@@ -22,12 +22,19 @@ public struct MemberQRCodeFeature {
 
   @ObservableState
   public struct State: Equatable {
+    public enum ViewState: Equatable {
+      case loading
+      case loaded
+      case failed
+    }
+
     public init() {}
 
     @ObservationStateIgnored
     var didAppear: Bool = false
 
     var qrCodeImage: SwiftUI.Image? = nil
+    var viewState: ViewState = .loading
 
     @Shared(.userSession) var userSession
   }
@@ -96,6 +103,8 @@ extension MemberQRCodeFeature {
       }
 
       state.didAppear = true
+      state.qrCodeImage = nil
+      state.viewState = .loading
 
       return .run { send in
         await send(.async(.createQRCode))
@@ -117,6 +126,7 @@ extension MemberQRCodeFeature {
         }
 
       case let .failure(error):
+        state.viewState = .failed
         DDDLogger.debug("failed create QRCode: \(error)", category: .attendance)
         return .none
       }
@@ -124,11 +134,13 @@ extension MemberQRCodeFeature {
     case let .onGenerateQRCodeImage(result):
       switch result {
       case let .success(image):
-        DDDLogger.debug("succeed generate QRCodeImage", category: .attendance)
         state.qrCodeImage = image
+        state.viewState = image == nil ? .failed : .loaded
+        DDDLogger.debug("succeed generate QRCodeImage", category: .attendance)
         return .none
 
       case let .failure(error):
+        state.viewState = .failed
         DDDLogger.debug("failed generate QRCodeImage: \(error)", category: .attendance)
         return .none
       }
@@ -178,7 +190,7 @@ extension MemberQRCodeFeature {
     action: DelegateAction
   ) -> Effect<Action> {
     switch action {
-    case .back:
+    case .presentBack:
       return .none
     }
   }

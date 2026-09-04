@@ -14,14 +14,9 @@ import DDDDesignKit
 @ViewAction(for: ProfileReducer.self)
 public struct ProfileView: View {
   @Bindable public var store: StoreOf<ProfileReducer>
-  private var backAction: () -> Void
 
-  public init(
-    store: StoreOf<ProfileReducer>,
-    backAction: @escaping () -> Void
-  ) {
+  public init(store: StoreOf<ProfileReducer>) {
     self.store = store
-    self.backAction = backAction
   }
 
   public var body: some View {
@@ -47,9 +42,7 @@ public struct ProfileView: View {
     }
 
     .sheet(item: $store.scope(state: \.destination?.createApp, action: \.destination.createApp)) { crateAppStore in
-      CreateAppView(store: crateAppStore) {
-        send(.closeModal)
-      }
+      CreateAppView(store: crateAppStore)
       .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
       .presentationCornerRadius(20)
       .presentationDragIndicator(.visible)
@@ -72,7 +65,7 @@ extension ProfileView {
         Spacer()
           .frame(height: 12)
 
-        CustomNavigationBar(backAction: backAction, addAction: {
+        CustomNavigationBar(backAction: { store.send(.delegate(.presentBack)) }, addAction: {
           send(.appearModal)
         }, image: .info)
 
@@ -89,7 +82,7 @@ extension ProfileView {
       Spacer()
         .frame(height: 12)
 
-      CustomNavigationBar(backAction: backAction, addAction: {
+      CustomNavigationBar(backAction: { store.send(.delegate(.presentBack)) }, addAction: {
         send(.appearModal)
       }, image: .info)
 

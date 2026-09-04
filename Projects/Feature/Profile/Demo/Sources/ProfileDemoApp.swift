@@ -26,8 +26,7 @@ struct ProfileDemoApp: App {
       ProfileView(
         store: Store(initialState: ProfileReducer.State()) {
           ProfileReducer()
-        },
-        backAction: {}
+        }
       )
     }
   }

@@ -26,7 +26,7 @@ struct OnBoardingViewRenderTests {
       $0.onBoardingUseCase = StubOnBoardingRepository()
     }
 
-    OnBoardingViewRenderer.render(InviteCodeView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(InviteCodeView(store: store))
   }
 
   @Test("초대 코드 화면은 네 칸이 모두 채워진 상태에서 렌더링된다")
@@ -44,7 +44,7 @@ struct OnBoardingViewRenderTests {
       $0.onBoardingUseCase = StubOnBoardingRepository()
     }
 
-    OnBoardingViewRenderer.render(InviteCodeView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(InviteCodeView(store: store))
   }
 
   @Test("초대 코드 화면은 오류 표시 상태에서 에러 문구까지 렌더링된다")
@@ -59,7 +59,7 @@ struct OnBoardingViewRenderTests {
       $0.onBoardingUseCase = StubOnBoardingRepository()
     }
 
-    OnBoardingViewRenderer.render(InviteCodeView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(InviteCodeView(store: store))
   }
 
   // MARK: - OnBoardingNameFeature
@@ -70,7 +70,7 @@ struct OnBoardingViewRenderTests {
       OnBoardingNameFeature()
     }
 
-    OnBoardingViewRenderer.render(OnBoardingNameView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(OnBoardingNameView(store: store))
   }
 
   @Test("이름 입력 화면은 사용 불가 상태에서 에러 문구까지 렌더링된다")
@@ -83,7 +83,7 @@ struct OnBoardingViewRenderTests {
       OnBoardingNameFeature()
     }
 
-    OnBoardingViewRenderer.render(OnBoardingNameView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(OnBoardingNameView(store: store))
   }
 
   // MARK: - SelectPart
@@ -99,7 +99,7 @@ struct OnBoardingViewRenderTests {
       $0.onBoardingUseCase = StubOnBoardingRepository(jobs: OnBoardingCoverageFixture.jobs)
     }
 
-    OnBoardingViewRenderer.render(SelectPartView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectPartView(store: store))
   }
 
   @Test("직무 선택 화면은 목록이 채워지고 선택된 상태에서 렌더링된다")
@@ -116,7 +116,7 @@ struct OnBoardingViewRenderTests {
       $0.onBoardingUseCase = StubOnBoardingRepository(jobs: OnBoardingCoverageFixture.jobs)
     }
 
-    OnBoardingViewRenderer.render(SelectPartView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectPartView(store: store))
   }
 
   // MARK: - SelectManaging
@@ -132,7 +132,7 @@ struct OnBoardingViewRenderTests {
       $0.onBoardingUseCase = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
     }
 
-    OnBoardingViewRenderer.render(SelectManagingView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectManagingView(store: store))
   }
 
   @Test("담당 업무 선택 화면은 운영진일 때 다음 버튼으로 렌더링된다")
@@ -149,7 +149,7 @@ struct OnBoardingViewRenderTests {
       $0.onBoardingUseCase = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
     }
 
-    OnBoardingViewRenderer.render(SelectManagingView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectManagingView(store: store))
   }
 
   @Test("담당 업무 선택 화면은 멤버일 때 가입완료 버튼으로 렌더링된다")
@@ -165,7 +165,7 @@ struct OnBoardingViewRenderTests {
       $0.onBoardingUseCase = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
     }
 
-    OnBoardingViewRenderer.render(SelectManagingView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectManagingView(store: store))
   }
 
   // MARK: - SelectTeamFeature
@@ -183,7 +183,7 @@ struct OnBoardingViewRenderTests {
       $0.profileUseCase = StubProfileUseCase()
     }
 
-    OnBoardingViewRenderer.render(SelectTeamView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectTeamView(store: store))
   }
 
   @Test("팀 선택 화면은 목록이 채워지고 팀이 선택된 상태에서 렌더링된다")
@@ -203,7 +203,7 @@ struct OnBoardingViewRenderTests {
       $0.profileUseCase = StubProfileUseCase()
     }
 
-    OnBoardingViewRenderer.render(SelectTeamView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectTeamView(store: store))
   }
 
   @Test("팀 선택 화면은 실패 알럿이 떠 있는 상태에서도 렌더링된다")
@@ -229,6 +229,6 @@ struct OnBoardingViewRenderTests {
       $0.profileUseCase = StubProfileUseCase()
     }
 
-    OnBoardingViewRenderer.render(SelectTeamView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectTeamView(store: store))
   }
 }
