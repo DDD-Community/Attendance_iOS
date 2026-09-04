@@ -91,7 +91,7 @@ struct OnBoardingViewRenderTests {
   @Test("직무 선택 화면은 로딩 상태에서 렌더링된다")
   func renderSelectPartLoading() {
     var state = SelectPartFeature.State()
-    state.loading = true
+    state.viewState = .loading
 
     let store = Store(initialState: state) {
       SelectPartFeature()
@@ -123,7 +123,7 @@ struct OnBoardingViewRenderTests {
   @Test("담당 업무 선택 화면은 로딩 상태에서 렌더링된다")
   func renderSelectManagingLoading() {
     var state = SelectManagingFeature.State()
-    state.loading = true
+    state.viewState = .loading
 
     let store = Store(initialState: state) {
       SelectManagingFeature()
@@ -170,7 +170,7 @@ struct OnBoardingViewRenderTests {
   @Test("팀 선택 화면은 로딩 상태에서 렌더링된다")
   func renderSelectTeamLoading() {
     var state = SelectTeamFeature.State()
-    state.loading = true
+    state.viewState = .loading
 
     let store = Store(initialState: state) {
       SelectTeamFeature()

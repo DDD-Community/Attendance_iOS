@@ -10,11 +10,11 @@ import ComposableArchitecture
 import DDDSharedUI
 import ScheduleDomainInterface
 
-@ViewAction(for: ScheduleModal.self)
+@ViewAction(for: ScheduleModalFeature.self)
 public struct ScheduleModalView: View {
-  @Bindable public var store: StoreOf<ScheduleModal>
+  @Bindable public var store: StoreOf<ScheduleModalFeature>
 
-  public init(store: StoreOf<ScheduleModal>) {
+  public init(store: StoreOf<ScheduleModalFeature>) {
     self.store = store
   }
 

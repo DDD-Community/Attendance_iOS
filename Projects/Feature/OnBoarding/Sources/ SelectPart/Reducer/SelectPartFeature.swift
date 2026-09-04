@@ -32,11 +32,7 @@ public struct SelectPartFeature {
       case loaded
     }
 
-    var loading: Bool = false
-
-    var viewState: ViewState {
-      loading ? .loading : .loaded
-    }
+    var viewState: ViewState = .loaded
     @Shared(.userSession) var userSession
 
   }
@@ -159,7 +155,7 @@ extension SelectPartFeature {
   ) -> Effect<Action> {
     switch action {
       case .getJobList:
-        state.loading = true
+        state.viewState = .loading
         return .run { send in
           let jobListResult = await Result {
             try await onBoardingUseCase.fetchJobs()
@@ -180,10 +176,11 @@ extension SelectPartFeature {
       case .jobListResponse(let result):
         switch result {
           case .success(let data):
-            state.loading = false
+            state.viewState = .loaded
             state.selectJobs = .init(uniqueElements: data)
 
           case .failure(let error):
+            state.viewState = .loaded
             state.errorMessage = error.errorDescription
             DDDLogger.error("네트워크 통신 실패: \(error.errorDescription)", category: .auth)
         }

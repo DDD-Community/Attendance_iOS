@@ -4,7 +4,7 @@
 //
 //  Created by DDD on 2026-09-03.
 //
-//  ScheduleModal 의 SWR(캐시 우선) 조회 분기와 선택/확인/델리게이트 경로를 훑는다.
+//  ScheduleModalFeature 의 SWR(캐시 우선) 조회 분기와 선택/확인/델리게이트 경로를 훑는다.
 //  네트워크 경로에는 0.6초 지연이 있어 TestClock 으로 시간을 직접 민다.
 //
 
@@ -24,18 +24,18 @@ struct ManagementScheduleModalReducerTests {
     stub.cached = ManagementScheduleFixture.all
     stub.schedules = ManagementScheduleFixture.all
 
-    let store = TestStore(initialState: ScheduleModal.State()) {
-      ScheduleModal()
+    let store = TestStore(initialState: ScheduleModalFeature.State()) {
+      ScheduleModalFeature()
     } withDependencies: {
       $0.scheduleUseCase = stub
       $0.continuousClock = TestClock()
     }
 
     await store.send(.async(.fetchSchedule)) {
-      $0.loading = true
+      $0.viewState = .loading
     }
     await store.receive(\.inner) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.scheduleModel = .init(uniqueElements: ManagementScheduleFixture.all)
     }
   }
@@ -48,19 +48,19 @@ struct ManagementScheduleModalReducerTests {
     stub.cached = nil
     stub.schedules = ManagementScheduleFixture.all
 
-    let store = TestStore(initialState: ScheduleModal.State()) {
-      ScheduleModal()
+    let store = TestStore(initialState: ScheduleModalFeature.State()) {
+      ScheduleModalFeature()
     } withDependencies: {
       $0.scheduleUseCase = stub
       $0.continuousClock = clock
     }
 
     await store.send(.async(.fetchSchedule)) {
-      $0.loading = true
+      $0.viewState = .loading
     }
     await clock.advance(by: .seconds(0.6))
     await store.receive(\.inner) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.scheduleModel = .init(uniqueElements: ManagementScheduleFixture.all)
     }
   }
@@ -73,19 +73,19 @@ struct ManagementScheduleModalReducerTests {
     stub.cached = []
     stub.schedules = [ManagementScheduleFixture.demoDay]
 
-    let store = TestStore(initialState: ScheduleModal.State()) {
-      ScheduleModal()
+    let store = TestStore(initialState: ScheduleModalFeature.State()) {
+      ScheduleModalFeature()
     } withDependencies: {
       $0.scheduleUseCase = stub
       $0.continuousClock = clock
     }
 
     await store.send(.async(.fetchSchedule)) {
-      $0.loading = true
+      $0.viewState = .loading
     }
     await clock.advance(by: .seconds(0.6))
     await store.receive(\.inner) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.scheduleModel = .init(uniqueElements: [ManagementScheduleFixture.demoDay])
     }
   }
@@ -98,11 +98,11 @@ struct ManagementScheduleModalReducerTests {
     stub.cached = nil
     stub.schedules = ManagementScheduleFixture.all
 
-    var state = ScheduleModal.State()
+    var state = ScheduleModalFeature.State()
     state.scheduleModel = .init(uniqueElements: [ManagementScheduleFixture.orientation])
 
     let store = TestStore(initialState: state) {
-      ScheduleModal()
+      ScheduleModalFeature()
     } withDependencies: {
       $0.scheduleUseCase = stub
       $0.continuousClock = clock
@@ -123,19 +123,19 @@ struct ManagementScheduleModalReducerTests {
     stub.cached = nil
     stub.error = .loadFailed
 
-    let store = TestStore(initialState: ScheduleModal.State()) {
-      ScheduleModal()
+    let store = TestStore(initialState: ScheduleModalFeature.State()) {
+      ScheduleModalFeature()
     } withDependencies: {
       $0.scheduleUseCase = stub
       $0.continuousClock = clock
     }
 
     await store.send(.async(.fetchSchedule)) {
-      $0.loading = true
+      $0.viewState = .loading
     }
     await clock.advance(by: .seconds(0.6))
     await store.receive(\.inner) {
-      $0.loading = false
+      $0.viewState = .loaded
     }
     #expect(store.state.scheduleModel.isEmpty)
   }
@@ -143,12 +143,12 @@ struct ManagementScheduleModalReducerTests {
   /// 다른 일정을 고르면 선택이 교체된다(같은 일정 재선택 해제는 기존 스위트가 커버).
   @Test("다른 일정을 선택하면 선택이 교체된다")
   func selectingAnotherScheduleReplacesSelection() async {
-    var state = ScheduleModal.State()
+    var state = ScheduleModalFeature.State()
     state.selectedSchedule = ManagementScheduleFixture.orientation
     state.enableButton = true
 
     let store = TestStore(initialState: state) {
-      ScheduleModal()
+      ScheduleModalFeature()
     }
 
     await store.send(.view(.selectSchedule(item: ManagementScheduleFixture.midterm))) {
@@ -159,12 +159,12 @@ struct ManagementScheduleModalReducerTests {
   /// 확인 버튼은 선택값을 델리게이트로 흘려보낸다.
   @Test("확인 버튼은 선택한 일정을 델리게이트로 전달한다")
   func confirmSelectionSendsDelegate() async {
-    var state = ScheduleModal.State()
+    var state = ScheduleModalFeature.State()
     state.selectedSchedule = ManagementScheduleFixture.midterm
     state.enableButton = true
 
     let store = TestStore(initialState: state) {
-      ScheduleModal()
+      ScheduleModalFeature()
     }
 
     await store.send(.view(.confirmSelection))
@@ -177,8 +177,8 @@ struct ManagementScheduleModalReducerTests {
   /// 선택이 없으면 확인 버튼은 무시된다.
   @Test("선택이 없으면 확인 버튼은 아무 일도 하지 않는다")
   func confirmSelectionWithoutSelectionDoesNothing() async {
-    let store = TestStore(initialState: ScheduleModal.State()) {
-      ScheduleModal()
+    let store = TestStore(initialState: ScheduleModalFeature.State()) {
+      ScheduleModalFeature()
     }
 
     await store.send(.view(.confirmSelection))
@@ -186,8 +186,8 @@ struct ManagementScheduleModalReducerTests {
 
   @Test("바인딩 액션은 상태를 그대로 반영한다")
   func bindingActionUpdatesState() async {
-    let store = TestStore(initialState: ScheduleModal.State()) {
-      ScheduleModal()
+    let store = TestStore(initialState: ScheduleModalFeature.State()) {
+      ScheduleModalFeature()
     }
 
     await store.send(.binding(.set(\.enableButton, true))) {

@@ -1,5 +1,5 @@
 //
-//  ScheduleMoadal.swift
+//  ScheduleModalFeature.swift
 //  Management
 //
 //  Created by DDD on 12/27/25.
@@ -15,7 +15,7 @@ import ComposableArchitecture
 import ManagementInterface
 
 @Reducer
-public struct ScheduleModal {
+public struct ScheduleModalFeature {
   public init() {}
 
   @ObservableState
@@ -27,11 +27,7 @@ public struct ScheduleModal {
       case loaded
     }
 
-    var loading: Bool = false
-
-    var viewState: ViewState {
-      loading ? .loading : .loaded
-    }
+    var viewState: ViewState = .loaded
     var enableButton: Bool = false
     var selectedSchedule: Schedule?
 
@@ -71,10 +67,6 @@ public struct ScheduleModal {
   /// 이동 계약은 ManagementInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
   public typealias DelegateAction = ScheduleModalDelegate
 
-  nonisolated enum ScheduleMoadalCancel: Hashable {
-    case fetchSchedule
-  }
-
   @Dependency(\.scheduleUseCase) var scheduleUseCase
   @Dependency(\.continuousClock) var clock
 
@@ -101,7 +93,7 @@ public struct ScheduleModal {
   }
 }
 
-extension ScheduleModal {
+extension ScheduleModalFeature {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -131,7 +123,7 @@ extension ScheduleModal {
     switch action {
     case .fetchSchedule:
       // 캐시 있으면 로딩 표시 X (SWR로 백그라운드 갱신)
-      state.loading = state.scheduleModel.isEmpty
+      state.viewState = state.scheduleModel.isEmpty ? .loading : .loaded
       return .run { send in
         if let cached = await scheduleUseCase.getCachedSchedule(), !cached.isEmpty {
           await send(.inner(.scheduleResponse(.success(cached))))
@@ -165,7 +157,7 @@ extension ScheduleModal {
     switch action {
     case let .scheduleResponse(result):
       DDDLogger.debug("스케줄 응답 처리: 로딩 완료", category: .network)
-      state.loading = false
+      state.viewState = .loaded
       switch result {
       case let .success(data):
         state.scheduleModel = .init(uniqueElements: data)

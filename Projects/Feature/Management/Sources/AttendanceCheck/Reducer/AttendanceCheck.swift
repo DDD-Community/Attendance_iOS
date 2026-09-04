@@ -35,18 +35,13 @@ public struct AttendanceCheck {
 
     var dividerWidths: [Int: CGFloat] = [:]
 
-    var isLoading: Bool = false
     /// 이 화면이 지금 무엇을 그려야 하는지.
     public enum ViewState: Equatable {
       case loading
       case loaded
     }
 
-    var loading: Bool = false
-
-    var viewState: ViewState {
-      loading ? .loading : .loaded
-    }
+    var viewState: ViewState = .loaded
     var attendanceCount: Int = .zero
     var lateCount: Int = .zero
     var absentCount: Int = .zero
@@ -86,7 +81,7 @@ public struct AttendanceCheck {
 
   @Reducer(state: .equatable)
   public enum Destination {
-    case scheduleModal(ScheduleModal)
+    case scheduleModal(ScheduleModalFeature)
   }
 
   // MARK: - ViewAction
@@ -322,7 +317,7 @@ extension AttendanceCheck {
   ) -> Effect<Action> {
     switch action {
     case .fetchSchedule:
-      state.loading = true
+      state.viewState = .loading
       return .run { send in
         let scheduleResult = await Result {
           try await scheduleUseCase.getSchedule()
@@ -431,7 +426,7 @@ extension AttendanceCheck {
       switch result {
       case .success(let schedules):
         state.scheduleModel = .init(uniqueElements: schedules)
-        state.loading = false
+        state.viewState = .loaded
         state.selectScheduleID = closestScheduleId(from: schedules)
         ?? schedules.first?.id
         ?? state.selectScheduleID
@@ -444,7 +439,7 @@ extension AttendanceCheck {
 
       case .failure(let error):
         DDDLogger.error("스케줄 조회 실패: \(error.localizedDescription)", category: .network)
-        state.loading = false
+        state.viewState = .loaded
         return .none
       }
 

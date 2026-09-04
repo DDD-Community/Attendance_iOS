@@ -40,7 +40,7 @@ struct ProfileReducerAsyncFlowTests {
     await store.send(.async(.fetchUser))
 
     await store.receive(\.inner.fetchUserResponse) {
-      $0.isLoading = false
+      $0.viewState = .loaded
       $0.profileModel = cached
     }
 
@@ -66,7 +66,7 @@ struct ProfileReducerAsyncFlowTests {
     await store.send(.async(.fetchUser))
 
     await store.receive(\.inner.fetchUserResponse) {
-      $0.isLoading = false
+      $0.viewState = .loaded
       $0.profileModel = cached
     }
 
@@ -92,11 +92,11 @@ struct ProfileReducerAsyncFlowTests {
     await store.send(.async(.fetchUser))
 
     await store.receive(\.inner.setLoading) {
-      $0.isLoading = true
+      $0.viewState = .loading
     }
 
     await store.receive(\.inner.fetchUserResponse) {
-      $0.isLoading = false
+      $0.viewState = .loaded
       $0.profileModel = fetched
     }
   }
@@ -116,11 +116,11 @@ struct ProfileReducerAsyncFlowTests {
     await store.send(.async(.fetchUser))
 
     await store.receive(\.inner.setLoading) {
-      $0.isLoading = true
+      $0.viewState = .loading
     }
 
     await store.receive(\.inner.fetchUserResponse) {
-      $0.isLoading = false
+      $0.viewState = .loaded
     }
 
     #expect(store.state.profileModel == nil)

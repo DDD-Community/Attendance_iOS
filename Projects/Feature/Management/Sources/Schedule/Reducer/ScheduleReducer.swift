@@ -30,11 +30,7 @@ public struct ScheduleReducer {
       case loaded
     }
 
-    var loading: Bool = false
-
-    var viewState: ViewState {
-      loading ? .loading : .loaded
-    }
+    var viewState: ViewState = .loaded
     var hasFetchedSchedule: Bool = false
     @Shared(.userSession) var userSession
 
@@ -62,6 +58,7 @@ public struct ScheduleReducer {
   //MARK: - AsyncAction 비동기 처리 액션
   public enum AsyncAction: Equatable {
     case fetchSchedule
+    case refreshSchedule
   }
   
   //MARK: - 앱내에서 사용하는 액션
@@ -113,16 +110,19 @@ extension ScheduleReducer {
   ) -> Effect<Action> {
     switch action {
     case .onAppear:
-      guard !state.hasFetchedSchedule else { return .none }
+      guard !state.hasFetchedSchedule else {
+        // 두 번째 진입부터는 스켈레톤 없이 최신 일정만 받아온다.
+        return .send(.async(.refreshSchedule))
+      }
       state.hasFetchedSchedule = true
       return .send(.async(.fetchSchedule))
 
     case .stratLoading:
-      state.loading = true
+      state.viewState = .loading
       return .none
 
     case .stopLoading:
-      state.loading = false
+      state.viewState = .loaded
       return .none
     }
   }
@@ -133,17 +133,23 @@ extension ScheduleReducer {
   ) -> Effect<Action> {
     switch action {
     case .fetchSchedule:
-        state.loading = true
-      return .run { send in
-        let scheduleResult = await Result {
-          try await scheduleUseCase.getSchedule()
-        }
-          .mapError(ScheduleError.from)
-        return await send(.inner(.fetchScheduleResponse(scheduleResult)))
+      state.viewState = .loading
+      return scheduleEffect()
 
-      }
-      .cancellable(id: CancelID.fetchSchedule, cancelInFlight: true)
+    case .refreshSchedule:
+      return scheduleEffect()
     }
+  }
+
+  private func scheduleEffect() -> Effect<Action> {
+    return .run { send in
+      let scheduleResult = await Result {
+        try await scheduleUseCase.getSchedule()
+      }
+        .mapError(ScheduleError.from)
+      return await send(.inner(.fetchScheduleResponse(scheduleResult)))
+    }
+    .cancellable(id: CancelID.fetchSchedule, cancelInFlight: true)
   }
 
   private func handleDelegateAction(
@@ -162,11 +168,11 @@ extension ScheduleReducer {
       switch result {
       case .success(let schedules):
         state.scheduleModel = .init(uniqueElements: schedules)
-          state.loading = false
+          state.viewState = .loaded
 
       case .failure(let error):
         DDDLogger.error("스케줄 조회 실패: \(error.localizedDescription ?? "알 수 없는 오류")", category: .network)
-        state.loading = false
+        state.viewState = .loaded
       }
       return .none
     }

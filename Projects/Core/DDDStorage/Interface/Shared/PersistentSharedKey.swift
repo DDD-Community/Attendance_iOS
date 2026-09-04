@@ -28,32 +28,32 @@ public extension SharedReaderKey {
 
 public struct PersistentSharedKey<Value: Sendable>: SharedKey {
   public struct ID: Hashable, Sendable {
-    fileprivate enum Storage: Hashable, Sendable {
+    fileprivate enum Location: Hashable, Sendable {
       case persistent(SharedValueStorageIdentifier)
       case inMemory(InMemoryStorage)
     }
 
     fileprivate let key: String
-    fileprivate let storage: Storage
+    fileprivate let location: Location
   }
 
-  private enum Backend: Sendable {
+  private enum Storage: Sendable {
     case persistent(any SharedValueStorage)
     case inMemory(InMemoryKey<Value>, InMemoryStorage)
   }
 
   private let key: String
-  private let backend: Backend
+  private let storage: Storage
   private let encode: @Sendable (Value) throws -> Data
   private let decode: @Sendable (Data) throws -> Value
   private let legacyData: @Sendable () throws -> Data?
 
   public var id: ID {
-    switch backend {
+    switch storage {
     case let .persistent(storage):
-      return ID(key: key, storage: .persistent(storage.identifier))
+      return ID(key: key, location: .persistent(storage.identifier))
     case let .inMemory(_, storage):
-      return ID(key: key, storage: .inMemory(storage))
+      return ID(key: key, location: .inMemory(storage))
     }
   }
 
@@ -73,11 +73,11 @@ public struct PersistentSharedKey<Value: Sendable>: SharedKey {
     switch context {
     case .live:
       @Dependency(\.sharedValueStorage) var storage
-      self.backend = .persistent(storage)
+      self.storage = .persistent(storage)
     case .preview, .test:
       @Dependency(\.defaultInMemoryStorage) var storage
       let inMemoryKey: InMemoryKey<Value> = .inMemory(key)
-      self.backend = .inMemory(inMemoryKey, storage)
+      self.storage = .inMemory(inMemoryKey, storage)
     }
   }
 
@@ -85,7 +85,7 @@ public struct PersistentSharedKey<Value: Sendable>: SharedKey {
     context: LoadContext<Value>,
     continuation: LoadContinuation<Value>
   ) {
-    switch backend {
+    switch storage {
     case let .persistent(storage):
       do {
         if let data = try storage.load(forKey: key) {
@@ -108,7 +108,7 @@ public struct PersistentSharedKey<Value: Sendable>: SharedKey {
     context: LoadContext<Value>,
     subscriber: SharedSubscriber<Value>
   ) -> SharedSubscription {
-    switch backend {
+    switch storage {
     case .persistent:
       // 앱 내부의 같은 key는 Sharing의 persistent reference를 공유한다.
       // 이 테이블을 변경하는 외부 writer는 없으므로 별도 observation은 필요하지 않다.
@@ -123,7 +123,7 @@ public struct PersistentSharedKey<Value: Sendable>: SharedKey {
     context: SaveContext,
     continuation: SaveContinuation
   ) {
-    switch backend {
+    switch storage {
     case let .persistent(storage):
       do {
         try storage.save(try encode(value), forKey: key)

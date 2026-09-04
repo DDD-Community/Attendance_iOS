@@ -60,11 +60,12 @@ struct ManagementVoteFeatureTests {
     }
 
     await store.send(.view(.onAppear)) {
-      $0.loading = true
+      $0.hasFetchedVotes = true
+      $0.viewState = .loading
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.voteId = 7
       $0.voteStatus = .inProgress
     }
@@ -95,11 +96,12 @@ struct ManagementVoteFeatureTests {
     }
 
     await store.send(.view(.onAppear)) {
-      $0.loading = true
+      $0.hasFetchedVotes = true
+      $0.viewState = .loading
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.voteId = 3
       $0.voteStatus = .after
     }
@@ -122,11 +124,12 @@ struct ManagementVoteFeatureTests {
     }
 
     await store.send(.view(.onAppear)) {
-      $0.loading = true
+      $0.hasFetchedVotes = true
+      $0.viewState = .loading
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.voteId = 5
     }
   }
@@ -144,11 +147,12 @@ struct ManagementVoteFeatureTests {
     }
 
     await store.send(.view(.onAppear)) {
-      $0.loading = true
+      $0.hasFetchedVotes = true
+      $0.viewState = .loading
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.alert = voteRetryAlert(error: .managerOnly, retry: .fetchVotes)
     }
   }

@@ -28,7 +28,6 @@ public struct ProfileReducer: Sendable {
       case loaded
     }
 
-    var isLoading: Bool = false
     var managerProfileName: String = "의 프로필"
     var managerProfileRoleType: String = "직군"
     var memberSelectTeam: String = "소속 팀"
@@ -59,11 +58,7 @@ public struct ProfileReducer: Sendable {
       )
     }
 
-    /// 세션 폴백은 로딩 판단에서 제외합니다.
-    /// 화면을 다시 열 때 스켈레톤이 깜빡이지 않도록, 프로필을 처음 받아오는 동안에만 loading 입니다.
-    var viewState: ViewState {
-      profileModel == nil && isLoading ? .loading : .loaded
-    }
+    var viewState: ViewState = .loaded
 
     var deleteUser: WithdrawEntity?
     var authExit: AuthExitEntity?
@@ -293,11 +288,16 @@ extension ProfileReducer {
   ) -> Effect<Action> {
     switch action {
     case let .setLoading(value):
-      state.isLoading = value
+      guard value else {
+        state.viewState = .loaded
+        return .none
+      }
+      // 세션 폴백으로라도 보여줄 프로필이 있으면 스켈레톤으로 되돌리지 않는다.
+      state.viewState = state.profileModel == nil ? .loading : .loaded
       return .none
 
     case let .fetchUserResponse(result):
-      state.isLoading = false
+      state.viewState = .loaded
       switch result {
       case let .success(profileDTOData):
         state.profileModel = profileDTOData

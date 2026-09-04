@@ -69,10 +69,10 @@ struct SelectPartReducerTests {
 
     await store.send(.view(.onAppear))
     await store.receive(\.async) {
-      $0.loading = true
+      $0.viewState = .loading
     }
     await store.receive(\.inner) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.selectJobs = .init(uniqueElements: OnBoardingCoverageFixture.jobs)
     }
   }
@@ -89,9 +89,10 @@ struct SelectPartReducerTests {
 
     await store.send(.view(.onAppear))
     await store.receive(\.async) {
-      $0.loading = true
+      $0.viewState = .loading
     }
     await store.receive(\.inner) {
+      $0.viewState = .loaded
       $0.errorMessage = expected.errorDescription
     }
   }
@@ -128,8 +129,8 @@ struct SelectPartReducerTests {
       SelectPartFeature()
     }
 
-    await store.send(.binding(.set(\.loading, true))) {
-      $0.loading = true
+    await store.send(.binding(.set(\.activeSelectPart, true))) {
+      $0.activeSelectPart = true
     }
   }
 }

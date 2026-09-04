@@ -150,7 +150,7 @@ struct ProfileViewRenderingTests {
   /// 세션이 비어 있어 displayedProfile 이 nil 이 되는 State 를 만든다.
   private func emptySessionState(isLoading: Bool) -> ProfileReducer.State {
     var state = ProfileReducer.State()
-    state.isLoading = isLoading
+    state.viewState = isLoading ? .loading : .loaded
     state.profileModel = nil
     state.$userSession.withLock { $0 = .empty }
     return state

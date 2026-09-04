@@ -32,11 +32,7 @@ public struct SelectTeamFeature {
       case loaded
     }
 
-    var loading: Bool = false
-
-    var viewState: ViewState {
-      loading ? .loading : .loaded
-    }
+    var viewState: ViewState = .loaded
     var errorMessage: String?
     var teams: IdentifiedArrayOf<SelectTeamEntity> = .init(uniqueElements: [])
     var signUpUser: SignUpUser?
@@ -222,7 +218,7 @@ extension SelectTeamFeature {
   ) -> Effect<Action> {
     switch action {
       case .getTeams:
-        state.loading = true
+        state.viewState = .loading
         return .run {
           [userSession =  state.userSession]
           send in
@@ -280,8 +276,9 @@ extension SelectTeamFeature {
         switch result {
           case .success(let data):
             state.teams = .init(uniqueElements: data)
-            state.loading = false
+            state.viewState = .loaded
           case .failure(let error):
+            state.viewState = .loaded
             DDDLogger.error("네트워크 에러: \(error.errorDescription ?? "알 수 없음")", category: .auth)
         }
         return .none

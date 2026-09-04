@@ -134,7 +134,7 @@ struct ManagementAttendanceCheckReducerTests {
     await store.finish()
     await store.skipReceivedActions(strict: false)
 
-    #expect(store.state.loading == false)
+    #expect(store.state.viewState == .loaded)
     #expect(store.state.selectScheduleID == 1)
     #expect(store.state.attendanceTeam.count == 2)
     #expect(store.state.attendanceStatus.count == ManagementSupportFixture.statuses.count)
@@ -184,12 +184,12 @@ struct ManagementAttendanceCheckReducerTests {
     store.exhaustivity = .off
 
     await store.send(.async(.fetchSchedule)) {
-      $0.loading = true
+      $0.viewState = .loading
     }
     await store.finish()
     await store.skipReceivedActions(strict: false)
 
-    #expect(store.state.loading == false)
+    #expect(store.state.viewState == .loaded)
     #expect(store.state.selectScheduleID == 1)
   }
 
@@ -198,14 +198,14 @@ struct ManagementAttendanceCheckReducerTests {
   @Test("스케줄 조회 실패는 로딩만 내린다")
   func fetchScheduleFailureStopsLoading() async {
     var state = AttendanceCheck.State()
-    state.loading = true
+    state.viewState = .loading
 
     let store = TestStore(initialState: state) {
       AttendanceCheck()
     }
 
     await store.send(.inner(.fetchScheduleResponse(.failure(.loadFailed)))) {
-      $0.loading = false
+      $0.viewState = .loaded
     }
   }
 

@@ -22,18 +22,19 @@ struct VoteFeatureReducerTests {
     }
 
     await store.send(.view(.onAppear)) {
-      $0.loading = true
+      $0.hasFetchedVotes = true
+      $0.viewState = .loading
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {
-      $0.loading = false
+      $0.viewState = .loaded
     }
   }
 
   @Test("빈 투표 목록은 투표 상태를 before로 유지한다")
   func emptyVotesKeepBeforeStatus() async {
     var state = VoteFeature.State()
-    state.loading = true
+    state.viewState = .loading
     state.voteId = 1
     state.voteStatus = .inProgress
 
@@ -42,7 +43,7 @@ struct VoteFeatureReducerTests {
     }
 
     await store.send(.inner(.votesResponse(.success([])))) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.voteId = nil
       $0.voteStatus = .before
     }

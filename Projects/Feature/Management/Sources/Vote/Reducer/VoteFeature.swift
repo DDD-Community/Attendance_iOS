@@ -23,11 +23,8 @@ public struct VoteFeature {
       case loaded
     }
 
-    var loading: Bool = false
-
-    var viewState: ViewState {
-      loading ? .loading : .loaded
-    }
+    var viewState: ViewState = .loaded
+    var hasFetchedVotes: Bool = false
     var voteId: Int?
     var voteStatus: VoteStatus = .before
     var participation: VoteParticipation?
@@ -146,7 +143,11 @@ extension VoteFeature {
   ) -> Effect<Action> {
     switch action {
     case .onAppear:
-      state.loading = true
+      // 재진입 때는 스켈레톤 없이 최신 투표만 받아온다.
+      if !state.hasFetchedVotes {
+        state.hasFetchedVotes = true
+        state.viewState = .loading
+      }
       return .send(.async(.fetchVotes))
 
     case .onDisappear:
@@ -260,7 +261,7 @@ extension VoteFeature {
   ) -> Effect<Action> {
     switch action {
     case let .votesResponse(result):
-      state.loading = false
+      state.viewState = .loaded
       switch result {
       case let .success(votes):
         guard let latest = votes.first else {
@@ -331,7 +332,7 @@ extension VoteFeature {
     error: VoteError,
     retry: AsyncAction
   ) -> Effect<Action> {
-    state.loading = false
+    state.viewState = .loaded
     DDDLogger.error("투표 API 오류: \(error.localizedDescription)", category: .network)
     state.alert = AlertState {
       TextState("요청을 처리하지 못했어요")

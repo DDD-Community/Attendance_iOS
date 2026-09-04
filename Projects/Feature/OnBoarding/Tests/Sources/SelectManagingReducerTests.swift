@@ -29,10 +29,10 @@ struct SelectManagingReducerTests {
 
     await store.send(.view(.onAppear))
     await store.receive(\.async) {
-      $0.loading = true
+      $0.viewState = .loading
     }
     await store.receive(\.inner) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.selectMangers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
     }
   }
@@ -61,9 +61,10 @@ struct SelectManagingReducerTests {
 
     await store.send(.view(.onAppear))
     await store.receive(\.async) {
-      $0.loading = true
+      $0.viewState = .loading
     }
     await store.receive(\.inner) {
+      $0.viewState = .loaded
       $0.errorMessage = expected.errorDescription
     }
   }

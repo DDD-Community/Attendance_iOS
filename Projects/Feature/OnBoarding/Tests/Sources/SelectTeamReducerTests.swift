@@ -63,11 +63,11 @@ struct SelectTeamReducerTests {
 
     await store.send(.view(.onAppear))
     await store.receive(\.async) {
-      $0.loading = true
+      $0.viewState = .loading
     }
     await store.receive(\.inner) {
       $0.teams = .init(uniqueElements: OnBoardingCoverageFixture.teams)
-      $0.loading = false
+      $0.viewState = .loaded
     }
   }
 
@@ -81,10 +81,12 @@ struct SelectTeamReducerTests {
 
     await store.send(.view(.onAppear))
     await store.receive(\.async) {
-      $0.loading = true
+      $0.viewState = .loading
     }
-    // 실패 분기는 로깅만 하므로 loading 은 true 로 남는다.
-    await store.receive(\.inner)
+    // 실패해도 loading 은 내려야 스켈레톤이 걷힌다.
+    await store.receive(\.inner) {
+      $0.viewState = .loaded
+    }
   }
 
   // MARK: - 회원가입 경로

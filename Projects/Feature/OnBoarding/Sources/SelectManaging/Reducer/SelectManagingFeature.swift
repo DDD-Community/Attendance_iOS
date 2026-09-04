@@ -29,11 +29,7 @@ public struct SelectManagingFeature {
       case loaded
     }
 
-    var loading: Bool = false
-
-    var viewState: ViewState {
-      loading ? .loading : .loaded
-    }
+    var viewState: ViewState = .loaded
     var activeButton: Bool = false
     var errorMessage: String?
     var selectMangers: IdentifiedArrayOf<SelectManaging> = .init(uniqueElements: [])
@@ -213,7 +209,7 @@ extension SelectManagingFeature {
   ) -> Effect<Action> {
     switch action {
     case .fetchMangerList:
-      state.loading = true
+      state.viewState = .loading
       return .run { send in
         let mangerResult = await Result {
           try await onBoardingUseCase.fetchManaging()
@@ -266,10 +262,11 @@ extension SelectManagingFeature {
     case let .mangerListResponse(result):
       switch result {
       case let .success(data):
-        state.loading = false
+        state.viewState = .loaded
         state.selectMangers = .init(uniqueElements: data)
 
       case let .failure(error):
+        state.viewState = .loaded
         state.errorMessage = error.errorDescription
       }
       return .none
