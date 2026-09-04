@@ -51,24 +51,25 @@ SwiftUI와 The Composable Architecture를 기반으로 한 Clean Architecture �
 Projects/
 ├── App/                         # 앱 진입점, 루트 Reducer·Coordinator
 ├── Feature/
-│   ├── FeatureAssembly/         # 전체 Feature와 Data 구현을 앱에 제공
+│   ├── FeatureAssembly/         # 전체 Feature와 Domain 조립 결과를 앱에 제공
 │   ├── FeatureSharedUI/         # Feature 공통 UI
 │   ├── Auth/                    # 로그인
-│   ├── Splash/                  # 앱 진입 및 사용자 분기
 │   ├── OnBoarding/              # 신규 사용자 등록
 │   ├── Management/              # 운영진 출석·투표 관리
 │   ├── Member/                  # 멤버 출석·투표
 │   ├── Profile/                 # 프로필·계정 관리
 │   └── Web/                     # 웹 화면
 ├── Domain/
-│   ├── DomainAssembly/          # Domain 단일 진입점
-│   ├── Entity/                  # 비즈니스 엔티티
-│   ├── DomainInterface/         # Repository 계약과 테스트 기본값
-│   └── UseCase/                 # 비즈니스 유스케이스
-├── Data/
-│   ├── DataAssembly/            # Repository 라이브 구현 등록
-│   ├── Model/                   # DTO와 Entity 변환
-│   └── Repository/              # Repository 구현·로컬 데이터 소스
+│   ├── DomainAssembly/          # 도메인별 의존성 구현 조립
+│   ├── AuthDomain/              # 로그인·토큰 도메인
+│   ├── OnBoardingDomain/        # 신규 사용자 등록 도메인
+│   ├── AttendanceDomain/        # 출석 도메인
+│   ├── QRCodeDomain/            # QR 출석 도메인
+│   ├── ScheduleDomain/          # 일정 도메인
+│   ├── VoteDomain/              # 투표 도메인
+│   ├── ProfileDomain/           # 프로필 도메인
+│   ├── MyPageDomain/            # 마이페이지 도메인
+│   └── AppUpdateDomain/         # 앱 업데이트 도메인
 ├── Service/
 │   ├── ServiceAssembly/         # 인증·저장소·네트워크 조립
 │   ├── API/                     # API 경로 상수
@@ -82,11 +83,10 @@ Projects/
 │   ├── DDDCoreUtility/          # 공통 Swift·TCA 유틸리티
 │   ├── DDDCoreUI/               # UI 기반 타입
 │   └── DDDThirdParty/           # 외부 UI 패키지 재노출
-├── UI/
-│   ├── DDDDesignKit/            # 디자인 토큰·컴포넌트·리소스
-│   ├── DDDSharedUI/             # 앱 공통 화면 컴포넌트
-│   └── DDDAnimation/            # 이미지·애니메이션 리소스
-└── TestHost/                    # TCA 모듈 테스트용 경량 호스트
+└── UI/
+    ├── DDDDesignKit/            # 디자인 토큰·컴포넌트·리소스
+    ├── DDDSharedUI/             # 앱 공통 화면 컴포넌트
+    └── DDDAnimation/            # 이미지·애니메이션 리소스
 ~~~
 
 ### 의존성 흐름
@@ -95,37 +95,36 @@ Projects/
 flowchart TD
     App --> FeatureAssembly
     FeatureAssembly --> Features[Feature modules]
-    FeatureAssembly --> DataAssembly
+    FeatureAssembly --> DomainAssembly
 
-    Features --> DomainAssembly
+    Features --> Domains[Domain modules]
     Features --> UI[UI modules]
 
-    DataAssembly --> Repository
-    DataAssembly --> Model
-    DataAssembly --> DomainAssembly
-    DataAssembly --> ServiceAssembly
-
-    Repository --> DomainInterface
-    Repository --> Entity
-    Repository --> APIEndpoint
-    Repository --> NetworkInterface[DDDNetworkInterface]
-
-    DomainAssembly --> UseCase
-    DomainAssembly --> DomainInterface
-    DomainAssembly --> Entity
+    DomainAssembly --> Domains
+    DomainAssembly --> ServiceAssembly
 
     ServiceAssembly --> CoreAssembly
     ServiceAssembly --> DDDAuth
+    ServiceAssembly --> APIEndpoint
+
+    Domains --> APIEndpoint
+    Domains --> NetworkInterface[DDDNetworkInterface]
+    Domains --> StorageInterface[DDDStorageInterface]
+
     DDDAuth --> DDDNetwork
-    DDDAuth --> StorageInterface[DDDStorageInterface]
+    DDDAuth --> StorageInterface
+
+    CoreAssembly --> DDDNetwork
+    CoreAssembly --> DDDStorage
 ~~~
 
 설계 원칙:
 
 - App은 세부 구현 대신 **FeatureAssembly** 하나를 진입점으로 사용합니다.
-- Feature는 **DomainAssembly**를 통해 UseCase와 Domain 계약을 사용합니다.
-- Domain은 Data·Service 구현을 알지 않습니다.
-- Data는 Domain의 Repository 계약을 구현하며 Service와 Core의 인터페이스에 의존합니다.
+- **FeatureAssembly**는 Feature 모듈을 모으고 **DomainAssembly**의 의존성 조립 결과를 앱에 제공합니다.
+- 각 `*Domain` 모듈은 해당 기능의 Entity, Repository 계약·구현, UseCase를 함께 소유합니다.
+- **DomainAssembly**는 도메인별 라이브 의존성을 조립하고 **ServiceAssembly**를 통해 공통 서비스 구현을 사용합니다.
+- **ServiceAssembly**는 APIEndpoint, 인증, Network·Storage 구현을 **CoreAssembly**와 연결합니다.
 - **DDDNetwork**와 **DDDStorage**는 Interface/Implementation 타깃을 분리합니다.
 - 리소스를 포함하는 **DDDDesignKit**, **DDDAnimation**은 동적 프레임워크이며 나머지 내부 모듈은 기본적으로 정적 프레임워크입니다.
 
@@ -133,11 +132,11 @@ flowchart TD
 
 별도 런타임 DI 컨테이너 대신 Point-Free Dependencies를 사용합니다.
 
-- **DomainInterface**: Repository를 TestDependencyKey로 선언
-- **UseCase**: UseCase의 DependencyKey와 라이브 구현 제공
-- **DataAssembly**: Repository 계약에 Data 라이브 구현 등록
+- **각 Domain 모듈**: Repository·UseCase DependencyKey와 테스트 기본값 선언
+- **DomainAssembly**: 도메인별 Repository·UseCase 라이브 구현 등록
 - **ServiceAssembly**: 인증 세션, Keychain, Network 구현 조립
-- **FeatureAssembly**: Feature와 Data 조립 결과를 App에 재노출
+- **CoreAssembly**: Core 인터페이스에 Network·Storage 라이브 구현 등록
+- **FeatureAssembly**: Feature와 Domain 조립 결과를 App에 재노출
 
 ### 모듈 그래프
 
@@ -220,6 +219,7 @@ Xcode에서 **DDDAttendance-Stage** 스킴과 사용할 iPhone 시뮬레이터�
 ./make install                   # 의존성 설치 후 generate
 ./make test                      # 전체 테스트
 ./make cache                     # Tuist 바이너리 캐시 생성
+./make cache:setup               # Xcode Compilation Cache 준비
 ./make format                    # SwiftFormat 적용
 ./make lint                      # SwiftFormat 검사
 ./make clean                     # 생성 프로젝트 정리
@@ -246,9 +246,12 @@ Xcode에서 **DDDAttendance-Stage** 스킴과 사용할 iPhone 시뮬레이터�
 
 - **DDDAttendance-Stage** workspace 스킴은 Projects/**/Tests를 자동 수집합니다.
 - 코드 커버리지는 workspace의 관련 타깃만 집계합니다.
-- PR 워크플로는 self-hosted 러너에서 Stage 전체 테스트, PR 커버리지, Bundle Insights를 생성합니다.
+- PR 워크플로는 self-hosted 러너에서 **DDDAttendance-Stage** 전체 테스트를 한 번 실행하고 PR 커버리지 리포트를 생성합니다.
 - 테스트는 `tuist test`와 `--inspect-mode remote`로 실행하고 결과를 [Tuist 웹 프로젝트](https://tuist.dev/DDD2026/attendance)에 업로드합니다.
 - Tuist Test Insights에서 모듈별 테스트 케이스, 성공·실패, 실행 시간, flaky test와 quarantine 상태를 확인합니다.
+- 전체 테스트가 성공한 경우에만 디바이스용 Stage 앱을 코드 서명 없이 빌드하고, `Payload/DDDAttendance.app`을 `DDDAttendance-Stage.ipa`로 묶어 Bundle Insights를 생성합니다.
+- 생성한 IPA는 JSON으로 분석해 PR 리포트에 설치·다운로드 크기를 표시하고, Tuist 서버에도 별도로 등록해 Tuist Run Report의 **Bundles** 섹션에 노출합니다.
+- 테스트가 실패하면 앱 빌드, IPA 생성, 번들 분석은 실행하지 않고 테스트·빌드 실패 결과만 보고합니다.
 - develop 워크플로는 Tuist Test Sharding으로 테스트를 분산하고 동일한 Test Run에 shard 결과를 수집합니다.
 - Build Insights에서 빌드 상태와 시간을, Bundle Insights에서 앱 설치 크기와 증감을 확인합니다.
 - Xcode Compilation Cache와 Tuist 외부 패키지 바이너리 캐시를 사용합니다.
@@ -264,6 +267,7 @@ Tuist 웹 리포트:
 - .github/workflows/ios-pr-coverage.yml
 - .github/workflows/ios-develop-sharded-tests.yml
 - .github/workflows/ios-cache-warm.yml
+- .github/workflows/ios-deploy.yml
 
 ## 개발 가이드
 
@@ -279,8 +283,8 @@ Tuist 웹 리포트:
 
 ## 브랜치 전략
 
-- **main**: 프로덕션 배포
-- **develop**: 개발 통합
+- **main**: 프로덕션 배포. 푸시하면 버전 태그를 갱신하고 App Store 업로드·심사 제출까지 진행합니다.
+- **develop**: 개발 통합. 푸시하면 TestFlight로 배포합니다.
 - 기능·수정 브랜치 → develop Pull Request
 
 ## 문의
