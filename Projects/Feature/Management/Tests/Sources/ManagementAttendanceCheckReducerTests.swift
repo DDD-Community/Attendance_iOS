@@ -282,7 +282,10 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("출석 목록 응답은 첫 행의 팀 정보로 선택 파트를 맞춘다")
   func attendanceResponseSyncsSelectedPart() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
+    var state = AttendanceCheck.State()
+    state.viewState = .refreshingAttendanceList
+
+    let store = TestStore(initialState: state) {
       AttendanceCheck()
     }
 
@@ -296,7 +299,10 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("출석 목록 재조회가 실패해도 로딩을 끝낸다")
   func attendanceResponseFailureStopsLoading() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
+    var state = AttendanceCheck.State()
+    state.viewState = .refreshingAttendanceList
+
+    let store = TestStore(initialState: state) {
       AttendanceCheck()
     }
 
@@ -326,7 +332,7 @@ struct ManagementAttendanceCheckReducerTests {
 
     await store.send(.inner(.editAttendanceResponse(.success(ManagementSupportFixture.editAttendance)))) {
       $0.editAttendance = ManagementSupportFixture.editAttendance
-      $0.viewState = .loading
+      $0.viewState = .refreshingAttendanceList
     }
     await store.finish()
   }

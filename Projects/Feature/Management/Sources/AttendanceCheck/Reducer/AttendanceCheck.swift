@@ -5,8 +5,8 @@
 //  Created by DDD on 1/16/25.
 //
 
-import AuthDomainInterface
 import AttendanceDomainInterface
+import AuthDomainInterface
 import DDDCoreLogger
 import Foundation
 import OnBoardingDomainInterface
@@ -23,7 +23,6 @@ public struct AttendanceCheck {
 
   @ObservableState
   public struct State: Equatable {
-
     var selectAttendanceDate: Date = .now
     var selectAttendanceDateMonth: Date = .now
     var selectPart: SelectTeams? = .web1
@@ -38,6 +37,7 @@ public struct AttendanceCheck {
     /// 이 화면이 지금 무엇을 그려야 하는지.
     public enum ViewState: Equatable {
       case loading
+      case refreshingAttendanceList
       case loaded
     }
 
@@ -52,22 +52,19 @@ public struct AttendanceCheck {
     @Presents var destination: Destination.State?
     var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
     var selectScheduleID: Int = 0
-    var attendanceCountModel : AttendanceCount?
+    var attendanceCountModel: AttendanceCount?
     var attendanceTeam: IdentifiedArrayOf<SelectTeamEntity> = .init(uniqueElements: [])
     var attendanceModel: [Attendance] = []
     var attendanceByTeam: [Int: [Attendance]] = [:]
     var attendanceStatus: IdentifiedArrayOf<AttendanceStatus> = .init(uniqueElements: [])
     var editAttendance: EditAttendance?
-    var attendanceId: Int? = nil
+    var attendanceId: Int?
     var editAttendanceUserId: String = ""
 
     @Presents var attendanceModal: AttendanceModalState<AttendanceModalAction>?
     @Presents public var alert: AlertState<AlertAction>?
 
-
-    public init() {
-
-    }
+    public init() {}
   }
 
   public enum Action: ViewAction, BindableAction {
@@ -78,7 +75,6 @@ public struct AttendanceCheck {
     case inner(InnerAction)
     case delegate(DelegateAction)
     case scope(ScopeAction)
-
   }
 
   @Reducer(state: .equatable)
@@ -87,6 +83,7 @@ public struct AttendanceCheck {
   }
 
   // MARK: - ViewAction
+
   @CasePathable
   public enum View {
     case onAppear
@@ -113,6 +110,7 @@ public struct AttendanceCheck {
   }
 
   // MARK: - 앱내에서 사용하는 액션
+
   public enum InnerAction: Equatable {
     case fetchScheduleResponse(Result<[Schedule], ScheduleError>)
     case attendanceCountResponse(Result<AttendanceCount, AttendanceError>)
@@ -123,9 +121,8 @@ public struct AttendanceCheck {
   }
 
   // MARK: - DelegateAction
-  public enum DelegateAction: Equatable {
 
-  }
+  public enum DelegateAction: Equatable {}
 
   @CasePathable
   public enum AlertAction {
@@ -147,7 +144,6 @@ public struct AttendanceCheck {
     case editAttendance
   }
 
-
   @Dependency(\.attendanceUseCase) var attendanceUseCase
   @Dependency(\.scheduleUseCase) var scheduleUseCase
   @Dependency(\.continuousClock) var clock
@@ -158,34 +154,33 @@ public struct AttendanceCheck {
 
     Reduce { state, action in
       switch action {
-      case .binding(_):
+      case .binding:
         // BindingReducer가 자동으로 처리
         return .none
 
-      case .view(let viewAction):
+      case let .view(viewAction):
         return handleViewAction(state: &state, action: viewAction)
 
-      case .async(let asyncAction):
+      case let .async(asyncAction):
         return handleAsyncAction(state: &state, action: asyncAction)
 
-      case .inner(let innerAction):
+      case let .inner(innerAction):
         return handleInnerAction(state: &state, action: innerAction)
 
-      case .delegate(let delegateAction):
+      case let .delegate(delegateAction):
         return handleDelegateAction(state: &state, action: delegateAction)
 
-      case .destination(let destinationAction):
+      case let .destination(destinationAction):
         return handleDestinationAction(state: &state, action: destinationAction)
 
-      case .scope(let scopeAction):
+      case let .scope(scopeAction):
         switch scopeAction {
         case .alert:
           return .none
 
-        case .attendanceModal(let action):
+        case let .attendanceModal(action):
           return handleAttendanceModalAction(state: &state, action: action)
         }
-
       }
     }
     .ifLet(\.$destination, action: \.destination)
@@ -209,11 +204,11 @@ extension AttendanceCheck {
         state.hasFetchedAttendance = true
         return .concatenate(
           .run { await $0(.async(.fetchSchedule)) }, // 성공시 fetchAttendanceCount와 fetchTeams 자동 호출
-          .run { await $0(.async(.fetchStatus)) },
+          .run { await $0(.async(.fetchStatus)) }
         )
       } else {
         return .concatenate(
-          .run { await $0(.view(.refreshData)) },
+          .run { await $0(.view(.refreshData)) }
         )
       }
 
@@ -225,17 +220,17 @@ extension AttendanceCheck {
         .run { await $0(.async(.fetchStatus)) }
       )
 
-    case .updateDividerWidths(let widths):
+    case let .updateDividerWidths(widths):
       for (key, width) in widths {
         state.dividerWidths[key] = width
       }
       return .none
 
-    case .selectPartButton(let selectPart):
+    case let .selectPartButton(selectPart):
       updateSelectedTeam(state: &state, team: selectPart)
       return .send(.async(.fetchAttendance))
 
-    case .pageChanged(let index):
+    case let .pageChanged(index):
       let orderedTeams = orderedAttendanceTeams(from: state.attendanceTeam)
 
       guard orderedTeams.count > 1 else {
@@ -293,7 +288,6 @@ extension AttendanceCheck {
       updateSelectedTeam(state: &state, team: orderedTeams[prevIndex])
       return .send(.async(.fetchAttendance))
 
-
     case .tapSelectDate:
       state.destination = .scheduleModal(.init())
       return .none
@@ -302,7 +296,7 @@ extension AttendanceCheck {
       state.destination = nil
       return .none
 
-    case .showEditAttendanceModal(let id, let userid):
+    case let .showEditAttendanceModal(id, userid):
       state.attendanceModal = .adminStatusChangeWithAvailable(
         availableStatuses: Array(state.attendanceStatus),
         currentStatus: .attended
@@ -324,10 +318,9 @@ extension AttendanceCheck {
         let scheduleResult = await Result {
           try await scheduleUseCase.getSchedule()
         }
-          .mapError(ScheduleError.from)
+        .mapError(ScheduleError.from)
         try await clock.sleep(for: .seconds(0.8))
         return await send(.inner(.fetchScheduleResponse(scheduleResult)))
-
       }
       .cancellable(id: CancelID.fetchSchedule, cancelInFlight: true)
 
@@ -344,18 +337,17 @@ extension AttendanceCheck {
         let attendanceResult = await Result {
           try await attendanceUseCase.adminAttendanceCount(scheduleId: scheduleID)
         }
-          .mapError(AttendanceError.from)
+        .mapError(AttendanceError.from)
         return await send(.inner(.attendanceCountResponse(attendanceResult)))
       }
       .cancellable(id: CancelID.fetchAttendanceCount, cancelInFlight: true)
-
 
     case .fetchTeams:
       return .run { send in
         let teamResult = await Result {
           try await attendanceUseCase.fetchAttendanceTeams()
         }
-          .mapError(AttendanceError.from)
+        .mapError(AttendanceError.from)
         return await send(.inner(.fetchTeamsResponse(teamResult)))
       }
       .cancellable(id: CancelID.fetchTeams, cancelInFlight: true)
@@ -374,7 +366,7 @@ extension AttendanceCheck {
         let attendanceResult = await Result {
           try await attendanceUseCase.sessionAttendance(scheduleId: scheduleId, teamId: teamId)
         }
-          .mapError(AttendanceError.from)
+        .mapError(AttendanceError.from)
         return await send(.inner(.attendanceResponse(teamId: teamId, attendanceResult)))
       }
       .cancellable(id: CancelID.fetchAttendance, cancelInFlight: true)
@@ -384,14 +376,13 @@ extension AttendanceCheck {
         let statusResult = await Result {
           try await attendanceUseCase.fetchStatus()
         }
-          .mapError(AttendanceError.from)
+        .mapError(AttendanceError.from)
         return await send(.inner(.attendanceStatusResponse(statusResult)))
-
       }
       .cancellable(id: CancelID.fetchStatus, cancelInFlight: true)
 
-    case .editAttendance(let userid, let status):
-      return .run {  [
+    case let .editAttendance(userid, status):
+      return .run { [
         attendanceId = state.attendanceId,
         scheduleId = state.selectScheduleID
       ] send in
@@ -404,7 +395,7 @@ extension AttendanceCheck {
           )
           return try await attendanceUseCase.editAttendance(input: input)
         }
-          .mapError(AttendanceError.from)
+        .mapError(AttendanceError.from)
 
         return await send(.inner(.editAttendanceResponse(editAttendanceResult)))
       }
@@ -413,8 +404,8 @@ extension AttendanceCheck {
   }
 
   private func handleDelegateAction(
-    state: inout State,
-    action: DelegateAction
+    state _: inout State,
+    action _: DelegateAction
   ) -> Effect<Action> {
     return .none
   }
@@ -424,14 +415,14 @@ extension AttendanceCheck {
     action: InnerAction
   ) -> Effect<Action> {
     switch action {
-    case .fetchScheduleResponse(let result):
+    case let .fetchScheduleResponse(result):
       switch result {
-      case .success(let schedules):
+      case let .success(schedules):
         state.scheduleModel = .init(uniqueElements: schedules)
         state.viewState = .loaded
         state.selectScheduleID = closestScheduleId(from: schedules)
-        ?? schedules.first?.id
-        ?? state.selectScheduleID
+          ?? schedules.first?.id
+          ?? state.selectScheduleID
 
         // 스케줄이 설정된 후 출석 통계 및 팀 정보 가져오기
         return .merge(
@@ -439,29 +430,28 @@ extension AttendanceCheck {
           .send(.async(.fetchTeams)) // team 설정 후 fetchAttendance 자동 호출됨
         )
 
-      case .failure(let error):
+      case let .failure(error):
         DDDLogger.error("스케줄 조회 실패: \(error.localizedDescription)", category: .network)
         state.viewState = .loaded
         return .none
       }
 
-    case .attendanceCountResponse(let result):
+    case let .attendanceCountResponse(result):
       switch result {
-      case .success(let data):
+      case let .success(data):
         state.attendanceCountModel = data
         state.attendanceCount = data.attendanceCount
         state.lateCount = data.lateCount
         state.absentCount = data.absentCount
 
-      case .failure(let error):
+      case let .failure(error):
         DDDLogger.error("기수 출석 현황 조회 실패: \(error.localizedDescription)", category: .network)
-
       }
       return .none
 
-    case .fetchTeamsResponse(let result):
+    case let .fetchTeamsResponse(result):
       switch result {
-      case .success(let data):
+      case let .success(data):
         var seen: Set<SelectTeams> = []
         let uniqueTeams = data.filter { seen.insert($0.teams).inserted }
         let orderedTeams = uniqueTeams.sorted { $0.teamId < $1.teamId }
@@ -484,51 +474,52 @@ extension AttendanceCheck {
           return .none
         }
 
-      case .failure(let error):
+      case let .failure(error):
         DDDLogger.error("기수 팀 조회 실패: \(error.localizedDescription)", category: .network)
         return .none
       }
 
-    case .attendanceResponse(let teamId, let result):
-      // 출석 상태 수정 후 재조회의 성공 여부와 관계없이 skeleton을 내린다.
+    case let .attendanceResponse(teamId, result):
+      // 출석 상태 수정 후 재조회의 성공 여부와 관계없이 카드 목록 skeleton을 내린다.
       state.viewState = .loaded
       switch result {
-      case .success(let data):
+      case let .success(data):
         state.attendanceModel = data
         state.attendanceByTeam[teamId] = data
 
         // 특정 팀 데이터를 받았을 때 해당 팀으로 selectPart 변경
         if let firstAttendance = data.first,
            let teamEntity = firstAttendance.selectTeamEntity,
-           teamEntity != .unknown {
+           teamEntity != .unknown
+        {
           state.selectPart = teamEntity
           DDDLogger.debug("[AttendanceCheck] Updated selectPart to: \(teamEntity.rawValue)", category: .attendance)
         }
 
-      case .failure(let error):
+      case let .failure(error):
         DDDLogger.error("기수 출석 현황 조회 실패: \(error.localizedDescription)", category: .network)
       }
       return .none
 
-    case .attendanceStatusResponse(let result):
+    case let .attendanceStatusResponse(result):
       switch result {
-      case .success(let data):
+      case let .success(data):
         state.attendanceStatus = .init(uniqueElements: data)
-      case .failure(let error):
+      case let .failure(error):
         DDDLogger.error("출석 현황 조회 실패: \(error.localizedDescription)", category: .attendance)
       }
       return .none
 
-    case .editAttendanceResponse(let result):
+    case let .editAttendanceResponse(result):
       switch result {
-      case .success(let data):
+      case let .success(data):
         state.editAttendance = data
-        state.viewState = .loading
+        state.viewState = .refreshingAttendanceList
         return .merge(
           .run { await $0(.async(.fetchAttendanceCount)) },
           .run { await $0(.async(.fetchAttendance)) }
         )
-      case .failure(let error):
+      case let .failure(error):
         DDDLogger.error("출석 현황 수정 실패: \(error.localizedDescription)", category: .attendance)
 
         // 서버에서 온 사용자 친화적 메시지 사용
@@ -559,19 +550,21 @@ extension AttendanceCheck {
     }
   }
 
-
   private func handleDestinationAction(
     state: inout State,
     action: PresentationAction<Destination.Action>
   ) -> Effect<Action> {
     switch action {
-    case .presented(.scheduleModal(.delegate(.selectScheduleCompleted(let selectedSchedule)))):
+    case let .presented(.scheduleModal(.delegate(.selectScheduleCompleted(selectedSchedule)))):
       if let selectedDate = selectedSchedule.toDate() {
         state.selectAttendanceDate = selectedDate
         state.selectScheduleID = selectedSchedule.id
-        DDDLogger.debug("날짜 업데이트됨: 새로운 날짜: \( state.selectScheduleID)", category: .attendance)
+        DDDLogger.debug("날짜 업데이트됨: 새로운 날짜: \(state.selectScheduleID)", category: .attendance)
       } else {
-        DDDLogger.error("날짜 변환 실패: 입력: year=\(selectedSchedule.year), month=\(selectedSchedule.month), day=\(selectedSchedule.day)", category: .attendance)
+        DDDLogger.error(
+          "날짜 변환 실패: 입력: year=\(selectedSchedule.year), month=\(selectedSchedule.month), day=\(selectedSchedule.day)",
+          category: .attendance
+        )
       }
 
       state.destination = nil
@@ -592,12 +585,12 @@ extension AttendanceCheck {
     action: PresentationAction<AttendanceModalAction>
   ) -> Effect<Action> {
     switch action {
-    case .presented(let attendanceModalAction):
+    case let .presented(attendanceModalAction):
       switch attendanceModalAction {
-      case .binding(_):
+      case .binding:
         return .none
 
-      case .confirmTapped(let status):
+      case let .confirmTapped(status):
         state.attendanceModal = nil
         // API 호출 예시
         return .run { [
@@ -640,7 +633,6 @@ private extension AttendanceCheck {
     // 팀이 하나뿐이면 복제 페이지를 붙이지 않으므로 보정도 없다.
     state.pageIndex = orderedTeams.count > 1 ? index + 1 : index
   }
-
 
   func todayScheduleId(
     from schedules: [Schedule],

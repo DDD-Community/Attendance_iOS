@@ -81,6 +81,16 @@ struct ManagementStaffViewRenderTests {
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }
 
+  @Test("출석 상태 갱신 중에는 전체 화면이 아닌 출석 카드 목록만 skeleton을 렌더링한다")
+  func rendersStaffViewAttendanceListSkeleton() {
+    var state = StaffFeature.State()
+    state.attendanceCheck = loadedAttendanceState()
+    state.attendanceCheck.viewState = .refreshingAttendanceList
+
+    #expect(state.viewState == .loaded)
+    ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
+  }
+
   @Test("일정 탭이면 StaffView 는 일정 본문을 렌더링한다")
   func rendersStaffViewScheduleTab() {
     var state = StaffFeature.State()

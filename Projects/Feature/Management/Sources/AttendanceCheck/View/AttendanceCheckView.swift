@@ -51,7 +51,7 @@ struct AttendanceCheckView: View {
 private extension AttendanceCheckView {
   @ViewBuilder
   func selectAttendanceDate() -> some View {
-    VStack {                          // LazyVStack → VStack
+    VStack { // LazyVStack → VStack
       Spacer().frame(height: 24)
 
       HStack {
@@ -68,7 +68,7 @@ private extension AttendanceCheckView {
 
         Spacer()
       }
-      .contentShape(Rectangle())      // 탭 영역 확보(빈 곳도 탭되게)
+      .contentShape(Rectangle()) // 탭 영역 확보(빈 곳도 탭되게)
       .onTapGesture {
         send(.tapSelectDate)
       }
@@ -192,7 +192,15 @@ private extension AttendanceCheckView {
 
   @ViewBuilder
   func selectPartAttendanceStatus() -> some View {
-    attendanceTabView()
+    switch store.viewState {
+    case .refreshingAttendanceList:
+      attendanceStatusCardSkeletonList()
+        .transition(.opacity)
+
+    case .loading, .loaded:
+      attendanceTabView()
+        .transition(.opacity)
+    }
 
     if let selectPart = store.selectPart,
        [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart)
@@ -200,6 +208,49 @@ private extension AttendanceCheckView {
       Spacer()
         .frame(height: 20)
     }
+  }
+
+  @ViewBuilder
+  func attendanceStatusCardSkeletonList() -> some View {
+    ScrollView(.vertical) {
+      LazyVStack(spacing: .zero) {
+        ForEach(0 ..< 6, id: \.self) { _ in
+          attendanceStatusCardSkeleton()
+        }
+      }
+      .padding(.horizontal, 24)
+      .padding(.bottom, 10)
+    }
+    .scrollIndicators(.hidden)
+    .animation(.easeInOut(duration: 0.2), value: store.viewState)
+  }
+
+  @ViewBuilder
+  func attendanceStatusCardSkeleton() -> some View {
+    HStack(spacing: 12) {
+      VStack(alignment: .leading, spacing: 4) {
+        SkeletonView(.round(cornerRadius: DDDSize.radiusSm))
+          .frame(width: 72, height: 22)
+
+        SkeletonView(.round(cornerRadius: DDDSize.radiusXs))
+          .frame(width: 112, height: 17)
+      }
+
+      Spacer()
+
+      SkeletonView(.round(cornerRadius: DDDSize.radiusXs))
+        .frame(width: 36, height: 17)
+
+      SkeletonView(.circle)
+        .frame(width: 24, height: 24)
+
+      SkeletonView(.round(cornerRadius: DDDSize.radiusXs))
+        .frame(width: 15, height: 15)
+    }
+    .padding(.horizontal, 20)
+    .frame(height: 84)
+    .background(.borderInverse)
+    .clipShape(.rect(cornerRadius: 15))
   }
 
   @ViewBuilder
@@ -262,7 +313,6 @@ private extension AttendanceCheckView {
 
     return team.teamId == store.selectTeamID ? store.attendanceModel : []
   }
-
 
   @ViewBuilder
   private func AttendanceScrollView(attendanceModel: [Attendance]) -> some View {
