@@ -5,6 +5,7 @@
 //  Created by DDD on 9/1/26.
 //
 
+import DependencyPackagePlugin
 import DependencyPlugin
 import Foundation
 import ProjectDescription
@@ -25,6 +26,7 @@ let project = Project.makeModule(
   hasTests: true,
   hasInterface: true,
   interfaceDependencies: [
-    .core(.network, .interface)
+    .core(.network, .interface),
+    .SPM.dependencies
   ]
 )

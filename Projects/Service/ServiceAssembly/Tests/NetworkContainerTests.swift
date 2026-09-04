@@ -6,9 +6,9 @@
 //
 
 import Dependencies
-import DomainInterface
-import Testing
+import DDDAuthInterface
 @testable import ServiceAssembly
+import Testing
 
 struct NetworkContainerTests {
   @Test
@@ -28,21 +28,16 @@ struct NetworkContainerTests {
   }
 
   @Test
-  func KeychainManager도_동일한_secureStorage_조립을_재사용한다() {
-    let first = NetworkContainer.keychainManager as AnyObject
-    let second = NetworkContainer.keychainManager as AnyObject
-
-    #expect(first === second)
-  }
-
-  @Test
-  func KeychainManager_라이브_구현은_ServiceAssembly에서_해결된다() {
+  func 라이브_서비스는_ServiceAssembly에서_동일한_인스턴스로_등록된다() {
     withDependencies {
       $0.context = .live
+      ServiceDependencyAssembly.register(into: &$0)
     } operation: {
-      @Dependency(\.keychainManager) var keychainManager
+      @Dependency(\.networkClient) var networkClient
+      @Dependency(\.authService) var authService
 
-      _ = keychainManager
+      #expect(networkClient as AnyObject === NetworkContainer.authenticatedClient as AnyObject)
+      #expect(authService as AnyObject === NetworkContainer.authService as AnyObject)
     }
   }
 }

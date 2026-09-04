@@ -8,7 +8,6 @@
 import DDDCoreUtility
 import FeatureAssembly
 import ComposableArchitecture
-import Entity
 
 @Reducer
 public struct AppReducer: Sendable {
@@ -16,13 +15,13 @@ public struct AppReducer: Sendable {
 
   @ObservableState
   public enum State {
-    case splash(Splash.State)
+    case splash(SplashFeature.State)
     case auth(AuthCoordinator.State)
     case staff(StaffCoordinator.State)
     case member(MemberCoordinator.State)
 
     public init() {
-      self = .splash(Splash.State())
+      self = .splash(SplashFeature.State())
     }
 
     // Animation identifier for SwiftUI transitions
@@ -37,7 +36,7 @@ public struct AppReducer: Sendable {
   }
 
   //MARK: - Action
-  public enum Action: ViewAction, FeatureAction {
+  public enum Action: ViewAction {
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
@@ -75,7 +74,7 @@ public struct AppReducer: Sendable {
   //MARK: - 스코프 액션
   @CasePathable
   public enum ScopeAction {
-    case splash(Splash.Action)
+    case splash(SplashFeature.Action)
     case auth(AuthCoordinator.Action)
     case staff(StaffCoordinator.Action)
     case member(MemberCoordinator.Action)
@@ -152,7 +151,7 @@ public struct AppReducer: Sendable {
     }
     // 🔥 TCA 해결책 5: 강화된 ifCaseLet 체인 - 상태 불일치 방어
     .ifCaseLet(\.splash, action: \.scope.splash) {
-      Splash()
+      SplashFeature()
     }
     .ifCaseLet(\.auth, action: \.scope.auth) {
       AuthCoordinator()
@@ -262,17 +261,17 @@ public struct AppReducer: Sendable {
   // 🎯 PFW 패턴: 네비게이션 로직 분리
   private func handleScopeNavigation(action: ScopeAction) -> Effect<Action> {
     switch action {
-    case .splash(.navigation(.presentLogin)):
+    case .splash(.delegate(.presentLogin)):
       return .run { send in
         try await clock.sleep(for: .seconds(0.5))
         await send(.view(.presentAuth))
       }
       .cancellable(id: CancelID.transition, cancelInFlight: true)
 
-    case .splash(.navigation(.presentStaff)):
+    case .splash(.delegate(.presentStaff)):
       return .send(.view(.presentStaff))
 
-    case .splash(.navigation(.presentMember)):
+    case .splash(.delegate(.presentMember)):
       return .send(.view(.presentMember))
 
     case .auth(.navigation(.presentStaff)):

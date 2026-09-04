@@ -5,14 +5,17 @@
 //  Created by DDD on 1/16/25.
 //
 
+import AuthDomainInterface
+import AttendanceDomainInterface
 import DDDCoreLogger
 import Foundation
+import OnBoardingDomainInterface
+import ProfileDomainInterface
 
 import DDDSharedUI
 
 import ComposableArchitecture
-import UseCase
-import Entity
+import ScheduleDomainInterface
 
 @Reducer
 public struct AttendanceCheck {
@@ -58,13 +61,13 @@ public struct AttendanceCheck {
     }
   }
   
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case destination(PresentationAction<Destination.Action>)
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
     case scope(ScopeAction)
     
   }
@@ -104,13 +107,13 @@ public struct AttendanceCheck {
     case fetchScheduleResponse(Result<[Schedule], ScheduleError>)
     case attendanceCountResponse(Result<AttendanceCount, AttendanceError>)
     case fetchTeamsResponse(Result<[SelectTeamEntity], AttendanceError>)
-    case attendanceResponse(teamId: Int, Result<[Entity.Attendance], AttendanceError>)
+    case attendanceResponse(teamId: Int, Result<[Attendance], AttendanceError>)
     case attendanceStatusResponse(Result<[AttendanceStatus], AttendanceError>)
     case editAttendanceResponse(Result<EditAttendance, AttendanceError>)
   }
   
-  // MARK: - NavigationAction
-  public enum NavigationAction: Equatable {
+  // MARK: - DelegateAction
+  public enum DelegateAction: Equatable {
     
   }
   
@@ -158,8 +161,8 @@ public struct AttendanceCheck {
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
         
-      case .navigation(let navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+      case .delegate(let delegateAction):
+        return handleDelegateAction(state: &state, action: delegateAction)
         
       case .destination(let destinationAction):
         return handleDestinationAction(state: &state, action: destinationAction)
@@ -368,9 +371,9 @@ extension AttendanceCheck {
     }
   }
   
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     return .none
   }
@@ -520,7 +523,7 @@ extension AttendanceCheck {
     action: PresentationAction<Destination.Action>
   ) -> Effect<Action> {
     switch action {
-    case .presented(.scheduleModal(.navigation(.selectScheduleCompleted(let selectedSchedule)))):
+    case .presented(.scheduleModal(.delegate(.selectScheduleCompleted(let selectedSchedule)))):
       if let selectedDate = selectedSchedule.toDate() {
         state.selectAttendanceDate = selectedDate
         state.selectScheduleID = selectedSchedule.id

@@ -13,11 +13,11 @@ import DDDDesignKit
 import ComposableArchitecture
 
 public struct StaffView: View {
-  @Bindable var store: StoreOf<Staff>
+  @Bindable var store: StoreOf<StaffFeature>
   @State var isExpanded: Bool = false
   @State private var isDropDownClosing = false
 
-  public init(store: StoreOf<Staff>) {
+  public init(store: StoreOf<StaffFeature>) {
     self.store = store
   }
 
@@ -150,7 +150,7 @@ private extension StaffView {
               .foregroundStyle(.staticWhite)
           }
           .onTapGesture {
-            store.send(.navigation(.presentManagerProfile))
+            store.send(.delegate(.presentManagerProfile))
           }
       }
     }
@@ -224,7 +224,7 @@ private extension StaffView {
     }
   }
 
-  func closeDropDown(_ action: Staff.View = .closeDropDown) {
+  func closeDropDown(_ action: StaffFeature.View = .closeDropDown) {
     guard store.isExpandedDropDown, !isDropDownClosing else { return }
     isDropDownClosing = true
 

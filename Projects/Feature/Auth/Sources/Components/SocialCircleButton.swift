@@ -9,9 +9,9 @@
 import SwiftUI
 import AuthenticationServices
 
-import Entity
 
 import ComposableArchitecture
+import AuthDomainInterface
 
 struct SocialCircleButtonView: View {
   @State var store: StoreOf<Login>

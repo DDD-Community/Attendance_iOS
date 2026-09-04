@@ -6,6 +6,7 @@
 //
 
 import DependencyPlugin
+import DependencyPackagePlugin
 import Foundation
 import ProjectDescription
 import ProjectTemplatePlugin
@@ -15,12 +16,36 @@ let project = Project.makeModule(
   bundleId: .appBundleID(name: ".DomainAssembly"),
   product: .staticFramework,
   settings: .moduleSettings,
-  // 도메인 레이어의 단일 출입구. 데이터·서비스는 보지 않는다.
+  // 컨텍스트별 Repository와 UseCase 구현을 한곳에서 조립하는 앱 진입 경계.
   dependencies: [
     .core(.logger),
-    .domain(.entity),
-    .domain(.domainInterface),
-    .domain(.useCase)
+    .core(.storage, .interface),
+    .serviceAssembly,
+    .domain(.appUpdate),
+    .domain(.auth),
+    .domain(.attendance),
+    .domain(.myPage),
+    .domain(.onBoarding),
+    .domain(.profile),
+    .domain(.qrCode),
+    .domain(.schedule),
+    .domain(.vote),
+    .SPM.dependencies
+  ],
+  testDependencies: [
+    .core(.network, .interface),
+    .service(.auth, .interface),
+    .service(.apiEndpoint),
+    .domain(.appUpdate),
+    .domain(.attendance),
+    .domain(.auth),
+    .domain(.myPage),
+    .domain(.onBoarding),
+    .domain(.profile),
+    .domain(.qrCode),
+    .domain(.schedule),
+    .domain(.vote),
+    .SPM.composableArchitecture
   ],
   sources: ["Sources/**"],
   hasTests: true

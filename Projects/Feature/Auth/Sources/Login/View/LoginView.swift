@@ -10,9 +10,9 @@ import AuthenticationServices
 import SwiftUI
 
 import DDDDesignKit
-import Entity
 
 import ComposableArchitecture
+import AuthDomainInterface
 
 @ViewAction(for: Login.self)
 public struct LoginView: View {

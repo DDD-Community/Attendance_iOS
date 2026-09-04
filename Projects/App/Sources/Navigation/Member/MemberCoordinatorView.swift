@@ -33,11 +33,8 @@ public struct MemberCoordinatorView: View {
         .navigationBarBackButtonHidden()
 
       case .qrCode(let qrCodeStore):
-        MemberQRCodeView(store: qrCodeStore) {
-          store.send(.inner(.onResume))
-          store.send(.view(.backAction))
-        }
-        .navigationBarBackButtonHidden()
+        MemberQRCodeView(store: qrCodeStore)
+          .navigationBarBackButtonHidden()
       }
     }
   }

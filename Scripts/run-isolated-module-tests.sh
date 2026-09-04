@@ -3,6 +3,7 @@
 set -euo pipefail
 
 readonly TEST_SCHEME="${TEST_SCHEME:-DDDAttendance-Stage}"
+readonly TEST_PLAN="${TEST_PLAN:-DDDAttendance}"
 readonly CONFIGURATION="${CONFIGURATION:-Stage}"
 readonly SIMULATOR_DESTINATION="${SIMULATOR_DESTINATION:?SIMULATOR_DESTINATION is required}"
 readonly CI_DERIVED_DATA="${CI_DERIVED_DATA:?CI_DERIVED_DATA is required}"
@@ -38,6 +39,7 @@ rm -rf "$RESULT_BUNDLE" "$TEST_RUN_REPORT_PATH" TuistTestRun.log
 # PR 리포트가 이전 커밋의 모듈 실행을 섞지 않도록 모든 테스트 타깃을 실행한다.
 # run report는 Tuist 서버 업로드 여부와 최신 dashboard URL을 CI에서 검증하는 증거다.
 mise exec -- tuist test run "$TEST_SCHEME" \
+  --test-plan "$TEST_PLAN" \
   --configuration "$CONFIGURATION" \
   --no-selective-testing \
   --inspect-mode remote \
@@ -60,4 +62,20 @@ if [[ ! -s "$TEST_RUN_REPORT_PATH" ]]; then
   exit 1
 fi
 
-echo "전체 모듈 테스트를 $TEST_SCHEME 스킴으로 한 번에 실행했습니다."
+if [[ ! -d "$RESULT_BUNDLE" ]]; then
+  echo "테스트 결과 번들이 생성되지 않았습니다: $RESULT_BUNDLE" >&2
+  exit 1
+fi
+
+test_count="$({
+  xcrun xcresulttool get test-results summary \
+    --path "$RESULT_BUNDLE" \
+    --format json
+} | ruby -rjson -e 'puts(JSON.parse(STDIN.read).fetch("totalTestCount", 0))')"
+
+if [[ ! "$test_count" =~ ^[0-9]+$ ]] || (( test_count == 0 )); then
+  echo "실행된 테스트 케이스가 없습니다: $test_count" >&2
+  exit 1
+fi
+
+echo "전체 모듈 테스트 ${test_count}개를 $TEST_SCHEME 스킴의 $TEST_PLAN 플랜으로 실행했습니다."

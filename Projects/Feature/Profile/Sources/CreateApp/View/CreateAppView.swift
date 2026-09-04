@@ -9,7 +9,7 @@ import SwiftUI
 
 import ComposableArchitecture
 import DDDDesignKit
-import Entity
+import ProfileDomainInterface
 import SwiftUIX
 
 struct CreateAppView: View {
@@ -126,7 +126,7 @@ extension CreateAppView {
             .foregroundStyle(.staticWhite)
         }
         .contentShape(Capsule())
-        .onTapGesture { store.send(.navigation(.presentWeb)) }
+        .onTapGesture { store.send(.delegate(.presentWeb)) }
 
       Spacer()
         .frame(height: 8)

@@ -17,6 +17,7 @@ let project = Project.makeModule(
   hasTests: true,
   hasInterface: true,
   interfaceDependencies: [
-    .SPM.alamofire
+    .SPM.alamofire,
+    .SPM.dependencies
   ]
 )

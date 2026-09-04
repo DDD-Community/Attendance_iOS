@@ -19,15 +19,6 @@ private let suppressWarningsSettings: ProjectDescription.Settings = .settings(
   configurations: XCConfig.configurations
 )
 
-private let appTargetSettings: ProjectDescription.Settings = .settings(
-  base: [
-    // 계층별 DependencyKey.liveValue가 dead strip되지 않도록 DI 조립 모듈을 링크한다.
-    "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip -force_load $(BUILT_PRODUCTS_DIR)/DataAssembly.framework/DataAssembly -force_load $(BUILT_PRODUCTS_DIR)/ServiceAssembly.framework/ServiceAssembly -force_load $(BUILT_PRODUCTS_DIR)/UseCase.framework/UseCase",
-    "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
-  ],
-  configurations: XCConfig.configurations
-)
-
 public extension Project {
   static func makeAppModule(
     name: String = Environment.appName,
@@ -40,6 +31,7 @@ public extension Project {
     settings: ProjectDescription.Settings,
     scripts: [ProjectDescription.TargetScript] = [],
     dependencies: [ProjectDescription.TargetDependency] = [],
+    testDependencies: [ProjectDescription.TargetDependency] = [],
     sources _: ProjectDescription.SourceFilesList = ["Sources/**"],
     resources: ProjectDescription.ResourceFileElements? = nil,
     infoPlist: ProjectDescription.InfoPlist = .default,
@@ -58,7 +50,7 @@ public extension Project {
       entitlements: entitlements,
       scripts: scripts,
       dependencies: dependencies,
-      settings: appTargetSettings
+      settings: suppressWarningsSettings
     )
 
     // 단일 타깃 + 다중 config 구조.
@@ -74,8 +66,11 @@ public extension Project {
         bundleId: "\(bundleId).\(name)Tests",
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
-        buildableFolders: ["Tests"],
-        dependencies: [.target(name: name)],
+        // 테스트 플랜은 Tests 루트에 두되 test bundle의 리소스로 복사하지 않는다.
+        // 실제 Swift Testing 소스만 동기화하면 workspace test plan이 다른 프로젝트의
+        // 테스트 타깃을 안정적으로 참조할 수 있다.
+        buildableFolders: ["Tests/Sources"],
+        dependencies: [.target(name: name)] + testDependencies,
         settings: suppressWarningsSettings
       )
       targets.append(appTestTarget)
@@ -92,7 +87,8 @@ public extension Project {
       settings: settings,
       targets: targets,
       schemes: schemes.isEmpty ? appEnvironmentSchemes(name: name, hasTests: hasTests) : schemes,
-      fileHeaderTemplate: .default
+      fileHeaderTemplate: .default,
+      additionalFiles: hasTests ? ["Tests/*.xctestplan"] : []
     )
   }
 
@@ -158,8 +154,9 @@ public extension Project {
     hasInterface: Bool = false,
     interfaceDependencies: [ProjectDescription.TargetDependency] = [],
     hasTesting: Bool = false,
-    forceLoadInTests: Bool = false,
-    forceLoadDependenciesInTests: [String] = []
+    testingDependencies: [ProjectDescription.TargetDependency] = [],
+    hasDemo: Bool = false,
+    demoDependencies: [ProjectDescription.TargetDependency] = []
   ) -> Project {
     // Interface 타깃은 Interface/ 폴더가 실제로 있을 때만 만든다(buildableFolders 는 폴더가 없으면 generate 실패).
     let interfaceTarget: Target? = hasInterface ? .target(
@@ -202,23 +199,31 @@ public extension Project {
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
         buildableFolders: ["Testing"],
-        dependencies: hasInterface ? [.target(name: "\(name)Interface")] : [.target(name: name)],
+        dependencies: (hasInterface ? [.target(name: "\(name)Interface")] : [.target(name: name)])
+          + testingDependencies,
+        settings: suppressWarningsSettings
+      ))
+    }
+
+    // Demo: 이 모듈 하나만 띄우는 단독 실행 앱. Demo/ 폴더가 실제로 있을 때만 만든다
+    // (buildableFolders 는 폴더가 없으면 generate 가 실패한다).
+    // 앱 전체를 빌드하지 않고 피처 하나를 시뮬레이터에서 확인하려는 용도이고,
+    // tuist share 로 Previews 에 올려 링크로 넘기는 대상이기도 하다.
+    if hasDemo {
+      targets.append(.target(
+        name: "\(name)Demo",
+        destinations: destinations,
+        product: .app,
+        bundleId: "\(bundleId)Demo",
+        deploymentTargets: deploymentTarget,
+        infoPlist: .demoInfoPlist,
+        buildableFolders: ["Demo"],
+        dependencies: [.target(name: name)] + demoDependencies,
         settings: suppressWarningsSettings
       ))
     }
 
     if hasTests {
-      let forceLoadFlags = ([name] + forceLoadDependenciesInTests)
-        .map { "-force_load $(BUILT_PRODUCTS_DIR)/\($0).framework/\($0)" }
-        .joined(separator: " ")
-      let testTargetSettings: ProjectDescription.Settings = forceLoadInTests ? .settings(
-        base: [
-          "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip \(forceLoadFlags)",
-          "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
-        ],
-        configurations: XCConfig.configurations
-      ) : suppressWarningsSettings
-
       let appTestTarget: Target = .target(
         name: "\(name)Tests",
         destinations: destinations,
@@ -236,24 +241,44 @@ public extension Project {
         dependencies: [
           .target(name: name)
         ] + testDependencies + (hasTesting ? [.target(name: "\(name)Testing")] : []),
-        settings: testTargetSettings
+        settings: suppressWarningsSettings
       )
       targets.append(appTestTarget)
+    }
+
+    let generatedSchemes: [Scheme]
+    let projectOptions: Project.Options
+    if hasDemo {
+      // 자동 스킴은 구현/Interface/Demo를 하나의 BuildAction에 묶는다.
+      // 그 결과 일반 모듈 빌드와 Xcode의 workspace build-info 수집까지 Demo 앱을
+      // 따라가므로, Demo가 있는 프로젝트는 실행 목적별 스킴을 명시적으로 분리한다.
+      generatedSchemes = schemes + [
+        .module(name: name, hasTests: hasTests),
+        .demo(name: "\(name)Demo")
+      ]
+      projectOptions = .options(
+        automaticSchemesOptions: .disabled,
+        defaultKnownRegions: ["en", "ko"],
+        developmentRegion: "ko"
+      )
+    } else {
+      generatedSchemes = schemes
+      projectOptions = .options(
+        automaticSchemesOptions: .enabled(codeCoverageEnabled: true),
+        defaultKnownRegions: ["en", "ko"],
+        developmentRegion: "ko"
+      )
     }
 
     return Project(
       name: name,
       // tuist test 는 모듈별 자동 생성 스킴으로 도는데, 여기서 커버리지를 켜지 않으면
       // 결과 번들에 커버리지가 담기지 않아 리포트가 비어 나온다.
-      options: .options(
-        automaticSchemesOptions: .enabled(codeCoverageEnabled: true),
-        defaultKnownRegions: ["en", "ko"],
-        developmentRegion: "ko"
-      ),
+      options: projectOptions,
       packages: packages,
       settings: settings,
       targets: targets,
-      schemes: schemes,
+      schemes: generatedSchemes,
       fileHeaderTemplate: .default
     )
   }

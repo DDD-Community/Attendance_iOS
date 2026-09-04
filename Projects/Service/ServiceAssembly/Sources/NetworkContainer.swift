@@ -9,7 +9,6 @@ import CoreAssembly
 import DDDAuth
 import DDDAuthInterface
 import DDDNetworkInterface
-import DomainInterface
 
 public enum NetworkContainer {
   private static let assembly = makeAssembly()
@@ -22,14 +21,9 @@ public enum NetworkContainer {
     return assembly.authService
   }
 
-  public static var keychainManager: any KeychainManaging {
-    return assembly.keychainManager
-  }
-
   private static func makeAssembly() -> Assembly {
     let plainClient = NetworkAssembly.plainClient()
     let storage = StorageAssembly.secureStorage()
-    let keychainManager = KeychainManager(storage: storage)
     let auth = AuthFactory.make(
       refreshClient: plainClient,
       storage: storage
@@ -37,8 +31,7 @@ public enum NetworkContainer {
 
     return Assembly(
       authenticatedClient: auth.authenticatedClient,
-      authService: auth,
-      keychainManager: keychainManager
+      authService: auth
     )
   }
 }
@@ -47,6 +40,5 @@ private extension NetworkContainer {
   struct Assembly {
     let authenticatedClient: any DDDNetworkClient
     let authService: any AuthService
-    let keychainManager: any KeychainManaging
   }
 }

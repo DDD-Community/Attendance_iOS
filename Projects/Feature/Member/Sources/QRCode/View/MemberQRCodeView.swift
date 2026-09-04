@@ -12,12 +12,10 @@ import DDDDesignKit
 import ComposableArchitecture
 
 public struct MemberQRCodeView: View {
-  @Bindable private var store: StoreOf<MemberQRCode>
-  private var backAction: () -> Void
+  @Bindable private var store: StoreOf<MemberQRCodeFeature>
 
-  public init(store: StoreOf<MemberQRCode>, backAction: @escaping () -> Void) {
+  public init(store: StoreOf<MemberQRCodeFeature>) {
     self.store = store
-    self.backAction = backAction
   }
 
   public var body: some View {
@@ -36,7 +34,9 @@ public struct MemberQRCodeView: View {
 
   private var navigationBar: some View {
     HStack {
-      Button(action: backAction) {
+      Button {
+        store.send(.delegate(.back))
+      } label: {
         Image(asset: .arrowBackWhite)
           .resizable()
           .scaledToFit()

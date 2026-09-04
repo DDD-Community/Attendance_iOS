@@ -88,11 +88,11 @@ extension MemberCoordinator {
     action: IndexedRouterActionOf<MemberScreen>
   ) -> Effect<Action> {
     switch action {
-    case .routeAction(id: _, action: .member(.navigation(.routeToQRCode))):
+    case .routeAction(id: _, action: .member(.delegate(.routeToQRCode))):
       state.routes.push(.qrCode(.init()))
       return .none
 
-    case .routeAction(id: _, action: .member(.navigation(.routeToProfile))):
+    case .routeAction(id: _, action: .member(.delegate(.routeToProfile))):
       state.routes.push(.profile(.init()))
       return .concatenate(
         .cancel(id: CancelID.profileEffects),
@@ -100,6 +100,10 @@ extension MemberCoordinator {
         .cancel(id: ProfileReducer.CancelID.deleteUser),
         .cancel(id: ProfileReducer.CancelID.logoutUser)
       )
+
+    case .routeAction(id: _, action: .qrCode(.delegate(.back))):
+      state.routes.goBack()
+      return .send(.inner(.onResume))
 
     case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
       state.routes.goBackToRoot()
@@ -190,7 +194,7 @@ extension MemberCoordinator {
   public enum MemberScreen {
     case member(MemberMain)
     case profile(ProfileCoordinator)
-    case qrCode(MemberQRCode)
+    case qrCode(MemberQRCodeFeature)
   }
 }
 

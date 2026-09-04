@@ -8,9 +8,10 @@
 import Foundation
 
 import DDDCoreUtility
-import Entity
 
 import ComposableArchitecture
+import OnBoardingInterface
+import AuthDomainInterface
 
 @Reducer
 public struct OnBoardingName {
@@ -32,7 +33,7 @@ public struct OnBoardingName {
   public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
   }
   
   // MARK: - ViewAction
@@ -44,11 +45,9 @@ public struct OnBoardingName {
   }
 
   
-  // MARK: - NavigationAction
-  @CasePathable
-  public enum NavigationAction: Equatable {
-    case presentSignUpPart
-  }
+  // MARK: - DelegateAction
+  /// 이동 계약은 OnBoardingInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias DelegateAction = OnBoardingNameDelegate
   
   public var body: some Reducer<State, Action> {
     BindingReducer()
@@ -60,8 +59,8 @@ public struct OnBoardingName {
       case .view(let viewAction):
         return handleViewAction(state: &state, action: viewAction)
           
-      case .navigation(let navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+      case .delegate(let delegateAction):
+        return handleDelegateAction(state: &state, action: delegateAction)
       }
     }
   }
@@ -81,7 +80,7 @@ extension OnBoardingName {
       }
       return .run { [enableButton = state.enableButton] send in
         if enableButton == true {
-          await send(.navigation(.presentSignUpPart))
+          await send(.delegate(.presentSignUpPart))
         }
       }
 
@@ -91,9 +90,9 @@ extension OnBoardingName {
     }
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
     case .presentSignUpPart:

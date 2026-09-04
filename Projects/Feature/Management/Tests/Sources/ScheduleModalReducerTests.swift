@@ -6,7 +6,7 @@
 //
 
 import ComposableArchitecture
-import Entity
+import ScheduleDomainInterface
 import Testing
 
 @testable import Management

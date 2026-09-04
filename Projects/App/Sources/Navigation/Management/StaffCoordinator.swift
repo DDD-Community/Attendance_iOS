@@ -97,7 +97,7 @@ extension StaffCoordinator {
   ) -> Effect<Action> {
     switch action {
       // MARK: - 운영진 프로필
-    case .routeAction(id: _, action: .coreMember(.navigation(.presentManagerProfile))):
+    case .routeAction(id: _, action: .coreMember(.delegate(.presentManagerProfile))):
       state.routes.push(.profile(.init()))
       return .concatenate(
         .cancel(id: CancelID.profileEffects),
@@ -204,7 +204,7 @@ extension StaffCoordinator {
 extension StaffCoordinator {
   @Reducer
   public enum CoreMemberScreen {
-    case coreMember(Staff)
+    case coreMember(StaffFeature)
     case profile(ProfileCoordinator)
   }
 }

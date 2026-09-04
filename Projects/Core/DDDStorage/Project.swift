@@ -6,6 +6,7 @@
 //
 
 import DependencyPlugin
+import DependencyPackagePlugin
 import Foundation
 import ProjectDescription
 import ProjectTemplatePlugin
@@ -18,5 +19,6 @@ let project = Project.makeModule(
   dependencies: [],
   sources: ["Sources/**"],
   hasTests: true,
-  hasInterface: true
+  hasInterface: true,
+  interfaceDependencies: [.SPM.dependencies]
 )

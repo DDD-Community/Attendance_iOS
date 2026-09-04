@@ -6,9 +6,9 @@
 //
 
 import SwiftUI
-import Entity
 import DDDDesignKit
 import ComposableArchitecture
+import AttendanceDomainInterface
 
 public extension View {
   /// TCA Store scope 기반 모달 (권장) - 예: .attendanceModal($store.scope(state: \.attendanceModal, action: \.scope.attendanceModal))

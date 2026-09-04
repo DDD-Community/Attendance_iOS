@@ -11,7 +11,6 @@ import SwiftUI
 import DDDDesignKit
 
 import ComposableArchitecture
-import Entity
 
 @ViewAction(for: MemberMain.self)
 public struct MemberMainView: View {
@@ -101,7 +100,7 @@ public struct MemberMainView: View {
 
       HStack(spacing: 12) {
         Button(action: {
-          store.send(.navigation(.routeToQRCode))
+          store.send(.delegate(.routeToQRCode))
         }) {
           Image(asset: ImageAsset.qrCode)
             .renderingMode(.template)
@@ -119,7 +118,7 @@ public struct MemberMainView: View {
         )
 
         Button(action: {
-          store.send(.navigation(.routeToProfile))
+          store.send(.delegate(.routeToProfile))
         }) {
           Image(asset: ImageAsset.managementProfile)
             .renderingMode(.template)

@@ -1,0 +1,24 @@
+import DependencyPackagePlugin
+import DependencyPlugin
+import ProjectDescription
+import ProjectTemplatePlugin
+
+let project = Project.makeModule(
+  name: "AttendanceDomain",
+  bundleId: .appBundleID(name: ".AttendanceDomain"),
+  product: .staticFramework,
+  settings: .moduleSettings,
+  dependencies: [
+    .serviceAssembly,
+    .domain(.onBoarding, .interface),
+    .SPM.dependencies
+  ],
+  hasTests: true,
+  hasInterface: true,
+  interfaceDependencies: [
+    .domain(.onBoarding, .interface),
+    .domain(.profile, .interface),
+    .SPM.dependencies,
+    .SPM.composableArchitecture
+  ]
+)

@@ -6,8 +6,8 @@
 //
 
 import ComposableArchitecture
-import Entity
 import Testing
+import MyPageDomainInterface
 
 @testable import Member
 

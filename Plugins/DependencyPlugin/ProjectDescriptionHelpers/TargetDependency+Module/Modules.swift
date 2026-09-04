@@ -11,7 +11,6 @@ import ProjectDescription
 
 public enum FeatureModule: String, CaseIterable {
   case sharedUI = "FeatureSharedUI"
-  case splash = "Splash"
   case auth = "Auth"
   case management = "Management"
   case profile = "Profile"
@@ -40,17 +39,6 @@ public enum CoreModule: String, CaseIterable {
   }
 }
 
-public enum DataModule: String, CaseIterable {
-  case assembly = "DataAssembly"
-  case model = "Model"
-  case repository = "Repository"
-
-  /// Projects/Data/<name>
-  var path: Path {
-    return .relativeToData(rawValue)
-  }
-}
-
 public enum ServiceModule: String, CaseIterable {
   case assembly = "ServiceAssembly"
   case api = "API"
@@ -65,10 +53,15 @@ public enum ServiceModule: String, CaseIterable {
 
 public enum DomainModule: String, CaseIterable {
   case assembly = "DomainAssembly"
-  case useCase = "UseCase"
-  case domainInterface = "DomainInterface"
-  case entity = "Entity"
-
+  case appUpdate = "AppUpdateDomain"
+  case auth = "AuthDomain"
+  case attendance = "AttendanceDomain"
+  case myPage = "MyPageDomain"
+  case onBoarding = "OnBoardingDomain"
+  case profile = "ProfileDomain"
+  case qrCode = "QRCodeDomain"
+  case schedule = "ScheduleDomain"
+  case vote = "VoteDomain"
   /// Projects/Domain/<name>
   var path: Path {
     return .relativeToDomain(rawValue)

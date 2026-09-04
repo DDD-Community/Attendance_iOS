@@ -8,11 +8,15 @@
 import DDDCoreLogger
 import Foundation
 
-import Entity
 import DDDSharedUI
-import UseCase
+import AttendanceDomainInterface
+import MyPageDomainInterface
+import ProfileDomainInterface
+import VoteDomainInterface
 
 import ComposableArchitecture
+import MemberInterface
+import ScheduleDomainInterface
 
 @Reducer
 public struct MemberMain {
@@ -60,12 +64,12 @@ public struct MemberMain {
     public init() {}
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case inner(InnerAction)
     case async(AsyncAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
     case vote(MemberVote.Action)
   }
 
@@ -95,20 +99,17 @@ public struct MemberMain {
     case onResume
   }
 
-  public enum NavigationAction: Equatable {
-    case routeToQRCode
-    case routeToProfile
-  }
+  /// 이동 계약은 MemberInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias DelegateAction = MemberMainDelegate
 
   @Reducer(state: .equatable)
   public enum Destination {
-    case qrcode(MemberQRCode)
+    case qrcode(MemberQRCodeFeature)
   }
 
-  @Dependency(ProfileUseCaseImpl.self) var profileUseCase
-  @Dependency(AttendanceUseCaseImpl.self) var attendanceUseCase
-  @Dependency(\.fetchMyAttendancesUseCase) var fetchMyAttendancesUseCase
-  @Dependency(\.fetchMySchedulesUseCase) var fetchMySchedulesUseCase
+  @Dependency(\.profileUseCase) var profileUseCase
+  @Dependency(\.attendanceUseCase) var attendanceUseCase
+  @Dependency(\.myPageUseCase) var myPageUseCase
   @Dependency(\.voteUseCase) var voteUseCase
 
   public var body: some Reducer<State, Action> {
@@ -132,8 +133,8 @@ public struct MemberMain {
       case let .async(action):
         return handleAsyncAction(state: &state, action: action)
 
-      case let .navigation(action):
-        return handleNavigationAction(state: &state, action: action)
+      case let .delegate(action):
+        return handleDelegateAction(state: &state, action: action)
 
       case .vote(.delegate(.exitVote)):
         state.selectedHomeTab = .attendance
@@ -329,7 +330,7 @@ extension MemberMain {
     case .fetchAttendances:
       return .run { send in
         let result = await Result {
-          try await fetchMyAttendancesUseCase.execute()
+          try await myPageUseCase.fetchAttendances()
         }
 
         switch result {
@@ -345,7 +346,7 @@ extension MemberMain {
     case .fetchSchedule:
       return .run { send in
         let result = await Result {
-          try await fetchMySchedulesUseCase.execute()
+          try await myPageUseCase.fetchSchedules()
         }
 
         switch result {
@@ -370,9 +371,9 @@ extension MemberMain {
     }
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
     case .routeToQRCode:

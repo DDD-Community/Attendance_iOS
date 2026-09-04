@@ -11,8 +11,14 @@ let project = Project.makeModule(
   settings: .moduleSettings,
   dependencies: [
     .ui(.sharedUI),
-    .domainAssembly
+    .core(.logger),
+    .domain(.auth, .interface)
   ],
   sources: ["Sources/**"],
-  hasTests: true
+  hasTests: true,
+  hasInterface: true,
+  interfaceDependencies: [
+    .SPM.composableArchitecture
+  ],
+  hasDemo: true
 )

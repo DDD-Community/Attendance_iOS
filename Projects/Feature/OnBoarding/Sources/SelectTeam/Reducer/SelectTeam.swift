@@ -9,10 +9,11 @@ import DDDCoreLogger
 import Foundation
 
 import DDDCoreUtility
-import UseCase
-import Entity
+import OnBoardingDomainInterface
+import ProfileDomainInterface
 
 import ComposableArchitecture
+import OnBoardingInterface
 
 @Reducer
 public struct SelectTeam {
@@ -37,12 +38,12 @@ public struct SelectTeam {
     @Presents var alert: AlertState<AlertAction>?
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
     case scope(ScopeAction)
   }
 
@@ -81,14 +82,10 @@ public struct SelectTeam {
     case editProfileResponse(Result<ProfileEntity, ProfileError>)
   }
   
-  // MARK: - NavigationAction
+  // MARK: - DelegateAction
   
-  public enum NavigationAction: Equatable {
-    case presentMember
-    case presentManager
-    case presentLogin
-    case presentProfile
-  }
+  /// 이동 계약은 OnBoardingInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias DelegateAction = SelectTeamDelegate
   
   nonisolated enum CancelID: Hashable {
     case selectTeam
@@ -118,8 +115,8 @@ public struct SelectTeam {
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
 
-      case .navigation(let navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+      case .delegate(let delegateAction):
+        return handleDelegateAction(state: &state, action: delegateAction)
 
         case .scope:
           return .none
@@ -187,9 +184,9 @@ extension SelectTeam {
     }
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
     case .presentMember:
@@ -243,7 +240,9 @@ extension SelectTeam {
           userSession = state.userSession
         ] send in
           let editProfileResult = await Result {
-            return try await profileUseCase.editUser(userSession: userSession)
+            return try await profileUseCase.editProfile(
+              input: EditProfileInput(userSession: userSession)
+            )
           }
           .mapError(ProfileError.from)
           return await send(.inner(.editProfileResponse(editProfileResult)))
@@ -274,9 +273,9 @@ extension SelectTeam {
             state.$staffRole.withLock { $0 = state.userSession.userRole }
 
             if state.userSession.userRole == .manager {
-              return .send(.navigation(.presentManager))
+              return .send(.delegate(.presentManager))
             } else {
-              return .send(.navigation(.presentMember))
+              return .send(.delegate(.presentMember))
             }
 
           case .failure(let error):
@@ -311,9 +310,9 @@ extension SelectTeam {
 
             // 기수변경 완료 후 변경된 역할에 맞는 홈으로 이동 (운영진/멤버)
             if data.role == .manager {
-              return .send(.navigation(.presentManager))
+              return .send(.delegate(.presentManager))
             } else {
-              return .send(.navigation(.presentMember))
+              return .send(.delegate(.presentMember))
             }
 
           case .failure(let error):
@@ -332,5 +331,18 @@ extension SelectTeam {
         }
 
     }
+  }
+}
+
+private extension EditProfileInput {
+  init(userSession: UserSession) {
+    self.init(
+      name: userSession.name,
+      generationId: userSession.generationId,
+      jobRole: userSession.selectPart,
+      teamId: userSession.selectTeamId,
+      managerRoles: userSession.userRole == .manager ? userSession.managing : nil,
+      inviteCode: userSession.inviteCode
+    )
   }
 }

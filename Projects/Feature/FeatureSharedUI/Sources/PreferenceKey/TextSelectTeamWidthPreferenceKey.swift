@@ -6,8 +6,8 @@
 //
 
 import DDDDesignKit
-import Entity
 import SwiftUI
+import ProfileDomainInterface
 
 public struct TextWidthPreferenceKey: PreferenceKey {
     public static var defaultValue: [SelectTeams: CGFloat] = [:]

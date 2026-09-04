@@ -6,14 +6,17 @@
 //
 
 @_exported import ComposableArchitecture
-import DataAssembly
-@_exported import DDDCoreUtility
-@_exported import DDDDesignKit
-@_exported import DDDSharedUI
 @_exported import FeatureSharedUI
-@_exported import Entity
+@_exported import AppUpdateDomain
+@_exported import AttendanceDomain
+@_exported import AuthDomain
+@_exported import MyPageDomain
+@_exported import OnBoardingDomain
+@_exported import ProfileDomain
+@_exported import QRCodeDomain
+@_exported import ScheduleDomain
+@_exported import VoteDomain
 @_exported import SwiftUIX
-@_exported import Splash
 @_exported import Auth
 @_exported import Member
 @_exported import Management

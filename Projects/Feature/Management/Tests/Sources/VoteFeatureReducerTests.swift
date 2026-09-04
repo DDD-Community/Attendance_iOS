@@ -7,8 +7,8 @@
 //
 
 import ComposableArchitecture
-import Entity
 import Testing
+import VoteDomainInterface
 
 @testable import Management
 

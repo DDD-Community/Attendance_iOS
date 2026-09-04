@@ -9,11 +9,12 @@ import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
-import UseCase
+import AuthDomainInterface
+import ProfileDomainInterface
 
 import ComposableArchitecture
+import ProfileInterface
 import DDDDesignKit
-import Entity
 
 @Reducer
 public struct ProfileReducer: Sendable {
@@ -74,14 +75,14 @@ public struct ProfileReducer: Sendable {
     case createApp(CreateApp)
   }
 
-  public enum Action: ViewAction, FeatureAction, BindableAction {
+  public enum Action: ViewAction, BindableAction {
     case destination(PresentationAction<Destination.Action>)
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
     case scope(ScopeAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
   }
 
   // MARK: - View action
@@ -115,14 +116,8 @@ public struct ProfileReducer: Sendable {
 
   // MARK: - 네비게이션 연결 액션
 
-  @CasePathable
-  public enum NavigationAction: Equatable {
-    case presentLogOut
-    case presentCreateByApp
-    case presentPrivacyPolicy
-    case presentEditGeneration
-    case presentAppPeedBackWeb
-  }
+  /// 이동 계약은 ProfileInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias DelegateAction = ProfileDelegate
 
   @CasePathable
   public enum ScopeAction {
@@ -171,10 +166,10 @@ public struct ProfileReducer: Sendable {
       case let .inner(innerAction):
         return handleInnerAction(state: &state, action: innerAction)
 
-      // MARK: - NavigationAction
+      // MARK: - DelegateAction
 
-      case let .navigation(navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+      case let .delegate(delegateAction):
+        return handleDelegateAction(state: &state, action: delegateAction)
 
       case let .scope(scopeAction):
         switch scopeAction {
@@ -303,7 +298,7 @@ extension ProfileReducer {
         if data.isSuccess {
           // 탈퇴 성공 시 UserSession의 이름 제거
           state.$userSession.withLock { $0.name = "" }
-          return .send(.navigation(.presentLogOut))
+          return .send(.delegate(.presentLogOut))
         }
         return .none
 
@@ -324,7 +319,7 @@ extension ProfileReducer {
       switch result {
       case let .success(data):
         state.authExit = data
-        return .send(.navigation(.presentLogOut))
+        return .send(.delegate(.presentLogOut))
 
       case let .failure(error):
         state.alert = AlertState {
@@ -341,9 +336,9 @@ extension ProfileReducer {
     }
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
     case .presentLogOut:
@@ -403,11 +398,11 @@ extension ProfileReducer {
     action: PresentationAction<Destination.Action>
   ) -> Effect<Action> {
     switch action {
-    case .presented(.createApp(.navigation(.presentWeb))):
+    case .presented(.createApp(.delegate(.presentWeb))):
       state.destination = nil
       return .run { send in
         try await clock.sleep(for: .seconds(0.05))
-        await send(.navigation(.presentAppPeedBackWeb))
+        await send(.delegate(.presentAppPeedBackWeb))
       }
 
     default:

@@ -13,6 +13,7 @@ private enum Command: String {
   case build
   case install
   case cache
+  case cacheSetup = "cache:setup"
   case test
   case format
   case lint
@@ -64,6 +65,27 @@ private func installAndGenerate(forwardedArguments: [String] = []) -> Int32 {
   let installStatus = runTuist(arguments: ["install"] + forwardedArguments)
   guard installStatus == 0 else { return installStatus }
   return runTuist(arguments: ["generate"])
+}
+
+private enum StepResult {
+  case passed
+  case skipped(String)
+  case failed(Int32)
+}
+
+private func printSetupSummary(_ results: [(String, StepResult)]) {
+  print("")
+  print("📋 setup 결과")
+  for (name, result) in results {
+    switch result {
+    case .passed:
+      print("  ✅ \(name)")
+    case let .skipped(reason):
+      print("  ⚠️  \(name) — 건너뜀 (\(reason))")
+    case let .failed(status):
+      print("  ❌ \(name) — 실패 (exit \(status))")
+    }
+  }
 }
 
 private func resetProject() -> Int32 {
@@ -169,6 +191,79 @@ private func defaultCaseName(for moduleName: String) -> String {
 
 /// `anchor` 가 들어간 첫 줄 바로 아래에 `line` 을 끼워 넣는다.
 /// `guardText` 가 이미 파일에 있으면 재실행해도 중복으로 쌓이지 않는다.
+
+/// 내부 모듈 그래프를 만든다.
+///
+/// 기본 그래프는 Tests·Testing·Interface 까지 포함해 각 모듈의 진입점을 함께 보여주되
+/// Demo 앱은 제외한다. 배포 구조만 확인하는 `graph:prod`에서는 Tests까지 함께 제외한다.
+/// Tuist에는 Demo 타깃만 제외하는 옵션이 없어 dot에서 Demo 노드와 간선을 걷어낸다.
+private func renderGraph(
+  excludesDemo: Bool,
+  extraTuistArguments: [String],
+  forwardedArguments: [String]
+) -> Int32 {
+  let fileManager = FileManager.default
+  let workDirectory = fileManager.temporaryDirectory
+    .appendingPathComponent("attendance-graph-\(UUID().uuidString)")
+
+  do {
+    try fileManager.createDirectory(at: workDirectory, withIntermediateDirectories: true)
+  } catch {
+    FileHandle.standardError.write(Data("작업 디렉터리를 만들지 못했습니다: \(error)\n".utf8))
+    return 1
+  }
+  defer { try? fileManager.removeItem(at: workDirectory) }
+
+  let dotStatus = runTuist(arguments: [
+    "graph",
+    "--no-open",
+    "--skip-external-dependencies",
+    "--format", "dot",
+    "--output-path", workDirectory.path
+  ] + extraTuistArguments + forwardedArguments)
+  guard dotStatus == 0 else { return dotStatus }
+
+  let dotURL = workDirectory.appendingPathComponent("graph.dot")
+  guard let rawGraph = try? String(contentsOf: dotURL, encoding: .utf8) else {
+    FileHandle.standardError.write(Data("dot 파일을 읽지 못했습니다: \(dotURL.path)\n".utf8))
+    return 1
+  }
+
+  let graph: String
+  if excludesDemo {
+    // 노드 선언(`AuthDemo [..]`)과 엣지(`AuthDemo -> Auth`) 양쪽에서
+    // 이름이 Demo 로 끝나는 줄을 지운다. dot 출력은 식별자에 따옴표를 붙이지 않는다.
+    graph = rawGraph
+      .split(separator: "\n", omittingEmptySubsequences: false)
+      .filter { line in
+        line.range(of: #"\b[A-Za-z0-9_]+Demo\b"#, options: .regularExpression) == nil
+      }
+      .joined(separator: "\n")
+  } else {
+    graph = rawGraph
+  }
+
+  let renderedGraphURL = workDirectory.appendingPathComponent("rendered-graph.dot")
+  do {
+    try graph.write(to: renderedGraphURL, atomically: true, encoding: .utf8)
+  } catch {
+    FileHandle.standardError.write(Data("렌더링할 dot 을 쓰지 못했습니다: \(error)\n".utf8))
+    return 1
+  }
+
+  let renderStatus = run("dot", arguments: ["-Tpng", renderedGraphURL.path, "-o", "graph.png"])
+  guard renderStatus == 0 else {
+    FileHandle.standardError.write(Data("graphviz 렌더링에 실패했습니다. `brew install graphviz` 가 필요합니다.\n".utf8))
+    return renderStatus
+  }
+
+  let skipsTests = extraTuistArguments.contains("--skip-test-targets")
+  print(skipsTests
+    ? "graph.png 를 만들었습니다 (Tests·Demo 제외)"
+    : "graph.png 를 만들었습니다 (Demo 제외, Tests·Testing·Interface 포함)")
+  return 0
+}
+
 @discardableResult
 private func insertLine(
   _ line: String,
@@ -280,11 +375,12 @@ private func printHelp() {
     🚀 DDDAttendance Tuist 도구
 
     기본 명령어:
-      ./make setup          # mise 도구 설치 + 의존성 설치 + 프로젝트 생성
-      ./make generate       # 프로젝트 생성
+      ./make setup          # mise 도구 설치 + 캐시 설정 + 의존성 설치 + 프로젝트 생성
+      ./make generate       # Demo 앱을 포함해 프로젝트 생성
       ./make build          # 클린 + 의존성 설치 + 프로젝트 생성
       ./make install        # 의존성 설치 + 프로젝트 생성
       ./make cache          # 바이너리 캐시 생성
+      ./make cache:setup    # Xcode Compilation Cache 설정
       ./make test           # 전체 테스트 실행
       ./make format         # SwiftFormat 적용
       ./make lint           # SwiftFormat 검사
@@ -305,8 +401,8 @@ private func printHelp() {
     (DDDNetwork → network). 규칙과 다르면 --case 로 직접 지정한다.
 
     의존성 그래프:
-      ./make graph          # 외부 패키지를 제외한 모듈 그래프 생성
-      ./make graph:prod     # 외부 패키지와 테스트 타깃을 제외한 그래프 생성
+      ./make graph          # 외부 패키지·Demo를 제외하고 Tests·Testing·Interface를 포함한 모듈 그래프 생성
+      ./make graph:prod     # 외부 패키지·Demo·테스트 타깃을 제외한 그래프 생성
     """
   )
 }
@@ -314,9 +410,34 @@ private func printHelp() {
 private func execute(_ command: Command, forwardedArguments: [String]) -> Int32 {
   switch command {
   case .setup:
-    let setupStatus = run("mise", arguments: ["install"])
-    guard setupStatus == 0 else { return setupStatus }
-    return installAndGenerate(forwardedArguments: forwardedArguments)
+    var results: [(String, StepResult)] = []
+
+    let miseStatus = run("mise", arguments: ["install"])
+    results.append(("mise 도구 설치", miseStatus == 0 ? .passed : .failed(miseStatus)))
+    guard miseStatus == 0 else {
+      printSetupSummary(results)
+      return miseStatus
+    }
+
+    // Xcode Compilation Cache 는 Tuist 계정 로그인과 네트워크가 필요하다.
+    // 실패해도 프로젝트 생성 자체는 막지 않고 건너뛴 사실만 남긴다.
+    let cacheStatus = runTuist(arguments: ["setup", "cache"])
+    results.append((
+      "Xcode Compilation Cache 설정",
+      cacheStatus == 0 ? .passed : .skipped("`tuist auth login` 후 ./make cache:setup 으로 재시도")
+    ))
+
+    let installStatus = runTuist(arguments: ["install"] + forwardedArguments)
+    results.append(("의존성 설치", installStatus == 0 ? .passed : .failed(installStatus)))
+    guard installStatus == 0 else {
+      printSetupSummary(results)
+      return installStatus
+    }
+
+    let generateStatus = runTuist(arguments: ["generate"])
+    results.append(("프로젝트 생성", generateStatus == 0 ? .passed : .failed(generateStatus)))
+    printSetupSummary(results)
+    return generateStatus
 
   case .generate:
     return runTuist(arguments: ["generate"] + forwardedArguments)
@@ -333,6 +454,9 @@ private func execute(_ command: Command, forwardedArguments: [String]) -> Int32 
 
   case .cache:
     return runTuist(arguments: ["cache"] + forwardedArguments)
+
+  case .cacheSetup:
+    return runTuist(arguments: ["setup", "cache"] + forwardedArguments)
 
   case .test:
     return runTuist(arguments: ["test"] + forwardedArguments)
@@ -371,23 +495,18 @@ private func execute(_ command: Command, forwardedArguments: [String]) -> Int32 
     return scaffoldModule(layer: .ui, arguments: forwardedArguments)
 
   case .graph:
-    return runTuist(arguments: [
-      "graph",
-      "--no-open",
-      "--skip-external-dependencies",
-      "--format", "png",
-      "--output-path", "."
-    ] + forwardedArguments)
+    return renderGraph(
+      excludesDemo: true,
+      extraTuistArguments: [],
+      forwardedArguments: forwardedArguments
+    )
 
   case .productionGraph:
-    return runTuist(arguments: [
-      "graph",
-      "--no-open",
-      "--skip-external-dependencies",
-      "--skip-test-targets",
-      "--format", "png",
-      "--output-path", "."
-    ] + forwardedArguments)
+    return renderGraph(
+      excludesDemo: true,
+      extraTuistArguments: ["--skip-test-targets"],
+      forwardedArguments: forwardedArguments
+    )
 
   case .help:
     printHelp()

@@ -9,9 +9,10 @@ import DDDCoreLogger
 import Foundation
 
 import DDDCoreUtility
-import Entity
+import OnBoardingDomainInterface
 
 import ComposableArchitecture
+import OnBoardingInterface
 
 @Reducer
 public struct InviteCodeReducer {
@@ -55,13 +56,13 @@ public struct InviteCodeReducer {
   }
 
   @CasePathable
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
     case scope(ScopeAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
   }
   
   // MARK: - ViewAction
@@ -84,11 +85,9 @@ public struct InviteCodeReducer {
     case verifyInviteCodeResponse(Result<VerifyCodeEntity, SignUpError>)
   }
   
-  // MARK: - NavigationAction
-  @CasePathable
-  public enum NavigationAction: Equatable {
-    case presentSignUpName
-  }
+  // MARK: - DelegateAction
+  /// 이동 계약은 OnBoardingInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias DelegateAction = InviteCodeDelegate
 
   @CasePathable
   public enum ScopeAction {
@@ -130,8 +129,8 @@ public struct InviteCodeReducer {
         case .scope:
           return .none
 
-      case .navigation(let navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+      case .delegate(let delegateAction):
+        return handleDelegateAction(state: &state, action: delegateAction)
       }
     }
     .ifLet(\.$alert, action: \.scope.alert)
@@ -175,9 +174,9 @@ extension InviteCodeReducer {
     }
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
     case .presentSignUpName:
@@ -204,7 +203,7 @@ extension InviteCodeReducer {
           $0.selectTeam = .unknown
           $0.selectTeamId = nil
         }
-        return .send(.navigation(.presentSignUpName))
+        return .send(.delegate(.presentSignUpName))
 
       case .failure(let error):
         DDDLogger.error("코드에러: \(error)", category: .auth)

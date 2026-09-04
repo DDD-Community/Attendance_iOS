@@ -9,7 +9,7 @@ import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
-import Entity
+import QRCodeDomainInterface
 
 import ComposableArchitecture
 import Vision
@@ -34,13 +34,13 @@ public struct QRCode {
     public init() {}
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
     case scope(ScopeAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
 
   }
 
@@ -68,11 +68,11 @@ public struct QRCode {
 
   //MARK: - 앱내에서 사용하는 액션
   public enum InnerAction: Equatable {
-    case qrCodeValidateResponse(Result<QRValidateEntity, AttendanceError>)
+    case qrCodeValidateResponse(Result<QRValidateEntity, QRCodeError>)
   }
 
-  //MARK: - NavigationAction
-  public enum NavigationAction: Equatable {
+  //MARK: - DelegateAction
+  public enum DelegateAction: Equatable {
 
 
   }
@@ -100,8 +100,8 @@ public struct QRCode {
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
 
-      case .navigation(let navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+      case .delegate(let delegateAction):
+        return handleDelegateAction(state: &state, action: delegateAction)
 
         case .scope(let scopeAction):
           switch scopeAction {
@@ -138,16 +138,16 @@ extension QRCode {
         let qrCodeValidateResult = await Result {
           try await qrCodeUseCase.qrValidateCheck(from: scannedText)
         }
-          .mapError(AttendanceError.from)
+          .mapError(QRCodeError.from)
         return await send(.inner(.qrCodeValidateResponse(qrCodeValidateResult)))
       }
       .debounce(id: QRCodeCancel(), for: 0.3, scheduler: mainQueue)
     }
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
 
   }
@@ -179,7 +179,7 @@ extension QRCode {
 
           // 전송 실패는 도메인이 구분하지 않으므로 서버가 준 거절 사유만 따로 보여준다.
           switch error {
-          case let .rejected(message):
+          case let .validationFailed(message):
             alertTitle = "QR 출석실패"
             alertMessage = message
           default:

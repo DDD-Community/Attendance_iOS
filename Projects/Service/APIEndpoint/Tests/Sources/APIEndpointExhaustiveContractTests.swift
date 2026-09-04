@@ -1,6 +1,6 @@
-import Entity
 import Foundation
 import Testing
+import VoteDomainInterface
 
 @testable import APIEndpoint
 

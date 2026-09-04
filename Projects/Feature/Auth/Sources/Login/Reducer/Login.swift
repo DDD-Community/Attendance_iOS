@@ -9,12 +9,11 @@ import DDDCoreLogger
 import Foundation
 
 import DDDCoreUtility
-import DomainInterface
-import Entity
-import UseCase
+import AuthDomainInterface
 
 import AuthenticationServices
 import ComposableArchitecture
+import AuthInterface
 import DDDDesignKit
 
 @Reducer
@@ -42,13 +41,13 @@ public struct Login {
 
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
     case scope(ScopeAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
   }
 
   // MARK: - ViewAction
@@ -77,14 +76,9 @@ public struct Login {
     case loginResponse(Result<LoginEntity, AuthError>)
   }
 
-  // MARK: - NavigationAction
-  @CasePathable
-  public enum NavigationAction: Equatable {
-    case presentSignUpInviteView
-    case presentStaffMain
-    case presentMemberMain
-    case presentWeb
-  }
+  // MARK: - DelegateAction
+  /// 이동 계약은 AuthInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias DelegateAction = LoginDelegate
 
   @CasePathable
   public enum ScopeAction {
@@ -112,8 +106,8 @@ public struct Login {
         case .inner(let innerAction):
           return handleInnerAction(state: &state, action: innerAction)
 
-        case .navigation(let navigationAction):
-          return handleNavigationAction(state: &state, action: navigationAction)
+        case .delegate(let delegateAction):
+          return handleDelegateAction(state: &state, action: delegateAction)
 
         case .scope(let scopeAction):
           switch scopeAction {
@@ -216,9 +210,9 @@ extension Login {
               state.$editGeneration.withLock { $0 = false }
               return .send(.view(.showPolicyPopUp))
             } else if role == .manager {
-              return .send(.navigation(.presentStaffMain))
+              return .send(.delegate(.presentStaffMain))
             } else  {
-              return .send(.navigation(.presentMemberMain))
+              return .send(.delegate(.presentMemberMain))
             }
 
           case .failure(let error):
@@ -243,9 +237,9 @@ extension Login {
 
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
       case .presentSignUpInviteView:
@@ -277,7 +271,7 @@ extension Login {
             state.customAlert = nil
             return .run { send in
               try await clock.sleep(for: .seconds(0.3))
-              return await send(.navigation(.presentSignUpInviteView))
+              return await send(.delegate(.presentSignUpInviteView))
             }
 
           case .cancelTapped:
@@ -285,7 +279,7 @@ extension Login {
             return .none
 
           case .policyTapped:
-            return .send(.navigation(.presentWeb))
+            return .send(.delegate(.presentWeb))
         }
 
       case .dismiss:

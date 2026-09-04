@@ -13,7 +13,7 @@ public protocol FeatureAction {
   associatedtype ViewAction
   associatedtype InnerAction
   associatedtype AsyncAction
-  associatedtype NavigationAction
+  associatedtype DelegateAction
   //  associatedtype ScopeAction
   //  associatedtype DelegateAction
   
@@ -25,11 +25,10 @@ public protocol FeatureAction {
   // NOTE: 비동기적으로 돌아가는 Action 을 정의합니다.
   static func async(_: AsyncAction) -> Self
   
-  static func navigation(_: NavigationAction) -> Self
+  static func delegate(_: DelegateAction) -> Self
   
   // NOTE: 자식 Redcuer 에서 사용되는 Action 을 정의합니다.
   //  static func scope(_: ScopeAction) -> Self
   
   // NOTE: 부모 Reducer 에서 사용되는 Action 을 정의합니다.
-  //  static func delegate(_: DelegateAction) -> Self
 }

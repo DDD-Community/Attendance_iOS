@@ -7,6 +7,7 @@
 
 import Foundation
 import ComposableArchitecture
+import ProfileInterface
 
 import DDDSharedUI
 
@@ -20,12 +21,12 @@ public struct CreateApp {
     public init() {}
   }
   
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
     
   }
   
@@ -44,11 +45,9 @@ public struct CreateApp {
   public enum InnerAction: Equatable {
   }
   
-  //MARK: - NavigationAction
-  public enum NavigationAction: Equatable {
-    case presentWeb
-
-  }
+  //MARK: - DelegateAction
+  /// 이동 계약은 ProfileInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias DelegateAction = CreateAppDelegate
   
   
   public var body: some ReducerOf<Self> {
@@ -67,8 +66,8 @@ public struct CreateApp {
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
         
-      case .navigation(let navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+      case .delegate(let delegateAction):
+        return handleDelegateAction(state: &state, action: delegateAction)
       }
     }
   }
@@ -87,9 +86,9 @@ public struct CreateApp {
 
   }
   
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
       case .presentWeb:

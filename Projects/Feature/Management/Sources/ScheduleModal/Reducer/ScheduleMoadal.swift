@@ -9,10 +9,10 @@ import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
-import UseCase
+import ScheduleDomainInterface
 
 import ComposableArchitecture
-import Entity
+import ManagementInterface
 
 @Reducer
 public struct ScheduleModal {
@@ -28,12 +28,12 @@ public struct ScheduleModal {
     public init() {}
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
   }
 
   // MARK: - ViewAction
@@ -56,11 +56,10 @@ public struct ScheduleModal {
     case scheduleResponse(Result<[Schedule], ScheduleError>)
   }
 
-  // MARK: - NavigationAction
+  // MARK: - DelegateAction
 
-  public enum NavigationAction: Equatable {
-    case selectScheduleCompleted(selectedSchedule: Schedule)
-  }
+  /// 이동 계약은 ManagementInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias DelegateAction = ScheduleModalDelegate
 
   nonisolated enum ScheduleMoadalCancel: Hashable {
     case fetchSchedule
@@ -85,8 +84,8 @@ public struct ScheduleModal {
       case let .inner(innerAction):
         return handleInnerAction(state: &state, action: innerAction)
 
-      case let .navigation(navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+      case let .delegate(delegateAction):
+        return handleDelegateAction(state: &state, action: delegateAction)
       }
     }
   }
@@ -111,7 +110,7 @@ extension ScheduleModal {
       guard let selectedSchedule = state.selectedSchedule else {
         return .none
       }
-      return .send(.navigation(.selectScheduleCompleted(selectedSchedule: selectedSchedule)))
+      return .send(.delegate(.selectScheduleCompleted(selectedSchedule: selectedSchedule)))
     }
   }
 
@@ -139,9 +138,9 @@ extension ScheduleModal {
     }
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state _: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     switch action {
     case .selectScheduleCompleted:

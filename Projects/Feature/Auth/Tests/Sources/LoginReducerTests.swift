@@ -6,7 +6,7 @@
 //
 
 import ComposableArchitecture
-import Entity
+import AuthDomainInterface
 import Testing
 
 @testable import Auth
@@ -36,7 +36,7 @@ struct LoginReducerTests {
       $0.staffRole = .member
       $0.userSession.userRole = .member
     }
-    await store.receive(\.navigation.presentMemberMain)
+    await store.receive(\.delegate.presentMemberMain)
   }
 }
 

@@ -5,8 +5,8 @@
 //  Created by DDD on 9/1/26.
 //
 
-import DependencyPlugin
 import DependencyPackagePlugin
+import DependencyPlugin
 import Foundation
 import ProjectDescription
 import ProjectTemplatePlugin
@@ -18,12 +18,10 @@ let project = Project.makeModule(
   settings: .moduleSettings,
   dependencies: [
     .core(.assembly),
-    .core(.storage, .interface),
+    .service(.apiEndpoint),
     .service(.auth, .implementation),
-    .domain(.domainInterface),
     .SPM.dependencies
   ],
   sources: ["Sources/**"],
-  hasTests: true,
-  forceLoadInTests: true
+  hasTests: true
 )

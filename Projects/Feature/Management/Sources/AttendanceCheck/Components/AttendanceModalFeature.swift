@@ -7,7 +7,7 @@
 
 import SwiftUI
 import ComposableArchitecture
-import Entity
+import AttendanceDomainInterface
 
 // MARK: - AttendanceModalState
 

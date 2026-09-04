@@ -11,8 +11,20 @@ let project = Project.makeModule(
   settings: .moduleSettings,
   dependencies: [
     .ui(.sharedUI),
-    .domainAssembly
+    .core(.logger),
+    .domain(.auth, .interface),
+    .domain(.attendance, .interface),
+    .domain(.myPage, .interface),
+    .domain(.profile, .interface),
+    .domain(.qrCode, .interface),
+    .domain(.schedule, .interface),
+    .domain(.vote, .interface)
   ],
   sources: ["Sources/**"],
-  hasTests: true
+  hasTests: true,
+  hasInterface: true,
+  interfaceDependencies: [
+    .SPM.composableArchitecture
+  ],
+  hasDemo: true
 )

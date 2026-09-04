@@ -12,7 +12,7 @@ let project = Project.makeModule(
   dependencies: [
     .core(.network, .interface),
     .service(.api),
-    .domain(.entity),
+    .domain(.vote, .interface),
     .SPM.alamofire
   ],
   sources: ["Sources/**"],

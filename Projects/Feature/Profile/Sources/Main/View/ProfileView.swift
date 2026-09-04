@@ -62,7 +62,7 @@ extension ProfileView {
   fileprivate func mangerProfileLoadingData() -> some View {
     // SwiftData와 세션 모두 비어 있는 첫 프레임에 빈 이름("님")이 노출되지 않도록
     // 표시 가능한 프로필이 생길 때까지 Skeleton을 유지한다.
-    if store.displayedProfile == nil {
+    if store.displayedProfile == nil  && store.isLoading {
       VStack {
         Spacer()
           .frame(height: 12)
@@ -176,7 +176,7 @@ extension ProfileView {
         .fill(.dangerBlue.opacity(0.7))
     }
     .onTapGesture {
-      store.send(.navigation(.presentEditGeneration))
+      store.send(.delegate(.presentEditGeneration))
     }
   }
 
@@ -407,7 +407,7 @@ extension ProfileView {
         .foregroundStyle(.mediumGray)
         .underline(true, color: .mediumGray)
         .onTapGesture {
-          store.send(.navigation(.presentPrivacyPolicy))
+          store.send(.delegate(.presentPrivacyPolicy))
         }
 
       Spacer()

@@ -7,11 +7,12 @@
 
 import Foundation
 
-import Entity
-import UseCase
+import OnBoardingDomainInterface
+import ProfileDomainInterface
 import DDDCoreUtility
 
 import ComposableArchitecture
+import OnBoardingInterface
 
 @Reducer
 public struct SelectManagingReducer {
@@ -34,12 +35,12 @@ public struct SelectManagingReducer {
     @Presents var alert: AlertState<AlertAction>?
   }
 
-  public enum Action: ViewAction, BindableAction, FeatureAction {
+  public enum Action: ViewAction, BindableAction {
     case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
-    case navigation(NavigationAction)
+    case delegate(DelegateAction)
     case scope(ScopeAction)
   }
 
@@ -78,14 +79,10 @@ public struct SelectManagingReducer {
     case editProfileResponse(Result<ProfileEntity, ProfileError>)
   }
 
-  // MARK: - NavigationAction
+  // MARK: - DelegateAction
 
-  public enum NavigationAction: Equatable {
-    case presentManager
-    case presentMember
-    case presentSelectTeam
-    case presentProfile
-  }
+  /// 이동 계약은 OnBoardingInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
+  public typealias DelegateAction = SelectManagingDelegate
 
   nonisolated enum CancelID: Hashable, CaseIterable {
     case fetchMangerList
@@ -115,8 +112,8 @@ public struct SelectManagingReducer {
       case let .inner(innerAction):
         return handleInnerAction(state: &state, action: innerAction)
 
-      case let .navigation(navigationAction):
-        return handleNavigationAction(state: &state, action: navigationAction)
+      case let .delegate(delegateAction):
+        return handleDelegateAction(state: &state, action: delegateAction)
 
       case .scope:
         return .none
@@ -170,9 +167,9 @@ extension SelectManagingReducer {
     }
   }
 
-  private func handleNavigationAction(
+  private func handleDelegateAction(
     state _: inout State,
-    action: NavigationAction
+    action: DelegateAction
   ) -> Effect<Action> {
     // 모든 navigation에서 진행 중인 effect를 cancel
 //    let cancelEffects = Effect<Action>.merge(
@@ -227,7 +224,9 @@ extension SelectManagingReducer {
         userSession = state.userSession
       ] send in
         let editProfileResult = await Result {
-          try await profileUseCase.editUser(userSession: userSession)
+          try await profileUseCase.editProfile(
+            input: EditProfileInput(userSession: userSession)
+          )
         }
         .mapError(ProfileError.from)
         return await send(.inner(.editProfileResponse(editProfileResult)))
@@ -258,7 +257,7 @@ extension SelectManagingReducer {
         state.signUpUser = data
         state.$staffRole.withLock { $0 = state.userSession.userRole }
 
-        return .send(.navigation(.presentManager))
+        return .send(.delegate(.presentManager))
 
       case let .failure(error):
         state.errorMessage = error.errorDescription
@@ -291,9 +290,9 @@ extension SelectManagingReducer {
         }
 
         if data.role == .manager {
-          return .send(.navigation(.presentManager))
+          return .send(.delegate(.presentManager))
         } else {
-          return .send(.navigation(.presentMember))
+          return .send(.delegate(.presentMember))
         }
 
       case let .failure(error):
@@ -311,5 +310,18 @@ extension SelectManagingReducer {
         return .none
       }
     }
+  }
+}
+
+private extension EditProfileInput {
+  init(userSession: UserSession) {
+    self.init(
+      name: userSession.name,
+      generationId: userSession.generationId,
+      jobRole: userSession.selectPart,
+      teamId: userSession.selectTeamId,
+      managerRoles: userSession.userRole == .manager ? userSession.managing : nil,
+      inviteCode: userSession.inviteCode
+    )
   }
 }
