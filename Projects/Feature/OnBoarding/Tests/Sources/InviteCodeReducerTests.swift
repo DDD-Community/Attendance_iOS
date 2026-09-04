@@ -2,7 +2,7 @@
 //  InviteCodeReducerTests.swift
 //  OnBoardingTests
 //
-//  InviteCodeReducer 의 포커스 이동, 코드 검증 성공/실패, 알럿 분기를 검증한다.
+//  InviteCodeFeature 의 포커스 이동, 코드 검증 성공/실패, 알럿 분기를 검증한다.
 //
 
 import ComposableArchitecture
@@ -13,13 +13,13 @@ import Testing
 @testable import OnBoarding
 
 @MainActor
-@Suite("InviteCodeReducer")
+@Suite("InviteCodeFeature")
 struct InviteCodeReducerTests {
   // MARK: - 계산 프로퍼티
 
   @Test("네 칸을 이어 붙인 값이 전체 초대 코드가 된다")
   func totalInviteCodeConcatenatesFields() {
-    var state = InviteCodeReducer.State()
+    var state = InviteCodeFeature.State()
     state.firstInviteCode = "1"
     state.secondInviteCode = "2"
     state.thirdInviteCode = "3"
@@ -31,7 +31,7 @@ struct InviteCodeReducerTests {
 
   @Test("한 칸이라도 비어 있으면 다음 버튼이 비활성화된다")
   func enableButtonRequiresEveryField() {
-    var state = InviteCodeReducer.State()
+    var state = InviteCodeFeature.State()
     state.firstInviteCode = "1"
     state.secondInviteCode = "2"
     state.thirdInviteCode = "3"
@@ -41,7 +41,7 @@ struct InviteCodeReducerTests {
 
   @Test("코드가 유효하지 않다고 표시되면 네 칸이 모두 차 있어도 버튼이 비활성화된다")
   func enableButtonIsFalseWhenCodeMarkedInvalid() {
-    var state = InviteCodeReducer.State()
+    var state = InviteCodeFeature.State()
     state.firstInviteCode = "1"
     state.secondInviteCode = "2"
     state.thirdInviteCode = "3"
@@ -55,8 +55,8 @@ struct InviteCodeReducerTests {
 
   @Test("focusChanged 는 포커스 위치를 상태에 반영한다")
   func focusChangedUpdatesFocusedField() async {
-    let store = TestStore(initialState: InviteCodeReducer.State()) {
-      InviteCodeReducer()
+    let store = TestStore(initialState: InviteCodeFeature.State()) {
+      InviteCodeFeature()
     }
 
     await store.send(.view(.focusChanged(.third))) {
@@ -72,7 +72,7 @@ struct InviteCodeReducerTests {
 
   @Test("초대 코드 검증에 성공하면 세션을 갱신하고 이름 입력으로 이동한다")
   func verifyInviteCodeSuccessUpdatesSession() async {
-    var state = InviteCodeReducer.State()
+    var state = InviteCodeFeature.State()
     state.firstInviteCode = "A"
     state.secondInviteCode = "B"
     state.thirdInviteCode = "C"
@@ -85,7 +85,7 @@ struct InviteCodeReducerTests {
     let verification = OnBoardingCoverageFixture.memberCode
 
     let store = TestStore(initialState: state) {
-      InviteCodeReducer()
+      InviteCodeFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository(verifiedCode: verification)
     }
@@ -106,8 +106,8 @@ struct InviteCodeReducerTests {
 
   @Test("초대 코드 검증에 실패하면 오류 알럿을 띄우고 코드 입력을 무효로 표시한다")
   func verifyInviteCodeFailurePresentsAlert() async {
-    let store = TestStore(initialState: InviteCodeReducer.State()) {
-      InviteCodeReducer()
+    let store = TestStore(initialState: InviteCodeFeature.State()) {
+      InviteCodeFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository(failure: .invalidCode)
     }
@@ -131,8 +131,8 @@ struct InviteCodeReducerTests {
 
   @Test("delegate 액션은 부수효과 없이 소비된다")
   func delegateActionProducesNoEffect() async {
-    let store = TestStore(initialState: InviteCodeReducer.State()) {
-      InviteCodeReducer()
+    let store = TestStore(initialState: InviteCodeFeature.State()) {
+      InviteCodeFeature()
     }
 
     await store.send(.delegate(.presentSignUpName))
@@ -140,7 +140,7 @@ struct InviteCodeReducerTests {
 
   @Test("알럿을 닫으면 alert 상태가 비워진다")
   func dismissingAlertClearsState() async {
-    var state = InviteCodeReducer.State()
+    var state = InviteCodeFeature.State()
     state.alert = AlertState {
       TextState("오류")
     } actions: {
@@ -150,7 +150,7 @@ struct InviteCodeReducerTests {
     }
 
     let store = TestStore(initialState: state) {
-      InviteCodeReducer()
+      InviteCodeFeature()
     }
 
     await store.send(.scope(.alert(.dismiss))) {
@@ -160,8 +160,8 @@ struct InviteCodeReducerTests {
 
   @Test("binding 액션은 입력 칸 상태만 갱신한다")
   func bindingUpdatesStateOnly() async {
-    let store = TestStore(initialState: InviteCodeReducer.State()) {
-      InviteCodeReducer()
+    let store = TestStore(initialState: InviteCodeFeature.State()) {
+      InviteCodeFeature()
     }
 
     await store.send(.binding(.set(\.firstInviteCode, "7"))) {

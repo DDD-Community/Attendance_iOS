@@ -1,5 +1,5 @@
 //
-//  InviteCodeReducer.swift
+//  InviteCodeFeature.swift
 //  Presentation
 //
 //  Created by DDD on 11/2/24.
@@ -15,7 +15,7 @@ import ComposableArchitecture
 import OnBoardingInterface
 
 @Reducer
-public struct InviteCodeReducer {
+public struct InviteCodeFeature {
   public init() {}
 
   public enum FocusField: Hashable {
@@ -35,7 +35,7 @@ public struct InviteCodeReducer {
     var verifyInviteCodeModel: VerifyCodeEntity?
     var focusedField: FocusField? = .first
 
-    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+    @Shared(.userSession) var userSession
     @Presents public var alert: AlertState<AlertAction>?
 
     var totalInviteCode: String {
@@ -137,7 +137,7 @@ public struct InviteCodeReducer {
   }
 }
 
-extension InviteCodeReducer {
+extension InviteCodeFeature {
   private func handleViewAction(
     state: inout State,
     action: View

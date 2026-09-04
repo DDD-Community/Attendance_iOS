@@ -78,6 +78,7 @@ let packageSettings = PackageSettings(
     "PerceptionCore": .framework,
     "Perception": .framework,
     "Sharing": .staticFramework,
+    "SQLiteData": .staticFramework,
     "SwiftNavigation": .framework,
     "SwiftUINavigation": .framework,
     "CasePaths": .framework,
@@ -109,6 +110,8 @@ let package = Package(
     .package(url: "https://github.com/google/GoogleSignIn-iOS", exact: "9.2.0"),
     .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", exact: "3.1.4"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.25.5"),
+    // 1.12.0부터 swift-tools-version 6.4가 필요하다. 현재 Xcode 26.5 / Swift 6.3에서는 1.11.0이 최신 호환 버전이다.
+    .package(url: "https://github.com/pointfreeco/sqlite-data", exact: "1.11.0"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: "1.7.2"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.1.0"),
     .package(url: "https://github.com/Roy-wonji/TCAFlow.git", exact: "1.1.3"),

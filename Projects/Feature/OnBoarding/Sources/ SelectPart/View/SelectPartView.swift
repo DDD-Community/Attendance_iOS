@@ -14,13 +14,13 @@ import DDDDesignKit
 import DDDAnimation
 import ComposableArchitecture
 
-@ViewAction(for: SelectPartReducer.self)
+@ViewAction(for: SelectPartFeature.self)
 public struct SelectPartView: View {
-  @Bindable public var store: StoreOf<SelectPartReducer>
+  @Bindable public var store: StoreOf<SelectPartFeature>
   var backAction: () -> Void = {}
   
   public init(
-    store: StoreOf<SelectPartReducer>,
+    store: StoreOf<SelectPartFeature>,
     backAction: @escaping () -> Void
   ) {
     self.store = store
@@ -40,11 +40,11 @@ public struct SelectPartView: View {
         
         signUpPartText()
         
-        if store.loading {
+        if store.viewState == .loading {
           VStack {
             Spacer()
 
-            DDDAnimationView(.loading, isAnimating: .constant(store.loading))
+            DDDAnimationView(.loading, isAnimating: .constant(store.viewState == .loading))
               .frame(width: 200, height: 200)
 
             Spacer()

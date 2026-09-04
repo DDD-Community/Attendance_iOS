@@ -16,9 +16,12 @@ let project = Project.makeModule(
   bundleId: .appBundleID(name: ".DDDStorage"),
   product: .staticFramework,
   settings: .moduleSettings,
-  dependencies: [],
+  dependencies: [.SPM.sqliteData],
   sources: ["Sources/**"],
   hasTests: true,
   hasInterface: true,
-  interfaceDependencies: [.SPM.dependencies]
+  interfaceDependencies: [
+    .SPM.dependencies,
+    .SPM.sharing
+  ]
 )

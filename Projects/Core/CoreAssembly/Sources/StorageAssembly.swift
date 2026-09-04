@@ -12,4 +12,8 @@ public enum StorageAssembly {
   public static func secureStorage() -> any SecureStorage {
     return StorageFactory.secureStorage
   }
+
+  public static func sharedValueStorage() -> any SharedValueStorage {
+    return StorageFactory.sharedValueStorage
+  }
 }

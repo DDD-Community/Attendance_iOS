@@ -19,8 +19,10 @@ let project = Project.makeModule(
   hasTests: true,
   hasInterface: true,
   interfaceDependencies: [
+    .core(.storage, .interface),
     .domain(.profile, .interface),
     .SPM.dependencies,
-    .SPM.composableArchitecture
+    .SPM.composableArchitecture,
+    .SPM.sharing
   ]
 )

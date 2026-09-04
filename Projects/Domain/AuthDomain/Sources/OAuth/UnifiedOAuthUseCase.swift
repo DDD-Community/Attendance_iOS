@@ -17,8 +17,8 @@ public struct UnifiedOAuthUseCase: UnifiedOAuthUseCaseInterface {
   @Dependency(\.authRepository) private var authRepository: AuthInterface
   @Dependency(\.appleOAuthProvider) private var appleProvider: AppleOAuthProviderInterface
   @Dependency(\.googleOAuthProvider) private var googleProvider: GoogleOAuthProviderInterface
-  @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
-  @Shared(.appStorage("staffRole")) var staffRole: Staff?
+  @Shared(.userSession) var userSession
+  @Shared(.staffRole) var staffRole
   @Shared(.appStorage("appleUserName")) var savedAppleUserName: String?
 
   public init() {}

@@ -191,11 +191,11 @@ extension OnBoardingCoordinator {
   // swiftformat의 extensionAccessControl이 public을 extension으로 끌어올리면 매크로가 깨지므로 고정.
   @Reducer
   public enum OnBoardingScreen {
-    case InviteCode(InviteCodeReducer)
-    case onBoardingName(OnBoardingName)
-    case selectPart(SelectPartReducer)
-    case selectManaging(SelectManagingReducer)
-    case selectTeam(SelectTeam)
+    case InviteCode(InviteCodeFeature)
+    case onBoardingName(OnBoardingNameFeature)
+    case selectPart(SelectPartFeature)
+    case selectManaging(SelectManagingFeature)
+    case selectTeam(SelectTeamFeature)
   }
 }
 

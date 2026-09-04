@@ -1,5 +1,5 @@
 //
-//  SelectPartReducer.swift
+//  SelectPartFeature.swift
 //  Presentation
 //
 //  Created by DDD on 11/3/24.
@@ -15,7 +15,7 @@ import ComposableArchitecture
 import OnBoardingInterface
 
 @Reducer
-public struct SelectPartReducer {
+public struct SelectPartFeature {
   public init() {}
   
   @ObservableState
@@ -26,8 +26,18 @@ public struct SelectPartReducer {
     var selectPart: SelectParts? = .all
     var selectJobs: IdentifiedArrayOf<SelectJob> = .init(uniqueElements: [])
     var errorMessage: String?
+    /// 이 화면이 지금 무엇을 그려야 하는지.
+    public enum ViewState: Equatable {
+      case loading
+      case loaded
+    }
+
     var loading: Bool = false
-    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+
+    var viewState: ViewState {
+      loading ? .loading : .loaded
+    }
+    @Shared(.userSession) var userSession
 
   }
   
@@ -94,7 +104,7 @@ public struct SelectPartReducer {
   }
 }
 
-extension SelectPartReducer {
+extension SelectPartFeature {
   private func handleViewAction(
     state: inout State,
     action: View

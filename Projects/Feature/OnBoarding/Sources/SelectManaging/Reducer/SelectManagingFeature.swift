@@ -15,23 +15,33 @@ import ComposableArchitecture
 import OnBoardingInterface
 
 @Reducer
-public struct SelectManagingReducer {
+public struct SelectManagingFeature {
   public init() {}
 
   @ObservableState
   public struct State: Equatable {
     public init() {}
 
+    /// 이 화면이 지금 무엇을 그려야 하는지.
+    public enum ViewState: Equatable {
+      case loading
+      case loaded
+    }
+
     var loading: Bool = false
+
+    var viewState: ViewState {
+      loading ? .loading : .loaded
+    }
     var activeButton: Bool = false
     var errorMessage: String?
     var selectMangers: IdentifiedArrayOf<SelectManaging> = .init(uniqueElements: [])
     var signUpUser: SignUpUser?
     var editProfile: ProfileEntity?
 
-    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+    @Shared(.userSession) var userSession
     @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
-    @Shared(.appStorage("staffRole")) var staffRole: Staff?
+    @Shared(.staffRole) var staffRole
     @Presents var alert: AlertState<AlertAction>?
   }
 
@@ -123,7 +133,7 @@ public struct SelectManagingReducer {
   }
 }
 
-extension SelectManagingReducer {
+extension SelectManagingFeature {
   private func handleViewAction(
     state: inout State,
     action: View

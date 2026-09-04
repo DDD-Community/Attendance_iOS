@@ -57,7 +57,7 @@ public struct ProfileReducer: Sendable {
     var authExit: AuthExitEntity?
     var appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
 
-    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+    @Shared(.userSession) var userSession
     @Presents var destination: Destination.State?
     @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
 

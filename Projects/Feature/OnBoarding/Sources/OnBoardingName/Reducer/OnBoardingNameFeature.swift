@@ -1,5 +1,5 @@
 //
-//  OnBoardingName.swift
+//  OnBoardingNameFeature.swift
 //  Presentation
 //
 //  Created by DDD on 11/3/24.
@@ -14,14 +14,14 @@ import OnBoardingInterface
 import AuthDomainInterface
 
 @Reducer
-public struct OnBoardingName {
+public struct OnBoardingNameFeature {
   public init() {}
   
   @ObservableState
   public struct State: Equatable {
     public init() {}
 
-    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+    @Shared(.userSession) var userSession
 
     
     var isNotAvailableName: Bool = false
@@ -66,7 +66,7 @@ public struct OnBoardingName {
   }
 }
 
-extension OnBoardingName {
+extension OnBoardingNameFeature {
   private func handleViewAction(
     state: inout State,
     action: View

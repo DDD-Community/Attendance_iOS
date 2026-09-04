@@ -12,13 +12,13 @@ import DDDDesignKit
 import ComposableArchitecture
 import DDDAnimation
 
-@ViewAction(for: SelectManagingReducer.self)
+@ViewAction(for: SelectManagingFeature.self)
 public struct SelectManagingView: View {
-  @Bindable public var store: StoreOf<SelectManagingReducer>
+  @Bindable public var store: StoreOf<SelectManagingFeature>
   var backAction: () -> Void = {}
   
   public init(
-    store: StoreOf<SelectManagingReducer>,
+    store: StoreOf<SelectManagingFeature>,
     backAction: @escaping () -> Void
   ) {
     self.store = store
@@ -38,11 +38,11 @@ public struct SelectManagingView: View {
         
         signUpSelectManagingText()
 
-        if store.loading {
+        if store.viewState == .loading {
           VStack {
             Spacer()
 
-            DDDAnimationView(.loading, isAnimating: .constant(store.loading))
+            DDDAnimationView(.loading, isAnimating: .constant(store.viewState == .loading))
               .frame(width: 200, height: 200)
 
             Spacer()

@@ -13,14 +13,14 @@ import DDDDesignKit
 import ComposableArchitecture
 import SwiftUIX
 
-@ViewAction(for: InviteCodeReducer.self)
+@ViewAction(for: InviteCodeFeature.self)
 public struct InviteCodeView : View {
-  @Bindable public var store: StoreOf<InviteCodeReducer>
-  @FocusState private var focusedField: InviteCodeReducer.FocusField?
+  @Bindable public var store: StoreOf<InviteCodeFeature>
+  @FocusState private var focusedField: InviteCodeFeature.FocusField?
   var backAction: ()  -> Void = {}
   
   public init(
-    store: StoreOf<InviteCodeReducer>,
+    store: StoreOf<InviteCodeFeature>,
     backAction: @escaping () -> Void
   ) {
     self.store = store
@@ -175,7 +175,7 @@ extension InviteCodeView {
   private func inputCodeText(
     text: Binding<String>,
     isErrorCode: Bool,
-    field: InviteCodeReducer.FocusField,
+    field: InviteCodeFeature.FocusField,
     completion: @escaping (Bool) -> Void
   ) -> some View {
     RoundedRectangle(cornerRadius: 16)

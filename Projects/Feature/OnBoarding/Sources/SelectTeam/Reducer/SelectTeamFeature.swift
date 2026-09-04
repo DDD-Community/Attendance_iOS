@@ -1,5 +1,5 @@
 //
-//  SelectTeam.swift
+//  SelectTeamFeature.swift
 //  Presentation
 //
 //  Created by DDD on 11/4/24.
@@ -16,7 +16,7 @@ import ComposableArchitecture
 import OnBoardingInterface
 
 @Reducer
-public struct SelectTeam {
+public struct SelectTeamFeature {
   public init() {}
 
   @ObservableState
@@ -25,16 +25,26 @@ public struct SelectTeam {
 
     var activeButton: Bool = false
     var selectTeam: SelectTeams? = .unknown
+    /// 이 화면이 지금 무엇을 그려야 하는지.
+    public enum ViewState: Equatable {
+      case loading
+      case loaded
+    }
+
     var loading: Bool = false
+
+    var viewState: ViewState {
+      loading ? .loading : .loaded
+    }
     var errorMessage: String?
     var teams: IdentifiedArrayOf<SelectTeamEntity> = .init(uniqueElements: [])
     var signUpUser: SignUpUser?
     var editProfile: ProfileEntity?
 
 
-    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+    @Shared(.userSession) var userSession
     @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
-    @Shared(.appStorage("staffRole")) var staffRole: Staff?
+    @Shared(.staffRole) var staffRole
     @Presents var alert: AlertState<AlertAction>?
   }
 
@@ -126,7 +136,7 @@ public struct SelectTeam {
   }
 }
 
-extension SelectTeam {
+extension SelectTeamFeature {
   private func handleViewAction(
     state: inout State,
     action: View

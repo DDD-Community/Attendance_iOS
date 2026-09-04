@@ -13,7 +13,7 @@ import Sharing
 
 public final class GoogleOAuthProvider: GoogleOAuthProviderInterface, @unchecked Sendable {
   @Dependency(\.googleOAuthRepository) private var googleRepository
-  @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+  @Shared(.userSession) var userSession
   public init() {}
 
   public func signInWithToken(

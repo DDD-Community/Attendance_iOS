@@ -12,8 +12,8 @@ import Foundation
 
 public struct AuthUseCaseImpl: AuthUseCaseInterface {
   @Dependency(\.authRepository) var authRepository
-  @Shared(.appStorage("staffRole")) var staffRole: Staff?
-  @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+  @Shared(.staffRole) var staffRole
+  @Shared(.userSession) var userSession
 
   public init() {}
 

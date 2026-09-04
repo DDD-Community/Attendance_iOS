@@ -16,7 +16,7 @@ struct OAuthDependencyRegistrationTests {
   @Test("Google 로그인 결과가 프로필 API 역할 선택값을 갱신한다")
   @MainActor
   func googleLoginSynchronizesPersistedRole() async throws {
-    @Shared(.appStorage("staffRole")) var staffRole: Staff?
+    @Shared(.staffRole) var staffRole
     $staffRole.withLock { $0 = .manager }
     defer { $staffRole.withLock { $0 = nil } }
 
@@ -38,7 +38,7 @@ struct OAuthDependencyRegistrationTests {
   @Test("신규 사용자는 이전 계정의 프로필 API 역할 선택값을 제거한다")
   @MainActor
   func newGoogleUserClearsPersistedRole() async throws {
-    @Shared(.appStorage("staffRole")) var staffRole: Staff?
+    @Shared(.staffRole) var staffRole
     $staffRole.withLock { $0 = .manager }
     defer { $staffRole.withLock { $0 = nil } }
 
@@ -91,7 +91,7 @@ struct OAuthDependencyRegistrationTests {
   @Test("Google provider는 repository token을 반환하고 access token을 세션에 저장한다")
   @MainActor
   func googleProviderSynchronizesAccessToken() async throws {
-    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+    @Shared(.userSession) var userSession
     $userSession.withLock { $0 = .empty }
     defer { $userSession.withLock { $0 = .empty } }
 

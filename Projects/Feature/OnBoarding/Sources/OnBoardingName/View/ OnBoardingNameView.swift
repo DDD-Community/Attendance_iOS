@@ -14,13 +14,13 @@ import SwiftUIX
 import ComposableArchitecture
 
 
-@ViewAction(for: OnBoardingName.self)
+@ViewAction(for: OnBoardingNameFeature.self)
 public struct  OnBoardingNameView: View {
-  @Bindable public var store: StoreOf<OnBoardingName>
+  @Bindable public var store: StoreOf<OnBoardingNameFeature>
   var backAction: () -> Void = {}
   
   public init(
-    store: StoreOf<OnBoardingName>,
+    store: StoreOf<OnBoardingNameFeature>,
     backAction: @escaping () -> Void
   ) {
     self.store = store

@@ -26,7 +26,7 @@ public struct ScheduleReducer {
     var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
     var loading: Bool = false
     var hasFetchedSchedule: Bool = false
-    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+    @Shared(.userSession) var userSession
 
   }
   

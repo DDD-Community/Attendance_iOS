@@ -29,7 +29,7 @@ public struct MemberQRCodeFeature {
 
     var qrCodeImage: SwiftUI.Image? = nil
 
-    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+    @Shared(.userSession) var userSession
   }
 
   public enum Action: BindableAction {

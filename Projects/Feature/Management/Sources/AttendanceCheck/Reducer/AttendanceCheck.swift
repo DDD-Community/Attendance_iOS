@@ -27,7 +27,7 @@ public struct AttendanceCheck {
     var selectAttendanceDate: Date = .now
     var selectAttendanceDateMonth: Date = .now
     var selectPart: SelectTeams? = .web1
-    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+    @Shared(.userSession) var userSession
     
     var selectTeamID: Int = 0
     
