@@ -29,7 +29,9 @@ public struct SelectManagingFeature {
       case loaded
     }
 
-    var viewState: ViewState = .loaded
+    /// 첫 진입은 항상 fetch 로 시작한다. 빈 화면이 한 프레임 스쳐 지나가지 않도록 스켈레톤부터 그린다.
+
+    var viewState: ViewState = .loading
     var activeButton: Bool = false
     var errorMessage: String?
     var selectMangers: IdentifiedArrayOf<SelectManaging> = .init(uniqueElements: [])

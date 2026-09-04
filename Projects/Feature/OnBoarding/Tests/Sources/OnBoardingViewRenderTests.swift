@@ -105,6 +105,7 @@ struct OnBoardingViewRenderTests {
   @Test("직무 선택 화면은 목록이 채워지고 선택된 상태에서 렌더링된다")
   func renderSelectPartLoaded() {
     var state = SelectPartFeature.State()
+    state.viewState = .loaded
     state.selectJobs = .init(uniqueElements: OnBoardingCoverageFixture.jobs)
     state.selectPart = .ios
     state.activeSelectPart = true
@@ -137,6 +138,7 @@ struct OnBoardingViewRenderTests {
   @Test("담당 업무 선택 화면은 운영진일 때 다음 버튼으로 렌더링된다")
   func renderSelectManagingForManager() {
     var state = SelectManagingFeature.State()
+    state.viewState = .loaded
     state.selectMangers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
     state.userSession.userRole = .manager
     state.activeButton = true
@@ -153,6 +155,7 @@ struct OnBoardingViewRenderTests {
   @Test("담당 업무 선택 화면은 멤버일 때 가입완료 버튼으로 렌더링된다")
   func renderSelectManagingForMember() {
     var state = SelectManagingFeature.State()
+    state.viewState = .loaded
     state.selectMangers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
     state.userSession.userRole = .member
 
@@ -186,6 +189,7 @@ struct OnBoardingViewRenderTests {
   @Test("팀 선택 화면은 목록이 채워지고 팀이 선택된 상태에서 렌더링된다")
   func renderSelectTeamLoaded() {
     var state = SelectTeamFeature.State()
+    state.viewState = .loaded
     state.teams = .init(uniqueElements: OnBoardingCoverageFixture.teams)
     state.selectTeam = .ios1
     state.activeButton = true
@@ -205,6 +209,7 @@ struct OnBoardingViewRenderTests {
   @Test("팀 선택 화면은 실패 알럿이 떠 있는 상태에서도 렌더링된다")
   func renderSelectTeamWithAlert() {
     var state = SelectTeamFeature.State()
+    state.viewState = .loaded
     state.teams = .init(uniqueElements: OnBoardingCoverageFixture.teams)
     state.alert = AlertState {
       TextState("회원가입 실패")

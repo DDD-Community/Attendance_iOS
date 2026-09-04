@@ -47,6 +47,7 @@ struct ManagementStaffViewRenderTests {
 
   private func loadedAttendanceState() -> AttendanceCheck.State {
     var state = AttendanceCheck.State()
+    state.viewState = .loaded
     state.scheduleModel = .init(uniqueElements: ManagementSupportFixture.schedules)
     state.selectScheduleID = EntityFixtureSchedule.value.id
     state.attendanceCountModel = ManagementSupportFixture.attendanceCount
@@ -84,6 +85,7 @@ struct ManagementStaffViewRenderTests {
   func rendersStaffViewScheduleTab() {
     var state = StaffFeature.State()
     state.selectDropDownItem = .schedule
+    state.schedule.viewState = .loaded
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }
@@ -101,6 +103,7 @@ struct ManagementStaffViewRenderTests {
   func rendersStaffViewVoteTab() {
     var state = StaffFeature.State()
     state.selectDropDownItem = .vote
+    state.vote.viewState = .loaded
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }
@@ -118,6 +121,7 @@ struct ManagementStaffViewRenderTests {
   func rendersStaffViewWithExpandedDropDown() {
     var state = StaffFeature.State()
     state.isExpandedDropDown = true
+    state.attendanceCheck.viewState = .loaded
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }

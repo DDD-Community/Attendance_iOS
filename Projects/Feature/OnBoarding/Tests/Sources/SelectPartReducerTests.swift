@@ -68,9 +68,7 @@ struct SelectPartReducerTests {
     }
 
     await store.send(.view(.onAppear))
-    await store.receive(\.async) {
-      $0.viewState = .loading
-    }
+    await store.receive(\.async)
     await store.receive(\.inner) {
       $0.viewState = .loaded
       $0.selectJobs = .init(uniqueElements: OnBoardingCoverageFixture.jobs)
@@ -88,9 +86,7 @@ struct SelectPartReducerTests {
     let expected = SignUpError.from(OnBoardingError.networkError)
 
     await store.send(.view(.onAppear))
-    await store.receive(\.async) {
-      $0.viewState = .loading
-    }
+    await store.receive(\.async)
     await store.receive(\.inner) {
       $0.viewState = .loaded
       $0.errorMessage = expected.errorDescription

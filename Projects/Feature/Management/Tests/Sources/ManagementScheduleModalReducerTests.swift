@@ -31,9 +31,7 @@ struct ManagementScheduleModalReducerTests {
       $0.continuousClock = TestClock()
     }
 
-    await store.send(.async(.fetchSchedule)) {
-      $0.viewState = .loading
-    }
+    await store.send(.async(.fetchSchedule))
     await store.receive(\.inner) {
       $0.viewState = .loaded
       $0.scheduleModel = .init(uniqueElements: ManagementScheduleFixture.all)
@@ -55,9 +53,7 @@ struct ManagementScheduleModalReducerTests {
       $0.continuousClock = clock
     }
 
-    await store.send(.async(.fetchSchedule)) {
-      $0.viewState = .loading
-    }
+    await store.send(.async(.fetchSchedule))
     await clock.advance(by: .seconds(0.6))
     await store.receive(\.inner) {
       $0.viewState = .loaded
@@ -80,9 +76,7 @@ struct ManagementScheduleModalReducerTests {
       $0.continuousClock = clock
     }
 
-    await store.send(.async(.fetchSchedule)) {
-      $0.viewState = .loading
-    }
+    await store.send(.async(.fetchSchedule))
     await clock.advance(by: .seconds(0.6))
     await store.receive(\.inner) {
       $0.viewState = .loaded
@@ -98,7 +92,9 @@ struct ManagementScheduleModalReducerTests {
     stub.cached = nil
     stub.schedules = ManagementScheduleFixture.all
 
+    // 재조회는 첫 로드가 끝난 뒤 상황이므로 .loaded 에서 출발한다.
     var state = ScheduleModalFeature.State()
+    state.viewState = .loaded
     state.scheduleModel = .init(uniqueElements: [ManagementScheduleFixture.orientation])
 
     let store = TestStore(initialState: state) {
@@ -130,9 +126,7 @@ struct ManagementScheduleModalReducerTests {
       $0.continuousClock = clock
     }
 
-    await store.send(.async(.fetchSchedule)) {
-      $0.viewState = .loading
-    }
+    await store.send(.async(.fetchSchedule))
     await clock.advance(by: .seconds(0.6))
     await store.receive(\.inner) {
       $0.viewState = .loaded

@@ -8,13 +8,13 @@
 import DDDCoreLogger
 import Foundation
 
-import DDDSharedUI
 import AuthDomainInterface
+import DDDSharedUI
 import ProfileDomainInterface
 
 import ComposableArchitecture
-import ProfileInterface
 import DDDDesignKit
+import ProfileInterface
 
 @Reducer
 public struct ProfileReducer: Sendable {
@@ -58,6 +58,8 @@ public struct ProfileReducer: Sendable {
       )
     }
 
+    /// 다른 화면과 달리 `.loaded` 로 시작한다.
+    /// 캐시 히트와 세션 폴백은 스켈레톤 없이 바로 그리는 게 목적이라, `.loading` 을 기본값으로 두면 그 경로가 무너진다.
     var viewState: ViewState = .loaded
 
     var deleteUser: WithdrawEntity?

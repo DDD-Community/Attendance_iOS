@@ -62,9 +62,7 @@ struct SelectTeamReducerTests {
     }
 
     await store.send(.view(.onAppear))
-    await store.receive(\.async) {
-      $0.viewState = .loading
-    }
+    await store.receive(\.async)
     await store.receive(\.inner) {
       $0.teams = .init(uniqueElements: OnBoardingCoverageFixture.teams)
       $0.viewState = .loaded
@@ -80,9 +78,7 @@ struct SelectTeamReducerTests {
     }
 
     await store.send(.view(.onAppear))
-    await store.receive(\.async) {
-      $0.viewState = .loading
-    }
+    await store.receive(\.async)
     // 실패해도 loading 은 내려야 스켈레톤이 걷힌다.
     await store.receive(\.inner) {
       $0.viewState = .loaded

@@ -23,7 +23,6 @@ struct VoteFeatureReducerTests {
 
     await store.send(.view(.onAppear)) {
       $0.hasFetchedVotes = true
-      $0.viewState = .loading
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {

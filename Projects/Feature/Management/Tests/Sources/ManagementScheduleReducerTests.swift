@@ -32,9 +32,7 @@ struct ManagementScheduleReducerTests {
     await store.send(.view(.onAppear)) {
       $0.hasFetchedSchedule = true
     }
-    await store.receive(\.async) {
-      $0.viewState = .loading
-    }
+    await store.receive(\.async)
     await store.receive(\.inner) {
       $0.viewState = .loaded
       $0.scheduleModel = .init(uniqueElements: ManagementScheduleFixture.all)
@@ -55,9 +53,7 @@ struct ManagementScheduleReducerTests {
       $0.scheduleUseCase = ManagementScheduleUseCaseStub()
     }
 
-    await store.send(.async(.fetchSchedule)) {
-      $0.viewState = .loading
-    }
+    await store.send(.async(.fetchSchedule))
     await store.receive(\.inner) {
       $0.viewState = .loaded
     }
@@ -78,9 +74,7 @@ struct ManagementScheduleReducerTests {
       $0.scheduleUseCase = stub
     }
 
-    await store.send(.async(.fetchSchedule)) {
-      $0.viewState = .loading
-    }
+    await store.send(.async(.fetchSchedule))
     await store.receive(\.inner) {
       $0.viewState = .loaded
     }
@@ -89,7 +83,11 @@ struct ManagementScheduleReducerTests {
 
   @Test("stratLoading 과 stopLoading 은 로딩 플래그를 토글한다")
   func loadingActionsToggleFlag() async {
-    let store = TestStore(initialState: ScheduleReducer.State()) {
+    // 기본값이 .loading 이라 토글을 보려면 .loaded 에서 출발해야 한다.
+    var state = ScheduleReducer.State()
+    state.viewState = .loaded
+
+    let store = TestStore(initialState: state) {
       ScheduleReducer()
     }
 

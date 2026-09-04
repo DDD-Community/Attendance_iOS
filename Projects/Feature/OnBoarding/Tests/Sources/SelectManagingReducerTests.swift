@@ -28,9 +28,7 @@ struct SelectManagingReducerTests {
     }
 
     await store.send(.view(.onAppear))
-    await store.receive(\.async) {
-      $0.viewState = .loading
-    }
+    await store.receive(\.async)
     await store.receive(\.inner) {
       $0.viewState = .loaded
       $0.selectMangers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
@@ -60,9 +58,7 @@ struct SelectManagingReducerTests {
     let expected = SignUpError.from(OnBoardingError.verifyFailed)
 
     await store.send(.view(.onAppear))
-    await store.receive(\.async) {
-      $0.viewState = .loading
-    }
+    await store.receive(\.async)
     await store.receive(\.inner) {
       $0.viewState = .loaded
       $0.errorMessage = expected.errorDescription

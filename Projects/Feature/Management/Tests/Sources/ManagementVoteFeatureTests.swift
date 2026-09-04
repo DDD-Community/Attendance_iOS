@@ -61,7 +61,6 @@ struct ManagementVoteFeatureTests {
 
     await store.send(.view(.onAppear)) {
       $0.hasFetchedVotes = true
-      $0.viewState = .loading
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {
@@ -97,7 +96,6 @@ struct ManagementVoteFeatureTests {
 
     await store.send(.view(.onAppear)) {
       $0.hasFetchedVotes = true
-      $0.viewState = .loading
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {
@@ -125,7 +123,6 @@ struct ManagementVoteFeatureTests {
 
     await store.send(.view(.onAppear)) {
       $0.hasFetchedVotes = true
-      $0.viewState = .loading
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {
@@ -148,7 +145,6 @@ struct ManagementVoteFeatureTests {
 
     await store.send(.view(.onAppear)) {
       $0.hasFetchedVotes = true
-      $0.viewState = .loading
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {

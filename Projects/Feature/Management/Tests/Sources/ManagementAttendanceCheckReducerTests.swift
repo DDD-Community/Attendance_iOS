@@ -183,9 +183,7 @@ struct ManagementAttendanceCheckReducerTests {
     }
     store.exhaustivity = .off
 
-    await store.send(.async(.fetchSchedule)) {
-      $0.viewState = .loading
-    }
+    await store.send(.async(.fetchSchedule))
     await store.finish()
     await store.skipReceivedActions(strict: false)
 
