@@ -105,12 +105,14 @@ struct ManagementAttendanceCheckReducerTests {
     await store.send(.view(.swipeNext)) {
       $0.selectPart = .web1
       $0.selectTeamID = 2
+      $0.pageIndex = 2
     }
     await store.receive(\.async)
 
     await store.send(.view(.swipePrevious)) {
       $0.selectPart = .ios1
       $0.selectTeamID = 1
+      $0.pageIndex = 1
     }
     await store.receive(\.async)
   }
@@ -266,6 +268,7 @@ struct ManagementAttendanceCheckReducerTests {
 
     await store.receive(\.async)
     await store.receive(\.inner) {
+      $0.viewState = .loaded
       $0.attendanceModel = ManagementSupportFixture.attendances
       $0.attendanceByTeam[1] = ManagementSupportFixture.attendances
     }
