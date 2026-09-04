@@ -40,6 +40,7 @@ struct MemberMainReducerCoverageTests {
     #expect(store.state.startDate == "2026.9.2")
     #expect(store.state.endDate == "2026.11.30")
     #expect(store.state.isVoteMenuAvailable)
+    #expect(store.state.viewState == .loaded)
   }
 
   @Test("이미 onAppear 를 처리했다면 두 번째 onAppear 는 아무 효과도 만들지 않는다")
@@ -50,6 +51,18 @@ struct MemberMainReducerCoverageTests {
     let store = makeStore(state: state)
 
     await store.send(.view(.onAppear))
+  }
+
+  @Test("onDisappear 는 다음 진입에서 데이터를 다시 불러올 수 있게 한다")
+  func onDisappear_노출상태초기화() async {
+    var state = MemberMain.State()
+    state.didAppear = true
+
+    let store = makeStore(state: state)
+
+    await store.send(.view(.onDisappear)) {
+      $0.didAppear = false
+    }
   }
 
   @Test("결석 경고 아이콘이 없으면 결석 버튼을 눌러도 알럿이 열리지 않는다")
@@ -161,6 +174,7 @@ struct MemberMainReducerCoverageTests {
 
     await store.send(.inner(.onFetchUserResponse(.failure(.profileNotFound)))) {
       $0.member = nil
+      $0.attendanceViewState = .loaded
     }
     await store.send(.inner(.onFetchUserResponse(.success(MemberTestFixture.profile)))) {
       $0.member = MemberTestFixture.profile
@@ -174,6 +188,7 @@ struct MemberMainReducerCoverageTests {
     await store.send(
       .inner(.onFetchAttendanceSummaryResponse(.success(MemberTestFixture.cleanAttendanceSummary)))
     ) {
+      $0.attendanceViewState = .loaded
       $0.presentCount = 10
       $0.lateCount = 0
       $0.absentCount = 0
@@ -185,7 +200,9 @@ struct MemberMainReducerCoverageTests {
   func onFetchAttendanceSummaryResponse_실패_상태유지() async {
     let store = makeStore()
 
-    await store.send(.inner(.onFetchAttendanceSummaryResponse(.failure(.unknown))))
+    await store.send(.inner(.onFetchAttendanceSummaryResponse(.failure(.unknown)))) {
+      $0.attendanceViewState = .loaded
+    }
     #expect(store.state.presentCount == .zero)
   }
 
@@ -233,24 +250,35 @@ struct MemberMainReducerCoverageTests {
     }
   }
 
-  @Test("onResume 은 프로필·일정·투표 조회를 순차적으로 다시 수행한다")
-  func onResume_재조회수행() async {
-    let store = makeStore(
-      dependencies: {
-        $0.stubMemberUseCases(
-          vote: StubVoteUseCase(activeVote: .success(MemberTestFixture.activeVote))
-        )
-      }
-    )
-    store.exhaustivity = .off
+  @Test("onResume 은 기존 화면을 유지한 채 출석 현황만 다시 조회한다")
+  func onResume_출석현황만재조회() async {
+    var state = MemberMain.State()
+    state.viewState = .loaded
+    state.attendanceViewState = .loaded
+    state.member = MemberTestFixture.profile
+    state.schedules = .init(uniqueElements: MemberTestFixture.schedules)
 
-    await store.send(.inner(.onResume))
-    await store.finish()
-    await store.skipReceivedActions(strict: false)
+    let store = makeStore(state: state)
+
+    await store.send(.inner(.onResume)) {
+      $0.attendanceViewState = .loading
+    }
+    await store.receive(\.async)
+    await store.receive(\.inner) {
+      $0.attendanceViewState = .loaded
+      $0.presentCount = 8
+      $0.lateCount = 1
+      $0.absentCount = 2
+      $0.showAttendanceWarningIcon = true
+    }
 
     #expect(store.state.member == MemberTestFixture.profile)
-    #expect(store.state.isVoteMenuAvailable)
     #expect(store.state.schedules.count == 3)
+    #expect(store.state.viewState == .loaded)
+    #expect(store.state.attendanceViewState == .loaded)
+    #expect(store.state.presentCount == 8)
+    #expect(store.state.lateCount == 1)
+    #expect(store.state.absentCount == 2)
   }
 
   // MARK: - Async 실패 경로
@@ -276,6 +304,35 @@ struct MemberMainReducerCoverageTests {
     #expect(store.state.member == nil)
     #expect(store.state.schedules.isEmpty)
     #expect(!store.state.isVoteMenuAvailable)
+    #expect(store.state.viewState == .loaded)
+    #expect(store.state.attendanceViewState == .loaded)
+  }
+
+  @Test("멤버 홈은 프로필·출석·일정·투표 조회가 모두 끝날 때까지 로딩을 유지한다")
+  func loading_모든필수조회완료후종료() async {
+    var state = MemberMain.State()
+    state.pendingLoadingResources = [.profileAndAttendance, .schedule, .activeVote]
+
+    let store = makeStore(state: state)
+
+    await store.send(.inner(.onFetchSchedulesResponse(.success([])))) {
+      $0.pendingLoadingResources.remove(.schedule)
+    }
+    await store.send(.inner(.onFetchActiveVoteResponse(.success(MemberTestFixture.activeVote)))) {
+      $0.pendingLoadingResources.remove(.activeVote)
+      $0.isVoteMenuAvailable = true
+    }
+    await store.send(
+      .inner(.onFetchAttendanceSummaryResponse(.success(MemberTestFixture.attendanceSummary)))
+    ) {
+      $0.pendingLoadingResources.remove(.profileAndAttendance)
+      $0.viewState = .loaded
+      $0.attendanceViewState = .loaded
+      $0.presentCount = 8
+      $0.lateCount = 1
+      $0.absentCount = 2
+      $0.showAttendanceWarningIcon = true
+    }
   }
 
   // MARK: - Delegate 액션

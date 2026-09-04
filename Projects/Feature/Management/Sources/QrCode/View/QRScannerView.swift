@@ -13,18 +13,10 @@ import ComposableArchitecture
 import AttendanceDomainInterface
 
 struct QRScannerView: View {
-  var onClose: (() -> Void)?
-  var backAction: () -> Void = {}
   @Bindable var store: StoreOf<QRCode>
   
-  init(
-    store: StoreOf<QRCode>,
-    onClose: ( () -> Void)? = nil,
-    backAction: @escaping () -> Void
-  ) {
+  init(store: StoreOf<QRCode>) {
     self.store = store
-    self.onClose = onClose
-    self.backAction = backAction
   }
   
   var body: some View {
@@ -57,7 +49,7 @@ struct QRScannerView: View {
         _Concurrency.Task {
           try? await _Concurrency.Task.sleep(for: .seconds(0.8)) // 1초 → 0.8초로 반응성 개선
           await MainActor.run {
-            backAction()
+            store.send(.delegate(.presentBack))
           }
         }
       default:
@@ -74,7 +66,7 @@ extension QRScannerView {
     VStack {
       HStack {
         Button {
-          backAction()
+          store.send(.delegate(.presentBack))
         } label: {
           Image(asset: .closeGray)
             .resizable()

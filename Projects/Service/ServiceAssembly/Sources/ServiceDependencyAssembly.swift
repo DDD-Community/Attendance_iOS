@@ -5,7 +5,9 @@
 
 import DDDAuthInterface
 import DDDNetworkInterface
+import DDDStorageInterface
 import Dependencies
+import CoreAssembly
 
 public enum ServiceDependencyAssembly {
   public static func register(into values: inout DependencyValues) {
@@ -15,6 +17,7 @@ public enum ServiceDependencyAssembly {
 
 public extension DependencyValues {
   mutating func registerLiveServices() {
+    StorageAssembly.register(into: &self)
     networkClient = NetworkContainer.authenticatedClient
     authService = NetworkContainer.authService
   }

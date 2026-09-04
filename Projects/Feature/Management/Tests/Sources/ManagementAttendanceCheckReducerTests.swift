@@ -105,12 +105,14 @@ struct ManagementAttendanceCheckReducerTests {
     await store.send(.view(.swipeNext)) {
       $0.selectPart = .web1
       $0.selectTeamID = 2
+      $0.pageIndex = 2
     }
     await store.receive(\.async)
 
     await store.send(.view(.swipePrevious)) {
       $0.selectPart = .ios1
       $0.selectTeamID = 1
+      $0.pageIndex = 1
     }
     await store.receive(\.async)
   }
@@ -134,7 +136,7 @@ struct ManagementAttendanceCheckReducerTests {
     await store.finish()
     await store.skipReceivedActions(strict: false)
 
-    #expect(store.state.loading == false)
+    #expect(store.state.viewState == .loaded)
     #expect(store.state.selectScheduleID == 1)
     #expect(store.state.attendanceTeam.count == 2)
     #expect(store.state.attendanceStatus.count == ManagementSupportFixture.statuses.count)
@@ -183,13 +185,11 @@ struct ManagementAttendanceCheckReducerTests {
     }
     store.exhaustivity = .off
 
-    await store.send(.async(.fetchSchedule)) {
-      $0.loading = true
-    }
+    await store.send(.async(.fetchSchedule))
     await store.finish()
     await store.skipReceivedActions(strict: false)
 
-    #expect(store.state.loading == false)
+    #expect(store.state.viewState == .loaded)
     #expect(store.state.selectScheduleID == 1)
   }
 
@@ -198,14 +198,14 @@ struct ManagementAttendanceCheckReducerTests {
   @Test("스케줄 조회 실패는 로딩만 내린다")
   func fetchScheduleFailureStopsLoading() async {
     var state = AttendanceCheck.State()
-    state.loading = true
+    state.viewState = .loading
 
     let store = TestStore(initialState: state) {
       AttendanceCheck()
     }
 
     await store.send(.inner(.fetchScheduleResponse(.failure(.loadFailed)))) {
-      $0.loading = false
+      $0.viewState = .loaded
     }
   }
 
@@ -268,6 +268,7 @@ struct ManagementAttendanceCheckReducerTests {
 
     await store.receive(\.async)
     await store.receive(\.inner) {
+      $0.viewState = .loaded
       $0.attendanceModel = ManagementSupportFixture.attendances
       $0.attendanceByTeam[1] = ManagementSupportFixture.attendances
     }
@@ -284,24 +285,33 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("출석 목록 응답은 첫 행의 팀 정보로 선택 파트를 맞춘다")
   func attendanceResponseSyncsSelectedPart() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
+    var state = AttendanceCheck.State()
+    state.viewState = .refreshingAttendanceList
+
+    let store = TestStore(initialState: state) {
       AttendanceCheck()
     }
 
     await store.send(.inner(.attendanceResponse(teamId: 1, .success(ManagementSupportFixture.attendances)))) {
+      $0.viewState = .loaded
       $0.attendanceModel = ManagementSupportFixture.attendances
       $0.attendanceByTeam[1] = ManagementSupportFixture.attendances
       $0.selectPart = .ios1
     }
   }
 
-  @Test("출석 목록 실패는 상태를 건드리지 않는다")
-  func attendanceResponseFailureKeepsState() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
+  @Test("출석 목록 재조회가 실패해도 로딩을 끝낸다")
+  func attendanceResponseFailureStopsLoading() async {
+    var state = AttendanceCheck.State()
+    state.viewState = .refreshingAttendanceList
+
+    let store = TestStore(initialState: state) {
       AttendanceCheck()
     }
 
-    await store.send(.inner(.attendanceResponse(teamId: 1, .failure(.loadFailed))))
+    await store.send(.inner(.attendanceResponse(teamId: 1, .failure(.loadFailed)))) {
+      $0.viewState = .loaded
+    }
   }
 
   @Test("출석 상태 조회 실패는 상태를 건드리지 않는다")
@@ -315,13 +325,17 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("출석 수정 성공은 통계와 목록을 다시 부른다")
   func editAttendanceSuccessRefetches() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
+    var state = AttendanceCheck.State()
+    state.viewState = .loaded
+
+    let store = TestStore(initialState: state) {
       AttendanceCheck()
     }
     store.exhaustivity = .off
 
     await store.send(.inner(.editAttendanceResponse(.success(ManagementSupportFixture.editAttendance)))) {
       $0.editAttendance = ManagementSupportFixture.editAttendance
+      $0.viewState = .refreshingAttendanceList
     }
     await store.finish()
   }

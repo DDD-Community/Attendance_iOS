@@ -1,4 +1,3 @@
-import ProfileDomainInterface
 //
 //  MockAuthRepository.swift
 //  DomainInterface
@@ -6,6 +5,7 @@ import ProfileDomainInterface
 //  Created by DDD on 2026-04-16
 //
 
+import ProfileDomainInterface
 import Foundation
 
 public final class MockAuthRepository: AuthInterface, @unchecked Sendable {

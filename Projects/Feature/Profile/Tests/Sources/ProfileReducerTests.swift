@@ -55,7 +55,7 @@ struct ProfileReducerTests {
   @Test("fetchUserResponse 성공은 로딩을 끄고 프로필을 저장한다")
   func fetchUserSuccessStoresProfileAndStopsLoading() async {
     var state = ProfileReducer.State()
-    state.isLoading = true
+    state.viewState = .loading
     let profile = Self.memberProfile
 
     let store = TestStore(initialState: state) {
@@ -63,7 +63,7 @@ struct ProfileReducerTests {
     }
 
     await store.send(.inner(.fetchUserResponse(.success(profile)))) {
-      $0.isLoading = false
+      $0.viewState = .loaded
       $0.profileModel = profile
     }
   }

@@ -1,3 +1,10 @@
+//
+//  AttendanceRepositoryRegistration.swift
+//  AttendanceDomain
+//
+//  Created by DDD on 9/4/26.
+//
+
 import AttendanceDomainInterface
 import Dependencies
 

@@ -1,5 +1,5 @@
 //
-//  SignUpNameView.swift
+//   OnBoardingNameView.swift
 //  Presentation
 //
 //  Created by DDD on 11/3/24.
@@ -14,17 +14,12 @@ import SwiftUIX
 import ComposableArchitecture
 
 
-@ViewAction(for: OnBoardingName.self)
+@ViewAction(for: OnBoardingNameFeature.self)
 public struct  OnBoardingNameView: View {
-  @Bindable public var store: StoreOf<OnBoardingName>
-  var backAction: () -> Void = {}
-  
-  public init(
-    store: StoreOf<OnBoardingName>,
-    backAction: @escaping () -> Void
-  ) {
+  @Bindable public var store: StoreOf<OnBoardingNameFeature>
+
+  public init(store: StoreOf<OnBoardingNameFeature>) {
     self.store = store
-    self.backAction = backAction
   }
   
   
@@ -39,7 +34,9 @@ public struct  OnBoardingNameView: View {
           Spacer()
             .frame(height: 12)
           
-          StepNavigationBar(activeStep: 1, buttonAction: backAction)
+          StepNavigationBar(activeStep: 1) {
+            store.send(.delegate(.presentBack))
+          }
           
           ScrollView {
             signUpNameText()

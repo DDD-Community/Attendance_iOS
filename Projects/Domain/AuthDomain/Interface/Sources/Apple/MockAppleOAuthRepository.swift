@@ -1,11 +1,11 @@
-import ProfileDomainInterface
 //
-//  MockAppleOAuthRepositoryImpl.swift
+//  MockAppleOAuthRepository.swift
 //  DomainInterface
 //
 //  Created by DDD on 12/29/25.
 //
 
+import ProfileDomainInterface
 import Foundation
 import AuthenticationServices
 

@@ -57,7 +57,7 @@ enum ProfileViewRenderer {
   ) -> StoreOf<ProfileReducer> {
     var state = ProfileReducer.State()
     state.profileModel = profile
-    state.isLoading = isLoading
+    state.viewState = isLoading ? .loading : .loaded
     return makeStore(state: state)
   }
 }

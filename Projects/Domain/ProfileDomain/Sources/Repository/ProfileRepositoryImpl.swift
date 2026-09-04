@@ -17,7 +17,7 @@ import ProfileDomainInterface
 import APIEndpoint
 
 public final class ProfileRepositoryImpl: ProfileInterface, @unchecked Sendable {
-  @Shared(.appStorage("staffRole")) var staffRole: Staff?
+  @Shared(.staffRole) var staffRole
   @Dependency(\.profileLocalDataSource) private var localDataSource
 
   @Dependency(\.networkClient) private var client

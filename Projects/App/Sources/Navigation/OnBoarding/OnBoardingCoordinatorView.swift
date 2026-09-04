@@ -24,33 +24,23 @@ public struct OnBoardingCoordinatorView: View {
     TCAFlowRouter(store.scope(state: \.routes, action: \.router)) { screen in
       switch screen.case {
         case .InviteCode(let InviteCodeStore):
-          InviteCodeView(store: InviteCodeStore) {
-            store.send(.navigation(.backToRoot))
-          }
+          InviteCodeView(store: InviteCodeStore)
           .navigationBarBackButtonHidden()
 
         case .onBoardingName(let onBoardingNameStore):
-           OnBoardingNameView(store: onBoardingNameStore) {
-            store.send(.view(.backAction))
-          }
+           OnBoardingNameView(store: onBoardingNameStore)
           .navigationBarBackButtonHidden()
 
         case .selectPart(let selectPartStore):
-          SelectPartView(store: selectPartStore) {
-            store.send(.view(.backAction))
-          }
+          SelectPartView(store: selectPartStore)
           .navigationBarBackButtonHidden()
 
         case .selectManaging(let selectManagingStore):
-          SelectManagingView(store: selectManagingStore) {
-            store.send(.view(.backAction))
-          }
+          SelectManagingView(store: selectManagingStore)
           .navigationBarBackButtonHidden()
 
         case .selectTeam(let signUpSelectTeamStore):
-          SelectTeamView(store: signUpSelectTeamStore) {
-            store.send(.view(.backAction))
-          }
+          SelectTeamView(store: signUpSelectTeamStore)
           .navigationBarBackButtonHidden()
       }
     }

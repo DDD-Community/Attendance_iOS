@@ -1,4 +1,3 @@
-import ProfileDomainInterface
 //
 //  EditAttendanceInput.swift
 //  Entity
@@ -6,6 +5,7 @@ import ProfileDomainInterface
 //  Created by DDD on 1/13/26.
 //
 
+import ProfileDomainInterface
 import Foundation
 
 public struct EditAttendanceInput {

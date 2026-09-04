@@ -1,5 +1,5 @@
 //
-//  DomainInterfaceContractTests.swift
+//  AuthInterfaceContractTests.swift
 //  DomainInterfaceTests
 //
 //  Created by DDD on 9/2/26.

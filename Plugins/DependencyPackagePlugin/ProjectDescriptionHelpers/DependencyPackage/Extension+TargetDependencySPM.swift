@@ -12,6 +12,8 @@ public extension TargetDependency.SPM {
 
   static let composableArchitecture = TargetDependency.external(name: "ComposableArchitecture", condition: .none)
   static let dependencies = TargetDependency.external(name: "Dependencies", condition: .none)
+  static let sharing = TargetDependency.external(name: "Sharing", condition: .none)
+  static let sqliteData = TargetDependency.external(name: "SQLiteData", condition: .none)
   static let tcaFlow = TargetDependency.external(name: "TCAFlow", condition: .none)
   static let concurrencyExtras = TargetDependency.external(name: "ConcurrencyExtras", condition: .none)
   static let sdwebImage = TargetDependency.external(name: "SDWebImageSwiftUI", condition: .none)

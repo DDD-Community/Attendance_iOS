@@ -1,5 +1,3 @@
-import OnBoardingDomainInterface
-import ProfileDomainInterface
 //
 //  MockAttendanceRepository.swift
 //  DomainInterface
@@ -7,6 +5,8 @@ import ProfileDomainInterface
 //  Created by DDD on 2026-04-16
 //
 
+import OnBoardingDomainInterface
+import ProfileDomainInterface
 import Foundation
 
 public actor MockAttendanceRepository: AttendanceInterface {

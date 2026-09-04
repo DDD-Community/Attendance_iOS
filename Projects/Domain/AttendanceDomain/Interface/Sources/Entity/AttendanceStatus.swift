@@ -1,4 +1,3 @@
-import ProfileDomainInterface
 //
 //  AttendanceStatus.swift
 //  Entity
@@ -6,6 +5,7 @@ import ProfileDomainInterface
 //  Created by DDD on 1/11/26.
 //
 
+import ProfileDomainInterface
 import Foundation
 
 public enum AttendanceStatus: String, CaseIterable, Equatable, Identifiable {

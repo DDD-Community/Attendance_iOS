@@ -73,8 +73,7 @@ public struct QRCode {
 
   //MARK: - DelegateAction
   public enum DelegateAction: Equatable {
-
-
+    case presentBack
   }
 
   private struct QRCodeCancel: Hashable {}
@@ -146,10 +145,13 @@ extension QRCode {
   }
 
   private func handleDelegateAction(
-    state: inout State,
+    state _: inout State,
     action: DelegateAction
   ) -> Effect<Action> {
-
+    switch action {
+    case .presentBack:
+      return .none
+    }
   }
 
   private func handleInnerAction(

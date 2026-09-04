@@ -27,7 +27,7 @@ public struct Login {
     var appleLoginFullName: ASAuthorizationAppleIDCredential? = nil
 
     @Shared var userSession: UserSession
-    @Shared(.appStorage("staffRole")) var staffRole: Staff?
+    @Shared(.staffRole) var staffRole
     @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
     var loginEntity: LoginEntity?
     var currentSocialType: SocialType?
@@ -36,7 +36,7 @@ public struct Login {
     public init(
       userSession: UserSession = .empty
     ) {
-      self._userSession = Shared(wrappedValue: userSession, .inMemory("UserSession"))
+      self._userSession = Shared(wrappedValue: userSession, .userSession)
     }
 
   }

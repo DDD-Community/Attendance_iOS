@@ -1,4 +1,3 @@
-import AttendanceDomainInterface
 //
 //  MockQRCodeRepository.swift
 //  Repository
@@ -6,6 +5,7 @@ import AttendanceDomainInterface
 //  Created by DDD on 7/23/25.
 //
 
+import AttendanceDomainInterface
 import SwiftUI
 
 

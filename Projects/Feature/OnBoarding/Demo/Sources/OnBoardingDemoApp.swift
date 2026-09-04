@@ -24,10 +24,9 @@ struct OnBoardingDemoApp: App {
   var body: some Scene {
     WindowGroup {
       SelectTeamView(
-        store: Store(initialState: SelectTeam.State()) {
-          SelectTeam()
-        },
-        backAction: {}
+        store: Store(initialState: SelectTeamFeature.State()) {
+          SelectTeamFeature()
+        }
       )
     }
   }

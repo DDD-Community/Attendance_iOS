@@ -7,21 +7,21 @@
 
 import Foundation
 import ProfileDomainInterface
-import SwiftData
+import SQLiteData
 
-
-@Model
-final class ProfileCacheEntity {
-  @Attribute(.unique) var cacheKey: String
-  var cachedAt: Date
-
-  var userID: Int
-  var name: String
-  var generation: String
-  var teamRawValue: String?
-  var jobRoleRawValue: String
-  var roleRawValue: String
-  var managerRolesRawValues: [String]?
+@Table("profileCache")
+struct ProfileCacheRecord: Equatable, Sendable {
+  @Column(primaryKey: true)
+  let cacheKey: String
+  @Column(as: Date.UnixTimeRepresentation.self)
+  let cachedAt: Date
+  let userID: Int
+  let name: String
+  let generation: String
+  let teamRawValue: String?
+  let jobRoleRawValue: String
+  let roleRawValue: String
+  let managerRolesData: Data?
 
   init(
     cacheKey: String,
@@ -32,7 +32,7 @@ final class ProfileCacheEntity {
     teamRawValue: String?,
     jobRoleRawValue: String,
     roleRawValue: String,
-    managerRolesRawValues: [String]?
+    managerRolesData: Data?
   ) {
     self.cacheKey = cacheKey
     self.cachedAt = cachedAt
@@ -42,7 +42,7 @@ final class ProfileCacheEntity {
     self.teamRawValue = teamRawValue
     self.jobRoleRawValue = jobRoleRawValue
     self.roleRawValue = roleRawValue
-    self.managerRolesRawValues = managerRolesRawValues
+    self.managerRolesData = managerRolesData
   }
 
   // 만료: 당일
@@ -51,30 +51,35 @@ final class ProfileCacheEntity {
   }
 
   func toDomain() -> ProfileEntity {
-    ProfileEntity(
+    let managerRoles = managerRolesData.flatMap {
+      try? JSONDecoder().decode([String].self, from: $0)
+    }
+    return ProfileEntity(
       userID: userID,
       name: name,
       generation: generation,
       team: teamRawValue.flatMap { SelectTeams(rawValue: $0) },
       jobRole: SelectParts(rawValue: jobRoleRawValue) ?? .all,
       role: Staff(rawValue: roleRawValue) ?? .member,
-      manger: managerRolesRawValues?.compactMap { StaffManaging(rawValue: $0) }
+      manger: managerRoles?.compactMap { StaffManaging(rawValue: $0) }
     )
   }
 }
 
 extension ProfileEntity {
-  func toCacheModel(cacheKey: String) -> ProfileCacheEntity {
-    ProfileCacheEntity(
+  func toCacheRecord(cacheKey: String, cachedAt: Date = Date()) throws -> ProfileCacheRecord {
+    ProfileCacheRecord(
       cacheKey: cacheKey,
-      cachedAt: Date(),
+      cachedAt: cachedAt,
       userID: userID,
       name: name,
       generation: generation,
       teamRawValue: team?.rawValue,
       jobRoleRawValue: jobRole.rawValue,
       roleRawValue: role.rawValue,
-      managerRolesRawValues: manger?.map { $0.rawValue }
+      managerRolesData: try manger.map { roles in
+        try JSONEncoder().encode(roles.map(\.rawValue))
+      }
     )
   }
 }

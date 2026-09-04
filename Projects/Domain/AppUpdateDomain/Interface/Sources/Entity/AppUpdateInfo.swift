@@ -5,8 +5,6 @@
 //  Created by DDD on 3/9/26.
 //
 
-
-
 import Foundation
 
 public struct AppUpdateInfo: Codable, Equatable, Sendable {

@@ -6,18 +6,18 @@
 //
 
 import Foundation
-import SwiftData
+import SQLiteData
 
-
-@Model
-final class ScheduleCacheEntity {
-  @Attribute(.unique) var id: Int
-  var cachedAt: Date
-  var name: String
-  var scheduleDescription: String
-  var month: Int
-  var day: Int
-  var year: Int
+@Table("scheduleCache")
+struct ScheduleCacheRecord: Equatable, Sendable {
+  let id: Int
+  @Column(as: Date.UnixTimeRepresentation.self)
+  let cachedAt: Date
+  let name: String
+  let scheduleDescription: String
+  let month: Int
+  let day: Int
+  let year: Int
 
   init(
     id: Int,
@@ -55,8 +55,8 @@ final class ScheduleCacheEntity {
 }
 
 extension Schedule {
-  func toCacheModel(cachedAt: Date = Date()) -> ScheduleCacheEntity {
-    ScheduleCacheEntity(
+  func toCacheRecord(cachedAt: Date = Date()) -> ScheduleCacheRecord {
+    ScheduleCacheRecord(
       id: id,
       cachedAt: cachedAt,
       name: name,

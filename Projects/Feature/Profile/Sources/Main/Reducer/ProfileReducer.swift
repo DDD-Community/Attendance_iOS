@@ -8,13 +8,13 @@
 import DDDCoreLogger
 import Foundation
 
-import DDDSharedUI
 import AuthDomainInterface
+import DDDSharedUI
 import ProfileDomainInterface
 
 import ComposableArchitecture
-import ProfileInterface
 import DDDDesignKit
+import ProfileInterface
 
 @Reducer
 public struct ProfileReducer: Sendable {
@@ -22,7 +22,12 @@ public struct ProfileReducer: Sendable {
 
   @ObservableState
   public struct State: Equatable {
-    var isLoading: Bool = false
+    /// 이 화면이 지금 무엇을 그려야 하는지.
+    public enum ViewState: Equatable {
+      case loading
+      case loaded
+    }
+
     var managerProfileName: String = "의 프로필"
     var managerProfileRoleType: String = "직군"
     var memberSelectTeam: String = "소속 팀"
@@ -53,11 +58,15 @@ public struct ProfileReducer: Sendable {
       )
     }
 
+    /// 다른 화면과 달리 `.loaded` 로 시작한다.
+    /// 캐시 히트와 세션 폴백은 스켈레톤 없이 바로 그리는 게 목적이라, `.loading` 을 기본값으로 두면 그 경로가 무너진다.
+    var viewState: ViewState = .loaded
+
     var deleteUser: WithdrawEntity?
     var authExit: AuthExitEntity?
     var appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
 
-    @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+    @Shared(.userSession) var userSession
     @Presents var destination: Destination.State?
     @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
 
@@ -219,6 +228,10 @@ extension ProfileReducer {
   ) -> Effect<Action> {
     switch action {
     case .fetchUser:
+      guard !state.editGeneration else {
+        return .cancel(id: CancelID.fetchProfile)
+      }
+
       return .run { send in
         do {
           // 캐시 hit → 즉시 표시 (로딩 X), 그 후 강제 refresh로 화면 자동 갱신
@@ -277,11 +290,16 @@ extension ProfileReducer {
   ) -> Effect<Action> {
     switch action {
     case let .setLoading(value):
-      state.isLoading = value
+      guard value else {
+        state.viewState = .loaded
+        return .none
+      }
+      // 세션 폴백으로라도 보여줄 프로필이 있으면 스켈레톤으로 되돌리지 않는다.
+      state.viewState = state.profileModel == nil ? .loading : .loaded
       return .none
 
     case let .fetchUserResponse(result):
-      state.isLoading = false
+      state.viewState = .loaded
       switch result {
       case let .success(profileDTOData):
         state.profileModel = profileDTOData
@@ -341,6 +359,9 @@ extension ProfileReducer {
     action: DelegateAction
   ) -> Effect<Action> {
     switch action {
+    case .presentBack:
+      return .none
+
     case .presentLogOut:
       return .none
 
@@ -352,7 +373,7 @@ extension ProfileReducer {
 
     case .presentEditGeneration:
       state.$editGeneration.withLock { $0 = true }
-      return .none
+      return .cancel(id: CancelID.fetchProfile)
 
     case .presentAppPeedBackWeb:
       return .none
@@ -398,6 +419,10 @@ extension ProfileReducer {
     action: PresentationAction<Destination.Action>
   ) -> Effect<Action> {
     switch action {
+    case .presented(.createApp(.delegate(.presentBack))):
+      state.destination = nil
+      return .none
+
     case .presented(.createApp(.delegate(.presentWeb))):
       state.destination = nil
       return .run { send in

@@ -4,7 +4,7 @@
 //
 //  Created by DDD on 2026-09-03.
 //
-//  Schedule / ScheduleModal 화면과 컴포넌트의 body 를 실제로 평가한다.
+//  Schedule / ScheduleModalFeature 화면과 컴포넌트의 body 를 실제로 평가한다.
 //  ScheduleView 는 loading 값으로 스켈레톤과 목록 두 갈래를 갖는다.
 //
 
@@ -31,14 +31,14 @@ struct ManagementScheduleViewRenderTests {
   }
 
   private func makeModalStore(
-    state: ScheduleModal.State
-  ) -> StoreOf<ScheduleModal> {
+    state: ScheduleModalFeature.State
+  ) -> StoreOf<ScheduleModalFeature> {
     var stub = ManagementScheduleUseCaseStub()
     stub.cached = ManagementScheduleFixture.all
     stub.schedules = ManagementScheduleFixture.all
 
     return Store(initialState: state) {
-      ScheduleModal()
+      ScheduleModalFeature()
     } withDependencies: {
       $0.scheduleUseCase = stub
       $0.continuousClock = ImmediateClock()
@@ -51,7 +51,7 @@ struct ManagementScheduleViewRenderTests {
   @Test("로딩 중 ScheduleView 는 스켈레톤 경로를 렌더링한다")
   func rendersScheduleViewLoading() {
     var state = ScheduleReducer.State()
-    state.loading = true
+    state.viewState = .loading
 
     ManagementViewRenderer.render(ScheduleView(store: makeScheduleStore(state: state)))
   }
@@ -61,6 +61,7 @@ struct ManagementScheduleViewRenderTests {
   func rendersScheduleViewWithItems() {
     var state = ScheduleReducer.State()
     state.hasFetchedSchedule = true
+    state.viewState = .loaded
     state.scheduleModel = .init(uniqueElements: ManagementScheduleFixture.all)
 
     ManagementViewRenderer.render(ScheduleView(store: makeScheduleStore(state: state)))
@@ -71,6 +72,7 @@ struct ManagementScheduleViewRenderTests {
   func rendersScheduleViewEmpty() {
     var state = ScheduleReducer.State()
     state.hasFetchedSchedule = true
+    state.viewState = .loaded
 
     ManagementViewRenderer.render(ScheduleView(store: makeScheduleStore(state: state)))
   }
@@ -103,8 +105,8 @@ struct ManagementScheduleViewRenderTests {
   /// 로딩 분기: ScheduleModalSkeletonView 로 대체되는 경로.
   @Test("로딩 중 ScheduleModalView 는 스켈레톤 경로를 렌더링한다")
   func rendersScheduleModalLoading() {
-    var state = ScheduleModal.State()
-    state.loading = true
+    var state = ScheduleModalFeature.State()
+    state.viewState = .loading
 
     ManagementViewRenderer.render(ScheduleModalView(store: makeModalStore(state: state)))
   }
@@ -112,7 +114,8 @@ struct ManagementScheduleViewRenderTests {
   /// 목록 + 선택 상태: 선택 테두리 분기까지 태운다.
   @Test("선택된 일정이 있는 ScheduleModalView 를 렌더링한다")
   func rendersScheduleModalWithSelection() {
-    var state = ScheduleModal.State()
+    var state = ScheduleModalFeature.State()
+    state.viewState = .loaded
     state.scheduleModel = .init(uniqueElements: ManagementScheduleFixture.all)
     state.selectedSchedule = ManagementScheduleFixture.midterm
     state.enableButton = true
@@ -123,7 +126,8 @@ struct ManagementScheduleViewRenderTests {
   /// 선택이 없어 확인 버튼이 비활성인 경계값.
   @Test("선택이 없는 ScheduleModalView 를 렌더링한다")
   func rendersScheduleModalWithoutSelection() {
-    var state = ScheduleModal.State()
+    var state = ScheduleModalFeature.State()
+    state.viewState = .loaded
     state.scheduleModel = .init(uniqueElements: ManagementScheduleFixture.all)
 
     ManagementViewRenderer.render(ScheduleModalView(store: makeModalStore(state: state)))

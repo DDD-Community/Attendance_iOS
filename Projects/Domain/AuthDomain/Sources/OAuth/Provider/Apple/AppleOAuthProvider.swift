@@ -14,7 +14,7 @@ import Sharing
 
 public final class AppleOAuthProvider: AppleOAuthProviderInterface, @unchecked Sendable {
   @Dependency(\.appleOAuthRepository) private var appleRepository: AppleOAuthInterface
-  @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+  @Shared(.userSession) var userSession
   public init() {}
 
   public func signInWithCredential(

@@ -41,18 +41,18 @@ struct ProfileReducerRoutingTests {
     }
 
     await store.send(.inner(.setLoading(true))) {
-      $0.isLoading = true
+      $0.viewState = .loading
     }
 
     await store.send(.inner(.setLoading(false))) {
-      $0.isLoading = false
+      $0.viewState = .loaded
     }
   }
 
   @Test("fetchUserResponse 실패는 로딩만 끄고 기존 프로필을 유지한다")
   func fetchUserResponseFailureKeepsExistingProfile() async {
     var initialState = ProfileReducer.State()
-    initialState.isLoading = true
+    initialState.viewState = .loading
     initialState.profileModel = ProfileTestSupport.memberProfile
 
     let store = TestStore(initialState: initialState) {
@@ -60,7 +60,7 @@ struct ProfileReducerRoutingTests {
     }
 
     await store.send(.inner(.fetchUserResponse(.failure(.profileDataCorrupted)))) {
-      $0.isLoading = false
+      $0.viewState = .loaded
     }
 
     #expect(store.state.profileModel == ProfileTestSupport.memberProfile)
@@ -213,8 +213,8 @@ struct ProfileReducerRoutingTests {
       ProfileReducer()
     }
 
-    await store.send(.binding(.set(\.isLoading, true))) {
-      $0.isLoading = true
+    await store.send(.binding(.set(\.managerProfileName, "변경"))) {
+      $0.managerProfileName = "변경"
     }
   }
 
@@ -230,7 +230,7 @@ struct ProfileReducerRoutingTests {
     #expect(state.managerProfileManaging == "담당 업무")
     #expect(state.managerProfileGeneration == "소속 기수")
     #expect(state.logoutText == "로그아웃")
-    #expect(state.isLoading == false)
+    #expect(state.viewState == .loaded)
     #expect(state.profileModel == nil)
     #expect(state.deleteUser == nil)
     #expect(state.authExit == nil)

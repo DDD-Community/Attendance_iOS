@@ -1,5 +1,5 @@
 //
-//  ConfiguratuonEnviroment.swift
+//  ConfigurationEnviroment.swift
 //  DependencyPackagePlugin
 //
 //  Created by DDD on 7/31/25.

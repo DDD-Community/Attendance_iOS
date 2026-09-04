@@ -10,6 +10,7 @@
 //
 
 import ComposableArchitecture
+import Foundation
 import Testing
 import AuthDomainInterface
 import ProfileDomainInterface
@@ -39,7 +40,7 @@ struct ProfileReducerAsyncFlowTests {
     await store.send(.async(.fetchUser))
 
     await store.receive(\.inner.fetchUserResponse) {
-      $0.isLoading = false
+      $0.viewState = .loaded
       $0.profileModel = cached
     }
 
@@ -65,7 +66,7 @@ struct ProfileReducerAsyncFlowTests {
     await store.send(.async(.fetchUser))
 
     await store.receive(\.inner.fetchUserResponse) {
-      $0.isLoading = false
+      $0.viewState = .loaded
       $0.profileModel = cached
     }
 
@@ -91,11 +92,11 @@ struct ProfileReducerAsyncFlowTests {
     await store.send(.async(.fetchUser))
 
     await store.receive(\.inner.setLoading) {
-      $0.isLoading = true
+      $0.viewState = .loading
     }
 
     await store.receive(\.inner.fetchUserResponse) {
-      $0.isLoading = false
+      $0.viewState = .loaded
       $0.profileModel = fetched
     }
   }
@@ -115,14 +116,42 @@ struct ProfileReducerAsyncFlowTests {
     await store.send(.async(.fetchUser))
 
     await store.receive(\.inner.setLoading) {
-      $0.isLoading = true
+      $0.viewState = .loading
     }
 
     await store.receive(\.inner.fetchUserResponse) {
-      $0.isLoading = false
+      $0.viewState = .loaded
     }
 
     #expect(store.state.profileModel == nil)
+  }
+
+  @Test("기수 변경 중에는 기존 프로필을 다시 조회하지 않는다")
+  func fetchUserWhileEditingGenerationIsIgnored() async {
+    let suiteName = "ProfileReducerAsyncFlowTests.\(UUID().uuidString)"
+    let appStorage = UserDefaults(suiteName: suiteName)!
+    defer { appStorage.removePersistentDomain(forName: suiteName) }
+
+    let initialState = withDependencies {
+      $0.defaultAppStorage = appStorage
+    } operation: {
+      var state = ProfileReducer.State()
+      state.$editGeneration.withLock { $0 = true }
+      return state
+    }
+
+    let store = TestStore(initialState: initialState) {
+      ProfileReducer()
+    } withDependencies: {
+      $0.defaultAppStorage = appStorage
+      $0.profileUseCase = StubProfileUseCase(
+        cachedProfile: nil,
+        getProfileResult: .success(ProfileTestSupport.memberProfile)
+      )
+    }
+
+    await store.send(.async(.fetchUser))
+    await store.finish()
   }
 
   // MARK: - deleteUser

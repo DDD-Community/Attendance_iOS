@@ -12,13 +12,13 @@ import Testing
 @testable import Management
 
 @MainActor
-@Suite("ScheduleModal")
+@Suite("ScheduleModalFeature")
 struct ScheduleModalReducerTests {
   @Test("스케줄 선택은 선택값을 저장하고 확인 버튼을 활성화한다")
   func selectScheduleStoresSelectionAndEnablesButton() async {
     let schedule = Self.schedule
-    let store = TestStore(initialState: ScheduleModal.State()) {
-      ScheduleModal()
+    let store = TestStore(initialState: ScheduleModalFeature.State()) {
+      ScheduleModalFeature()
     }
 
     await store.send(.view(.selectSchedule(item: schedule))) {
@@ -29,11 +29,11 @@ struct ScheduleModalReducerTests {
 
   @Test("같은 스케줄을 다시 선택하면 선택을 해제한다")
   func selectingSameScheduleClearsSelection() async {
-    var state = ScheduleModal.State()
+    var state = ScheduleModalFeature.State()
     state.selectedSchedule = Self.schedule
     state.enableButton = true
     let store = TestStore(initialState: state) {
-      ScheduleModal()
+      ScheduleModalFeature()
     }
 
     await store.send(.view(.selectSchedule(item: Self.schedule))) {

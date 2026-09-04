@@ -47,6 +47,7 @@ struct ManagementStaffViewRenderTests {
 
   private func loadedAttendanceState() -> AttendanceCheck.State {
     var state = AttendanceCheck.State()
+    state.viewState = .loaded
     state.scheduleModel = .init(uniqueElements: ManagementSupportFixture.schedules)
     state.selectScheduleID = EntityFixtureSchedule.value.id
     state.attendanceCountModel = ManagementSupportFixture.attendanceCount
@@ -75,8 +76,18 @@ struct ManagementStaffViewRenderTests {
   @Test("출석 탭이 로딩 중이면 StaffView 는 스켈레톤 경로를 탄다")
   func rendersStaffViewAttendanceSkeleton() {
     var state = StaffFeature.State()
-    state.attendanceCheck.loading = true
+    state.attendanceCheck.viewState = .loading
 
+    ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
+  }
+
+  @Test("출석 상태 갱신 중에는 전체 화면이 아닌 출석 카드 목록만 skeleton을 렌더링한다")
+  func rendersStaffViewAttendanceListSkeleton() {
+    var state = StaffFeature.State()
+    state.attendanceCheck = loadedAttendanceState()
+    state.attendanceCheck.viewState = .refreshingAttendanceList
+
+    #expect(state.viewState == .loaded)
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }
 
@@ -84,6 +95,7 @@ struct ManagementStaffViewRenderTests {
   func rendersStaffViewScheduleTab() {
     var state = StaffFeature.State()
     state.selectDropDownItem = .schedule
+    state.schedule.viewState = .loaded
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }
@@ -92,7 +104,7 @@ struct ManagementStaffViewRenderTests {
   func rendersStaffViewScheduleSkeleton() {
     var state = StaffFeature.State()
     state.selectDropDownItem = .schedule
-    state.schedule.loading = true
+    state.schedule.viewState = .loading
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }
@@ -101,6 +113,7 @@ struct ManagementStaffViewRenderTests {
   func rendersStaffViewVoteTab() {
     var state = StaffFeature.State()
     state.selectDropDownItem = .vote
+    state.vote.viewState = .loaded
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }
@@ -109,7 +122,7 @@ struct ManagementStaffViewRenderTests {
   func rendersStaffViewVoteSkeleton() {
     var state = StaffFeature.State()
     state.selectDropDownItem = .vote
-    state.vote.loading = true
+    state.vote.viewState = .loading
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }
@@ -118,6 +131,7 @@ struct ManagementStaffViewRenderTests {
   func rendersStaffViewWithExpandedDropDown() {
     var state = StaffFeature.State()
     state.isExpandedDropDown = true
+    state.attendanceCheck.viewState = .loaded
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }

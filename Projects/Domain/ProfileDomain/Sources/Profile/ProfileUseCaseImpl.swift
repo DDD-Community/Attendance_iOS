@@ -11,8 +11,8 @@ import ComposableArchitecture
 
 public struct ProfileUseCaseImpl: ProfileUseCaseInterface {
   @Dependency(\.profileRepository) var repository
-  @Shared(.appStorage("staffRole")) var staffRole: Staff?
-  @Shared(.inMemory("UserSession")) var userSession: UserSession = .empty
+  @Shared(.staffRole) var staffRole
+  @Shared(.userSession) var userSession
 
   public init() {}
 

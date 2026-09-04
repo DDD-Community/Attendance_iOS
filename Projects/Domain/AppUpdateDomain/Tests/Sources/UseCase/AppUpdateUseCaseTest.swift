@@ -1,3 +1,10 @@
+//
+//  AppUpdateUseCaseTest.swift
+//  AppUpdateDomainTests
+//
+//  Created by DDD on 9/4/26.
+//
+
 import ComposableArchitecture
 import AppUpdateDomainInterface
 import Testing

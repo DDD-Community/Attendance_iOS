@@ -1,3 +1,10 @@
+//
+//  DDDSharedUIViewTests.swift
+//  DDDSharedUITests
+//
+//  Created by DDD on 9/4/26.
+//
+
 import SwiftUI
 import Testing
 import UIKit

@@ -1,3 +1,10 @@
+//
+//  MockQRCodeRepository.swift
+//  QRCodeDomainTests
+//
+//  Created by DDD on 9/4/26.
+//
+
 import SwiftUI
 import AttendanceDomainInterface
 import QRCodeDomainInterface

@@ -23,7 +23,7 @@ public extension Scheme {
         postActions: [
           .executionAction(
             title: "Inspect Build",
-            scriptText: "$HOME/.local/bin/mise x -C $SRCROOT -- tuist inspect build",
+            scriptText: "[ -z \"${SRCROOT:-}\" ] || $HOME/.local/bin/mise x -C \"$(git -C \"$SRCROOT\" rev-parse --show-toplevel)\" -- tuist inspect build",
             target: appTarget
           )
         ],
@@ -35,7 +35,7 @@ public extension Scheme {
         postActions: [
           .executionAction(
             title: "Inspect Test",
-            scriptText: "$HOME/.local/bin/mise x -C $SRCROOT -- tuist inspect test",
+            scriptText: "[ -z \"${SRCROOT:-}\" ] || $HOME/.local/bin/mise x -C \"$(git -C \"$SRCROOT\" rev-parse --show-toplevel)\" -- tuist inspect test",
             target: appTarget
           )
         ]

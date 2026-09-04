@@ -1,3 +1,10 @@
+//
+//  Project.swift
+//  ScheduleDomain
+//
+//  Created by DDD on 9/4/26.
+//
+
 import DependencyPackagePlugin
 import DependencyPlugin
 import ProjectDescription
@@ -10,7 +17,8 @@ let project = Project.makeModule(
   settings: .moduleSettings,
   dependencies: [
     .serviceAssembly,
-    .SPM.dependencies
+    .SPM.dependencies,
+    .SPM.sqliteData
   ],
   hasTests: true,
   hasInterface: true,

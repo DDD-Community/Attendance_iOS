@@ -35,7 +35,7 @@ struct MemberVoteView: View {
   private func content() -> some View {
     switch store.step {
     case .loading:
-      loadingView()
+      MemberVoteSkeletonView()
 
     case .empty:
       messageView(
@@ -62,7 +62,7 @@ struct MemberVoteView: View {
           }
         )
       } else {
-        loadingView()
+        MemberVoteSkeletonView()
       }
 
     case .feedback:
@@ -77,20 +77,12 @@ struct MemberVoteView: View {
           }
         )
       } else {
-        loadingView()
+        MemberVoteSkeletonView()
       }
 
     case .completed:
       completedView
     }
-  }
-
-  @ViewBuilder
-  private func loadingView() -> some View {
-    ProgressView()
-      .progressViewStyle(.circular)
-      .tint(.staticWhite)
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 
   @ViewBuilder

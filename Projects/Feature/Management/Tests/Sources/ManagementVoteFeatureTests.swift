@@ -60,11 +60,11 @@ struct ManagementVoteFeatureTests {
     }
 
     await store.send(.view(.onAppear)) {
-      $0.loading = true
+      $0.hasFetchedVotes = true
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.voteId = 7
       $0.voteStatus = .inProgress
     }
@@ -95,11 +95,11 @@ struct ManagementVoteFeatureTests {
     }
 
     await store.send(.view(.onAppear)) {
-      $0.loading = true
+      $0.hasFetchedVotes = true
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.voteId = 3
       $0.voteStatus = .after
     }
@@ -122,11 +122,11 @@ struct ManagementVoteFeatureTests {
     }
 
     await store.send(.view(.onAppear)) {
-      $0.loading = true
+      $0.hasFetchedVotes = true
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.voteId = 5
     }
   }
@@ -144,11 +144,11 @@ struct ManagementVoteFeatureTests {
     }
 
     await store.send(.view(.onAppear)) {
-      $0.loading = true
+      $0.hasFetchedVotes = true
     }
     await store.receive(\.async.fetchVotes)
     await store.receive(\.inner.votesResponse) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.alert = voteRetryAlert(error: .managerOnly, retry: .fetchVotes)
     }
   }
@@ -295,6 +295,7 @@ struct ManagementVoteFeatureTests {
     }
 
     await store.send(.async(.openVote)) {
+      $0.viewState = .loaded
       $0.alert = voteRetryAlert(error: .noActiveVote, retry: .fetchVotes)
     }
   }
@@ -306,6 +307,7 @@ struct ManagementVoteFeatureTests {
     }
 
     await store.send(.async(.closeVote)) {
+      $0.viewState = .loaded
       $0.alert = voteRetryAlert(error: .noActiveVote, retry: .fetchVotes)
     }
   }
@@ -322,6 +324,7 @@ struct ManagementVoteFeatureTests {
     }
 
     await store.send(.async(.fetchNonResponders)) {
+      $0.viewState = .loaded
       $0.isNonParticipantsPresented = false
       $0.isNonParticipantsLoading = false
       $0.alert = voteRetryAlert(error: .noActiveVote, retry: .fetchVotes)
@@ -389,6 +392,7 @@ struct ManagementVoteFeatureTests {
     }
     await store.receive(\.async.fetchNonResponders)
     await store.receive(\.inner.nonRespondersResponse) {
+      $0.viewState = .loaded
       $0.isNonParticipantsLoading = false
       $0.isNonParticipantsPresented = false
       $0.alert = voteRetryAlert(error: .notFound, retry: .fetchNonResponders)
@@ -428,6 +432,7 @@ struct ManagementVoteFeatureTests {
 
     await store.send(.async(.openVote))
     await store.receive(\.inner.openVoteResponse) {
+      $0.viewState = .loaded
       $0.alert = voteRetryAlert(error: .invalidStatus, retry: .openVote)
     }
   }
@@ -449,6 +454,7 @@ struct ManagementVoteFeatureTests {
 
     await store.send(.async(.closeVote))
     await store.receive(\.inner.closeVoteResponse) {
+      $0.viewState = .loaded
       $0.alert = voteRetryAlert(error: .requestFailed, retry: .closeVote)
     }
   }
@@ -469,6 +475,7 @@ struct ManagementVoteFeatureTests {
 
     await store.send(.async(.fetchParticipation))
     await store.receive(\.inner.participationResponse) {
+      $0.viewState = .loaded
       $0.alert = voteRetryAlert(error: .invalidResponse, retry: .fetchParticipation)
     }
   }
@@ -491,7 +498,9 @@ struct ManagementVoteFeatureTests {
       $0.alert = nil
     }
     await store.receive(\.async.fetchVotes)
-    await store.receive(\.inner.votesResponse)
+    await store.receive(\.inner.votesResponse) {
+      $0.viewState = .loaded
+    }
   }
 
   @Test("알럿 닫기 버튼은 후속 이펙트 없이 알럿만 닫는다")

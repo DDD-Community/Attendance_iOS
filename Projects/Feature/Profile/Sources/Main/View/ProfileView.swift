@@ -1,5 +1,5 @@
 //
-//  ManagerProfileView.swift
+//  ProfileView.swift
 //  DDDAttendance
 //
 //  Created by DDD on 7/17/24.
@@ -14,14 +14,9 @@ import DDDDesignKit
 @ViewAction(for: ProfileReducer.self)
 public struct ProfileView: View {
   @Bindable public var store: StoreOf<ProfileReducer>
-  private var backAction: () -> Void
 
-  public init(
-    store: StoreOf<ProfileReducer>,
-    backAction: @escaping () -> Void
-  ) {
+  public init(store: StoreOf<ProfileReducer>) {
     self.store = store
-    self.backAction = backAction
   }
 
   public var body: some View {
@@ -47,9 +42,7 @@ public struct ProfileView: View {
     }
 
     .sheet(item: $store.scope(state: \.destination?.createApp, action: \.destination.createApp)) { crateAppStore in
-      CreateAppView(store: crateAppStore) {
-        send(.closeModal)
-      }
+      CreateAppView(store: crateAppStore)
       .presentationDetents([.height(UIScreen.screenHeight * 0.65)])
       .presentationCornerRadius(20)
       .presentationDragIndicator(.visible)
@@ -60,14 +53,19 @@ public struct ProfileView: View {
 extension ProfileView {
   @ViewBuilder
   fileprivate func mangerProfileLoadingData() -> some View {
-    // SwiftData와 세션 모두 비어 있는 첫 프레임에 빈 이름("님")이 노출되지 않도록
-    // 표시 가능한 프로필이 생길 때까지 Skeleton을 유지한다.
-    if store.displayedProfile == nil  && store.isLoading {
+    mangerProfileLoadingContent()
+      .animation(.easeInOut(duration: 0.2), value: store.viewState)
+  }
+
+  // 스켈레톤과 본문 사이를 크로스페이드하려면 두 분기를 감싸는 공통 컨테이너가 필요하다.
+  @ViewBuilder
+  fileprivate func mangerProfileLoadingContent() -> some View {
+    if store.viewState == .loading {
       VStack {
         Spacer()
           .frame(height: 12)
 
-        CustomNavigationBar(backAction: backAction, addAction: {
+        CustomNavigationBar(backAction: { store.send(.delegate(.presentBack)) }, addAction: {
           send(.appearModal)
         }, image: .info)
 
@@ -84,7 +82,7 @@ extension ProfileView {
       Spacer()
         .frame(height: 12)
 
-      CustomNavigationBar(backAction: backAction, addAction: {
+      CustomNavigationBar(backAction: { store.send(.delegate(.presentBack)) }, addAction: {
         send(.appearModal)
       }, image: .info)
 

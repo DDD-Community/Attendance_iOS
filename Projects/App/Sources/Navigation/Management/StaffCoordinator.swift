@@ -107,21 +107,16 @@ extension StaffCoordinator {
       )
 
 
-      // MARK: - 로그아웃
+    // MARK: - 로그아웃
     case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
-      state.routes.goBackToRoot()
       return .concatenate(
         .cancel(id: CancelID.allEffects),
         .cancel(id: CancelID.profileEffects),
         .cancel(id: ProfileReducer.CancelID.fetchProfile),
         .cancel(id: ProfileReducer.CancelID.deleteUser),
         .cancel(id: ProfileReducer.CancelID.logoutUser),
-        .run { send in
-          await Task.yield()
-          await send(.navigation(.presentLogin))
-        }
+        .send(.navigation(.presentLogin))
       )
-      .cancellable(id: CancelID.allEffects, cancelInFlight: true)
 
       case .routeAction(id: _, action: .profile(.navigation(.presentRoot))):
         return .concatenate(

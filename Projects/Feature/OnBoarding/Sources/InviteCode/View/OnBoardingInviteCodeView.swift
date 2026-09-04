@@ -13,18 +13,13 @@ import DDDDesignKit
 import ComposableArchitecture
 import SwiftUIX
 
-@ViewAction(for: InviteCodeReducer.self)
+@ViewAction(for: InviteCodeFeature.self)
 public struct InviteCodeView : View {
-  @Bindable public var store: StoreOf<InviteCodeReducer>
-  @FocusState private var focusedField: InviteCodeReducer.FocusField?
-  var backAction: ()  -> Void = {}
-  
-  public init(
-    store: StoreOf<InviteCodeReducer>,
-    backAction: @escaping () -> Void
-  ) {
+  @Bindable public var store: StoreOf<InviteCodeFeature>
+  @FocusState private var focusedField: InviteCodeFeature.FocusField?
+
+  public init(store: StoreOf<InviteCodeFeature>) {
     self.store = store
-    self.backAction = backAction
   }
   
   public var body: some View {
@@ -38,7 +33,9 @@ public struct InviteCodeView : View {
           Spacer()
             .frame(height: 12)
           
-          NavigationBackButton(buttonAction: backAction)
+          NavigationBackButton {
+            store.send(.delegate(.presentBack))
+          }
           
           ScrollView{
             inviteCodeInPutTextView()
@@ -175,7 +172,7 @@ extension InviteCodeView {
   private func inputCodeText(
     text: Binding<String>,
     isErrorCode: Bool,
-    field: InviteCodeReducer.FocusField,
+    field: InviteCodeFeature.FocusField,
     completion: @escaping (Bool) -> Void
   ) -> some View {
     RoundedRectangle(cornerRadius: 16)

@@ -1,5 +1,5 @@
 //
-//  Extension+LoginModel.swift
+//  LoginResponseDTO+.swift
 //  AuthDomain
 //
 //  Created by DDD on 5/9/25.

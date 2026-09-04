@@ -1,4 +1,3 @@
-import AttendanceDomainInterface
 //
 //  QRCodeError.swift
 //  Entity
@@ -6,6 +5,7 @@ import AttendanceDomainInterface
 //  Created by DDD on 5/12/26.
 //
 
+import AttendanceDomainInterface
 import Foundation
 
 public enum QRCodeError: Error, LocalizedError, Equatable {

@@ -10,8 +10,6 @@ import SwiftUI
 import DDDDesignKit
 
 public struct VoteSkeletonView: View {
-  @State private var isAnimating = false
-
   public init() {}
 
   public var body: some View {
@@ -29,21 +27,14 @@ public struct VoteSkeletonView: View {
       .padding(.horizontal, 24)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .onAppear {
-      withAnimation(.easeInOut(duration: 1.2).repeatCount(8, autoreverses: true)) {
-        isAnimating = true
-      }
-    }
   }
 
   private var headerSkeleton: some View {
     VStack(alignment: .leading, spacing: 8) {
-      RoundedRectangle(cornerRadius: 8)
-        .fill(primaryFill)
+      SkeletonView(.round(cornerRadius: DDDSize.radiusMd))
         .frame(width: 120, height: 28)
 
-      RoundedRectangle(cornerRadius: 6)
-        .fill(secondaryFill)
+      SkeletonView(.round(cornerRadius: DDDSize.radiusSm))
         .frame(width: 240, height: 16)
     }
   }
@@ -51,49 +42,37 @@ public struct VoteSkeletonView: View {
   private var cardSkeleton: some View {
     VStack(spacing: 0) {
       row
-      Rectangle().fill(secondaryFill).frame(height: 1)
+      Rectangle()
+        .fill(Color.gray80)
+        .frame(height: 1)
       row
     }
     .padding(.horizontal, 16)
     .padding(.vertical, 4)
     .frame(maxWidth: .infinity)
     .background {
-      RoundedRectangle(cornerRadius: 12).fill(Color.gray90)
+      RoundedRectangle(cornerRadius: DDDSize.radiusLg).fill(Color.gray90)
     }
   }
 
   private var row: some View {
     HStack {
-      RoundedRectangle(cornerRadius: 6)
-        .fill(secondaryFill)
+      SkeletonView(.round(cornerRadius: DDDSize.radiusSm))
         .frame(width: 55, height: 16)
 
       Spacer()
 
-      RoundedRectangle(cornerRadius: 6)
-        .fill(primaryFill)
+      SkeletonView(.round(cornerRadius: DDDSize.radiusSm))
         .frame(width: 120, height: 18)
     }
     .padding(.vertical, 14)
   }
 
   private var buttonSkeleton: some View {
-    RoundedRectangle(cornerRadius: 10)
-      .fill(primaryFill)
+    // 10pt 는 반경 토큰에 없는 값이라 픽셀 유지를 위해 리터럴을 그대로 둔다.
+    SkeletonView(.round(cornerRadius: 10))
       .frame(height: 52)
       .frame(maxWidth: .infinity)
-  }
-
-  private var primaryFill: LinearGradient {
-    let base = Color.gray90.opacity(isAnimating ? 0.35 : 0.7)
-    let tint = Color.blue20.opacity(isAnimating ? 0.12 : 0.22)
-    return LinearGradient(colors: [base, tint, base], startPoint: .topLeading, endPoint: .bottomTrailing)
-  }
-
-  private var secondaryFill: LinearGradient {
-    let base = Color.gray90.opacity(isAnimating ? 0.25 : 0.55)
-    let tint = Color.blue20.opacity(isAnimating ? 0.08 : 0.16)
-    return LinearGradient(colors: [base, tint, base], startPoint: .topLeading, endPoint: .bottomTrailing)
   }
 }
 

@@ -46,30 +46,18 @@ public struct StaffView: View {
     .overlay {
       if shouldShowSkeleton {
         skeletonView
+          .transition(.opacity)
       }
     }
+    .animation(.easeInOut(duration: 0.2), value: store.viewState)
     .allowsHitTesting(!shouldShowSkeleton)
     .onTapGesture {
       if store.isExpandedDropDown {
         closeDropDown()
       }
     }
-
-    .gesture(
-      DragGesture()
-        .onEnded { value in
-          if value.translation.width < -UIScreen.screenWidth * 0.02 {
-            store.send(.attendanceCheck(.view(.swipeNext)))
-          } else if value.translation.width > UIScreen.screenWidth * 0.02 {
-            store.send(.attendanceCheck(.view(.swipePrevious)))
-          }
-        }
-    )
     .sheet(item: $store.scope(state: \.destination?.qrcode, action: \.destination.qrcode)) { qrCodeStore in
-      QRScannerView(store: qrCodeStore) {
-        store.send(.view(.closeModal))
-        store.send(.attendanceCheck(.view(.onAppear)))
-      }
+      QRScannerView(store: qrCodeStore)
       .presentationDetents([.height(UIScreen.screenHeight * 0.85)])
       .presentationCornerRadius(20)
       .presentationDragIndicator(.hidden)
@@ -236,14 +224,7 @@ private extension StaffView {
   }
 
   var shouldShowSkeleton: Bool {
-    switch store.selectDropDownItem {
-    case .attandance:
-      return store.attendanceCheck.loading
-    case .schedule:
-      return store.schedule.loading
-    case .vote:
-      return store.vote.loading
-    }
+    store.viewState == .loading
   }
 
   @ViewBuilder

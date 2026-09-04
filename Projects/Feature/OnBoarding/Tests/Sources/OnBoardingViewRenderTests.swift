@@ -20,18 +20,18 @@ struct OnBoardingViewRenderTests {
 
   @Test("초대 코드 화면은 빈 입력 상태에서 렌더링된다")
   func renderInviteCodeEmpty() {
-    let store = Store(initialState: InviteCodeReducer.State()) {
-      InviteCodeReducer()
+    let store = Store(initialState: InviteCodeFeature.State()) {
+      InviteCodeFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository()
     }
 
-    OnBoardingViewRenderer.render(InviteCodeView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(InviteCodeView(store: store))
   }
 
   @Test("초대 코드 화면은 네 칸이 모두 채워진 상태에서 렌더링된다")
   func renderInviteCodeFilled() {
-    var state = InviteCodeReducer.State()
+    var state = InviteCodeFeature.State()
     state.firstInviteCode = "1"
     state.secondInviteCode = "2"
     state.thirdInviteCode = "3"
@@ -39,172 +39,177 @@ struct OnBoardingViewRenderTests {
     state.focusedField = .last
 
     let store = Store(initialState: state) {
-      InviteCodeReducer()
+      InviteCodeFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository()
     }
 
-    OnBoardingViewRenderer.render(InviteCodeView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(InviteCodeView(store: store))
   }
 
   @Test("초대 코드 화면은 오류 표시 상태에서 에러 문구까지 렌더링된다")
   func renderInviteCodeInvalid() {
-    var state = InviteCodeReducer.State()
+    var state = InviteCodeFeature.State()
     state.firstInviteCode = "9"
     state.isNotAvailableCode = true
 
     let store = Store(initialState: state) {
-      InviteCodeReducer()
+      InviteCodeFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository()
     }
 
-    OnBoardingViewRenderer.render(InviteCodeView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(InviteCodeView(store: store))
   }
 
-  // MARK: - OnBoardingName
+  // MARK: - OnBoardingNameFeature
 
   @Test("이름 입력 화면은 기본 상태에서 렌더링된다")
   func renderNameDefault() {
-    let store = Store(initialState: OnBoardingName.State()) {
-      OnBoardingName()
+    let store = Store(initialState: OnBoardingNameFeature.State()) {
+      OnBoardingNameFeature()
     }
 
-    OnBoardingViewRenderer.render(OnBoardingNameView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(OnBoardingNameView(store: store))
   }
 
   @Test("이름 입력 화면은 사용 불가 상태에서 에러 문구까지 렌더링된다")
   func renderNameUnavailable() {
-    var state = OnBoardingName.State()
+    var state = OnBoardingNameFeature.State()
     state.userSession.name = "홍길동"
     state.isNotAvailableName = true
 
     let store = Store(initialState: state) {
-      OnBoardingName()
+      OnBoardingNameFeature()
     }
 
-    OnBoardingViewRenderer.render(OnBoardingNameView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(OnBoardingNameView(store: store))
   }
 
   // MARK: - SelectPart
 
   @Test("직무 선택 화면은 로딩 상태에서 렌더링된다")
   func renderSelectPartLoading() {
-    var state = SelectPartReducer.State()
-    state.loading = true
+    var state = SelectPartFeature.State()
+    state.viewState = .loading
 
     let store = Store(initialState: state) {
-      SelectPartReducer()
+      SelectPartFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository(jobs: OnBoardingCoverageFixture.jobs)
     }
 
-    OnBoardingViewRenderer.render(SelectPartView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectPartView(store: store))
   }
 
   @Test("직무 선택 화면은 목록이 채워지고 선택된 상태에서 렌더링된다")
   func renderSelectPartLoaded() {
-    var state = SelectPartReducer.State()
+    var state = SelectPartFeature.State()
+    state.viewState = .loaded
     state.selectJobs = .init(uniqueElements: OnBoardingCoverageFixture.jobs)
     state.selectPart = .ios
     state.activeSelectPart = true
 
     let store = Store(initialState: state) {
-      SelectPartReducer()
+      SelectPartFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository(jobs: OnBoardingCoverageFixture.jobs)
     }
 
-    OnBoardingViewRenderer.render(SelectPartView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectPartView(store: store))
   }
 
   // MARK: - SelectManaging
 
   @Test("담당 업무 선택 화면은 로딩 상태에서 렌더링된다")
   func renderSelectManagingLoading() {
-    var state = SelectManagingReducer.State()
-    state.loading = true
+    var state = SelectManagingFeature.State()
+    state.viewState = .loading
 
     let store = Store(initialState: state) {
-      SelectManagingReducer()
+      SelectManagingFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
     }
 
-    OnBoardingViewRenderer.render(SelectManagingView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectManagingView(store: store))
   }
 
   @Test("담당 업무 선택 화면은 운영진일 때 다음 버튼으로 렌더링된다")
   func renderSelectManagingForManager() {
-    var state = SelectManagingReducer.State()
+    var state = SelectManagingFeature.State()
+    state.viewState = .loaded
     state.selectMangers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
     state.userSession.userRole = .manager
     state.activeButton = true
 
     let store = Store(initialState: state) {
-      SelectManagingReducer()
+      SelectManagingFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
     }
 
-    OnBoardingViewRenderer.render(SelectManagingView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectManagingView(store: store))
   }
 
   @Test("담당 업무 선택 화면은 멤버일 때 가입완료 버튼으로 렌더링된다")
   func renderSelectManagingForMember() {
-    var state = SelectManagingReducer.State()
+    var state = SelectManagingFeature.State()
+    state.viewState = .loaded
     state.selectMangers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
     state.userSession.userRole = .member
 
     let store = Store(initialState: state) {
-      SelectManagingReducer()
+      SelectManagingFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
     }
 
-    OnBoardingViewRenderer.render(SelectManagingView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectManagingView(store: store))
   }
 
-  // MARK: - SelectTeam
+  // MARK: - SelectTeamFeature
 
   @Test("팀 선택 화면은 로딩 상태에서 렌더링된다")
   func renderSelectTeamLoading() {
-    var state = SelectTeam.State()
-    state.loading = true
+    var state = SelectTeamFeature.State()
+    state.viewState = .loading
 
     let store = Store(initialState: state) {
-      SelectTeam()
+      SelectTeamFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository(teams: OnBoardingCoverageFixture.teams)
       $0.signUpUseCase = StubSignUpUseCase()
       $0.profileUseCase = StubProfileUseCase()
     }
 
-    OnBoardingViewRenderer.render(SelectTeamView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectTeamView(store: store))
   }
 
   @Test("팀 선택 화면은 목록이 채워지고 팀이 선택된 상태에서 렌더링된다")
   func renderSelectTeamLoaded() {
-    var state = SelectTeam.State()
+    var state = SelectTeamFeature.State()
+    state.viewState = .loaded
     state.teams = .init(uniqueElements: OnBoardingCoverageFixture.teams)
     state.selectTeam = .ios1
     state.activeButton = true
     state.userSession.selectTeam = .ios1
 
     let store = Store(initialState: state) {
-      SelectTeam()
+      SelectTeamFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository(teams: OnBoardingCoverageFixture.teams)
       $0.signUpUseCase = StubSignUpUseCase()
       $0.profileUseCase = StubProfileUseCase()
     }
 
-    OnBoardingViewRenderer.render(SelectTeamView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectTeamView(store: store))
   }
 
   @Test("팀 선택 화면은 실패 알럿이 떠 있는 상태에서도 렌더링된다")
   func renderSelectTeamWithAlert() {
-    var state = SelectTeam.State()
+    var state = SelectTeamFeature.State()
+    state.viewState = .loaded
     state.teams = .init(uniqueElements: OnBoardingCoverageFixture.teams)
     state.alert = AlertState {
       TextState("회원가입 실패")
@@ -217,13 +222,13 @@ struct OnBoardingViewRenderTests {
     }
 
     let store = Store(initialState: state) {
-      SelectTeam()
+      SelectTeamFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository(teams: OnBoardingCoverageFixture.teams)
       $0.signUpUseCase = StubSignUpUseCase()
       $0.profileUseCase = StubProfileUseCase()
     }
 
-    OnBoardingViewRenderer.render(SelectTeamView(store: store, backAction: {}))
+    OnBoardingViewRenderer.render(SelectTeamView(store: store))
   }
 }

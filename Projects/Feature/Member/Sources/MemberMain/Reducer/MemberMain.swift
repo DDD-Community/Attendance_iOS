@@ -8,8 +8,8 @@
 import DDDCoreLogger
 import Foundation
 
-import DDDSharedUI
 import AttendanceDomainInterface
+import DDDSharedUI
 import MyPageDomainInterface
 import ProfileDomainInterface
 import VoteDomainInterface
@@ -37,6 +37,22 @@ public struct MemberMain {
 
   @ObservableState
   public struct State: Equatable {
+    public enum ViewState: Equatable {
+      case loading
+      case loaded
+    }
+
+    enum LoadingResource: Hashable {
+      case profileAndAttendance
+      case schedule
+      case activeVote
+    }
+
+    var viewState: ViewState = .loading
+
+    @ObservationStateIgnored
+    var pendingLoadingResources: Set<LoadingResource> = []
+
     var member: ProfileEntity?
 
     var selectedHomeTab: HomeTab = .attendance
@@ -57,6 +73,7 @@ public struct MemberMain {
     var absentCount: Int = .zero
     var showAttendanceWarningIcon: Bool = false
     var isPresentAttendanceWarningAlert: Bool = false
+    var attendanceViewState: ViewState = .loading
 
     // 일정표
     var schedules: IdentifiedArrayOf<ScheduleModel> = .init(uniqueElements: [])
@@ -76,6 +93,7 @@ public struct MemberMain {
   @CasePathable
   public enum View {
     case onAppear
+    case onDisappear
     case didTapAbesentButton
     case didTapDismissAlertButton
     case toggleDropDown
@@ -186,12 +204,17 @@ extension MemberMain {
       }
 
       state.didAppear = true
+      beginLoading(state: &state)
 
       return .merge(
         .run { await $0(.async(.fetchCurrentUser)) },
         .run { await $0(.async(.fetchSchedule)) },
         .run { await $0(.async(.fetchActiveVote)) }
       )
+
+    case .onDisappear:
+      state.didAppear = false
+      return .none
 
     case .didTapAbesentButton:
       guard state.showAttendanceWarningIcon else {
@@ -241,11 +264,15 @@ extension MemberMain {
 
       case let .failure(error):
         state.member = nil
+        state.attendanceViewState = .loaded
+        finishLoading(state: &state, resource: .profileAndAttendance)
         DDDLogger.error("Failed Fetch User Profile: \(error)", category: .attendance)
         return .none
       }
 
     case let .onFetchAttendanceSummaryResponse(result):
+      finishLoading(state: &state, resource: .profileAndAttendance)
+      state.attendanceViewState = .loaded
       switch result {
       case let .success(counts):
         state.presentCount = counts.totalAttended
@@ -261,6 +288,7 @@ extension MemberMain {
       }
 
     case let .onFetchSchedulesResponse(result):
+      finishLoading(state: &state, resource: .schedule)
       switch result {
       case let .success(schedules):
         state.schedules = .init(uniqueElements: schedules)
@@ -280,6 +308,7 @@ extension MemberMain {
       }
 
     case let .onFetchActiveVoteResponse(result):
+      finishLoading(state: &state, resource: .activeVote)
       switch result {
       case .success:
         state.isVoteMenuAvailable = true
@@ -297,11 +326,26 @@ extension MemberMain {
       }
 
     case .onResume:
-      return .concatenate(
-        .run { await $0(.async(.fetchCurrentUser)) },
-        .run { await $0(.async(.fetchSchedule)) },
-        .run { await $0(.async(.fetchActiveVote)) }
-      )
+      state.attendanceViewState = .loading
+      return .send(.async(.fetchAttendances))
+    }
+  }
+
+  private func beginLoading(state: inout State) {
+    state.viewState = .loading
+    state.pendingLoadingResources = [.profileAndAttendance, .schedule, .activeVote]
+  }
+
+  private func finishLoading(
+    state: inout State,
+    resource: State.LoadingResource
+  ) {
+    guard state.pendingLoadingResources.remove(resource) != nil else {
+      return
+    }
+
+    if state.pendingLoadingResources.isEmpty {
+      state.viewState = .loaded
     }
   }
 

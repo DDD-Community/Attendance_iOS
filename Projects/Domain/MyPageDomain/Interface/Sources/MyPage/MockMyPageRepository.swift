@@ -5,7 +5,6 @@
 //  Created by DDD on 1/12/26.
 //
 
-
 public final class MockMyPageRepository: MyPageInterface {
   public init() {}
 

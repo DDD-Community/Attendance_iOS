@@ -1,3 +1,10 @@
+//
+//  SessionCacheInvalidating.swift
+//  DDDStorageInterface
+//
+//  Created by DDD on 9/4/26.
+//
+
 import Dependencies
 
 public protocol SessionCacheInvalidating: Sendable {

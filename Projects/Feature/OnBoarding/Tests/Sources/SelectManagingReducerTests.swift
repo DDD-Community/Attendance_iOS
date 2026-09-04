@@ -2,11 +2,12 @@
 //  SelectManagingReducerTests.swift
 //  OnBoardingTests
 //
-//  SelectManagingReducer 의 담당 업무 토글, 목록 조회, 가입/기수변경 분기를 검증한다.
+//  SelectManagingFeature 의 담당 업무 토글, 목록 조회, 가입/기수변경 분기를 검증한다.
 //
 
 import ComposableArchitecture
 import Foundation
+import AuthDomainInterface
 import OnBoardingDomainInterface
 import ProfileDomainInterface
 import Testing
@@ -14,35 +15,33 @@ import Testing
 @testable import OnBoarding
 
 @MainActor
-@Suite("SelectManagingReducer")
+@Suite("SelectManagingFeature")
 struct SelectManagingReducerTests {
   // MARK: - ViewAction
 
   @Test("목록이 비어 있으면 onAppear 가 담당 업무 목록을 조회한다")
   func onAppearFetchesManagingList() async {
-    let store = TestStore(initialState: SelectManagingReducer.State()) {
-      SelectManagingReducer()
+    let store = TestStore(initialState: SelectManagingFeature.State()) {
+      SelectManagingFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository(managings: OnBoardingCoverageFixture.managings)
     }
 
     await store.send(.view(.onAppear))
-    await store.receive(\.async) {
-      $0.loading = true
-    }
+    await store.receive(\.async)
     await store.receive(\.inner) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.selectMangers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
     }
   }
 
   @Test("목록이 이미 있으면 onAppear 는 다시 조회하지 않는다")
   func onAppearSkipsFetchWhenListAlreadyLoaded() async {
-    var state = SelectManagingReducer.State()
+    var state = SelectManagingFeature.State()
     state.selectMangers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
 
     let store = TestStore(initialState: state) {
-      SelectManagingReducer()
+      SelectManagingFeature()
     }
 
     await store.send(.view(.onAppear))
@@ -50,8 +49,8 @@ struct SelectManagingReducerTests {
 
   @Test("담당 업무 목록 조회 실패는 에러 메시지를 남긴다")
   func managingListFailureStoresErrorMessage() async {
-    let store = TestStore(initialState: SelectManagingReducer.State()) {
-      SelectManagingReducer()
+    let store = TestStore(initialState: SelectManagingFeature.State()) {
+      SelectManagingFeature()
     } withDependencies: {
       $0.onBoardingUseCase = StubOnBoardingRepository(failure: .verifyFailed)
     }
@@ -59,18 +58,17 @@ struct SelectManagingReducerTests {
     let expected = SignUpError.from(OnBoardingError.verifyFailed)
 
     await store.send(.view(.onAppear))
-    await store.receive(\.async) {
-      $0.loading = true
-    }
+    await store.receive(\.async)
     await store.receive(\.inner) {
+      $0.viewState = .loaded
       $0.errorMessage = expected.errorDescription
     }
   }
 
   @Test("담당 업무를 처음 누르면 세션에 추가되고 버튼이 활성화된다")
   func selectManagingButtonAppendsManaging() async {
-    let store = TestStore(initialState: SelectManagingReducer.State()) {
-      SelectManagingReducer()
+    let store = TestStore(initialState: SelectManagingFeature.State()) {
+      SelectManagingFeature()
     }
     store.exhaustivity = .off
 
@@ -82,12 +80,12 @@ struct SelectManagingReducerTests {
 
   @Test("이미 선택된 담당 업무를 다시 누르면 제거되고 버튼이 비활성화된다")
   func selectManagingButtonRemovesManaging() async {
-    var state = SelectManagingReducer.State()
+    var state = SelectManagingFeature.State()
     state.userSession.managing = [.photo]
     state.activeButton = true
 
     let store = TestStore(initialState: state) {
-      SelectManagingReducer()
+      SelectManagingFeature()
     }
 
     await store.send(.view(.selectManagingButton(selectManaging: OnBoardingCoverageFixture.photoManaging))) {
@@ -100,12 +98,12 @@ struct SelectManagingReducerTests {
 
   @Test("가입 완료는 회원가입을 호출하고 운영진 홈으로 이동한다")
   func signUpNavigatesToManager() async {
-    var state = SelectManagingReducer.State()
+    var state = SelectManagingFeature.State()
     state.editGeneration = false
     state.userSession.userRole = .manager
 
     let store = TestStore(initialState: state) {
-      SelectManagingReducer()
+      SelectManagingFeature()
     } withDependencies: {
       $0.signUpUseCase = StubSignUpUseCase()
     }
@@ -122,8 +120,8 @@ struct SelectManagingReducerTests {
 
   @Test("회원가입 실패는 에러 메시지와 실패 알럿을 표시한다")
   func signUpFailurePresentsAlert() async {
-    let store = TestStore(initialState: SelectManagingReducer.State()) {
-      SelectManagingReducer()
+    let store = TestStore(initialState: SelectManagingFeature.State()) {
+      SelectManagingFeature()
     } withDependencies: {
       $0.signUpUseCase = StubSignUpUseCase(failure: .accountCreationFailed)
     }
@@ -149,16 +147,18 @@ struct SelectManagingReducerTests {
   @Test("기수 변경 중이면 가입 완료가 프로필 수정을 호출하고 멤버 홈으로 이동한다")
   func editGenerationNavigatesToMember() async {
     let profile = OnBoardingCoverageFixture.memberProfile
+    let authUseCase = MockAuthRepository.refreshSuccess()
     let appStorage = UserDefaults.inMemory
     let inMemoryStorage = InMemoryStorage()
     appStorage.set(true, forKey: "editGeneration")
 
-    let store = TestStore(initialState: SelectManagingReducer.State()) {
-      SelectManagingReducer()
+    let store = TestStore(initialState: SelectManagingFeature.State()) {
+      SelectManagingFeature()
     } withDependencies: {
       $0.defaultAppStorage = appStorage
       $0.defaultInMemoryStorage = inMemoryStorage
       $0.profileUseCase = StubProfileUseCase(profile: profile)
+      $0.authUseCase = authUseCase
     }
     store.exhaustivity = .off
 
@@ -177,17 +177,45 @@ struct SelectManagingReducerTests {
       $0.userSession.managing = []
     }
     await store.receive(\.delegate.presentMember)
+    #expect(authUseCase.getRefreshCallCount() == 1)
+    #expect(authUseCase.getUpdateCredentialCallCount() == 1)
+  }
+
+  @Test("기수 변경 후 토큰 갱신 실패 시 운영진 API를 호출하지 않고 로그인으로 이동한다")
+  func credentialRefreshFailureNavigatesToLogin() async {
+    let profile = OnBoardingCoverageFixture.managerProfile
+    let appStorage = UserDefaults.inMemory
+    let inMemoryStorage = InMemoryStorage()
+    appStorage.set(true, forKey: "editGeneration")
+
+    let store = TestStore(initialState: SelectManagingFeature.State()) {
+      SelectManagingFeature()
+    } withDependencies: {
+      $0.defaultAppStorage = appStorage
+      $0.defaultInMemoryStorage = inMemoryStorage
+      $0.profileUseCase = StubProfileUseCase(profile: profile)
+      $0.authUseCase = MockAuthRepository.tokenExpired()
+    }
+    store.exhaustivity = .off(showSkippedAssertions: false)
+
+    await store.send(.view(.signUp))
+    await store.receive(\.async)
+    await store.receive(\.inner)
+    await store.receive(\.delegate.presentLogin)
+    #expect(store.state.editProfile == profile)
+    #expect(store.state.editGeneration == false)
+    #expect(store.state.staffRole == .manager)
   }
 
   @Test("프로필 수정 결과가 운영진이면 운영진 홈으로 이동한다")
   func editProfileManagerNavigatesToManager() async {
-    var state = SelectManagingReducer.State()
+    var state = SelectManagingFeature.State()
     state.editGeneration = true
 
     let profile = OnBoardingCoverageFixture.managerProfile
 
     let store = TestStore(initialState: state) {
-      SelectManagingReducer()
+      SelectManagingFeature()
     }
 
     await store.send(.inner(.editProfileResponse(.success(profile)))) {
@@ -207,11 +235,11 @@ struct SelectManagingReducerTests {
 
   @Test("프로필 수정 실패는 기수 변경 플래그를 내리고 실패 알럿을 표시한다")
   func editProfileFailurePresentsAlert() async {
-    var state = SelectManagingReducer.State()
+    var state = SelectManagingFeature.State()
     state.editGeneration = true
 
     let store = TestStore(initialState: state) {
-      SelectManagingReducer()
+      SelectManagingFeature()
     }
 
     let error = ProfileError.profileNotFound
@@ -235,19 +263,20 @@ struct SelectManagingReducerTests {
 
   @Test("delegate 액션은 모두 부수효과 없이 소비된다")
   func delegateActionsProduceNoEffect() async {
-    let store = TestStore(initialState: SelectManagingReducer.State()) {
-      SelectManagingReducer()
+    let store = TestStore(initialState: SelectManagingFeature.State()) {
+      SelectManagingFeature()
     }
 
     await store.send(.delegate(.presentManager))
     await store.send(.delegate(.presentMember))
+    await store.send(.delegate(.presentLogin))
     await store.send(.delegate(.presentSelectTeam))
     await store.send(.delegate(.presentProfile))
   }
 
   @Test("알럿을 닫으면 alert 상태가 비워진다")
   func dismissingAlertClearsState() async {
-    var state = SelectManagingReducer.State()
+    var state = SelectManagingFeature.State()
     state.alert = AlertState {
       TextState("회원가입 실패")
     } actions: {
@@ -257,7 +286,7 @@ struct SelectManagingReducerTests {
     }
 
     let store = TestStore(initialState: state) {
-      SelectManagingReducer()
+      SelectManagingFeature()
     }
 
     await store.send(.scope(.alert(.dismiss))) {
@@ -267,8 +296,8 @@ struct SelectManagingReducerTests {
 
   @Test("binding 액션은 상태만 갱신한다")
   func bindingUpdatesStateOnly() async {
-    let store = TestStore(initialState: SelectManagingReducer.State()) {
-      SelectManagingReducer()
+    let store = TestStore(initialState: SelectManagingFeature.State()) {
+      SelectManagingFeature()
     }
 
     await store.send(.binding(.set(\.activeButton, true))) {

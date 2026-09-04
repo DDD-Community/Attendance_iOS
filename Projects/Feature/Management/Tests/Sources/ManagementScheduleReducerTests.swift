@@ -17,9 +17,9 @@ import Testing
 @MainActor
 @Suite("ManagementScheduleReducer")
 struct ManagementScheduleReducerTests {
-  /// onAppear 는 hasFetchedSchedule 가드로 중복 조회를 막는다. 두 번 보내 가드를 확인한다.
-  @Test("onAppear 는 최초 1회만 스케줄을 조회한다")
-  func onAppearFetchesScheduleOnlyOnce() async {
+  /// hasFetchedSchedule 는 스켈레톤을 첫 진입으로 제한할 뿐, 재조회까지 막지는 않는다.
+  @Test("onAppear 는 최초 1회만 스켈레톤을 띄우고 이후에는 조용히 갱신한다")
+  func onAppearShowsSkeletonOnlyOnFirstLoad() async {
     var stub = ManagementScheduleUseCaseStub()
     stub.schedules = ManagementScheduleFixture.all
 
@@ -32,16 +32,16 @@ struct ManagementScheduleReducerTests {
     await store.send(.view(.onAppear)) {
       $0.hasFetchedSchedule = true
     }
-    await store.receive(\.async) {
-      $0.loading = true
-    }
+    await store.receive(\.async)
     await store.receive(\.inner) {
-      $0.loading = false
+      $0.viewState = .loaded
       $0.scheduleModel = .init(uniqueElements: ManagementScheduleFixture.all)
     }
 
-    // 두 번째 onAppear 는 가드에 걸려 어떤 이펙트도 내보내지 않는다.
+    // 두 번째 onAppear 는 loading 을 건드리지 않고 목록만 다시 받아온다.
     await store.send(.view(.onAppear))
+    await store.receive(\.async)
+    await store.receive(\.inner)
   }
 
   /// 빈 목록도 정상 응답이다. 로딩만 내리고 목록은 비어 있어야 한다.
@@ -53,11 +53,9 @@ struct ManagementScheduleReducerTests {
       $0.scheduleUseCase = ManagementScheduleUseCaseStub()
     }
 
-    await store.send(.async(.fetchSchedule)) {
-      $0.loading = true
-    }
+    await store.send(.async(.fetchSchedule))
     await store.receive(\.inner) {
-      $0.loading = false
+      $0.viewState = .loaded
     }
   }
 
@@ -76,26 +74,28 @@ struct ManagementScheduleReducerTests {
       $0.scheduleUseCase = stub
     }
 
-    await store.send(.async(.fetchSchedule)) {
-      $0.loading = true
-    }
+    await store.send(.async(.fetchSchedule))
     await store.receive(\.inner) {
-      $0.loading = false
+      $0.viewState = .loaded
     }
     #expect(store.state.scheduleModel.count == 1)
   }
 
   @Test("stratLoading 과 stopLoading 은 로딩 플래그를 토글한다")
   func loadingActionsToggleFlag() async {
-    let store = TestStore(initialState: ScheduleReducer.State()) {
+    // 기본값이 .loading 이라 토글을 보려면 .loaded 에서 출발해야 한다.
+    var state = ScheduleReducer.State()
+    state.viewState = .loaded
+
+    let store = TestStore(initialState: state) {
       ScheduleReducer()
     }
 
     await store.send(.view(.stratLoading)) {
-      $0.loading = true
+      $0.viewState = .loading
     }
     await store.send(.view(.stopLoading)) {
-      $0.loading = false
+      $0.viewState = .loaded
     }
   }
 
@@ -105,8 +105,8 @@ struct ManagementScheduleReducerTests {
       ScheduleReducer()
     }
 
-    await store.send(.binding(.set(\.loading, true))) {
-      $0.loading = true
+    await store.send(.binding(.set(\.hasFetchedSchedule, true))) {
+      $0.hasFetchedSchedule = true
     }
   }
 }

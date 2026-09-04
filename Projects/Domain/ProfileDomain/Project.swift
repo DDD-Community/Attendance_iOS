@@ -1,3 +1,10 @@
+//
+//  Project.swift
+//  ProfileDomain
+//
+//  Created by DDD on 9/4/26.
+//
+
 import DependencyPackagePlugin
 import DependencyPlugin
 import ProjectDescription
@@ -13,7 +20,8 @@ let project = Project.makeModule(
     .domain(.auth, .interface),
     .domain(.onBoarding, .interface),
     .SPM.dependencies,
-    .SPM.composableArchitecture
+    .SPM.composableArchitecture,
+    .SPM.sqliteData
   ],
   hasTests: true,
   hasInterface: true,

@@ -4,7 +4,7 @@
 //
 //  Created by DDD on 2026-09-03.
 //
-//  Vote / Schedule / ScheduleModal 리듀서 테스트가 공유하는 UseCase 스텁.
+//  Vote / Schedule / ScheduleModalFeature 리듀서 테스트가 공유하는 UseCase 스텁.
 //  네트워크를 타지 않으면서 성공/실패/스트림 경로를 모두 지정할 수 있게 값 타입으로 둔다.
 //
 

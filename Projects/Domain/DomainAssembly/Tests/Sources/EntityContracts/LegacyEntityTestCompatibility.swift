@@ -1,5 +1,5 @@
 //
-//  base.swift
+//  LegacyEntityTestCompatibility.swift
 //  DDDAttendance
 //
 //  Created by DDD on 2025-12-28

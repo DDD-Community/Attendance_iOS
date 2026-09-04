@@ -1,12 +1,12 @@
-import AuthDomainInterface
-import ProfileDomainInterface
 //
-//  SelectManaging.swift
+//  SelctManging.swift
 //  Entity
 //
 //  Created by DDD on 1/1/26.
 //
 
+import AuthDomainInterface
+import ProfileDomainInterface
 import Foundation
 
 public struct SelectManaging: Equatable , Identifiable {
