@@ -1,3 +1,10 @@
+//
+//  SignUpUseCaseTest.swift
+//  OnBoardingDomainTests
+//
+//  Created by DDD on 9/4/26.
+//
+
 import ComposableArchitecture
 import AuthDomainInterface
 import OnBoardingDomainInterface

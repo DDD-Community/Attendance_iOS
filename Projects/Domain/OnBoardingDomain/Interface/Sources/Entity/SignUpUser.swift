@@ -1,5 +1,3 @@
-import AuthDomainInterface
-import ProfileDomainInterface
 //
 //  SignUpUser.swift
 //  Entity
@@ -7,6 +5,8 @@ import ProfileDomainInterface
 //  Created by DDD on 1/1/26.
 //
 
+import AuthDomainInterface
+import ProfileDomainInterface
 import Foundation
 
 public struct SignUpUser : Equatable {

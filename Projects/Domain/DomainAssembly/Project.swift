@@ -34,6 +34,7 @@ let project = Project.makeModule(
   ],
   testDependencies: [
     .core(.network, .interface),
+    .core(.storage),
     .service(.auth, .interface),
     .service(.apiEndpoint),
     .domain(.appUpdate),
@@ -45,7 +46,8 @@ let project = Project.makeModule(
     .domain(.qrCode),
     .domain(.schedule),
     .domain(.vote),
-    .SPM.composableArchitecture
+    .SPM.composableArchitecture,
+    .SPM.sqliteData
   ],
   sources: ["Sources/**"],
   hasTests: true

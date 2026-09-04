@@ -1,5 +1,5 @@
 //
-//  SignUpNameView.swift
+//   OnBoardingNameView.swift
 //  Presentation
 //
 //  Created by DDD on 11/3/24.

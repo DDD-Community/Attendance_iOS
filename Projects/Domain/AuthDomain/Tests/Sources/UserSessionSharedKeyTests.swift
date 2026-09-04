@@ -1,3 +1,10 @@
+//
+//  UserSessionSharedKeyTests.swift
+//  AuthDomainTests
+//
+//  Created by DDD on 9/4/26.
+//
+
 import AuthDomainInterface
 import ComposableArchitecture
 import DDDStorageInterface
@@ -6,6 +13,44 @@ import Testing
 
 @Suite("UserSession Shared SQLite persistence", .serialized)
 struct UserSessionSharedKeyTests {
+  @Test
+  func 기수_변경_세션은_SQLite에_즉시_갱신된다() throws {
+    let storage = TestSharedValueStorage()
+
+    withDependencies {
+      $0.context = .live
+      $0.sharedValueStorage = storage
+    } operation: {
+      @Shared(.userSession) var userSession
+      $userSession.withLock {
+        $0.generationId = 14
+        $0.generation = "14기"
+        $0.userRole = .manager
+        $0.managing = [.teamManaging]
+        $0.selectTeam = .ios2
+        $0.selectTeamId = 10
+        $0.inviteCode = "MANAGER-14"
+      }
+    }
+
+    let data = try #require(storage.data(forKey: "UserSession"))
+    let reloadedStorage = TestSharedValueStorage(values: ["UserSession": data])
+
+    withDependencies {
+      $0.context = .live
+      $0.sharedValueStorage = reloadedStorage
+    } operation: {
+      @Shared(.userSession) var userSession
+      #expect(userSession.generationId == 14)
+      #expect(userSession.generation == "14기")
+      #expect(userSession.userRole == .manager)
+      #expect(userSession.managing == [.teamManaging])
+      #expect(userSession.selectTeam == .ios2)
+      #expect(userSession.selectTeamId == 10)
+      #expect(userSession.inviteCode == "MANAGER-14")
+    }
+  }
+
   @Test
   func 세션_메타데이터는_저장하고_민감한_토큰은_제외한다() async throws {
     let storage = TestSharedValueStorage()

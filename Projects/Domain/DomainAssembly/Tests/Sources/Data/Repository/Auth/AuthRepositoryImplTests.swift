@@ -1,3 +1,10 @@
+//
+//  AuthRepositoryImplTests.swift
+//  DomainAssemblyTests
+//
+//  Created by DDD on 9/4/26.
+//
+
 import DDDAuthInterface
 import DDDNetworkInterface
 import Dependencies

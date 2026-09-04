@@ -1,4 +1,3 @@
-import ProfileDomainInterface
 //
 //  MockUserSession.swift
 //  DomainInterface
@@ -6,6 +5,7 @@ import ProfileDomainInterface
 //  Created by DDD on 2026-04-16
 //
 
+import ProfileDomainInterface
 import Foundation
 
 public final class MockUserSession: @unchecked Sendable {

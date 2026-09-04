@@ -23,6 +23,7 @@ public enum SelectTeamDelegate: Equatable, Sendable {
 public enum SelectManagingDelegate: Equatable, Sendable {
   case presentManager
   case presentMember
+  case presentLogin
   case presentSelectTeam
   case presentProfile
 }

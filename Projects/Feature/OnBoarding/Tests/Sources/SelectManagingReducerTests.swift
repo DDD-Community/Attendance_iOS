@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import Foundation
+import AuthDomainInterface
 import OnBoardingDomainInterface
 import ProfileDomainInterface
 import Testing
@@ -149,6 +150,7 @@ struct SelectManagingReducerTests {
   @Test("기수 변경 중이면 가입 완료가 프로필 수정을 호출하고 멤버 홈으로 이동한다")
   func editGenerationNavigatesToMember() async {
     let profile = OnBoardingCoverageFixture.memberProfile
+    let authUseCase = MockAuthRepository.refreshSuccess()
     let appStorage = UserDefaults.inMemory
     let inMemoryStorage = InMemoryStorage()
     appStorage.set(true, forKey: "editGeneration")
@@ -159,6 +161,7 @@ struct SelectManagingReducerTests {
       $0.defaultAppStorage = appStorage
       $0.defaultInMemoryStorage = inMemoryStorage
       $0.profileUseCase = StubProfileUseCase(profile: profile)
+      $0.authUseCase = authUseCase
     }
     store.exhaustivity = .off
 
@@ -177,6 +180,34 @@ struct SelectManagingReducerTests {
       $0.userSession.managing = []
     }
     await store.receive(\.delegate.presentMember)
+    #expect(authUseCase.getRefreshCallCount() == 1)
+    #expect(authUseCase.getUpdateCredentialCallCount() == 1)
+  }
+
+  @Test("기수 변경 후 토큰 갱신 실패 시 운영진 API를 호출하지 않고 로그인으로 이동한다")
+  func credentialRefreshFailureNavigatesToLogin() async {
+    let profile = OnBoardingCoverageFixture.managerProfile
+    let appStorage = UserDefaults.inMemory
+    let inMemoryStorage = InMemoryStorage()
+    appStorage.set(true, forKey: "editGeneration")
+
+    let store = TestStore(initialState: SelectManagingFeature.State()) {
+      SelectManagingFeature()
+    } withDependencies: {
+      $0.defaultAppStorage = appStorage
+      $0.defaultInMemoryStorage = inMemoryStorage
+      $0.profileUseCase = StubProfileUseCase(profile: profile)
+      $0.authUseCase = MockAuthRepository.tokenExpired()
+    }
+    store.exhaustivity = .off(showSkippedAssertions: false)
+
+    await store.send(.view(.signUp))
+    await store.receive(\.async)
+    await store.receive(\.inner)
+    await store.receive(\.delegate.presentLogin)
+    #expect(store.state.editProfile == profile)
+    #expect(store.state.editGeneration == false)
+    #expect(store.state.staffRole == .manager)
   }
 
   @Test("프로필 수정 결과가 운영진이면 운영진 홈으로 이동한다")
@@ -241,6 +272,7 @@ struct SelectManagingReducerTests {
 
     await store.send(.delegate(.presentManager))
     await store.send(.delegate(.presentMember))
+    await store.send(.delegate(.presentLogin))
     await store.send(.delegate(.presentSelectTeam))
     await store.send(.delegate(.presentProfile))
   }

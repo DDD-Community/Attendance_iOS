@@ -1,4 +1,11 @@
 // swift-tools-version: 6.2
+//
+//  Package.swift
+//  Manifests
+//
+//  Created by DDD on 9/4/26.
+//
+
 @preconcurrency import PackageDescription
 
 #if TUIST
@@ -56,7 +63,7 @@ let packageSettings = PackageSettings(
     "AppAuthCore": .framework,
     "GTMAppAuth": .framework,
     "GTMSessionFetcherCore": .framework,
-    
+
     "ComposableArchitecture": .framework,
     "IdentifiedCollections": .framework,
     "TCAFlow": .framework,
@@ -71,7 +78,7 @@ let packageSettings = PackageSettings(
     // 내부 타깃도 동적으로 링크해 앱/DDDDesignKit에 정적 코드가 중복 삽입되지 않게 한다.
     "_SwiftUIX": .framework,
     "SwiftUIX": .framework,
-    
+
     // ── 경고에 떴지만 productTypes에 없어서 기본값(static)으로 중복되던 전이 의존성 ──
     "Dependencies": .framework,
     "DependenciesMacros": .framework,
@@ -83,7 +90,7 @@ let packageSettings = PackageSettings(
     "SwiftUINavigation": .framework,
     "CasePaths": .framework,
     "Alamofire": .framework,
-    
+
     // GoogleSignIn 관련
     "GoogleSignIn": .framework,
     "GoogleSignInSwift": .framework,
@@ -112,6 +119,8 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.25.5"),
     // 1.12.0부터 swift-tools-version 6.4가 필요하다. 현재 Xcode 26.5 / Swift 6.3에서는 1.11.0이 최신 호환 버전이다.
     .package(url: "https://github.com/pointfreeco/sqlite-data", exact: "1.11.0"),
+    // SQLiteData 1.11.0 소스는 0.36.0 API와 맞는다. 0.39.x는 Swift 6.4가 필요하므로 전이 의존성을 고정한다.
+    .package(url: "https://github.com/pointfreeco/swift-structured-queries", exact: "0.36.0"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", exact: "1.7.2"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.1.0"),
     .package(url: "https://github.com/Roy-wonji/TCAFlow.git", exact: "1.1.3"),

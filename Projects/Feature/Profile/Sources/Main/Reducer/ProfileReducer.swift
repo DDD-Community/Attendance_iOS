@@ -59,10 +59,10 @@ public struct ProfileReducer: Sendable {
       )
     }
 
-    /// SwiftData와 세션 모두 비어 있는 첫 프레임에 빈 이름("님")이 노출되지 않도록
-    /// 표시 가능한 프로필이 생길 때까지 loading 을 유지합니다.
+    /// 세션 폴백은 로딩 판단에서 제외합니다.
+    /// 화면을 다시 열 때 스켈레톤이 깜빡이지 않도록, 프로필을 처음 받아오는 동안에만 loading 입니다.
     var viewState: ViewState {
-      displayedProfile == nil && isLoading ? .loading : .loaded
+      profileModel == nil && isLoading ? .loading : .loaded
     }
 
     var deleteUser: WithdrawEntity?
@@ -231,6 +231,10 @@ extension ProfileReducer {
   ) -> Effect<Action> {
     switch action {
     case .fetchUser:
+      guard !state.editGeneration else {
+        return .cancel(id: CancelID.fetchProfile)
+      }
+
       return .run { send in
         do {
           // 캐시 hit → 즉시 표시 (로딩 X), 그 후 강제 refresh로 화면 자동 갱신
@@ -364,7 +368,7 @@ extension ProfileReducer {
 
     case .presentEditGeneration:
       state.$editGeneration.withLock { $0 = true }
-      return .none
+      return .cancel(id: CancelID.fetchProfile)
 
     case .presentAppPeedBackWeb:
       return .none

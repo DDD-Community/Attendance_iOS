@@ -1,4 +1,3 @@
-import ProfileDomainInterface
 //
 //  User.swift
 //  Entity
@@ -6,6 +5,7 @@ import ProfileDomainInterface
 //  Created by DDD on 5/12/26.
 //
 
+import ProfileDomainInterface
 import Foundation
 
 public enum UserRole: String, Equatable {

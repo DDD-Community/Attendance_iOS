@@ -17,7 +17,7 @@ public enum ServiceDependencyAssembly {
 
 public extension DependencyValues {
   mutating func registerLiveServices() {
-    sharedValueStorage = StorageAssembly.sharedValueStorage()
+    StorageAssembly.register(into: &self)
     networkClient = NetworkContainer.authenticatedClient
     authService = NetworkContainer.authService
   }

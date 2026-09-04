@@ -7,6 +7,7 @@
 
 import DDDStorage
 import DDDStorageInterface
+import Dependencies
 
 public enum StorageAssembly {
   public static func secureStorage() -> any SecureStorage {
@@ -15,5 +16,9 @@ public enum StorageAssembly {
 
   public static func sharedValueStorage() -> any SharedValueStorage {
     return StorageFactory.sharedValueStorage
+  }
+
+  public static func register(into values: inout DependencyValues) {
+    StorageFactory.register(into: &values)
   }
 }

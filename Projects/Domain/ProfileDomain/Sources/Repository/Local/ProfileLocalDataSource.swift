@@ -7,10 +7,8 @@
 
 import Foundation
 import ProfileDomainInterface
-import SwiftData
-
-
 import Dependencies
+import SQLiteData
 
 public protocol ProfileLocalDataSourceProtocol: Actor {
   func loadUser() async throws(ProfileError) -> ProfileEntity?
@@ -19,36 +17,21 @@ public protocol ProfileLocalDataSourceProtocol: Actor {
 }
 
 public actor ProfileLocalDataSource: ProfileLocalDataSourceProtocol {
-  private let container: ModelContainer
+  private let database: any DatabaseWriter
 
-  public init(container: ModelContainer? = nil) {
-    if let container {
-      self.container = container
-    } else {
-      let schema = Schema([ProfileCacheEntity.self])
-      do {
-        self.container = try ModelContainer(
-          for: schema,
-          configurations: ModelConfiguration(
-            "ProfileCache",
-            isStoredInMemoryOnly: false
-          )
-        )
-      } catch {
-        fatalError("Failed to create Profile cache container: \(error)")
-      }
-    }
+  public init(database: any DatabaseWriter) {
+    self.database = database
   }
 
   public func loadUser() async throws(ProfileError) -> ProfileEntity? {
     do {
-      let context = makeContext()
-      guard let cache = try fetchCache(in: context) else {
+      guard let cache = try await database.read({ db in
+        try ProfileCacheRecord.find(ProfileCacheKey.user).fetchOne(db)
+      }) else {
         return nil
       }
       if cache.isExpired {
-        context.delete(cache)
-        try context.save()
+        try await clear()
         return nil
       }
       return cache.toDomain()
@@ -59,12 +42,11 @@ public actor ProfileLocalDataSource: ProfileLocalDataSourceProtocol {
 
   public func saveUser(_ profile: ProfileEntity) async throws(ProfileError) {
     do {
-      let context = makeContext()
-      if let existing = try fetchCache(in: context) {
-        context.delete(existing)
+      let record = try profile.toCacheRecord(cacheKey: ProfileCacheKey.user)
+      try await database.write { db in
+        try ProfileCacheRecord.delete().execute(db)
+        try ProfileCacheRecord.insert { record }.execute(db)
       }
-      context.insert(profile.toCacheModel(cacheKey: ProfileCacheKey.user))
-      try context.save()
     } catch {
       throw .cacheFailed
     }
@@ -72,38 +54,25 @@ public actor ProfileLocalDataSource: ProfileLocalDataSourceProtocol {
 
   public func clear() async throws(ProfileError) {
     do {
-      let context = makeContext()
-      try context.delete(model: ProfileCacheEntity.self)
-      try context.save()
+      try await database.write { db in
+        try ProfileCacheRecord.delete().execute(db)
+      }
     } catch {
       throw .cacheFailed
     }
   }
 }
 
-private extension ProfileLocalDataSource {
-  func makeContext() -> ModelContext {
-    ModelContext(container)
-  }
-
-  func fetchCache(in context: ModelContext) throws -> ProfileCacheEntity? {
-    var descriptor = FetchDescriptor<ProfileCacheEntity>(
-      predicate: #Predicate { $0.cacheKey == "profile.user.default" }
-    )
-    descriptor.fetchLimit = 1
-    return try context.fetch(descriptor).first
-  }
-}
-
 /// ProfileLocalDataSource의 DependencyKey 구조체
 public enum ProfileLocalDataSourceDependency: DependencyKey {
   public static var liveValue: ProfileLocalDataSourceProtocol {
-    ProfileLocalDataSource()
+    @Dependency(\.defaultDatabase) var database
+    return ProfileLocalDataSource(database: database)
   }
 
-  public static var testValue: ProfileLocalDataSourceProtocol = liveValue
+  public static var testValue: ProfileLocalDataSourceProtocol = InMemoryProfileLocalDataSource()
 
-  public static var previewValue: ProfileLocalDataSourceProtocol = liveValue
+  public static var previewValue: ProfileLocalDataSourceProtocol = testValue
 }
 
 /// DependencyValues extension으로 간편한 접근 제공
@@ -112,4 +81,12 @@ public extension DependencyValues {
     get { self[ProfileLocalDataSourceDependency.self] }
     set { self[ProfileLocalDataSourceDependency.self] = newValue }
   }
+}
+
+private actor InMemoryProfileLocalDataSource: ProfileLocalDataSourceProtocol {
+  private var profile: ProfileEntity?
+
+  func loadUser() async throws(ProfileError) -> ProfileEntity? { profile }
+  func saveUser(_ profile: ProfileEntity) async throws(ProfileError) { self.profile = profile }
+  func clear() async throws(ProfileError) { profile = nil }
 }

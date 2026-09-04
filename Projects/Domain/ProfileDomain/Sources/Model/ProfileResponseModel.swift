@@ -1,5 +1,5 @@
 //
-//  ProfileModel.swift
+//  ProfileResponseModel.swift
 //  ProfileDomain
 //
 //  Created by DDD on 5/9/25.

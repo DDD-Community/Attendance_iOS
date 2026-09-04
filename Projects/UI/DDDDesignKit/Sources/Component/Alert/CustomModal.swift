@@ -1,5 +1,5 @@
 //
-//  CustomAlert.swift
+//  CustomModal.swift
 //  DDDDesignKit
 //
 //  Created by DDD on 2/7/25.

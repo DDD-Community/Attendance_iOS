@@ -1,3 +1,10 @@
+//
+//  LegacyTestCompatibility.swift
+//  AttendanceDomainTests
+//
+//  Created by DDD on 9/4/26.
+//
+
 import Testing
 import AttendanceDomainInterface
 import OnBoardingDomainInterface

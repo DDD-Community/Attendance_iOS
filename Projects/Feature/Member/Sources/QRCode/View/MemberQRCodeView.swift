@@ -1,5 +1,5 @@
 //
-//  QRCodeView.swift
+//  MemberQRCodeView.swift
 //  Presentation
 //
 //  Created by DDD on 5/18/25.

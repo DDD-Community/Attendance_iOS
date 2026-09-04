@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import Foundation
+import AuthDomainInterface
 import OnBoardingDomainInterface
 import ProfileDomainInterface
 import Testing
@@ -161,6 +162,7 @@ struct SelectTeamReducerTests {
   @Test("기수 변경 중이면 가입 완료가 프로필 수정을 호출하고 운영진 홈으로 이동한다")
   func editGenerationSignUpEditsProfile() async {
     let profile = OnBoardingCoverageFixture.managerProfile
+    let authUseCase = MockAuthRepository.refreshSuccess()
     let appStorage = UserDefaults.inMemory
     let inMemoryStorage = InMemoryStorage()
     appStorage.set(true, forKey: "editGeneration")
@@ -171,6 +173,7 @@ struct SelectTeamReducerTests {
       $0.defaultAppStorage = appStorage
       $0.defaultInMemoryStorage = inMemoryStorage
       $0.profileUseCase = StubProfileUseCase(profile: profile)
+      $0.authUseCase = authUseCase
     }
     store.exhaustivity = .off
 
@@ -189,6 +192,34 @@ struct SelectTeamReducerTests {
       $0.userSession.managing = [.teamManaging]
     }
     await store.receive(\.delegate.presentManager)
+    #expect(authUseCase.getRefreshCallCount() == 1)
+    #expect(authUseCase.getUpdateCredentialCallCount() == 1)
+  }
+
+  @Test("기수 변경 후 토큰 갱신 실패 시 운영진 API를 호출하지 않고 로그인으로 이동한다")
+  func credentialRefreshFailureNavigatesToLogin() async {
+    let profile = OnBoardingCoverageFixture.managerProfile
+    let appStorage = UserDefaults.inMemory
+    let inMemoryStorage = InMemoryStorage()
+    appStorage.set(true, forKey: "editGeneration")
+
+    let store = TestStore(initialState: SelectTeamFeature.State()) {
+      SelectTeamFeature()
+    } withDependencies: {
+      $0.defaultAppStorage = appStorage
+      $0.defaultInMemoryStorage = inMemoryStorage
+      $0.profileUseCase = StubProfileUseCase(profile: profile)
+      $0.authUseCase = MockAuthRepository.tokenExpired()
+    }
+    store.exhaustivity = .off(showSkippedAssertions: false)
+
+    await store.send(.view(.signUp))
+    await store.receive(\.async)
+    await store.receive(\.inner)
+    await store.receive(\.delegate.presentLogin)
+    #expect(store.state.editProfile == profile)
+    #expect(store.state.editGeneration == false)
+    #expect(store.state.staffRole == .manager)
   }
 
   @Test("프로필 수정 결과가 멤버면 멤버 홈으로 이동한다")

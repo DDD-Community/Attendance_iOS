@@ -1,6 +1,20 @@
+//
+//  SQLiteSharedValueStorage.swift
+//  DDDStorage
+//
+//  Created by DDD on 9/4/26.
+//
+
 import DDDStorageInterface
 import Foundation
 import SQLiteData
+
+@Table("sharedValues")
+private struct SharedValueRecord: Sendable {
+  @Column(primaryKey: true)
+  let key: String
+  let value: Data
+}
 
 struct SQLiteSharedValueStorage: SharedValueStorage {
   let identifier = SharedValueStorageIdentifier()
@@ -11,33 +25,22 @@ struct SQLiteSharedValueStorage: SharedValueStorage {
   }
 
   func load(forKey key: String) throws -> Data? {
-    return try database.read { db in
-      try Data.fetchOne(
-        db,
-        sql: "SELECT value FROM sharedValues WHERE key = ?",
-        arguments: [key]
-      )
+    try database.read { db in
+      try SharedValueRecord.find(key).fetchOne(db)?.value
     }
   }
 
   func save(_ data: Data, forKey key: String) throws {
     try database.write { db in
-      try db.execute(
-        sql: """
-          INSERT INTO sharedValues (key, value) VALUES (?, ?)
-          ON CONFLICT(key) DO UPDATE SET value = excluded.value
-          """,
-        arguments: [key, data]
-      )
+      try SharedValueRecord
+        .upsert { SharedValueRecord(key: key, value: data) }
+        .execute(db)
     }
   }
 
   func remove(forKey key: String) throws {
     try database.write { db in
-      try db.execute(
-        sql: "DELETE FROM sharedValues WHERE key = ?",
-        arguments: [key]
-      )
+      try SharedValueRecord.find(key).delete().execute(db)
     }
   }
 }

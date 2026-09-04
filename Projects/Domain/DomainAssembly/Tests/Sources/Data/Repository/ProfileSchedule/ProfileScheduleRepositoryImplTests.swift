@@ -1,12 +1,21 @@
+//
+//  ProfileScheduleRepositoryImplTests.swift
+//  DomainAssemblyTests
+//
+//  Created by DDD on 9/4/26.
+//
+
 import APIEndpoint
 import Dependencies
 import DDDNetworkInterface
 import Foundation
+import SQLiteData
 import Testing
 
 @testable import AppUpdateDomain
 @testable import AttendanceDomain
 @testable import AuthDomain
+@testable import DDDStorage
 @testable import MyPageDomain
 @testable import OnBoardingDomain
 @testable import ProfileDomain
@@ -92,7 +101,14 @@ struct ProfileRepositoryImplTests {
   @Test("프로필 수정 입력을 요청 DTO에 빠짐없이 전달한다")
   func editProfileForwardsInput() async throws {
     let client = ProfileScheduleClient(json: Self.profileJSON)
-    let repository = makeProfileRepository(client: client)
+    let database = try DatabaseQueue()
+    try AppDatabaseMigrator.migrate(database)
+    let localDataSource = ProfileLocalDataSource(database: database)
+    let repository = withDependencies {
+      $0.profileLocalDataSource = localDataSource
+    } operation: {
+      makeRepository(client: client) { ProfileRepositoryImpl() }
+    }
     let input = EditProfileInput(
       name: "수정 이름",
       generationId: 13,
@@ -104,8 +120,10 @@ struct ProfileRepositoryImplTests {
 
     let profile = try await repository.editProfile(input: input)
     let body = await client.lastEditProfileBody
+    let cachedProfile = try await localDataSource.loadUser()
 
     #expect(profile.userID == 17)
+    #expect(cachedProfile == profile)
     #expect(body?.name == "수정 이름")
     #expect(body?.generationId == 13)
     #expect(body?.jobRole == "BACKEND")

@@ -1,3 +1,10 @@
+//
+//  Project.swift
+//  OnBoarding
+//
+//  Created by DDD on 9/4/26.
+//
+
 import DependencyPackagePlugin
 import DependencyPlugin
 import Foundation
@@ -12,6 +19,7 @@ let project = Project.makeModule(
   dependencies: [
     .ui(.sharedUI),
     .core(.logger),
+    .domain(.auth, .interface),
     .domain(.onBoarding, .interface),
     .domain(.profile, .interface)
   ],

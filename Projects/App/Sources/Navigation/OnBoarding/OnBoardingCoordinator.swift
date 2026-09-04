@@ -107,6 +107,9 @@ extension OnBoardingCoordinator {
     case .routeAction(id: _, action: .selectManaging(.delegate(.presentMember))):
       return .send(.navigation(.presentMember))
 
+    case .routeAction(id: _, action: .selectManaging(.delegate(.presentLogin))):
+      return .send(.navigation(.presentLogin))
+
     case .routeAction(id: _, action: .selectManaging(.delegate(.presentProfile))):
       return .send(.navigation(.presentProfile))
 

@@ -5,7 +5,6 @@
 //  Created by DDD on 1/4/26.
 //
 
-
 import Profile
 import Foundation
 
@@ -86,15 +85,11 @@ extension ProfileCoordinator {
   ) -> Effect<Action> {
     switch action {
     case .routeAction(id: _, action: .profile(.delegate(.presentLogOut))):
-      state.routes.goBackToRoot()
       return .concatenate(
         .cancel(id: ProfileReducer.CancelID.fetchProfile),
         .cancel(id: ProfileReducer.CancelID.deleteUser),
         .cancel(id: ProfileReducer.CancelID.logoutUser),
-        .run { send in
-          await Task.yield()
-          await send(.navigation(.presentLogin))
-        }
+        .send(.navigation(.presentLogin))
       )
 
       case .routeAction(id: _, action: .profile(.delegate(.presentPrivacyPolicy))):

@@ -106,19 +106,14 @@ extension MemberCoordinator {
       return .send(.inner(.onResume))
 
     case .routeAction(id: _, action: .profile(.navigation(.presentLogin))):
-      state.routes.goBackToRoot()
       return .concatenate(
         .cancel(id: CancelID.allEffects),
         .cancel(id: CancelID.profileEffects),
         .cancel(id: ProfileReducer.CancelID.fetchProfile),
         .cancel(id: ProfileReducer.CancelID.deleteUser),
         .cancel(id: ProfileReducer.CancelID.logoutUser),
-        .run { send in
-          await Task.yield()
-          await send(.navigation(.presentLogin))
-        }
+        .send(.navigation(.presentLogin))
       )
-      .cancellable(id: CancelID.allEffects, cancelInFlight: true)
 
       // 기수변경으로 멤버 → 운영진이 된 경우 운영진 홈으로 전환
       case .routeAction(id: _, action: .profile(.navigation(.presentStaff))):

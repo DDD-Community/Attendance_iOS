@@ -1,4 +1,3 @@
-import ProfileDomainInterface
 //
 //  AttendanceError.swift
 //  Entity
@@ -6,6 +5,7 @@ import ProfileDomainInterface
 //  Created by DDD on 1/11/26.
 //
 
+import ProfileDomainInterface
 import Foundation
 
 /// 출석 도메인의 실패만 담는다.

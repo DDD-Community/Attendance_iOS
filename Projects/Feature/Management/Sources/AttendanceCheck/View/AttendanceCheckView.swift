@@ -53,19 +53,19 @@ private extension AttendanceCheckView {
   func selectAttendanceDate() -> some View {
     VStack {                          // LazyVStack → VStack
       Spacer().frame(height: 24)
-      
+
       HStack {
         Image(asset: .calender)
           .resizable()
           .scaledToFit()
           .frame(width: 18, height: 26)
-        
+
         Spacer().frame(width: 4)
-        
+
         Text(store.selectAttendanceDate.formatted(.yearMonthDayDotted))
           .dddFont(.body1NormalMedium)
           .foregroundStyle(.staticWhite)
-        
+
         Spacer()
       }
       .contentShape(Rectangle())      // 탭 영역 확보(빈 곳도 탭되게)
@@ -102,19 +102,6 @@ private extension AttendanceCheckView {
         teamTabScroller(proxy: proxy)
       }
     }
-    .simultaneousGesture(
-      DragGesture(minimumDistance: 20)
-        .onEnded { value in
-          let swipeThreshold: CGFloat = 50
-          withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-            if value.translation.width > swipeThreshold {
-              _ = send(.swipeNext)
-            } else if value.translation.width < -swipeThreshold {
-              _ = send(.swipePrevious)
-            }
-          }
-        }
-    )
   }
 
   @ViewBuilder
@@ -205,62 +192,77 @@ private extension AttendanceCheckView {
 
   @ViewBuilder
   func selectPartAttendanceStatus() -> some View {
+    attendanceTabView()
+
     if let selectPart = store.selectPart,
        [.web1, .web2, .and1, .and2, .ios1, .ios2].contains(selectPart)
     {
-      selectPartAttendanceStatusCard()
-        .simultaneousGesture(
-          DragGesture(minimumDistance: 20)
-            .onEnded { value in
-              let swipeThreshold: CGFloat = 50
-              withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                if value.translation.width > swipeThreshold {
-                  _ = send(.swipePrevious)
-                } else if value.translation.width < -swipeThreshold {
-                  _ = send(.swipeNext)
-                }
-              }
-            }
-        )
-
       Spacer()
         .frame(height: 20)
-    } else {
-      selectPartAttendanceStatusCard()
-        .simultaneousGesture(
-          DragGesture(minimumDistance: 20)
-            .onEnded { value in
-              let swipeThreshold: CGFloat = 50
-              withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                if value.translation.width > swipeThreshold {
-                  _ = send(.swipePrevious)
-                } else if value.translation.width < -swipeThreshold {
-                  _ = send(.swipeNext)
-                }
-              }
-            }
-        )
     }
   }
 
   @ViewBuilder
-  func selectPartAttendanceStatusCard() -> some View {
-    let attendanceModel = getAttendanceModel()
-
-    Group {
-      if attendanceModel.isEmpty {
-        noMemberAttendanceView()
-      } else {
-        AttendanceScrollView(attendanceModel: attendanceModel)
+  func attendanceTabView() -> some View {
+    TabView(selection: pageSelection) {
+      ForEach(Array(pagedTeams.enumerated()), id: \.offset) { index, team in
+        selectPartAttendanceStatusCard(team: team)
+          .tag(index)
       }
     }
-    .id(store.selectPart)
-    .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+    .tabViewStyle(.page(indexDisplayMode: .never))
   }
 
-  private func getAttendanceModel() -> [Attendance] {
-    return store.attendanceByTeam[store.selectTeamID] ?? store.attendanceModel
+  /// 스와이프는 TabView 가 이미 움직인 뒤라, 복제 페이지 보정은 애니메이션 없이 반영한다.
+  var pageSelection: Binding<Int> {
+    Binding(
+      get: { store.pageIndex },
+      set: { newValue in
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+          send(.pageChanged(newValue))
+        }
+      }
+    )
   }
+
+  @ViewBuilder
+  func selectPartAttendanceStatusCard(team: SelectTeamEntity) -> some View {
+    let attendanceModel = attendanceModels(for: team)
+
+    if attendanceModel.isEmpty {
+      noMemberAttendanceView()
+    } else {
+      AttendanceScrollView(attendanceModel: attendanceModel)
+    }
+  }
+
+  /// 리듀서의 순환 계산과 같은 순서를 써야 스와이프와 탭 선택이 어긋나지 않는다.
+  var orderedTeams: [SelectTeamEntity] {
+    return store.attendanceTeam.sorted { $0.teamId < $1.teamId }
+  }
+
+  /// 양 끝에 반대편 팀을 한 장씩 덧대면 TabView 로도 마지막 → 첫 팀 순환이 유지된다.
+  var pagedTeams: [SelectTeamEntity] {
+    guard orderedTeams.count > 1,
+          let first = orderedTeams.first,
+          let last = orderedTeams.last
+    else {
+      return orderedTeams
+    }
+
+    return [last] + orderedTeams + [first]
+  }
+
+  private func attendanceModels(for team: SelectTeamEntity) -> [Attendance] {
+    if let cached = store.attendanceByTeam[team.teamId] {
+      return cached
+    }
+
+    return team.teamId == store.selectTeamID ? store.attendanceModel : []
+  }
+
 
   @ViewBuilder
   private func AttendanceScrollView(attendanceModel: [Attendance]) -> some View {

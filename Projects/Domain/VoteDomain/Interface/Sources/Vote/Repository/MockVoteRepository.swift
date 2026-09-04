@@ -5,7 +5,6 @@
 //  Created by DDD on 6/11/26.
 //
 
-
 public final class MockVoteRepository: VoteRepositoryInterface {
   public init() {}
 

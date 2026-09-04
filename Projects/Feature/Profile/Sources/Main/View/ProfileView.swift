@@ -1,5 +1,5 @@
 //
-//  ManagerProfileView.swift
+//  ProfileView.swift
 //  DDDAttendance
 //
 //  Created by DDD on 7/17/24.

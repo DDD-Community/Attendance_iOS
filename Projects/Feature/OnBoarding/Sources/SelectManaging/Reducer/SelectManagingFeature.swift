@@ -1,12 +1,13 @@
 //
-//  OnBoardingSelectManaging.swift
-//  Presentation
+//  SelectManagingFeature.swift
+//  OnBoarding
 //
-//  Created by DDD on 11/3/24.
+//  Created by DDD on 9/4/26.
 //
 
 import Foundation
 
+import AuthDomainInterface
 import OnBoardingDomainInterface
 import ProfileDomainInterface
 import DDDCoreUtility
@@ -87,6 +88,7 @@ public struct SelectManagingFeature {
     case mangerListResponse(Result<[SelectManaging], SignUpError>)
     case signUpUserResponse(Result<SignUpUser, SignUpError>)
     case editProfileResponse(Result<ProfileEntity, ProfileError>)
+    case credentialRefreshFailed(ProfileEntity)
   }
 
   // MARK: - DelegateAction
@@ -103,6 +105,7 @@ public struct SelectManagingFeature {
   @Dependency(\.onBoardingUseCase) var onBoardingUseCase
   @Dependency(\.signUpUseCase) var signUpUseCase
   @Dependency(\.profileUseCase) var profileUseCase
+  @Dependency(\.authUseCase) var authUseCase
   @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
 
@@ -193,6 +196,9 @@ extension SelectManagingFeature {
     case .presentMember:
       return .none
 
+    case .presentLogin:
+      return .none
+
     case .presentSelectTeam:
       return .none
 
@@ -233,13 +239,20 @@ extension SelectManagingFeature {
       return .run { [
         userSession = state.userSession
       ] send in
-        let editProfileResult = await Result {
-          try await profileUseCase.editProfile(
+        do {
+          let profile = try await profileUseCase.editProfile(
             input: EditProfileInput(userSession: userSession)
           )
+          do {
+            let tokens = try await authUseCase.refresh()
+            await authUseCase.updateSessionCredential(with: tokens)
+            await send(.inner(.editProfileResponse(.success(profile))))
+          } catch {
+            await send(.inner(.credentialRefreshFailed(profile)))
+          }
+        } catch {
+          await send(.inner(.editProfileResponse(.failure(ProfileError.from(error)))))
         }
-        .mapError(ProfileError.from)
-        return await send(.inner(.editProfileResponse(editProfileResult)))
       }
       .cancellable(id: CancelID.editProfile, cancelInFlight: true)
     }
@@ -286,18 +299,7 @@ extension SelectManagingFeature {
     case let .editProfileResponse(result):
       switch result {
       case let .success(data):
-        state.editProfile = data
-        state.$editGeneration.withLock { $0 = false }
-        state.$staffRole.withLock { $0 = data.role }
-        state.$userSession.withLock {
-          $0.userID = data.userID
-          $0.name = data.name
-          $0.generation = data.generation
-          $0.selectTeam = data.team ?? .unknown
-          $0.selectPart = data.jobRole
-          $0.userRole = data.role
-          $0.managing = data.manger ?? []
-        }
+        applyEditedProfile(data, to: &state)
 
         if data.role == .manager {
           return .send(.delegate(.presentManager))
@@ -319,6 +321,28 @@ extension SelectManagingFeature {
         }
         return .none
       }
+
+    case let .credentialRefreshFailed(profile):
+      applyEditedProfile(profile, to: &state)
+      return .send(.delegate(.presentLogin))
+    }
+  }
+
+  private func applyEditedProfile(
+    _ profile: ProfileEntity,
+    to state: inout State
+  ) {
+    state.editProfile = profile
+    state.$editGeneration.withLock { $0 = false }
+    state.$staffRole.withLock { $0 = profile.role }
+    state.$userSession.withLock {
+      $0.userID = profile.userID
+      $0.name = profile.name
+      $0.generation = profile.generation
+      $0.selectTeam = profile.team ?? .unknown
+      $0.selectPart = profile.jobRole
+      $0.userRole = profile.role
+      $0.managing = profile.manger ?? []
     }
   }
 }

@@ -1,4 +1,3 @@
-import AttendanceDomainInterface
 //
 //  QRValidateEntity.swift
 //  Entity
@@ -6,6 +5,7 @@ import AttendanceDomainInterface
 //  Created by DDD on 1/12/26.
 //
 
+import AttendanceDomainInterface
 import Foundation
 
 public struct QRValidateEntity: Equatable {

@@ -8,6 +8,7 @@
 import DDDCoreLogger
 import Foundation
 
+import AuthDomainInterface
 import DDDCoreUtility
 import OnBoardingDomainInterface
 import ProfileDomainInterface
@@ -66,49 +67,51 @@ public struct SelectTeamFeature {
   public enum AlertAction {
     case confirmTapped
   }
-  
+
   // MARK: - ViewAction
-  
+
   @CasePathable
   public enum View {
     case selectTeamButton(selectTeam: SelectTeamEntity)
     case onAppear
     case signUp
   }
-  
+
   // MARK: - AsyncAction 비동기 처리 액션
-  
+
   public enum AsyncAction: Equatable {
     case getTeams
     case signUpUser
     case editProfile
   }
-  
+
   // MARK: - 앱내에서 사용하는 액션
-  
+
   public enum InnerAction: Equatable {
     case teamListResponse(Result<[SelectTeamEntity], SignUpError>)
     case signUpUserResponse(Result<SignUpUser, SignUpError>)
     case editProfileResponse(Result<ProfileEntity, ProfileError>)
+    case credentialRefreshFailed(ProfileEntity)
   }
-  
+
   // MARK: - DelegateAction
-  
+
   /// 이동 계약은 OnBoardingInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
   public typealias DelegateAction = SelectTeamDelegate
-  
+
   nonisolated enum CancelID: Hashable {
     case selectTeam
     case signUpUser
     case editProfile
   }
 
-  
+
   @Dependency(\.signUpUseCase) var signUpUseCase
   @Dependency(\.onBoardingUseCase) var onBoardingUseCase
   @Dependency(\.profileUseCase) var profileUseCase
+  @Dependency(\.authUseCase) var authUseCase
   @Dependency(\.continuousClock) var clock
-  
+
   public var body: some Reducer<State, Action> {
     BindingReducer()
     Reduce { state, action in
@@ -249,13 +252,20 @@ extension SelectTeamFeature {
         return .run { [
           userSession = state.userSession
         ] send in
-          let editProfileResult = await Result {
-            return try await profileUseCase.editProfile(
+          do {
+            let profile = try await profileUseCase.editProfile(
               input: EditProfileInput(userSession: userSession)
             )
+            do {
+              let tokens = try await authUseCase.refresh()
+              await authUseCase.updateSessionCredential(with: tokens)
+              await send(.inner(.editProfileResponse(.success(profile))))
+            } catch {
+              await send(.inner(.credentialRefreshFailed(profile)))
+            }
+          } catch {
+            await send(.inner(.editProfileResponse(.failure(ProfileError.from(error)))))
           }
-          .mapError(ProfileError.from)
-          return await send(.inner(.editProfileResponse(editProfileResult)))
         }
         .cancellable(id: CancelID.editProfile, cancelInFlight: true)
     }
@@ -305,18 +315,7 @@ extension SelectTeamFeature {
       case .editProfileResponse(let result):
         switch result {
           case .success(let data):
-            state.editProfile = data
-            state.$editGeneration.withLock { $0 = false }
-            state.$staffRole.withLock { $0 = data.role }
-            state.$userSession.withLock {
-              $0.userID = data.userID
-              $0.name = data.name
-              $0.generation = data.generation
-              $0.selectTeam = data.team ?? .unknown
-              $0.selectPart = data.jobRole
-              $0.userRole = data.role
-              $0.managing = data.manger ?? []
-            }
+            applyEditedProfile(data, to: &state)
 
             // 기수변경 완료 후 변경된 역할에 맞는 홈으로 이동 (운영진/멤버)
             if data.role == .manager {
@@ -340,6 +339,28 @@ extension SelectTeamFeature {
             return .none
         }
 
+      case let .credentialRefreshFailed(profile):
+        applyEditedProfile(profile, to: &state)
+        return .send(.delegate(.presentLogin))
+
+    }
+  }
+
+  private func applyEditedProfile(
+    _ profile: ProfileEntity,
+    to state: inout State
+  ) {
+    state.editProfile = profile
+    state.$editGeneration.withLock { $0 = false }
+    state.$staffRole.withLock { $0 = profile.role }
+    state.$userSession.withLock {
+      $0.userID = profile.userID
+      $0.name = profile.name
+      $0.generation = profile.generation
+      $0.selectTeam = profile.team ?? .unknown
+      $0.selectPart = profile.jobRole
+      $0.userRole = profile.role
+      $0.managing = profile.manger ?? []
     }
   }
 }

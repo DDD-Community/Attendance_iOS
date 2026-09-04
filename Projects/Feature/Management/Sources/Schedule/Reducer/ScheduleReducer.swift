@@ -1,5 +1,5 @@
 //
-//  ScheduleManager.swift
+//  ScheduleReducer.swift
 //  Presentation
 //
 //  Created by DDD on 5/9/25.

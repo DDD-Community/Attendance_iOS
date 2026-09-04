@@ -1,4 +1,3 @@
-import ProfileDomainInterface
 //
 //  SocialType.swift
 //  Entity
@@ -6,6 +5,7 @@ import ProfileDomainInterface
 //  Created by DDD on 12/29/25.
 //
 
+import ProfileDomainInterface
 import Foundation
 
 public enum SocialType: String, CaseIterable, Identifiable, Hashable, Equatable {

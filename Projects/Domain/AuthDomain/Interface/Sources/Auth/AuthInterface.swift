@@ -1,4 +1,3 @@
-import ProfileDomainInterface
 //
 //  AuthInterface.swift
 //  DomainInterface
@@ -6,6 +5,7 @@ import ProfileDomainInterface
 //  Created by DDD on 7/23/25.
 //
 
+import ProfileDomainInterface
 import Foundation
 
 import Dependencies

@@ -1,5 +1,3 @@
-import AuthDomainInterface
-import ProfileDomainInterface
 //
 //  MockSignUpRepository.swift
 //  DomainInterface
@@ -8,6 +6,8 @@ import ProfileDomainInterface
 //  Moved from Repository module
 //
 
+import AuthDomainInterface
+import ProfileDomainInterface
 import Foundation
 
 /// SignUp Repository의 기본 구현체 (테스트/프리뷰용)

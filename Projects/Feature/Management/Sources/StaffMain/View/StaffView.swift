@@ -56,17 +56,6 @@ public struct StaffView: View {
         closeDropDown()
       }
     }
-
-    .gesture(
-      DragGesture()
-        .onEnded { value in
-          if value.translation.width < -UIScreen.screenWidth * 0.02 {
-            store.send(.attendanceCheck(.view(.swipeNext)))
-          } else if value.translation.width > UIScreen.screenWidth * 0.02 {
-            store.send(.attendanceCheck(.view(.swipePrevious)))
-          }
-        }
-    )
     .sheet(item: $store.scope(state: \.destination?.qrcode, action: \.destination.qrcode)) { qrCodeStore in
       QRScannerView(store: qrCodeStore) {
         store.send(.view(.closeModal))

@@ -1,3 +1,10 @@
+//
+//  DDDDesignKitTests.swift
+//  DDDDesignKitTests
+//
+//  Created by DDD on 9/4/26.
+//
+
 import SwiftUI
 import Testing
 @testable import DDDDesignKit

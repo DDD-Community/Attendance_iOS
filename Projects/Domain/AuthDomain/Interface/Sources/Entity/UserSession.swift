@@ -1,4 +1,3 @@
-import ProfileDomainInterface
 //
 //  UserSession.swift
 //  Entity
@@ -6,6 +5,7 @@ import ProfileDomainInterface
 //  Created by DDD on 12/31/25.
 //
 
+import ProfileDomainInterface
 import Foundation
 
 public struct UserSession: Equatable, Sendable {

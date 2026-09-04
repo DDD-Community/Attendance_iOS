@@ -1,5 +1,5 @@
 //
-//  OnBoardingSelectManagingView.swift
+//  SelectManagingView.swift
 //  Presentation
 //
 //  Created by DDD on 11/3/24.
