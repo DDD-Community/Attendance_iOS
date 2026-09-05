@@ -4,65 +4,25 @@
 //
 
 import Dependencies
-import AppUpdateDomain
-import AttendanceDomain
-import AuthDomain
 import DDDStorageInterface
-import MyPageDomain
-import OnBoardingDomain
 import ProfileDomain
-import QRCodeDomain
 import ScheduleDomain
 import ServiceAssembly
-import VoteDomain
 
 public enum DomainDependencyAssembly {
+  /// Domain 모듈의 Repository/UseCase는 각 모듈이 `liveValue`로 직접 등록한다.
+  /// 여기서는 한 모듈이 소유할 수 없는 조립만 담당한다.
   public static func register(into values: inout DependencyValues) {
     ServiceDependencyAssembly.register(into: &values)
-    values.sessionCacheInvalidator = LocalSessionCacheInvalidator(
-      profile: values.profileLocalDataSource,
-      schedule: values.scheduleLocalDataSource
-    )
-    values.registerAppUpdateRepository()
-    values.registerAttendanceRepository()
-    values.registerAuthRepositories()
-    values.registerMyPageRepository()
-    values.registerOnBoardingRepositories()
-    values.registerProfileRepository()
-    values.registerQRCodeRepository()
-    values.registerScheduleRepository()
-    values.registerVoteRepository()
 
-    values.attendanceUseCase = resolve(in: values) { AttendanceUseCaseImpl() }
-    values.scheduleUseCase = resolve(in: values) { ScheduleUseCaseImpl() }
-    values.qrCodeUseCase = resolve(in: values) { QRCodeUseCaseImpl() }
-    values.authUseCase = resolve(in: values) { AuthUseCaseImpl() }
-    values.appleOAuthProvider = resolve(in: values) { AppleOAuthProvider() }
-    values.googleOAuthProvider = resolve(in: values) { GoogleOAuthProvider() }
-    values.unifiedOAuthUseCase = resolve(in: values) { UnifiedOAuthUseCase() }
-    values.profileUseCase = resolve(in: values) { ProfileUseCaseImpl() }
-    values.appUpdateUseCase = resolve(in: values) { AppUpdateUseCaseImpl() }
-    values.myPageUseCase = MyPageUseCaseImpl(repository: values.myPageRepository)
-    values.onBoardingUseCase = resolve(in: values) { OnBoardingUseCaseImpl() }
-    values.signUpUseCase = resolve(in: values) { SignUpUseCaseImpl() }
-    values.voteUseCase = resolve(in: values) { VoteUseCaseImpl() }
-  }
-
-  private static func resolve<Value>(
-    in values: DependencyValues,
-    _ makeValue: () -> Value
-  ) -> Value {
-    withDependencies {
-      $0 = values
-    } operation: {
-      makeValue()
-    }
+    // Profile/Schedule 두 모듈에 걸쳐 있어 조립 경계에서만 만들 수 있다.
+    values.sessionCacheInvalidator = LocalSessionCacheInvalidator()
   }
 }
 
 private struct LocalSessionCacheInvalidator: SessionCacheInvalidating {
-  let profile: any ProfileLocalDataSourceProtocol
-  let schedule: any ScheduleLocalDataSourceProtocol
+  @Dependency(\.profileLocalDataSource) private var profile
+  @Dependency(\.scheduleLocalDataSource) private var schedule
 
   func invalidate() async {
     try? await profile.clear()

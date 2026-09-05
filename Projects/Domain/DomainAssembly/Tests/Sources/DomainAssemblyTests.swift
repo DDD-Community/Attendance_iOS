@@ -48,6 +48,7 @@ struct DomainAssemblyTests {
   @Test("DomainAssembly는 도메인별 UseCase 구현을 등록한다")
   func registersUseCaseDependencies() {
     withDependencies {
+      $0.context = .live
       DomainDependencyAssembly.register(into: &$0)
     } operation: {
       @Dependency(\.attendanceUseCase) var attendanceUseCase
