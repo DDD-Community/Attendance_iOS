@@ -5,8 +5,8 @@
 //  Created by DDD on 1/2/25.
 //
 
-import DDDSharedUI
 import DDDAccessibility
+import DDDSharedUI
 import SwiftUI
 
 import DDDDesignKit
@@ -187,8 +187,13 @@ public struct MemberMainView: View {
             }
           }
         )
+        .accessibilityIdentifier { entry in
+          MemberAccessibilityID.dropdownItem(entry.id)
+        }
         .padding(.leading, 24)
         .padding(.top, 52)
+        .accessibilityElement(children: .contain)
+        .dddAccessibilityID(MemberAccessibilityID.dropdown)
       }
       .transition(.opacity)
       .zIndex(1)
