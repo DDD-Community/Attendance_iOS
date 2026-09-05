@@ -292,7 +292,7 @@ jobs:
   bundle-insights:
     name: Bundle insights
     needs: test-shards
-    if: always()
+    if: always() && needs.test-shards.result != 'cancelled'
     runs-on: self-hosted
     timeout-minutes: 20
 

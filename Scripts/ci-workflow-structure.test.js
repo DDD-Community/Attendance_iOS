@@ -97,5 +97,5 @@ test("단일 self-hosted runner에서는 테스트가 bundle 분석보다 먼저
   const bundleJob = job(pr, "bundle-insights", "pr-report");
 
   assert.match(bundleJob, /needs: test-shards/);
-  assert.match(bundleJob, /if: always\(\)/);
+  assert.match(bundleJob, /if: always\(\) && needs\.test-shards\.result != 'cancelled'/);
 });
