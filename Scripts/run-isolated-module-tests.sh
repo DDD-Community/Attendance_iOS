@@ -53,6 +53,7 @@ fi
 # PR 리포트가 이전 커밋의 모듈 실행을 섞지 않도록 모든 테스트 타깃을 실행한다.
 # run report는 Tuist 서버 업로드 여부와 최신 dashboard URL을 CI에서 검증하는 증거다.
 mise exec -- tuist test run "$TEST_SCHEME" \
+  --no-binary-cache \
   --test-plan "$TEST_PLAN" \
   --configuration "$CONFIGURATION" \
   --no-selective-testing \

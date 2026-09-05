@@ -67,10 +67,8 @@ jobs:
         timeout-minutes: 3
         run: mise exec -- tuist setup insights
 
-      - name: Generate Xcode workspace
-        run: |
-          mise exec -- tuist install
-          mise exec -- tuist generate --no-open --cache-profile none
+      - name: Install project dependencies
+        run: mise exec -- tuist install
 
       - name: Prepare build DerivedData
         run: |
@@ -102,6 +100,7 @@ jobs:
         run: |
           mise exec -- tuist test run DDDAttendance-Stage \
             --build-only \
+            --no-binary-cache \
             --test-plan DDDAttendance \
             --configuration Stage \
             --no-selective-testing \
@@ -293,6 +292,8 @@ jobs:
 
   bundle-insights:
     name: Bundle insights
+    needs: test-shards
+    if: always()
     runs-on: self-hosted
     timeout-minutes: 20
 

@@ -61,9 +61,7 @@ jobs:
         run: mise exec -- tuist setup insights
 
       - name: Install project dependencies
-        run: |
-          mise exec -- tuist install
-          mise exec -- tuist generate --no-open --cache-profile none
+        run: mise exec -- tuist install
 
       - name: Select simulator
         run: |
@@ -89,6 +87,7 @@ jobs:
         run: |
           mise exec -- tuist test DDDAttendance-Stage \
             --build-only \
+            --no-binary-cache \
             --configuration Stage \
             --no-selective-testing \
             --shard-total 2 \
@@ -185,6 +184,7 @@ jobs:
         run: |
           mise exec -- tuist test DDDAttendance-Stage \
             --without-building \
+            --no-binary-cache \
             --configuration Stage \
             --shard-plan-id "$TUIST_SHARD_PLAN_ID" \
             --shard-index "$TUIST_SHARD_INDEX" \

@@ -68,14 +68,30 @@ test("test shard는 build job 산출물을 사용하고 프로젝트를 다시 �
 });
 
 test("Sharing module alias를 빌드하는 job은 이전 외부 binary cache를 사용하지 않는다", () => {
-  const workflows = [
-    read(".github/workflows/ios-pr-coverage.yml"),
-    read(".github/workflows/ios-develop-sharded-tests.yml"),
+  const pr = read(".github/workflows/ios-pr-coverage.yml");
+  const develop = read(".github/workflows/ios-develop-sharded-tests.yml");
+  const buildJobs = [
+    job(pr, "build-test-shards", "test-shards"),
+    job(develop, "build-shards", "test-shards"),
   ];
 
-  for (const workflow of workflows) {
+  for (const workflow of [pr, develop]) {
     const generateCommands = workflow.match(/tuist generate[^\n]+/g) ?? [];
-    assert.ok(generateCommands.length > 0);
     assert.ok(generateCommands.every((command) => command.includes("--cache-profile none")));
   }
+
+  for (const buildJob of buildJobs) {
+    assert.doesNotMatch(buildJob, /tuist generate/);
+    assert.match(buildJob, /tuist test[\s\S]*?--build-only[\s\S]*?--no-binary-cache/);
+  }
+
+  assert.match(read("Scripts/run-isolated-module-tests.sh"), /--no-binary-cache/);
+});
+
+test("단일 self-hosted runner에서는 테스트가 bundle 분석보다 먼저 실행된다", () => {
+  const pr = read(".github/workflows/ios-pr-coverage.yml");
+  const bundleJob = job(pr, "bundle-insights", "pr-report");
+
+  assert.match(bundleJob, /needs: test-shards/);
+  assert.match(bundleJob, /if: always\(\)/);
 });
