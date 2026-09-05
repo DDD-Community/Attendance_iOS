@@ -15,8 +15,14 @@ let project = Project.makeModule(
   bundleId: .appBundleID(name: ".AppUpdateDomain"),
   product: .staticFramework,
   settings: .moduleSettings,
-  dependencies: [.core(.logger), .SPM.dependencies],
+  dependencies: [
+    .core(.logger),
+    .SPM.dependencies
+  ],
   hasTests: true,
   hasInterface: true,
-  interfaceDependencies: [.SPM.dependencies, .SPM.composableArchitecture]
+  interfaceDependencies: [
+    .SPM.dependencies,
+    .SPM.composableArchitecture
+  ]
 )
