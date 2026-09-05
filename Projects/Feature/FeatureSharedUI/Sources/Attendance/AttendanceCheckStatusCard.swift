@@ -107,6 +107,7 @@ public struct AttendanceCheckStatusCard: View {
       : nil
     )
     .padding(.vertical, isDisabled ? 2: 0)
+    .accessibilityElement(children: .contain)
     .dddAccessibilityID(accessibilityID)
   }
 

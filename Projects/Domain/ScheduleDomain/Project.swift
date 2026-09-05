@@ -23,5 +23,9 @@ let project = Project.makeModule(
   ],
   hasTests: true,
   hasInterface: true,
-  interfaceDependencies: [.SPM.dependencies, .SPM.composableArchitecture]
+  interfaceDependencies: [
+    .core(.coreUtility),
+    .SPM.dependencies,
+    .SPM.composableArchitecture
+  ]
 )

@@ -10,3 +10,7 @@ tags:
     file: home_smoke.yaml
 - runFlow:
     file: attendance_refresh.yaml
+- runFlow:
+    file: team_switch.yaml
+- runFlow:
+    file: schedule_change.yaml

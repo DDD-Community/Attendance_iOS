@@ -48,18 +48,13 @@ struct ManagementStaffViewRenderTests {
   private func loadedAttendanceState() -> AttendanceCheck.State {
     var state = AttendanceCheck.State()
     state.viewState = .loaded
-    state.scheduleModel = .init(uniqueElements: ManagementSupportFixture.schedules)
-    state.selectScheduleID = EntityFixtureSchedule.value.id
-    state.attendanceCountModel = ManagementSupportFixture.attendanceCount
-    state.attendanceCount = ManagementSupportFixture.attendanceCount.attendanceCount
-    state.lateCount = ManagementSupportFixture.attendanceCount.lateCount
-    state.absentCount = ManagementSupportFixture.attendanceCount.absentCount
-    state.attendanceTeam = .init(uniqueElements: ManagementSupportFixture.teams)
-    state.selectTeamID = 1
-    state.selectPart = .ios1
-    state.attendanceModel = ManagementSupportFixture.attendances
+    state.selectedSchedule = EntityFixtureSchedule.value
+    state.attendanceSummary = ManagementSupportFixture.attendanceCount
+    state.teams = .init(uniqueElements: ManagementSupportFixture.teams)
+    state.selectedTeamID = 1
+    state.settledTeamID = 1
     state.attendanceByTeam = [1: ManagementSupportFixture.attendances, 2: []]
-    state.attendanceStatus = .init(uniqueElements: ManagementSupportFixture.statuses)
+    state.availableStatuses = .init(uniqueElements: ManagementSupportFixture.statuses)
     return state
   }
 

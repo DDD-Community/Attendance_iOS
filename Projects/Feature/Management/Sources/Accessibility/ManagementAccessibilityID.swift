@@ -40,4 +40,15 @@ enum ManagementAccessibilityID {
       "management.attendance.modal.status.\(status.apiKey.lowercased())"
     }
   }
+
+  enum ScheduleModal {
+    static let root = "management.schedule.modal"
+    static let skeleton = "management.schedule.modal.skeleton"
+    static let list = "management.schedule.modal.list"
+    static let confirmButton = "management.schedule.modal.confirmbutton"
+
+    static func item(_ scheduleID: Int) -> String {
+      "management.schedule.modal.item.\(scheduleID)"
+    }
+  }
 }

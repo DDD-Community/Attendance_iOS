@@ -1,5 +1,5 @@
 # 운영진 출석 상태 변경 E2E
-# TARGET_USER_ID의 상태를 바꾼 뒤 ORIGINAL_STATUS로 복구한다.
+# 첫 출석 카드(운영진 테스트 계정의 고정 사용자 207)의 상태를 지각으로 바꾼 뒤 출석으로 복구한다.
 appId: io.DDD.Attendance
 name: 운영진 출석 상태 변경은 카드 목록만 갱신한다
 tags:
@@ -7,12 +7,10 @@ tags:
   - management
   - attendance
 ---
-- launchApp:
-    clearState: false
 
 - extendedWaitUntil:
     visible:
-      id: "management.attendance.root"
+      id: "management.attendance.summary"
     timeout: 30000
 
 - assertVisible:
@@ -23,20 +21,16 @@ tags:
     id: "management.staff.skeleton"
 
 - tapOn:
-    id: "management.attendance.card.${TARGET_USER_ID}.editbutton"
+    point: "87%,50%"
 - assertVisible:
-    id: "management.attendance.modal"
+    text: "출석 상태를 변경하시겠습니까?"
 - tapOn:
-    id: "management.attendance.modal.statusbutton"
+    point: "50%,53%"
 - tapOn:
-    id: "management.attendance.modal.status.${UPDATED_STATUS}"
+    point: "50%,65%"
 - tapOn:
-    id: "management.attendance.modal.confirmbutton"
+    point: "50%,62%"
 
-- extendedWaitUntil:
-    visible:
-      id: "management.attendance.list.skeleton"
-    timeout: 10000
 - assertVisible:
     id: "management.staff.root"
 - assertVisible:
@@ -46,22 +40,30 @@ tags:
 
 - extendedWaitUntil:
     visible:
-      id: "management.attendance.card.${TARGET_USER_ID}"
+      id: "management.attendance.card.*"
     timeout: 30000
 - assertNotVisible:
     id: "management.attendance.list.skeleton"
+- assertVisible:
+    id: "management.attendance.card.207"
+    text: "지각"
 
 - tapOn:
-    id: "management.attendance.card.${TARGET_USER_ID}.editbutton"
+    point: "87%,50%"
 - tapOn:
-    id: "management.attendance.modal.statusbutton"
+    point: "50%,53%"
 - tapOn:
-    id: "management.attendance.modal.status.${ORIGINAL_STATUS}"
+    point: "50%,59%"
 - tapOn:
-    id: "management.attendance.modal.confirmbutton"
+    point: "50%,62%"
 - extendedWaitUntil:
     visible:
-      id: "management.attendance.card.${TARGET_USER_ID}"
+      id: "management.attendance.card.*"
     timeout: 30000
+- assertNotVisible:
+    id: "management.attendance.list.skeleton"
+- assertVisible:
+    id: "management.attendance.card.207"
+    text: "출석"
 
 - takeScreenshot: .maestro/artifacts/management/attendance-refresh

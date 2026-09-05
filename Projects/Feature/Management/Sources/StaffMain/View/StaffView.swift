@@ -38,6 +38,7 @@ public struct StaffView: View {
         Spacer()
       }
     }
+    .accessibilityElement(children: .contain)
     .dddAccessibilityID(ManagementAccessibilityID.Staff.root)
     .overlay {
       dropDownView()

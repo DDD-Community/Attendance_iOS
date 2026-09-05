@@ -80,6 +80,7 @@ public struct AttendanceStatusModal: View {
           .fill(.gray90)
       )
       .onTapGesture {}
+      .accessibilityElement(children: .contain)
       .dddAccessibilityID(ManagementAccessibilityID.Attendance.modal)
     }
   }

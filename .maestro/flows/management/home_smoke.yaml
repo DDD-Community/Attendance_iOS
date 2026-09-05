@@ -4,16 +4,14 @@ tags:
   - e2e
   - management
 ---
-- launchApp:
-    clearState: false
 - extendedWaitUntil:
     visible:
       id: "management.staff.root"
     timeout: 30000
-- assertVisible:
-    id: "management.attendance.root"
-- assertVisible:
-    id: "management.attendance.summary"
+- extendedWaitUntil:
+    visible:
+      id: "management.attendance.summary"
+    timeout: 30000
 - assertVisible:
     id: "management.attendance.list"
 - assertNotVisible:

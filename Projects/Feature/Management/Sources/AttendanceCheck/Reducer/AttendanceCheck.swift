@@ -23,46 +23,96 @@ public struct AttendanceCheck {
 
   @ObservableState
   public struct State: Equatable {
-    var selectAttendanceDate: Date = .now
-    var selectAttendanceDateMonth: Date = .now
-    var selectPart: SelectTeams? = .web1
-    @Shared(.userSession) var userSession
-
-    var selectTeamID: Int = 0
-    /// 출석 카드 TabView 가 보고 있는 페이지. 앞뒤에 복제 페이지가 한 장씩 붙으므로 실제 팀 인덱스보다 1 크다.
-    var pageIndex: Int = 1
-
-    var dividerWidths: [Int: CGFloat] = [:]
-
-    /// 이 화면이 지금 무엇을 그려야 하는지.
     public enum ViewState: Equatable {
+      case idle
       case loading
       case refreshingAttendanceList
       case loaded
     }
 
-    /// 첫 진입은 항상 fetch 로 시작한다. 빈 화면이 한 프레임 스쳐 지나가지 않도록 스켈레톤부터 그린다.
+    struct EditTarget: Equatable {
+      let attendanceID: Int?
+      let userID: String
+    }
 
-    var viewState: ViewState = .loading
-    var attendanceCount: Int = .zero
-    var lateCount: Int = .zero
-    var absentCount: Int = .zero
-    var hasFetchedAttendance: Bool = false
+    @Shared(.userSession) var userSession
+
+    var viewState: ViewState = .idle
+
+    var selectedSchedule: Schedule?
+    var selectedTeamID: Int?
+    /// 페이지 전환이 끝난 팀. 이 팀을 기준으로 이전/다음 팀을 배치한다.
+    var settledTeamID: Int?
+
+    var teams: IdentifiedArrayOf<SelectTeamEntity> = []
+    var attendanceByTeam: [Int: [Attendance]] = [:]
+    var availableStatuses: IdentifiedArrayOf<AttendanceStatus> = []
+    var attendanceSummary: AttendanceCount?
+
+    var editTarget: EditTarget?
+
+    var teamTabWidths: [Int: CGFloat] = [:]
 
     @Presents var destination: Destination.State?
-    var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
-    var selectScheduleID: Int = 0
-    var attendanceCountModel: AttendanceCount?
-    var attendanceTeam: IdentifiedArrayOf<SelectTeamEntity> = .init(uniqueElements: [])
-    var attendanceModel: [Attendance] = []
-    var attendanceByTeam: [Int: [Attendance]] = [:]
-    var attendanceStatus: IdentifiedArrayOf<AttendanceStatus> = .init(uniqueElements: [])
-    var editAttendance: EditAttendance?
-    var attendanceId: Int?
-    var editAttendanceUserId: String = ""
-
     @Presents var attendanceModal: AttendanceModalState<AttendanceModalAction>?
     @Presents public var alert: AlertState<AlertAction>?
+
+    var selectedScheduleID: Int? {
+      selectedSchedule?.id
+    }
+
+    var selectedAttendanceDate: Date {
+      selectedSchedule?.toDate() ?? .now
+    }
+
+    var selectedTeam: SelectTeamEntity? {
+      guard let selectedTeamID else { return nil }
+      return teams[id: selectedTeamID]
+    }
+
+    var selectedPart: SelectTeams? {
+      selectedTeam?.teams
+    }
+
+    var attendanceCount: Int {
+      attendanceSummary?.attendanceCount ?? 0
+    }
+
+    var lateCount: Int {
+      attendanceSummary?.lateCount ?? 0
+    }
+
+    var absentCount: Int {
+      attendanceSummary?.absentCount ?? 0
+    }
+
+    var selectedAttendance: [Attendance] {
+      guard let selectedTeamID else { return [] }
+      return attendanceByTeam[selectedTeamID] ?? []
+    }
+
+    var orderedTeams: [SelectTeamEntity] {
+      teams.sorted { $0.teamId < $1.teamId }
+    }
+
+    /// 복제 페이지 없이 현재 팀의 앞뒤에 이전/다음 팀이 오도록 페이지 순서를 회전한다.
+    var pageTeams: IdentifiedArrayOf<SelectTeamEntity> {
+      let teams = orderedTeams
+
+      guard teams.count > 2 else {
+        return .init(uniqueElements: teams)
+      }
+
+      guard let settledTeamID,
+            let anchorIndex = teams.firstIndex(where: { $0.teamId == settledTeamID })
+      else {
+        return .init(uniqueElements: teams)
+      }
+
+      let startIndex = (anchorIndex - 1 + teams.count) % teams.count
+      let rotatedTeams = Array(teams[startIndex...]) + Array(teams[..<startIndex])
+      return .init(uniqueElements: rotatedTeams)
+    }
 
     public init() {}
   }
@@ -88,9 +138,7 @@ public struct AttendanceCheck {
   public enum View {
     case onAppear
     case selectPartButton(selectPart: SelectTeamEntity)
-    case pageChanged(Int)
-    case swipeNext
-    case swipePrevious
+    case pageChanged(teamID: Int)
     case closeModal
     case tapSelectDate
     case showEditAttendanceModal(id: Int?, userId: String)
@@ -106,7 +154,7 @@ public struct AttendanceCheck {
     case fetchTeams
     case fetchAttendance
     case fetchStatus
-    case editAttendance(userid: String, status: AttendanceStatus)
+    case editAttendance(status: AttendanceStatus)
   }
 
   // MARK: - 앱내에서 사용하는 액션
@@ -118,6 +166,7 @@ public struct AttendanceCheck {
     case attendanceResponse(teamId: Int, Result<[Attendance], AttendanceError>)
     case attendanceStatusResponse(Result<[AttendanceStatus], AttendanceError>)
     case editAttendanceResponse(Result<EditAttendance, AttendanceError>)
+    case pageTransitionFinished(teamID: Int)
   }
 
   // MARK: - DelegateAction
@@ -142,6 +191,7 @@ public struct AttendanceCheck {
     case fetchAttendance
     case fetchStatus
     case editAttendance
+    case pageTransition
   }
 
   @Dependency(\.attendanceUseCase) var attendanceUseCase
@@ -198,18 +248,19 @@ extension AttendanceCheck {
   ) -> Effect<Action> {
     switch action {
     case .onAppear:
-      // 첫 진입 시에만 전체 데이터 로드, 이후에는 중요한 데이터만 새로고침
-      state.selectPart = state.userSession.selectTeam
-      if !state.hasFetchedAttendance {
-        state.hasFetchedAttendance = true
+      switch state.viewState {
+      case .idle:
+        state.viewState = .loading
         return .concatenate(
           .run { await $0(.async(.fetchSchedule)) }, // 성공시 fetchAttendanceCount와 fetchTeams 자동 호출
           .run { await $0(.async(.fetchStatus)) }
         )
-      } else {
-        return .concatenate(
-          .run { await $0(.view(.refreshData)) }
-        )
+
+      case .loaded:
+        return .send(.view(.refreshData))
+
+      case .loading, .refreshingAttendanceList:
+        return .none
       }
 
     case .refreshData:
@@ -222,7 +273,7 @@ extension AttendanceCheck {
 
     case let .updateDividerWidths(widths):
       for (key, width) in widths {
-        state.dividerWidths[key] = width
+        state.teamTabWidths[key] = width
       }
       return .none
 
@@ -230,63 +281,22 @@ extension AttendanceCheck {
       updateSelectedTeam(state: &state, team: selectPart)
       return .send(.async(.fetchAttendance))
 
-    case let .pageChanged(index):
-      let orderedTeams = orderedAttendanceTeams(from: state.attendanceTeam)
-
-      guard orderedTeams.count > 1 else {
+    case let .pageChanged(teamID):
+      guard let team = state.orderedTeams.first(where: { $0.teamId == teamID }),
+            team.teamId != state.selectedTeamID
+      else {
         return .none
       }
 
-      // 앞뒤 복제 페이지에 멈추면 반대편 실제 팀으로 순환시킨다.
-      let teamIndex: Int
-      if index == 0 {
-        teamIndex = orderedTeams.count - 1
-      } else if index == orderedTeams.count + 1 {
-        teamIndex = 0
-      } else {
-        teamIndex = index - 1
-      }
-
-      guard orderedTeams.indices.contains(teamIndex) else {
-        return .none
-      }
-
-      let team = orderedTeams[teamIndex]
-
-      guard team.teamId != state.selectTeamID else {
-        // 팀은 그대로고 복제 페이지에서만 벗어나면 되는 경우.
-        state.pageIndex = teamIndex + 1
-        return .none
-      }
-
-      updateSelectedTeam(state: &state, team: team)
-      return .send(.async(.fetchAttendance))
-
-    case .swipeNext:
-      let orderedTeams = orderedAttendanceTeams(from: state.attendanceTeam)
-
-      guard !orderedTeams.isEmpty else {
-        return .none
-      }
-
-      let currentIndex = orderedTeams.firstIndex { $0.teamId == state.selectTeamID } ?? 0
-      let nextIndex = (currentIndex + 1) % orderedTeams.count
-
-      updateSelectedTeam(state: &state, team: orderedTeams[nextIndex])
-      return .send(.async(.fetchAttendance))
-
-    case .swipePrevious:
-      let orderedTeams = orderedAttendanceTeams(from: state.attendanceTeam)
-
-      guard !orderedTeams.isEmpty else {
-        return .none
-      }
-
-      let currentIndex = orderedTeams.firstIndex { $0.teamId == state.selectTeamID } ?? 0
-      let prevIndex = (currentIndex - 1 + orderedTeams.count) % orderedTeams.count
-
-      updateSelectedTeam(state: &state, team: orderedTeams[prevIndex])
-      return .send(.async(.fetchAttendance))
+      updateSelectedTeam(state: &state, team: team, updatePageAnchor: false)
+      return .merge(
+        .send(.async(.fetchAttendance)),
+        .run { send in
+          try await clock.sleep(for: .milliseconds(350))
+          await send(.inner(.pageTransitionFinished(teamID: teamID)))
+        }
+        .cancellable(id: CancelID.pageTransition, cancelInFlight: true)
+      )
 
     case .tapSelectDate:
       state.destination = .scheduleModal(.init())
@@ -298,11 +308,10 @@ extension AttendanceCheck {
 
     case let .showEditAttendanceModal(id, userid):
       state.attendanceModal = .adminStatusChangeWithAvailable(
-        availableStatuses: Array(state.attendanceStatus),
+        availableStatuses: Array(state.availableStatuses),
         currentStatus: .attended
       )
-      state.attendanceId = id
-      state.editAttendanceUserId = userid
+      state.editTarget = .init(attendanceID: id, userID: userid)
       return .none
     }
   }
@@ -325,7 +334,10 @@ extension AttendanceCheck {
       .cancellable(id: CancelID.fetchSchedule, cancelInFlight: true)
 
     case .fetchAttendanceCount:
-      let scheduleID = state.selectScheduleID
+      guard let scheduleID = state.selectedScheduleID else {
+        DDDLogger.debug("fetchAttendanceCount 건너뜀: 선택된 스케줄 없음", category: .attendance)
+        return .none
+      }
 
       // scheduleId가 유효한지 확인
       guard scheduleID > 0 else {
@@ -353,8 +365,12 @@ extension AttendanceCheck {
       .cancellable(id: CancelID.fetchTeams, cancelInFlight: true)
 
     case .fetchAttendance:
-      let scheduleId = state.selectScheduleID
-      let teamId = state.selectTeamID
+      guard let scheduleId = state.selectedScheduleID,
+            let teamId = state.selectedTeamID
+      else {
+        DDDLogger.debug("fetchAttendance 건너뜀: 스케줄 또는 팀이 선택되지 않음", category: .attendance)
+        return .none
+      }
 
       // scheduleId와 teamId가 유효한지 확인
       guard scheduleId > 0, teamId > 0 else {
@@ -381,17 +397,20 @@ extension AttendanceCheck {
       }
       .cancellable(id: CancelID.fetchStatus, cancelInFlight: true)
 
-    case let .editAttendance(userid, status):
-      return .run { [
-        attendanceId = state.attendanceId,
-        scheduleId = state.selectScheduleID
-      ] send in
+    case let .editAttendance(status):
+      guard let editTarget = state.editTarget,
+            let scheduleId = state.selectedScheduleID
+      else {
+        return .none
+      }
+
+      return .run { send in
         let editAttendanceResult = await Result {
           let input = EditAttendanceInput(
-            attendanceId: attendanceId,
+            attendanceId: editTarget.attendanceID,
             scheduleId: scheduleId,
             status: status,
-            userId: userid
+            userId: editTarget.userID
           )
           return try await attendanceUseCase.editAttendance(input: input)
         }
@@ -418,11 +437,11 @@ extension AttendanceCheck {
     case let .fetchScheduleResponse(result):
       switch result {
       case let .success(schedules):
-        state.scheduleModel = .init(uniqueElements: schedules)
         state.viewState = .loaded
-        state.selectScheduleID = closestScheduleId(from: schedules)
-          ?? schedules.first?.id
-          ?? state.selectScheduleID
+        let selectedScheduleID = closestScheduleId(from: schedules)
+        state.selectedSchedule = schedules.first(where: { $0.id == selectedScheduleID })
+          ?? schedules.first
+          ?? state.selectedSchedule
 
         // 스케줄이 설정된 후 출석 통계 및 팀 정보 가져오기
         return .merge(
@@ -439,10 +458,7 @@ extension AttendanceCheck {
     case let .attendanceCountResponse(result):
       switch result {
       case let .success(data):
-        state.attendanceCountModel = data
-        state.attendanceCount = data.attendanceCount
-        state.lateCount = data.lateCount
-        state.absentCount = data.absentCount
+        state.attendanceSummary = data
 
       case let .failure(error):
         DDDLogger.error("기수 출석 현황 조회 실패: \(error.localizedDescription)", category: .network)
@@ -455,7 +471,7 @@ extension AttendanceCheck {
         var seen: Set<SelectTeams> = []
         let uniqueTeams = data.filter { seen.insert($0.teams).inserted }
         let orderedTeams = uniqueTeams.sorted { $0.teamId < $1.teamId }
-        state.attendanceTeam = .init(uniqueElements: orderedTeams)
+        state.teams = .init(uniqueElements: orderedTeams)
         for team in orderedTeams {
           if state.attendanceByTeam[team.teamId] == nil {
             state.attendanceByTeam[team.teamId] = []
@@ -468,7 +484,7 @@ extension AttendanceCheck {
         }
 
         // team 설정 후 출석 데이터 가져오기 (scheduleId가 유효한 경우에만)
-        if state.selectScheduleID > 0 {
+        if state.selectedScheduleID != nil {
           return .send(.async(.fetchAttendance))
         } else {
           return .none
@@ -484,17 +500,7 @@ extension AttendanceCheck {
       state.viewState = .loaded
       switch result {
       case let .success(data):
-        state.attendanceModel = data
         state.attendanceByTeam[teamId] = data
-
-        // 특정 팀 데이터를 받았을 때 해당 팀으로 selectPart 변경
-        if let firstAttendance = data.first,
-           let teamEntity = firstAttendance.selectTeamEntity,
-           teamEntity != .unknown
-        {
-          state.selectPart = teamEntity
-          DDDLogger.debug("[AttendanceCheck] Updated selectPart to: \(teamEntity.rawValue)", category: .attendance)
-        }
 
       case let .failure(error):
         DDDLogger.error("기수 출석 현황 조회 실패: \(error.localizedDescription)", category: .network)
@@ -504,7 +510,7 @@ extension AttendanceCheck {
     case let .attendanceStatusResponse(result):
       switch result {
       case let .success(data):
-        state.attendanceStatus = .init(uniqueElements: data)
+        state.availableStatuses = .init(uniqueElements: data)
       case let .failure(error):
         DDDLogger.error("출석 현황 조회 실패: \(error.localizedDescription)", category: .attendance)
       }
@@ -512,8 +518,7 @@ extension AttendanceCheck {
 
     case let .editAttendanceResponse(result):
       switch result {
-      case let .success(data):
-        state.editAttendance = data
+      case .success:
         state.viewState = .refreshingAttendanceList
         return .merge(
           .run { await $0(.async(.fetchAttendanceCount)) },
@@ -547,6 +552,13 @@ extension AttendanceCheck {
         }
       }
       return .none
+
+    case let .pageTransitionFinished(teamID):
+      guard state.selectedTeamID == teamID else {
+        return .none
+      }
+      state.settledTeamID = teamID
+      return .none
     }
   }
 
@@ -556,10 +568,9 @@ extension AttendanceCheck {
   ) -> Effect<Action> {
     switch action {
     case let .presented(.scheduleModal(.delegate(.selectScheduleCompleted(selectedSchedule)))):
-      if let selectedDate = selectedSchedule.toDate() {
-        state.selectAttendanceDate = selectedDate
-        state.selectScheduleID = selectedSchedule.id
-        DDDLogger.debug("날짜 업데이트됨: 새로운 날짜: \(state.selectScheduleID)", category: .attendance)
+      if selectedSchedule.toDate() != nil {
+        state.selectedSchedule = selectedSchedule
+        DDDLogger.debug("날짜 업데이트됨: 새로운 스케줄: \(selectedSchedule.id)", category: .attendance)
       } else {
         DDDLogger.error(
           "날짜 변환 실패: 입력: year=\(selectedSchedule.year), month=\(selectedSchedule.month), day=\(selectedSchedule.day)",
@@ -592,12 +603,7 @@ extension AttendanceCheck {
 
       case let .confirmTapped(status):
         state.attendanceModal = nil
-        // API 호출 예시
-        return .run { [
-          userid = state.editAttendanceUserId
-        ] send in
-          await send(.async(.editAttendance(userid: userid, status: status)))
-        }
+        return .send(.async(.editAttendance(status: status)))
 
       case .cancelTapped:
         state.attendanceModal = nil
@@ -611,27 +617,15 @@ extension AttendanceCheck {
 }
 
 private extension AttendanceCheck {
-  func orderedAttendanceTeams(
-    from teams: IdentifiedArrayOf<SelectTeamEntity>
-  ) -> [SelectTeamEntity] {
-    teams.sorted { $0.teamId < $1.teamId }
-  }
-
   func updateSelectedTeam(
     state: inout State,
-    team: SelectTeamEntity
+    team: SelectTeamEntity,
+    updatePageAnchor: Bool = true
   ) {
-    state.selectPart = team.teams
-    state.selectTeamID = team.teamId
-
-    let orderedTeams = orderedAttendanceTeams(from: state.attendanceTeam)
-
-    guard let index = orderedTeams.firstIndex(where: { $0.teamId == team.teamId }) else {
-      return
+    state.selectedTeamID = team.teamId
+    if updatePageAnchor {
+      state.settledTeamID = team.teamId
     }
-
-    // 팀이 하나뿐이면 복제 페이지를 붙이지 않으므로 보정도 없다.
-    state.pageIndex = orderedTeams.count > 1 ? index + 1 : index
   }
 
   func todayScheduleId(
@@ -639,47 +633,41 @@ private extension AttendanceCheck {
     now: Date = Date(),
     timeZone: TimeZone = .init(identifier: "Asia/Seoul")!
   ) -> Int? {
-    var cal = Calendar(identifier: .gregorian)
-    cal.timeZone = timeZone
+    guard let today = normalizedDate(now, timeZone: timeZone) else { return nil }
 
-    let comps = cal.dateComponents([.year, .month, .day], from: now)
-    guard let y = comps.year, let m = comps.month, let d = comps.day else { return nil }
-
-    return schedules.first(where: { $0.year == y && $0.month == m && $0.day == d })?.id
+    return schedules.first(where: {
+      $0.toDate(timeZone: timeZone) == today
+    })?.id
   }
 
-  /// 현재 날짜와 가장 가까운 스케줄 ID를 반환
-  /// 1. 오늘 날짜의 스케줄이 있으면 우선 반환
-  /// 2. 절대적 시간 거리가 가장 가까운 스케줄 선택 (과거/미래 구분 없이)
+  /// 오늘 일정을 우선하고, 없으면 절대 시간 거리가 가장 짧은 일정을 반환한다.
   func closestScheduleId(
     from schedules: [Schedule],
     now: Date = Date(),
     timeZone: TimeZone = .init(identifier: "Asia/Seoul")!
   ) -> Int? {
-    var cal = Calendar(identifier: .gregorian)
-    cal.timeZone = timeZone
+    guard let today = normalizedDate(now, timeZone: timeZone) else { return nil }
 
-    let today = cal.startOfDay(for: now)
-
-    // 오늘 날짜의 스케줄이 있으면 우선 반환
-    if let todayId = todayScheduleId(from: schedules, now: now, timeZone: timeZone) {
-      return todayId
+    if let todayScheduleId = todayScheduleId(
+      from: schedules,
+      now: now,
+      timeZone: timeZone
+    ) {
+      return todayScheduleId
     }
 
-    // 모든 스케줄을 절대적 시간 거리 기준으로 정렬
-    let closestSchedule = schedules
-      .compactMap { schedule -> (Schedule, Date, TimeInterval)? in
+    return schedules
+      .compactMap { schedule -> (Schedule, TimeInterval)? in
         guard let scheduleDate = schedule.toDate(timeZone: timeZone) else { return nil }
-        let scheduleDay = cal.startOfDay(for: scheduleDate)
-
-        // 오늘과 같은 날짜는 제외 (이미 위에서 처리됨)
-        guard scheduleDay != today else { return nil }
-
-        let timeInterval = abs(scheduleDay.timeIntervalSince(today))
-        return (schedule, scheduleDate, timeInterval)
+        return (schedule, abs(scheduleDate.timeIntervalSince(today)))
       }
-      .min(by: { $0.2 < $1.2 }) // 절대적 시간 거리 기준으로 가장 가까운 것 선택
+      .min(by: { $0.1 < $1.1 })?
+      .0.id
+  }
 
-    return closestSchedule?.0.id
+  func normalizedDate(_ date: Date, timeZone: TimeZone) -> Date? {
+    date
+      .formatted(.yearMonthDay, timeZone: timeZone)
+      .date(as: .yearMonthDay, timeZone: timeZone)
   }
 }

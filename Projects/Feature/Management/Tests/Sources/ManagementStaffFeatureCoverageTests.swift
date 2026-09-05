@@ -148,7 +148,7 @@ struct ManagementStaffFeatureCoverageTests {
     }
 
     await store.send(.attendanceCheck(.view(.updateDividerWidths([1: 12])))) {
-      $0.attendanceCheck.dividerWidths = [1: 12]
+      $0.attendanceCheck.teamTabWidths = [1: 12]
     }
   }
 }

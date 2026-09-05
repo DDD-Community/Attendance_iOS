@@ -18,6 +18,10 @@ struct ManagementAccessibilityIDTests {
     #expect(ManagementAccessibilityID.Attendance.summary == "management.attendance.summary")
     #expect(ManagementAccessibilityID.Attendance.list == "management.attendance.list")
     #expect(ManagementAccessibilityID.Attendance.listSkeleton == "management.attendance.list.skeleton")
+    #expect(ManagementAccessibilityID.ScheduleModal.root == "management.schedule.modal")
+    #expect(ManagementAccessibilityID.ScheduleModal.skeleton == "management.schedule.modal.skeleton")
+    #expect(ManagementAccessibilityID.ScheduleModal.list == "management.schedule.modal.list")
+    #expect(ManagementAccessibilityID.ScheduleModal.confirmButton == "management.schedule.modal.confirmbutton")
   }
 
   @Test("반복 항목 ID는 안정적인 도메인 키를 붙인다")
@@ -34,6 +38,10 @@ struct ManagementAccessibilityIDTests {
     #expect(
       ManagementAccessibilityID.Attendance.modalStatus(.late)
         == "management.attendance.modal.status.late"
+    )
+    #expect(
+      ManagementAccessibilityID.ScheduleModal.item(42)
+        == "management.schedule.modal.item.42"
     )
   }
 }

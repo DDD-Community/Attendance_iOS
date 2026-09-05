@@ -22,14 +22,14 @@ struct ManagementAttendanceCheckReducerTests {
   @Test("updateDividerWidths 는 받은 너비를 누적해서 병합한다")
   func updateDividerWidthsMergesValues() async {
     var state = AttendanceCheck.State()
-    state.dividerWidths = [1: 10]
+    state.teamTabWidths = [1: 10]
 
     let store = TestStore(initialState: state) {
       AttendanceCheck()
     }
 
     await store.send(.view(.updateDividerWidths([2: 20]))) {
-      $0.dividerWidths = [1: 10, 2: 20]
+      $0.teamTabWidths = [1: 10, 2: 20]
     }
   }
 
@@ -51,7 +51,7 @@ struct ManagementAttendanceCheckReducerTests {
   @Test("showEditAttendanceModal 은 수정 대상과 관리자 모달을 세팅한다")
   func showEditAttendanceModalStoresTarget() async {
     var state = AttendanceCheck.State()
-    state.attendanceStatus = .init(uniqueElements: ManagementSupportFixture.statuses)
+    state.availableStatuses = .init(uniqueElements: ManagementSupportFixture.statuses)
 
     let store = TestStore(initialState: state) {
       AttendanceCheck()
@@ -62,8 +62,7 @@ struct ManagementAttendanceCheckReducerTests {
         availableStatuses: ManagementSupportFixture.statuses,
         currentStatus: .attended
       )
-      $0.attendanceId = 100
-      $0.editAttendanceUserId = "user-1"
+      $0.editTarget = .init(attendanceID: 100, userID: "user-1")
     }
   }
 
@@ -74,47 +73,63 @@ struct ManagementAttendanceCheckReducerTests {
     }
 
     await store.send(.view(.selectPartButton(selectPart: ManagementSupportFixture.teams[1]))) {
-      $0.selectPart = .web1
-      $0.selectTeamID = 2
+      $0.selectedTeamID = 2
+      $0.settledTeamID = 2
     }
 
     // scheduleID 가 0 이라 fetchAttendance 는 가드에 걸려 아무 것도 하지 않는다.
     await store.receive(\.async)
   }
 
-  @Test("팀 목록이 비면 스와이프는 아무 일도 하지 않는다")
-  func swipeWithoutTeamsDoesNothing() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
-    }
+  @Test("팀 정렬과 페이지 배열은 State 파생값 하나를 사용한다")
+  func stateOwnsOrderedUniquePages() {
+    var state = AttendanceCheck.State()
+    state.teams = .init(uniqueElements: [
+      SelectTeamEntity(teamId: 3, teams: .web2),
+      SelectTeamEntity(teamId: 1, teams: .ios1),
+      SelectTeamEntity(teamId: 4, teams: .ios2),
+      SelectTeamEntity(teamId: 2, teams: .web1)
+    ])
+    state.selectedTeamID = 1
+    state.settledTeamID = 1
 
-    await store.send(.view(.swipeNext))
-    await store.send(.view(.swipePrevious))
+    #expect(state.orderedTeams.map(\.teamId) == [1, 2, 3, 4])
+    #expect(state.pageTeams.map(\.teamId) == [4, 1, 2, 3])
+    #expect(Array(state.pageTeams.ids) == [4, 1, 2, 3])
   }
 
-  @Test("swipeNext 는 다음 팀으로, swipePrevious 는 이전 팀으로 순환한다")
-  func swipeCyclesThroughTeams() async {
+  @Test("페이지 전환이 끝난 뒤에만 선택 팀을 중심으로 배열한다")
+  func pageChangeRotatesAfterTransition() async {
+    let clock = TestClock()
     var state = AttendanceCheck.State()
-    state.attendanceTeam = .init(uniqueElements: ManagementSupportFixture.teams)
-    state.selectTeamID = 1
+    state.teams = .init(uniqueElements: [
+      SelectTeamEntity(teamId: 1, teams: .ios1),
+      SelectTeamEntity(teamId: 2, teams: .web1),
+      SelectTeamEntity(teamId: 3, teams: .web2),
+      SelectTeamEntity(teamId: 4, teams: .ios2)
+    ])
+    state.selectedTeamID = 1
+    state.settledTeamID = 1
 
     let store = TestStore(initialState: state) {
       AttendanceCheck()
+    } withDependencies: {
+      $0.continuousClock = clock
     }
 
-    await store.send(.view(.swipeNext)) {
-      $0.selectPart = .web1
-      $0.selectTeamID = 2
-      $0.pageIndex = 2
+    await store.send(.view(.pageChanged(teamID: 2))) {
+      $0.selectedTeamID = 2
     }
     await store.receive(\.async)
 
-    await store.send(.view(.swipePrevious)) {
-      $0.selectPart = .ios1
-      $0.selectTeamID = 1
-      $0.pageIndex = 1
+    #expect(store.state.pageTeams.map(\.teamId) == [4, 1, 2, 3])
+
+    await clock.advance(by: .milliseconds(350))
+    await store.receive(\.inner.pageTransitionFinished) {
+      $0.settledTeamID = 2
     }
-    await store.receive(\.async)
+
+    #expect(store.state.pageTeams.map(\.teamId) == [1, 2, 3, 4])
   }
 
   @Test("onAppear 는 최초 1회만 전체 로딩을 돌리고 이후에는 새로고침만 한다")
@@ -130,22 +145,33 @@ struct ManagementAttendanceCheckReducerTests {
     store.exhaustivity = .off
 
     await store.send(.view(.onAppear)) {
-      $0.selectPart = .unknown
-      $0.hasFetchedAttendance = true
+      $0.viewState = .loading
     }
     await store.finish()
     await store.skipReceivedActions(strict: false)
 
     #expect(store.state.viewState == .loaded)
-    #expect(store.state.selectScheduleID == 1)
-    #expect(store.state.attendanceTeam.count == 2)
-    #expect(store.state.attendanceStatus.count == ManagementSupportFixture.statuses.count)
+    #expect(store.state.selectedScheduleID == 1)
+    #expect(store.state.teams.count == 2)
+    #expect(store.state.availableStatuses.count == ManagementSupportFixture.statuses.count)
 
     await store.send(.view(.onAppear))
     await store.finish()
     await store.skipReceivedActions(strict: false)
 
     #expect(store.state.attendanceCount == ManagementSupportFixture.attendanceCount.attendanceCount)
+  }
+
+  @Test("최초 로딩 중 재진입은 중복 요청을 만들지 않는다")
+  func onAppearDuringInitialLoadingDoesNothing() async {
+    var state = AttendanceCheck.State()
+    state.viewState = .loading
+
+    let store = TestStore(initialState: state) {
+      AttendanceCheck()
+    }
+
+    await store.send(.view(.onAppear))
   }
 
   // MARK: - Async 가드
@@ -170,7 +196,7 @@ struct ManagementAttendanceCheckReducerTests {
 
     await store.send(.async(.fetchStatus))
     await store.receive(\.inner) {
-      $0.attendanceStatus = .init(uniqueElements: ManagementSupportFixture.statuses)
+      $0.availableStatuses = .init(uniqueElements: ManagementSupportFixture.statuses)
     }
   }
 
@@ -190,7 +216,7 @@ struct ManagementAttendanceCheckReducerTests {
     await store.skipReceivedActions(strict: false)
 
     #expect(store.state.viewState == .loaded)
-    #expect(store.state.selectScheduleID == 1)
+    #expect(store.state.selectedScheduleID == 1)
   }
 
   // MARK: - Inner
@@ -216,11 +242,11 @@ struct ManagementAttendanceCheckReducerTests {
     }
 
     await store.send(.inner(.attendanceCountResponse(.success(ManagementSupportFixture.attendanceCount)))) {
-      $0.attendanceCountModel = ManagementSupportFixture.attendanceCount
-      $0.attendanceCount = ManagementSupportFixture.attendanceCount.attendanceCount
-      $0.lateCount = ManagementSupportFixture.attendanceCount.lateCount
-      $0.absentCount = ManagementSupportFixture.attendanceCount.absentCount
+      $0.attendanceSummary = ManagementSupportFixture.attendanceCount
     }
+    #expect(store.state.attendanceCount == ManagementSupportFixture.attendanceCount.attendanceCount)
+    #expect(store.state.lateCount == ManagementSupportFixture.attendanceCount.lateCount)
+    #expect(store.state.absentCount == ManagementSupportFixture.attendanceCount.absentCount)
   }
 
   @Test("출석 통계 실패는 상태를 건드리지 않는다")
@@ -241,17 +267,17 @@ struct ManagementAttendanceCheckReducerTests {
     let duplicated = ManagementSupportFixture.teams + [SelectTeamEntity(teamId: 3, teams: .ios1)]
 
     await store.send(.inner(.fetchTeamsResponse(.success(duplicated)))) {
-      $0.attendanceTeam = .init(uniqueElements: ManagementSupportFixture.teams)
+      $0.teams = .init(uniqueElements: ManagementSupportFixture.teams)
       $0.attendanceByTeam = [1: [], 2: []]
-      $0.selectPart = .ios1
-      $0.selectTeamID = 1
+      $0.selectedTeamID = 1
+      $0.settledTeamID = 1
     }
   }
 
   @Test("스케줄이 정해진 뒤 팀 응답이 오면 출석 목록까지 이어서 조회한다")
   func fetchTeamsResponseChainsAttendance() async {
     var state = AttendanceCheck.State()
-    state.selectScheduleID = 5
+    state.selectedSchedule = EntityFixtureSchedule.value
 
     let store = TestStore(initialState: state) {
       AttendanceCheck()
@@ -260,16 +286,15 @@ struct ManagementAttendanceCheckReducerTests {
     }
 
     await store.send(.inner(.fetchTeamsResponse(.success(ManagementSupportFixture.teams)))) {
-      $0.attendanceTeam = .init(uniqueElements: ManagementSupportFixture.teams)
+      $0.teams = .init(uniqueElements: ManagementSupportFixture.teams)
       $0.attendanceByTeam = [1: [], 2: []]
-      $0.selectPart = .ios1
-      $0.selectTeamID = 1
+      $0.selectedTeamID = 1
+      $0.settledTeamID = 1
     }
 
     await store.receive(\.async)
     await store.receive(\.inner) {
       $0.viewState = .loaded
-      $0.attendanceModel = ManagementSupportFixture.attendances
       $0.attendanceByTeam[1] = ManagementSupportFixture.attendances
     }
   }
@@ -283,10 +308,12 @@ struct ManagementAttendanceCheckReducerTests {
     await store.send(.inner(.fetchTeamsResponse(.failure(.loadFailed))))
   }
 
-  @Test("출석 목록 응답은 첫 행의 팀 정보로 선택 파트를 맞춘다")
-  func attendanceResponseSyncsSelectedPart() async {
+  @Test("출석 목록 응답은 팀별 캐시에만 저장한다")
+  func attendanceResponseStoresTeamCache() async {
     var state = AttendanceCheck.State()
     state.viewState = .refreshingAttendanceList
+    state.teams = .init(uniqueElements: ManagementSupportFixture.teams)
+    state.selectedTeamID = 1
 
     let store = TestStore(initialState: state) {
       AttendanceCheck()
@@ -294,10 +321,10 @@ struct ManagementAttendanceCheckReducerTests {
 
     await store.send(.inner(.attendanceResponse(teamId: 1, .success(ManagementSupportFixture.attendances)))) {
       $0.viewState = .loaded
-      $0.attendanceModel = ManagementSupportFixture.attendances
       $0.attendanceByTeam[1] = ManagementSupportFixture.attendances
-      $0.selectPart = .ios1
     }
+    #expect(store.state.selectedPart == .ios1)
+    #expect(store.state.selectedAttendance == ManagementSupportFixture.attendances)
   }
 
   @Test("출석 목록 재조회가 실패해도 로딩을 끝낸다")
@@ -334,7 +361,6 @@ struct ManagementAttendanceCheckReducerTests {
     store.exhaustivity = .off
 
     await store.send(.inner(.editAttendanceResponse(.success(ManagementSupportFixture.editAttendance)))) {
-      $0.editAttendance = ManagementSupportFixture.editAttendance
       $0.viewState = .refreshingAttendanceList
     }
     await store.finish()
@@ -416,8 +442,7 @@ struct ManagementAttendanceCheckReducerTests {
     await store.send(
       .destination(.presented(.scheduleModal(.delegate(.selectScheduleCompleted(selectedSchedule: selected)))))
     ) {
-      $0.selectAttendanceDate = selected.toDate()!
-      $0.selectScheduleID = selected.id
+      $0.selectedSchedule = selected
       $0.destination = nil
     }
     await store.finish()
@@ -429,9 +454,8 @@ struct ManagementAttendanceCheckReducerTests {
     state.attendanceModal = .adminStatusChangeWithAvailable(
       availableStatuses: ManagementSupportFixture.statuses
     )
-    state.attendanceId = 100
-    state.editAttendanceUserId = "user-1"
-    state.selectScheduleID = 5
+    state.editTarget = .init(attendanceID: 100, userID: "user-1")
+    state.selectedSchedule = EntityFixtureSchedule.value
 
     let store = TestStore(initialState: state) {
       AttendanceCheck()
@@ -445,8 +469,7 @@ struct ManagementAttendanceCheckReducerTests {
     }
     await store.finish()
     await store.skipReceivedActions(strict: false)
-
-    #expect(store.state.editAttendance == ManagementSupportFixture.editAttendance)
+    #expect(store.state.viewState == .loaded)
   }
 
   @Test("모달 취소는 모달만 닫는다")
