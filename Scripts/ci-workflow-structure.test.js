@@ -14,6 +14,14 @@ function occurrences(source, fragment) {
   return source.split(fragment).length - 1;
 }
 
+function job(source, name, nextName) {
+  const start = source.indexOf(`  ${name}:`);
+  const end = source.indexOf(`  ${nextName}:`, start + 1);
+  assert.notEqual(start, -1, name);
+  assert.notEqual(end, -1, nextName);
+  return source.slice(start, end);
+}
+
 test("iOS workflow는 공통 runner setup action을 사용한다", () => {
   const action = read(".github/actions/setup-ios-runner/action.yml");
   assert.match(action, /using: composite/);
@@ -38,6 +46,22 @@ test("공통화 뒤에도 timeout이 필요한 Tuist service step은 workflow에
   const pr = read(".github/workflows/ios-pr-coverage.yml");
   const develop = read(".github/workflows/ios-develop-sharded-tests.yml");
 
-  assert.equal(occurrences(pr, "timeout-minutes: 3"), 6);
-  assert.equal(occurrences(develop, "timeout-minutes: 3"), 5);
+  assert.equal(occurrences(pr, "timeout-minutes: 3"), 4);
+  assert.equal(occurrences(develop, "timeout-minutes: 3"), 3);
+});
+
+test("test shard는 build job 산출물을 사용하고 프로젝트를 다시 설치하거나 생성하지 않는다", () => {
+  const prShard = job(read(".github/workflows/ios-pr-coverage.yml"), "test-shards", "bundle-insights");
+  const developShard = job(read(".github/workflows/ios-develop-sharded-tests.yml"), "test-shards", "warm-module-cache");
+
+  for (const shardJob of [prShard, developShard]) {
+    assert.doesNotMatch(shardJob, /Install project dependencies/);
+    assert.doesNotMatch(shardJob, /Setup Tuist cache/);
+    assert.doesNotMatch(shardJob, /Setup Tuist insights/);
+    assert.doesNotMatch(shardJob, /tuist (?:install|generate)/);
+  }
+
+  assert.match(prShard, /run-isolated-module-tests\.sh/);
+  assert.match(read("Scripts/run-isolated-module-tests.sh"), /--without-building/);
+  assert.match(developShard, /--without-building/);
 });

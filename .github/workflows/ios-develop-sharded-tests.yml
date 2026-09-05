@@ -161,31 +161,6 @@ jobs:
         with:
           derived-data-directory: DDDAttendance-develop-shard-${{ matrix.shard }}
 
-      - name: Install project dependencies
-        run: |
-          mise exec -- tuist install
-          mise exec -- tuist generate --no-open
-
-      - name: Setup Tuist cache
-        id: tuist-cache
-        continue-on-error: true
-        timeout-minutes: 3
-        run: mise exec -- tuist setup cache
-
-      - name: Configure compilation cache fallback
-        run: |
-          if [[ "${{ steps.tuist-cache.outcome }}" == "success" ]]; then
-            echo "XCODE_COMPILATION_CACHE_ENABLED=YES" >> "$GITHUB_ENV"
-          else
-            echo "XCODE_COMPILATION_CACHE_ENABLED=NO" >> "$GITHUB_ENV"
-            echo "Tuist cache를 사용할 수 없어 이번 shard는 Xcode compilation cache 없이 진행합니다."
-          fi
-
-      - name: Setup Tuist insights
-        continue-on-error: true
-        timeout-minutes: 3
-        run: mise exec -- tuist setup insights
-
       - name: Select simulator
         run: |
           SIMULATOR_DESTINATION="$(python3 Scripts/select-ios-simulator.py)"
@@ -220,8 +195,7 @@ jobs:
             -derivedDataPath "$CI_DERIVED_DATA" \
             -retry-tests-on-failure \
             -test-iterations 3 \
-            ONLY_ACTIVE_ARCH=YES \
-            COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED"
+            ONLY_ACTIVE_ARCH=YES
 
       - name: Clean shard DerivedData
         if: always()
