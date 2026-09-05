@@ -23,8 +23,6 @@ struct ManagementQRCodeReducerTests {
     #expect(state.scannedText.isEmpty)
     #expect(state.validation == nil)
     #expect(state.isUseQRCode == false)
-    #expect(state.isPresent == false)
-    #expect(state.scannerSize == 240)
   }
 
   @Test("stopScanning 은 스캔 상태를 끈다")

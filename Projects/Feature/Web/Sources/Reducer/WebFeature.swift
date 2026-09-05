@@ -16,7 +16,7 @@ public struct WebFeature {
 
   @ObservableState
   public struct State: Equatable {
-    var url: String = ""
+    let url: String
 
     public init(url: String) {
       self.url = url
@@ -35,4 +35,3 @@ public struct WebFeature {
     }
   }
 }
-

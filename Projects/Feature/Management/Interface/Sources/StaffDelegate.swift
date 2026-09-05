@@ -6,8 +6,8 @@
 //
 //  Management 가 바깥에 알리는 위임 계약.
 //
-//  ScheduleFeature·QRCodeFeature·AttendanceCheckFeature 의 DelegateAction 은 케이스가 비어 있어
-//  옮길 계약이 없다. 계약이 생기면 여기로 온다.
+//  Management 밖으로 전달할 계약만 여기에 둔다.
+//  동일 모듈 내부의 자식 Feature delegate는 구체 Feature에서 관리한다.
 //
 
 import ComposableArchitecture

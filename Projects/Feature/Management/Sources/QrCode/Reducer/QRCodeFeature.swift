@@ -12,8 +12,6 @@ import DDDSharedUI
 import QRCodeDomainInterface
 
 import ComposableArchitecture
-import Vision
-import UIKit
 
 @Reducer
 public struct QRCodeFeature {
@@ -23,11 +21,8 @@ public struct QRCodeFeature {
   public struct State: Equatable {
     var scannedText = ""
     var isScanning = true
-    let scannerSize: CGFloat = 240
-    var isPresent: Bool = false
 
     var validation: QRValidateEntity?
-    var scheduleId: String = ""
     var isUseQRCode: Bool = false
     @Presents public var alert: AlertState<AlertAction>?
 
@@ -78,7 +73,6 @@ public struct QRCodeFeature {
 
   private struct QRCodeCancel: Hashable {}
 
-  @Dependency(\.continuousClock) var clock
   @Dependency(\.mainQueue) var mainQueue
 
   @Dependency(\.qrCodeUseCase) var qrCodeUseCase
@@ -201,111 +195,6 @@ extension QRCodeFeature {
           return .none
       }
 
-    }
-  }
-
-  // MARK: - Base64 이미지 감지
-  private func isBase64Image(_ text: String) -> Bool {
-    // 1. data:image URL 스킴 확인
-    if text.hasPrefix("data:image") {
-      return true
-    }
-
-    // 2. 길이 확인 (이미지 Base64는 보통 100자 이상)
-    guard text.count > 100 else {
-      return false
-    }
-
-    // 3. 다양한 이미지 포맷의 Base64 시작 문자열 확인
-    let imageBase64Prefixes = [
-      "iVBORw0KGgo",           // PNG
-      "/9j/4AAQ",              // JPEG (일반)
-      "/9j/4",                 // JPEG (다른 형태)
-      "R0lGODlh",              // GIF
-      "UklGRg",                // WebP
-      "Qk0",                   // BMP
-      "SUkqAA",                // TIFF (Little Endian)
-      "TU0AKg"                 // TIFF (Big Endian)
-    ]
-
-    for prefix in imageBase64Prefixes {
-      if text.hasPrefix(prefix) {
-        return true
-      }
-    }
-
-    // 4. Base64 패턴 확인 (영숫자 + / + = 로만 구성되고 충분히 긴 경우)
-    let base64Pattern = "^[A-Za-z0-9+/]*={0,2}$"
-    if text.range(of: base64Pattern, options: .regularExpression) != nil && text.count > 500 {
-      // 실제 이미지 디코딩 시도
-      return isValidImageData(text)
-    }
-
-    return false
-  }
-
-  // 실제로 Base64 디코딩해서 이미지인지 확인
-  private func isValidImageData(_ base64String: String) -> Bool {
-    let cleanBase64 = base64String
-      .replacingOccurrences(of: "data:image/png;base64,", with: "")
-      .replacingOccurrences(of: "data:image/jpeg;base64,", with: "")
-      .replacingOccurrences(of: "data:image/gif;base64,", with: "")
-
-    guard let imageData = Data(base64Encoded: cleanBase64),
-          let _ = UIImage(data: imageData) else {
-      return false
-    }
-
-    return true
-  }
-
-  // MARK: - Base64 QR 코드 디코딩
-  private func decodeQRFromBase64(_ base64String: String) async -> String? {
-    return await withCheckedContinuation { continuation in
-      // Base64 문자열을 Data로 변환
-      let cleanBase64 = base64String
-        .replacingOccurrences(of: "data:image/png;base64,", with: "")
-        .replacingOccurrences(of: "data:image/jpeg;base64,", with: "")
-
-      guard let imageData = Data(base64Encoded: cleanBase64),
-            let uiImage = UIImage(data: imageData),
-            let cgImage = uiImage.cgImage else {
-        DDDLogger.error("Base64 이미지 변환 실패: \(base64String.prefix(50))", category: .network)
-        continuation.resume(returning: nil)
-        return
-      }
-
-      // Vision을 사용해서 QR 코드 감지
-      let request = VNDetectBarcodesRequest { request, error in
-        if let error = error {
-          DDDLogger.error("QR 디코딩 에러: \(error.localizedDescription)", category: .network)
-          continuation.resume(returning: nil)
-          return
-        }
-
-        guard let observations = request.results as? [VNBarcodeObservation],
-              let firstBarcode = observations.first,
-              let qrCodeContent = firstBarcode.payloadStringValue else {
-          DDDLogger.error("QR 코드를 찾을 수 없음", category: .network)
-          continuation.resume(returning: nil)
-          return
-        }
-
-        DDDLogger.info("QR 디코딩 성공: \(qrCodeContent)", category: .network)
-        continuation.resume(returning: qrCodeContent)
-      }
-
-      // QR 코드만 감지하도록 설정
-      request.symbologies = [.qr]
-
-      let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-
-      do {
-        try handler.perform([request])
-      } catch {
-        DDDLogger.error("Vision 처리 실패: \(error.localizedDescription)", category: .network)
-        continuation.resume(returning: nil)
-      }
     }
   }
 }

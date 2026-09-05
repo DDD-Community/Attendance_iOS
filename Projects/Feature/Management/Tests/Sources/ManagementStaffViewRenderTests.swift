@@ -89,7 +89,7 @@ struct ManagementStaffViewRenderTests {
   @Test("일정 탭이면 StaffView 는 일정 본문을 렌더링한다")
   func rendersStaffViewScheduleTab() {
     var state = StaffFeature.State()
-    state.selectDropDownItem = .schedule
+    state.selectedItem = .schedule
     state.schedule.viewState = .loaded
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
@@ -98,7 +98,7 @@ struct ManagementStaffViewRenderTests {
   @Test("일정 탭이 로딩 중이면 일정 스켈레톤 경로를 탄다")
   func rendersStaffViewScheduleSkeleton() {
     var state = StaffFeature.State()
-    state.selectDropDownItem = .schedule
+    state.selectedItem = .schedule
     state.schedule.viewState = .loading
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
@@ -107,7 +107,7 @@ struct ManagementStaffViewRenderTests {
   @Test("투표 탭이면 StaffView 는 투표 본문을 렌더링한다")
   func rendersStaffViewVoteTab() {
     var state = StaffFeature.State()
-    state.selectDropDownItem = .vote
+    state.selectedItem = .vote
     state.vote.viewState = .loaded
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
@@ -116,7 +116,7 @@ struct ManagementStaffViewRenderTests {
   @Test("투표 탭이 로딩 중이면 투표 스켈레톤 경로를 탄다")
   func rendersStaffViewVoteSkeleton() {
     var state = StaffFeature.State()
-    state.selectDropDownItem = .vote
+    state.selectedItem = .vote
     state.vote.viewState = .loading
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))

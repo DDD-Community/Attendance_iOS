@@ -22,14 +22,11 @@ public struct LoginFeature {
 
   @ObservableState
   public struct State: Equatable {
-    var nonce: String = ""
-    var appleAccessToken: String = ""
-    var appleLoginFullName: ASAuthorizationAppleIDCredential? = nil
+    var nonce = ""
 
     @Shared var userSession: UserSession
     @Shared(.staffRole) var staffRole
     @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
-    var login: LoginEntity?
     var currentSocialType: SocialType?
     @Presents public var customAlert: CustomAlertState<CustomAlertAction>?
 
@@ -175,12 +172,11 @@ extension LoginFeature {
         state.$userSession.withLock { $0.provider = socialType }
         return .run { [
           useEntity = state.userSession,
-          appleCredential = state.appleLoginFullName,
           nonce = state.nonce
         ] send in
           let outcome = await unifiedOAuthUseCase.processOAuthFlow(
             with: socialType,
-            appleCredential: appleCredential,
+            appleCredential: nil,
             nonce: nonce,
             googleToken: useEntity.token
           )
@@ -200,7 +196,6 @@ extension LoginFeature {
       case .loginResponse(let result):
         switch result {
           case .success(let login):
-            state.login = login
             let role = login.role ?? .member
             state.$staffRole.withLock { $0 = login.isNewUser ? nil : role }
             state.$userSession.withLock { $0.userRole = role }

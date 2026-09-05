@@ -5,7 +5,7 @@
 //  Created by DDD on 2026-09-03
 //  Copyright © 2026 DDD , Ltd. All rights reserved.
 //
-//  ProfileFeature 의 동기 분기(view / inner / delegate / scope / binding)를 훑는다.
+//  ProfileFeature 의 동기 분기(view / inner / delegate / scope)를 훑는다.
 //  이펙트가 없는 액션만 다루므로 의존성 주입 없이 검증한다.
 //
 
@@ -66,15 +66,13 @@ struct ProfileReducerRoutingTests {
     #expect(store.state.profile == ProfileTestSupport.memberProfile)
   }
 
-  @Test("deleteUserResponse 성공은 결과를 저장하고 로그아웃 화면 이동을 요청한다")
+  @Test("deleteUserResponse 성공은 로그아웃 화면 이동을 요청한다")
   func deleteUserResponseSuccessRequestsLogoutNavigation() async {
     let store = TestStore(initialState: ProfileFeature.State()) {
       ProfileFeature()
     }
 
-    await store.send(.inner(.deleteUserResponse(.success(ProfileTestSupport.withdrawSuccess)))) {
-      $0.deleteUser = ProfileTestSupport.withdrawSuccess
-    }
+    await store.send(.inner(.deleteUserResponse(.success(ProfileTestSupport.withdrawSuccess))))
 
     await store.receive(\.delegate.presentLogOut)
   }
@@ -205,34 +203,13 @@ struct ProfileReducerRoutingTests {
     }
   }
 
-  // MARK: - BindingAction
-
-  @Test("바인딩 액션은 상태만 갱신하고 이펙트를 만들지 않는다")
-  func bindingActionOnlyUpdatesState() async {
-    let store = TestStore(initialState: ProfileFeature.State()) {
-      ProfileFeature()
-    }
-
-    await store.send(.binding(.set(\.managerProfileName, "변경"))) {
-      $0.managerProfileName = "변경"
-    }
-  }
-
   // MARK: - State 기본값
 
-  @Test("State 는 화면에 쓰는 고정 라벨을 기본값으로 갖는다")
-  func stateProvidesDefaultLabels() {
+  @Test("State 는 로딩 상태로 시작한다")
+  func stateStartsLoadingWithoutProfile() {
     let state = ProfileFeature.State()
 
-    #expect(state.managerProfileName == "의 프로필")
-    #expect(state.managerProfileRoleType == "직군")
-    #expect(state.memberSelectTeam == "소속 팀")
-    #expect(state.managerProfileManaging == "담당 업무")
-    #expect(state.managerProfileGeneration == "소속 기수")
-    #expect(state.logoutText == "로그아웃")
     #expect(state.viewState == .loading)
     #expect(state.profile == nil)
-    #expect(state.deleteUser == nil)
-    #expect(state.authExit == nil)
   }
 }

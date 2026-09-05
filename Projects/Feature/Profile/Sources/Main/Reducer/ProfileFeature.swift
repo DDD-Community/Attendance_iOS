@@ -28,13 +28,6 @@ public struct ProfileFeature: Sendable {
       case loaded
     }
 
-    var managerProfileName: String = "의 프로필"
-    var managerProfileRoleType: String = "직군"
-    var memberSelectTeam: String = "소속 팀"
-    var managerProfileManaging: String = "담당 업무"
-    var managerProfileGeneration: String = "소속 기수"
-    var logoutText: String = "로그아웃"
-
     var profile: ProfileEntity?
 
     /// 네트워크 갱신 전에는 앱 전역 세션의 마지막 프로필을 즉시 표시합니다.
@@ -61,10 +54,6 @@ public struct ProfileFeature: Sendable {
     /// 캐시나 서버 프로필이 확정되기 전에는 빈 프로필 카드(`"님"`) 대신 스켈레톤을 그린다.
     var viewState: ViewState = .loading
 
-    var deleteUser: WithdrawEntity?
-    var authExit: AuthExitEntity?
-    var appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
-
     @Shared(.userSession) var userSession
     @Presents var destination: Destination.State?
     @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
@@ -83,9 +72,8 @@ public struct ProfileFeature: Sendable {
     case createApp(CreateAppFeature)
   }
 
-  public enum Action: ViewAction, BindableAction {
+  public enum Action: ViewAction {
     case destination(PresentationAction<Destination.Action>)
-    case binding(BindingAction<State>)
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
@@ -150,12 +138,8 @@ public struct ProfileFeature: Sendable {
   @Dependency(\.continuousClock) var clock
 
   public var body: some Reducer<State, Action> {
-    BindingReducer()
     Reduce { state, action in
       switch action {
-      case .binding:
-        return .none
-
       case let .destination(destinationAction):
         return handleDestinationAction(state: &state, action: destinationAction)
 
@@ -311,7 +295,6 @@ extension ProfileFeature {
     case let .deleteUserResponse(result):
       switch result {
       case let .success(data):
-        state.deleteUser = data
         if data.isSuccess {
           // 탈퇴 성공 시 UserSession의 이름 제거
           state.$userSession.withLock { $0.name = "" }
@@ -334,8 +317,7 @@ extension ProfileFeature {
 
     case let .logoutResponses(result):
       switch result {
-      case let .success(data):
-        state.authExit = data
+      case .success:
         return .send(.delegate(.presentLogOut))
 
       case let .failure(error):

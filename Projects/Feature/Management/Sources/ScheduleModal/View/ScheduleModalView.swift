@@ -156,7 +156,7 @@ extension ScheduleModalView {
       title: "확인",
       config: CustomButtonConfig.create()
     )
-    .isEnable(store.enableButton)
+    .isEnable(store.isConfirmEnabled)
     .dddAccessibilityID(ManagementAccessibilityID.ScheduleModal.confirmButton)
   }
 }

@@ -15,7 +15,6 @@ import ComposableArchitecture
 
 public struct StaffView: View {
   @Bindable var store: StoreOf<StaffFeature>
-  @State var isExpanded: Bool = false
   @State private var isDropDownClosing = false
 
   public init(store: StoreOf<StaffFeature>) {
@@ -95,7 +94,7 @@ private extension StaffView {
           }
         } label: {
           HStack {
-            Text(store.selectDropDownItem.desc)
+            Text(store.selectedItem.desc)
               .dddFont(.title2NormalBold)
               .foregroundColor(.staticWhite)
 
@@ -118,7 +117,7 @@ private extension StaffView {
           .fill(.blue70)
           .frame(width: 36, height: 36)
           .overlay {
-            Image(asset: store.qrcodeImage)
+            Image(asset: .qrCode)
               .resizable()
               .scaledToFit()
               .frame(width: 20, height: 20)
@@ -153,8 +152,8 @@ private extension StaffView {
 
   @ViewBuilder
   func switchSelectDropDownView() -> some View {
-    switch store.selectDropDownItem {
-    case .attandance:
+    switch store.selectedItem {
+    case .attendance:
       AttendanceCheckView(store: store.scope(state: \.attendance, action: \.attendance))
 
     case .schedule:
@@ -181,13 +180,13 @@ private extension StaffView {
             HomeDropdownMenu.Entry(
               id: item.rawValue,
               title: item.desc,
-              isSelected: item == store.selectDropDownItem,
+              isSelected: item == store.selectedItem,
               showsNewBadge: item == .vote
             )
           },
           onSelect: { entry in
             if let matched = SelectDropDownItem.allCases.first(where: { $0.rawValue == entry.id }) {
-              closeDropDown(.selectDropDownItem(matched))
+              closeDropDown(.selectItem(matched))
             }
           }
         )
@@ -235,8 +234,8 @@ private extension StaffView {
 
   @ViewBuilder
   var skeletonView: some View {
-    switch store.selectDropDownItem {
-    case .attandance:
+    switch store.selectedItem {
+    case .attendance:
       StaffSkeletonView()
         .dddAccessibilityID(ManagementAccessibilityID.Staff.skeleton)
     case .schedule:

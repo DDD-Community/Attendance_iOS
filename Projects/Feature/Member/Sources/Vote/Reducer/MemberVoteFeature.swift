@@ -31,7 +31,6 @@ public struct MemberVoteFeature {
   public struct State: Equatable {
     var step: Step = .loading
     var voteId: Int?
-    var voteTitle: String = ""
     var teamTemplate: TeamVoteTemplateInfo?
     var feedbackTemplate: FeedbackTemplateInfo?
     var teamAnswers: [TeamVoteAnswer] = []
@@ -229,7 +228,6 @@ extension MemberVoteFeature {
       switch result {
       case let .success(activeVote):
         state.voteId = activeVote.voteId
-        state.voteTitle = activeVote.title
         if activeVote.alreadyResponded {
           state.step = .alreadyVoted
           return .none
@@ -270,12 +268,7 @@ extension MemberVoteFeature {
         return .none
 
       case let .failure(error):
-        let submission = VoteSubmission(
-          teamVote: state.teamAnswers,
-          feedback: []
-        )
         // 재시도는 사용자가 피드백 화면에서 다시 제출하도록 유도한다.
-        _ = submission
         return presentError(state: &state, error: error, retry: .fetchActiveVote)
       }
     }

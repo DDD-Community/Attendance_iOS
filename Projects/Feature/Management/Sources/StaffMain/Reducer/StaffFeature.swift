@@ -20,38 +20,29 @@ public struct StaffFeature {
   @ObservableState
   public struct State: Equatable {
     
-    var isExpandedDropDown: Bool = false
-    var selectedIDropDownItem = "출석"
-    var dropDownItem: [String] = SelectDropDownItem.item
-    var selectDropDownItem: SelectDropDownItem = .attandance
+    var isExpandedDropDown = false
+    var selectedItem: SelectDropDownItem = .attendance
     
     var attendance = AttendanceCheckFeature.State()
     var schedule = ScheduleFeature.State()
     var vote = VoteFeature.State()
 
-    /// 이 화면이 지금 무엇을 그려야 하는지.
-    /// 드롭다운으로 고른 탭의 자식 상태를 그대로 따른다.
+    /// 현재 선택된 탭의 자식 로딩 상태를 화면 상태로 노출한다.
     public enum ViewState: Equatable {
       case loading
       case loaded
     }
 
     var viewState: ViewState {
-      let childIsLoading: Bool
-      switch selectDropDownItem {
-      case .attandance:
-        childIsLoading = attendance.viewState == .loading
+      switch selectedItem {
+      case .attendance:
+        return attendance.viewState == .loading ? .loading : .loaded
       case .schedule:
-        childIsLoading = schedule.viewState == .loading
+        return schedule.viewState == .loading ? .loading : .loaded
       case .vote:
-        childIsLoading = vote.viewState == .loading
+        return vote.viewState == .loading ? .loading : .loaded
       }
-      return childIsLoading ? .loading : .loaded
     }
-    
-    var qrcodeImage: ImageAsset = .qrCode
-    var eventImage: ImageAsset = .eventGenerate
-    var managerProfilemage: ImageAsset = .managementProfile
     
     
     @Presents var destination: Destination.State?
@@ -80,7 +71,7 @@ public struct StaffFeature {
     case closeModal
     case toggleDropDown
     case closeDropDown
-    case selectDropDownItem(SelectDropDownItem)
+    case selectItem(SelectDropDownItem)
   }
   
   // MARK: - 비동기 처리 액션
@@ -177,8 +168,8 @@ extension StaffFeature {
       state.isExpandedDropDown = false
       return .none
 
-    case let .selectDropDownItem(item):
-      state.selectDropDownItem = item
+    case let .selectItem(item):
+      state.selectedItem = item
       state.isExpandedDropDown = false
       return .none
     }

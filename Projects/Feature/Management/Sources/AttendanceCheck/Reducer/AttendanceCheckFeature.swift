@@ -65,15 +65,6 @@ public struct AttendanceCheckFeature {
       selectedSchedule?.toDate() ?? .now
     }
 
-    var selectedTeam: SelectTeamEntity? {
-      guard let selectedTeamID else { return nil }
-      return teams[id: selectedTeamID]
-    }
-
-    var selectedPart: SelectTeams? {
-      selectedTeam?.teams
-    }
-
     var attendanceCount: Int {
       attendanceSummary?.attendanceCount ?? 0
     }
@@ -84,11 +75,6 @@ public struct AttendanceCheckFeature {
 
     var absentCount: Int {
       attendanceSummary?.absentCount ?? 0
-    }
-
-    var selectedAttendance: [Attendance] {
-      guard let selectedTeamID else { return [] }
-      return attendanceByTeam[selectedTeamID] ?? []
     }
 
     var orderedTeams: [SelectTeamEntity] {

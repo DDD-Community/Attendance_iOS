@@ -35,7 +35,7 @@ struct MemberMainReducerCoverageTests {
     #expect(store.state.presentCount == 8)
     #expect(store.state.lateCount == 1)
     #expect(store.state.absentCount == 2)
-    #expect(store.state.showAttendanceWarningIcon)
+    #expect(store.state.showsAttendanceWarningIcon)
     #expect(Array(store.state.schedules) == MemberTestFixture.schedules)
     #expect(store.state.startDate == "2026.9.2")
     #expect(store.state.endDate == "2026.11.30")
@@ -70,21 +70,21 @@ struct MemberMainReducerCoverageTests {
     let store = makeStore()
 
     await store.send(.view(.didTapAbesentButton))
-    #expect(!store.state.isPresentAttendanceWarningAlert)
+    #expect(!store.state.isAttendanceWarningAlertPresented)
   }
 
   @Test("결석 경고 아이콘이 있으면 결석 버튼이 알럿을 열고 닫기 버튼이 다시 닫는다")
   func didTapAbesentButton_경고아이콘있음_알럿토글() async {
     var state = MemberMainFeature.State()
-    state.showAttendanceWarningIcon = true
+    state.absentCount = 1
 
     let store = makeStore(state: state)
 
     await store.send(.view(.didTapAbesentButton)) {
-      $0.isPresentAttendanceWarningAlert = true
+      $0.isAttendanceWarningAlertPresented = true
     }
     await store.send(.view(.didTapDismissAlertButton)) {
-      $0.isPresentAttendanceWarningAlert = false
+      $0.isAttendanceWarningAlertPresented = false
     }
   }
 
@@ -192,8 +192,8 @@ struct MemberMainReducerCoverageTests {
       $0.presentCount = 10
       $0.lateCount = 0
       $0.absentCount = 0
-      $0.showAttendanceWarningIcon = false
     }
+    #expect(!store.state.showsAttendanceWarningIcon)
   }
 
   @Test("출석 요약 조회 실패는 카운트를 변경하지 않는다")
@@ -269,7 +269,6 @@ struct MemberMainReducerCoverageTests {
       $0.presentCount = 8
       $0.lateCount = 1
       $0.absentCount = 2
-      $0.showAttendanceWarningIcon = true
     }
 
     #expect(store.state.member == MemberTestFixture.profile)
@@ -279,6 +278,7 @@ struct MemberMainReducerCoverageTests {
     #expect(store.state.presentCount == 8)
     #expect(store.state.lateCount == 1)
     #expect(store.state.absentCount == 2)
+    #expect(store.state.showsAttendanceWarningIcon)
   }
 
   // MARK: - Async 실패 경로
@@ -331,8 +331,8 @@ struct MemberMainReducerCoverageTests {
       $0.presentCount = 8
       $0.lateCount = 1
       $0.absentCount = 2
-      $0.showAttendanceWarningIcon = true
     }
+    #expect(store.state.showsAttendanceWarningIcon)
   }
 
   // MARK: - Delegate 액션

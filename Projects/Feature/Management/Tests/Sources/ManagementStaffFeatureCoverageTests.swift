@@ -21,9 +21,7 @@ struct ManagementStaffFeatureCoverageTests {
     let state = StaffFeature.State()
 
     #expect(state.isExpandedDropDown == false)
-    #expect(state.selectDropDownItem == .attandance)
-    #expect(state.selectedIDropDownItem == "출석")
-    #expect(state.dropDownItem == SelectDropDownItem.item)
+    #expect(state.selectedItem == .attendance)
     #expect(state.destination == nil)
   }
 
@@ -61,8 +59,8 @@ struct ManagementStaffFeatureCoverageTests {
       StaffFeature()
     }
 
-    await store.send(.view(.selectDropDownItem(.schedule))) {
-      $0.selectDropDownItem = .schedule
+    await store.send(.view(.selectItem(.schedule))) {
+      $0.selectedItem = .schedule
     }
   }
 

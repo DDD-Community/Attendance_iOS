@@ -61,7 +61,7 @@ public struct MemberMainView: View {
     .animation(.easeInOut(duration: 0.2), value: store.viewState)
     .allowsHitTesting(store.viewState == .loaded)
     .dddAlert(
-      isPresented: store.isPresentAttendanceWarningAlert,
+      isPresented: store.isAttendanceWarningAlertPresented,
       title: "주의해주세요!",
       message: "2번 지각 시 노쇼비를 돌려받을 수 없습니다.",
       onConfirm: {
@@ -240,7 +240,7 @@ public struct MemberMainView: View {
             attendanceCount: store.presentCount,
             lateCount: store.lateCount,
             absentCount: store.absentCount,
-            showWarning: store.showAttendanceWarningIcon,
+            showWarning: store.showsAttendanceWarningIcon,
             onTapAbsentButton: {
               send(.didTapAbesentButton)
             }

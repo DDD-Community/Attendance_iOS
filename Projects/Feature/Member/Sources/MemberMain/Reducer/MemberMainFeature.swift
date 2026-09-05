@@ -71,8 +71,8 @@ public struct MemberMainFeature {
     var presentCount: Int = .zero
     var lateCount: Int = .zero
     var absentCount: Int = .zero
-    var showAttendanceWarningIcon: Bool = false
-    var isPresentAttendanceWarningAlert: Bool = false
+    var showsAttendanceWarningIcon: Bool { absentCount > 0 }
+    var isAttendanceWarningAlertPresented = false
     var attendanceViewState: ViewState = .loading
 
     // 일정표
@@ -119,11 +119,6 @@ public struct MemberMainFeature {
 
   /// 이동 계약은 MemberInterface 에 있다. 호출부를 그대로 두기 위해 별칭만 받는다.
   public typealias DelegateAction = MemberMainDelegate
-
-  @Reducer(state: .equatable)
-  public enum Destination {
-    case qrcode(MemberQRCodeFeature)
-  }
 
   @Dependency(\.profileUseCase) var profileUseCase
   @Dependency(\.attendanceUseCase) var attendanceUseCase
@@ -217,15 +212,15 @@ extension MemberMainFeature {
       return .none
 
     case .didTapAbesentButton:
-      guard state.showAttendanceWarningIcon else {
+      guard state.showsAttendanceWarningIcon else {
         return .none
       }
 
-      state.isPresentAttendanceWarningAlert = true
+      state.isAttendanceWarningAlertPresented = true
       return .none
 
     case .didTapDismissAlertButton:
-      state.isPresentAttendanceWarningAlert = false
+      state.isAttendanceWarningAlertPresented = false
       return .none
 
     case .toggleDropDown:
@@ -278,7 +273,6 @@ extension MemberMainFeature {
         state.presentCount = counts.totalAttended
         state.lateCount = counts.totalLate
         state.absentCount = counts.totalAbsent
-        state.showAttendanceWarningIcon = state.absentCount > 0
         DDDLogger.debug("Succeed Fetch Attendance Counts: \(counts)", category: .attendance)
         return .none
 

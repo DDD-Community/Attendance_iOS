@@ -27,7 +27,7 @@ struct MemberMainReducerTests {
     }
   }
 
-  @Test("출석 요약 성공은 카운트와 결석 경고 노출 여부를 저장한다")
+  @Test("출석 요약 성공은 카운트로 결석 경고 노출 여부를 계산한다")
   func attendanceSummarySuccessStoresCounts() async {
     let summary = AttendanceSummaryResponse(
       totalAttended: 8,
@@ -43,7 +43,7 @@ struct MemberMainReducerTests {
       $0.presentCount = 8
       $0.lateCount = 1
       $0.absentCount = 2
-      $0.showAttendanceWarningIcon = true
     }
+    #expect(store.state.showsAttendanceWarningIcon)
   }
 }

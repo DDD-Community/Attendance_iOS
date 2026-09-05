@@ -30,8 +30,11 @@ public struct ScheduleModalFeature {
     /// 첫 진입은 항상 fetch 로 시작한다. 빈 화면이 한 프레임 스쳐 지나가지 않도록 스켈레톤부터 그린다.
 
     var viewState: ViewState = .loading
-    var enableButton: Bool = false
     var selectedSchedule: Schedule?
+
+    var isConfirmEnabled: Bool {
+      selectedSchedule != nil
+    }
 
     public init() {}
   }
@@ -107,7 +110,6 @@ extension ScheduleModalFeature {
       } else {
         state.selectedSchedule = item
       }
-      state.enableButton = state.selectedSchedule != nil
       return .none
 
     case .confirmSelection:

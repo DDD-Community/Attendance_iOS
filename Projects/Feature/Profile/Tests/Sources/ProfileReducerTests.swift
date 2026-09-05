@@ -92,16 +92,13 @@ struct ProfileReducerTests {
     #expect(state.displayedProfile?.team == .ios2)
   }
 
-  @Test("logoutResponses 성공은 로그아웃 결과 저장 후 로그아웃 navigation을 보낸다")
+  @Test("logoutResponses 성공은 로그아웃 navigation을 보낸다")
   func logoutSuccessSendsLogoutNavigation() async {
-    let authExit = AuthExitEntity(code: "200", message: "ok", detail: nil)
     let store = TestStore(initialState: ProfileFeature.State()) {
       ProfileFeature()
     }
 
-    await store.send(.inner(.logoutResponses(.success(authExit)))) {
-      $0.authExit = authExit
-    }
+    await store.send(.inner(.logoutResponses(.success(ProfileTestSupport.authExitSuccess))))
     await store.receive(\.delegate.presentLogOut)
   }
 
@@ -112,9 +109,7 @@ struct ProfileReducerTests {
       ProfileFeature()
     }
 
-    await store.send(.inner(.deleteUserResponse(.success(response)))) {
-      $0.deleteUser = response
-    }
+    await store.send(.inner(.deleteUserResponse(.success(response))))
   }
 }
 

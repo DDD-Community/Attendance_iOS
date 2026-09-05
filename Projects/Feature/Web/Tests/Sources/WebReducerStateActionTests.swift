@@ -80,20 +80,6 @@ struct WebReducerStateActionTests {
     #expect(lhs != rhs)
   }
 
-  @Test("url 을 직접 바꾸면 State 동등성이 깨진다")
-  func state_whenURLMutated_breaksEquality() {
-    // Given
-    var state = WebFeature.State(url: "https://dddstudy.kr")
-    let original = state
-
-    // When
-    state.url = "https://dddstudy.kr/terms"
-
-    // Then
-    #expect(state != original)
-    #expect(state.url == "https://dddstudy.kr/terms")
-  }
-
   // MARK: - Action
 
   @Test("Action 은 WebDelegate 별칭이라 backToRoot 끼리 동등하다")

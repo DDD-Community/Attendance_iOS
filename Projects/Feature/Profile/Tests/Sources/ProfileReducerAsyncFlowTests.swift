@@ -173,15 +173,13 @@ struct ProfileReducerAsyncFlowTests {
 
     await store.receive(\.async.deleteUser)
 
-    await store.receive(\.inner.deleteUserResponse) {
-      $0.deleteUser = ProfileTestSupport.withdrawSuccess
-    }
+    await store.receive(\.inner.deleteUserResponse)
 
     await store.receive(\.delegate.presentLogOut)
   }
 
-  @Test("탈퇴 응답이 isSuccess=false 면 결과만 저장하고 화면 이동을 요청하지 않는다")
-  func deleteUserRejectedStoresResultOnly() async {
+  @Test("탈퇴 응답이 isSuccess=false 면 화면 이동을 요청하지 않는다")
+  func deleteUserRejectedDoesNotNavigate() async {
     let store = TestStore(initialState: ProfileFeature.State()) {
       ProfileFeature()
     } withDependencies: {
@@ -192,9 +190,7 @@ struct ProfileReducerAsyncFlowTests {
 
     await store.send(.async(.deleteUser))
 
-    await store.receive(\.inner.deleteUserResponse) {
-      $0.deleteUser = ProfileTestSupport.withdrawRejected
-    }
+    await store.receive(\.inner.deleteUserResponse)
   }
 
   @Test("탈퇴 요청이 실패하면 탈퇴 실패 알럿을 띄운다")
@@ -241,9 +237,7 @@ struct ProfileReducerAsyncFlowTests {
 
     await store.receive(\.async.logout)
 
-    await store.receive(\.inner.logoutResponses) {
-      $0.authExit = ProfileTestSupport.authExitSuccess
-    }
+    await store.receive(\.inner.logoutResponses)
 
     await store.receive(\.delegate.presentLogOut)
   }

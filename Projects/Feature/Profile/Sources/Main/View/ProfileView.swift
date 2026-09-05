@@ -7,6 +7,7 @@
 
 import DDDCoreUI
 import DDDAccessibility
+import Foundation
 import SwiftUI
 
 import ComposableArchitecture
@@ -215,7 +216,7 @@ extension ProfileView {
 
   private var jobRoleComponent: some View {
     managerTextComponent(
-      title: store.managerProfileRoleType,
+      title: "직군",
       subTitle: store.displayedProfile?.jobRole.desc ?? "",
       managingTeam: "",
       isManaging: false,
@@ -228,7 +229,7 @@ extension ProfileView {
 
     return Group {
       managerTextComponent(
-        title: store.memberSelectTeam,
+        title: "소속 팀",
         subTitle: "매니징",
         managingTeam: team.attendanceListDescription,
         isManaging: true,
@@ -236,7 +237,7 @@ extension ProfileView {
       )
 
       managerTextComponent(
-        title: store.managerProfileGeneration,
+        title: "소속 기수",
         subTitle: store.displayedProfile?.generation ?? "",
         managingTeam: "",
         isManaging: false,
@@ -245,7 +246,7 @@ extension ProfileView {
 
       if let managerRoles = store.displayedProfile?.manger, !managerRoles.isEmpty {
         managerTextComponent(
-          title: store.managerProfileManaging,
+          title: "담당 업무",
           subTitle: managerRoles.map { $0.desc }.joined(separator: " / "),
           managingTeam: "",
           isManaging: false,
@@ -260,7 +261,7 @@ extension ProfileView {
 
     return Group {
       managerTextComponent(
-        title: store.memberSelectTeam,
+        title: "소속 팀",
         subTitle: team.attendanceListDescription,
         managingTeam: "",
         isManaging: false,
@@ -268,7 +269,7 @@ extension ProfileView {
       )
 
       managerTextComponent(
-        title: store.managerProfileGeneration,
+        title: "소속 기수",
         subTitle: store.displayedProfile?.generation ?? "",
         managingTeam: "",
         isManaging: false,
@@ -381,7 +382,7 @@ extension ProfileView {
       Spacer()
           .frame(width: 64)
 
-        Text(store.logoutText)
+        Text("로그아웃")
           .dddFont(.body2NormalMedium)
           .foregroundStyle(.staticWhite)
           .underline(true, color: .staticWhite)
@@ -400,7 +401,7 @@ extension ProfileView {
         .frame(height: 12)
 
 
-      Text("Version \(store.appVersion)")
+      Text("Version \(appVersion)")
         .dddFont(.body3NormalRegular)
         .foregroundStyle(.mediumGray100)
         .dddAccessibilityID(ProfileAccessibilityID.Main.version)
@@ -420,5 +421,9 @@ extension ProfileView {
       Spacer()
         .frame(height: 20)
     }
+  }
+
+  private var appVersion: String {
+    Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
   }
 }

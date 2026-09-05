@@ -141,7 +141,6 @@ struct OnBoardingViewRenderTests {
     state.viewState = .loaded
     state.managers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
     state.userSession.userRole = .manager
-    state.activeButton = true
 
     let store = Store(initialState: state) {
       SelectManagingFeature()

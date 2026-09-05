@@ -118,7 +118,6 @@ struct ManagementScheduleViewRenderTests {
     state.viewState = .loaded
     state.schedules = .init(uniqueElements: ManagementScheduleFixture.all)
     state.selectedSchedule = ManagementScheduleFixture.midterm
-    state.enableButton = true
 
     ManagementViewRenderer.render(ScheduleModalView(store: makeModalStore(state: state)))
   }

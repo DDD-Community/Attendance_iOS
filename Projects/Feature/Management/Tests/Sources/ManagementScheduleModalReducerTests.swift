@@ -139,7 +139,6 @@ struct ManagementScheduleModalReducerTests {
   func selectingAnotherScheduleReplacesSelection() async {
     var state = ScheduleModalFeature.State()
     state.selectedSchedule = ManagementScheduleFixture.orientation
-    state.enableButton = true
 
     let store = TestStore(initialState: state) {
       ScheduleModalFeature()
@@ -155,7 +154,6 @@ struct ManagementScheduleModalReducerTests {
   func confirmSelectionSendsDelegate() async {
     var state = ScheduleModalFeature.State()
     state.selectedSchedule = ManagementScheduleFixture.midterm
-    state.enableButton = true
 
     let store = TestStore(initialState: state) {
       ScheduleModalFeature()
@@ -178,14 +176,4 @@ struct ManagementScheduleModalReducerTests {
     await store.send(.view(.confirmSelection))
   }
 
-  @Test("바인딩 액션은 상태를 그대로 반영한다")
-  func bindingActionUpdatesState() async {
-    let store = TestStore(initialState: ScheduleModalFeature.State()) {
-      ScheduleModalFeature()
-    }
-
-    await store.send(.binding(.set(\.enableButton, true))) {
-      $0.enableButton = true
-    }
-  }
 }

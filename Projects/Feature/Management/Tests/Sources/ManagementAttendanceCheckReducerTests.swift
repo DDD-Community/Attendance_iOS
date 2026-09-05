@@ -323,8 +323,6 @@ struct ManagementAttendanceCheckReducerTests {
       $0.viewState = .loaded
       $0.attendanceByTeam[1] = ManagementSupportFixture.attendances
     }
-    #expect(store.state.selectedPart == .ios1)
-    #expect(store.state.selectedAttendance == ManagementSupportFixture.attendances)
   }
 
   @Test("출석 목록 재조회가 실패해도 로딩을 끝낸다")

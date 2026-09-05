@@ -32,7 +32,6 @@ struct LoginReducerTests {
     }
 
     await store.send(.inner(.loginResponse(.success(Self.memberLogin)))) {
-      $0.login = Self.memberLogin
       $0.staffRole = .member
       $0.userSession.userRole = .member
     }

@@ -81,24 +81,6 @@ struct ManagementScheduleReducerTests {
     #expect(store.state.schedules.count == 1)
   }
 
-  @Test("stratLoading 과 stopLoading 은 로딩 플래그를 토글한다")
-  func loadingActionsToggleFlag() async {
-    // 기본값이 .loading 이라 토글을 보려면 .loaded 에서 출발해야 한다.
-    var state = ScheduleFeature.State()
-    state.viewState = .loaded
-
-    let store = TestStore(initialState: state) {
-      ScheduleFeature()
-    }
-
-    await store.send(.view(.stratLoading)) {
-      $0.viewState = .loading
-    }
-    await store.send(.view(.stopLoading)) {
-      $0.viewState = .loaded
-    }
-  }
-
   @Test("바인딩 액션은 상태를 그대로 반영한다")
   func bindingActionUpdatesState() async {
     let store = TestStore(initialState: ScheduleFeature.State()) {

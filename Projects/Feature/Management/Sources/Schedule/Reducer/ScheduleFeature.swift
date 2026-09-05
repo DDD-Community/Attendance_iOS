@@ -49,10 +49,8 @@ public struct ScheduleFeature {
   
   //MARK: - ViewAction
   @CasePathable
-  public enum View {
-    case onAppear
-    case stratLoading
-    case stopLoading
+    public enum View {
+      case onAppear
     
   }
   
@@ -119,13 +117,6 @@ extension ScheduleFeature {
       state.hasFetchedSchedule = true
       return .send(.async(.fetchSchedule))
 
-    case .stratLoading:
-      state.viewState = .loading
-      return .none
-
-    case .stopLoading:
-      state.viewState = .loaded
-      return .none
     }
   }
 

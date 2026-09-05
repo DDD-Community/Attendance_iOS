@@ -13,6 +13,7 @@ import ComposableArchitecture
 import AttendanceDomainInterface
 
 struct QRScannerView: View {
+  private let scannerSize: CGFloat = 240
   @Bindable var store: StoreOf<QRCodeFeature>
   
   init(store: StoreOf<QRCodeFeature>) {
@@ -37,7 +38,6 @@ struct QRScannerView: View {
           await MainActor.run {
             store.scannedText = ""
             store.isScanning = true
-            store.isPresent = false
           }
         }
       }
@@ -100,8 +100,8 @@ extension QRScannerView {
       let width = proxy.size.width
       let height = proxy.size.height
       // 화면 중앙에 scannerSize 크기의 네모 영역을 배치하기 위한 좌표 계산
-      let rectX = (width - store.scannerSize) / 2
-      let rectY = (height - store.scannerSize) / 2
+      let rectX = (width - scannerSize) / 2
+      let rectY = (height - scannerSize) / 2
       
       // (A) 반투명 오버레이 + 중앙 네모 영역은 투명하게
       Color.basicBlack.opacity(0.5)
@@ -109,9 +109,9 @@ extension QRScannerView {
           ZStack {
             Rectangle()  // 전체 화면 채움
             RoundedRectangle(cornerRadius: 12)
-              .frame(width: store.scannerSize, height: store.scannerSize)
-              .position(x: rectX + store.scannerSize / 2,
-                        y: rectY + store.scannerSize / 2)
+              .frame(width: scannerSize, height: scannerSize)
+              .position(x: rectX + scannerSize / 2,
+                        y: rectY + scannerSize / 2)
               .blendMode(.destinationOut)
           }
         )
@@ -121,12 +121,6 @@ extension QRScannerView {
       // (B) 안내 문구 (네모 영역 위쪽에 배치)
       scanText(attendanceType: attendanceStatus)
         .position(x: width / 2, y: rectY - 30)
-      // (C) 중앙 테두리 (네모 영역 강조)
-      RoundedRectangle(cornerRadius: 12)
-        .stroke(store.isPresent ? .statusFocus : .clear , lineWidth: 2)
-        .frame(width: store.scannerSize, height: store.scannerSize)
-        .position(x: rectX + store.scannerSize / 2,
-                  y: rectY + store.scannerSize / 2)
     }
   }
   

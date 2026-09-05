@@ -137,7 +137,6 @@ struct LoginActionCoverageTests {
     let store = Self.makeStore()
 
     await store.send(.inner(.loginResponse(.success(LoginTestFixture.member)))) {
-      $0.login = LoginTestFixture.member
       $0.staffRole = .member
       $0.userSession.userRole = .member
     }
@@ -150,7 +149,6 @@ struct LoginActionCoverageTests {
     let store = Self.makeStore()
 
     await store.send(.inner(.loginResponse(.success(LoginTestFixture.manager)))) {
-      $0.login = LoginTestFixture.manager
       $0.staffRole = .manager
       $0.userSession.userRole = .manager
     }
@@ -163,7 +161,6 @@ struct LoginActionCoverageTests {
     let store = Self.makeStore()
 
     await store.send(.inner(.loginResponse(.success(LoginTestFixture.roleless)))) {
-      $0.login = LoginTestFixture.roleless
       $0.staffRole = .member
       $0.userSession.userRole = .member
     }
@@ -176,7 +173,6 @@ struct LoginActionCoverageTests {
     let store = Self.makeStore(configureState: { $0.editGeneration = true })
 
     await store.send(.inner(.loginResponse(.success(LoginTestFixture.newUser)))) {
-      $0.login = LoginTestFixture.newUser
       $0.staffRole = nil
       $0.userSession.userRole = .manager
       $0.editGeneration = false
