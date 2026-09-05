@@ -244,11 +244,6 @@ jobs:
         continue-on-error: true
         run: ./Scripts/run-isolated-module-tests.sh
 
-      - name: Report failed shard build to Tuist
-        if: steps.tests.outcome == 'failure'
-        continue-on-error: true
-        run: mise exec -- tuist inspect build --derived-data-path "$CI_DERIVED_DATA"
-
       - name: Upload test shard reports
         id: upload-test-reports
         if: always()

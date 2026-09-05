@@ -91,9 +91,7 @@ struct ProfileReducerAsyncFlowTests {
 
     await store.send(.async(.fetchUser))
 
-    await store.receive(\.inner.setLoading) {
-      $0.viewState = .loading
-    }
+    await store.receive(\.inner.setLoading)
 
     await store.receive(\.inner.fetchUserResponse) {
       $0.viewState = .loaded
@@ -115,9 +113,7 @@ struct ProfileReducerAsyncFlowTests {
 
     await store.send(.async(.fetchUser))
 
-    await store.receive(\.inner.setLoading) {
-      $0.viewState = .loading
-    }
+    await store.receive(\.inner.setLoading)
 
     await store.receive(\.inner.fetchUserResponse) {
       $0.viewState = .loaded

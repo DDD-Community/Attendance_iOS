@@ -64,6 +64,7 @@ test("test shard는 build job 산출물을 사용하고 프로젝트를 다시 �
   assert.match(prShard, /run-isolated-module-tests\.sh/);
   assert.match(read("Scripts/run-isolated-module-tests.sh"), /--without-building/);
   assert.match(developShard, /--without-building/);
+  assert.doesNotMatch(prShard, /Report failed shard build to Tuist/);
 });
 
 test("Sharing module alias를 빌드하는 job은 이전 외부 binary cache를 사용하지 않는다", () => {

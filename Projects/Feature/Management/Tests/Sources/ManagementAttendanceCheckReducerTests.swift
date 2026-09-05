@@ -456,6 +456,7 @@ struct ManagementAttendanceCheckReducerTests {
     )
     state.editTarget = .init(attendanceID: 100, userID: "user-1")
     state.selectedSchedule = EntityFixtureSchedule.value
+    state.selectedTeamID = ManagementSupportFixture.teams[0].teamId
 
     let store = TestStore(initialState: state) {
       AttendanceCheckFeature()

@@ -36,7 +36,9 @@ struct ProfileReducerRoutingTests {
 
   @Test("setLoading 액션은 로딩 플래그를 그대로 반영한다")
   func setLoadingTogglesFlag() async {
-    let store = TestStore(initialState: ProfileFeature.State()) {
+    var initialState = ProfileFeature.State()
+    initialState.viewState = .loaded
+    let store = TestStore(initialState: initialState) {
       ProfileFeature()
     }
 
