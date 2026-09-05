@@ -232,11 +232,9 @@ public extension Project {
         deploymentTargets: deploymentTarget,
         infoPlist: .default,
         buildableFolders: ["Tests"],
-        // 호스트 앱 없이 로직 테스트로 돈다. 앱을 host 로 붙이면 .xctest 가
-        // DDDAttendance.app/PlugIns 에 embed 되어 앱↔테스트 의존성 순환이 생긴다.
-        // Xcode 26.3 의 bootstrap SIGSEGV 는 Point-Free Sharing 을 정적으로 링크해
-        // Apple 의 Sharing.framework 와 겹치지 않게 하는 것으로 해결한다
-        // (Tuist/Package.swift 의 productTypes 참고).
+        // 모듈 테스트는 별도 앱 호스트 없이 로직 테스트로 실행한다.
+        // Xcode 26 런타임과 Point-Free Sharing의 산출물 이름 충돌은
+        // Tuist/Package.swift에서 동적 프레임워크 이름만 분리해 방지한다.
         // Testing 이 있으면 테스트가 그 목을 그대로 쓴다.
         dependencies: [
           .target(name: name)

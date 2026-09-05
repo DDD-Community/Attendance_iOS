@@ -3,7 +3,7 @@ import Dependencies
 import SQLiteData
 
 extension AppDatabaseDependency: DependencyKey {
-  public static var liveValue: any DatabaseWriter {
+  public static var liveValue: (any DatabaseWriter)? {
     StorageFactory.databaseWriter
   }
 }

@@ -68,6 +68,9 @@ public actor ProfileLocalDataSource: ProfileLocalDataSourceProtocol {
 public enum ProfileLocalDataSourceDependency: DependencyKey {
   public static var liveValue: ProfileLocalDataSourceProtocol {
     @Dependency(\.appDatabase) var database
+    guard let database else {
+      return InMemoryProfileLocalDataSource()
+    }
     return ProfileLocalDataSource(database: database)
   }
 

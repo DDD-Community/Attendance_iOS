@@ -8,3 +8,7 @@ tags:
     file: ../management/login_to_home.yaml
 - runFlow:
     file: home_smoke.yaml
+- runFlow:
+    file: privacy_policy_web.yaml
+- runFlow:
+    file: create_app.yaml

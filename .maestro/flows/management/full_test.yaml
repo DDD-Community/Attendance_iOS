@@ -14,3 +14,9 @@ tags:
     file: team_switch.yaml
 - runFlow:
     file: schedule_change.yaml
+- runFlow:
+    file: schedule_tab.yaml
+- runFlow:
+    file: vote_tab.yaml
+- runFlow:
+    file: qr_scanner.yaml

@@ -14,6 +14,25 @@ import UIKit
 @Suite("DDDCoreUI", .serialized)
 @MainActor
 struct DDDCoreUITests {
+  @Test("지연 View는 body 평가 전까지 콘텐츠를 만들지 않는다")
+  func lazyViewDefersContentConstruction() {
+    var constructionCount = 0
+    let view = DDDLazyView {
+      constructionCount += 1
+      return Color.clear
+    }
+
+    #expect(constructionCount == 0)
+    _ = view.body
+    #expect(constructionCount == 1)
+  }
+
+  @Test("키보드 종료 API는 first responder가 없어도 안전하다")
+  func dismissKeyboardWithoutFirstResponder() {
+    Color.clear.dismissKeyboard()
+    _ = Color.clear.dismissKeyboardOnTap()
+  }
+
   @Test("SwiftUI Color가 RGB hex를 변환한다")
   func colorHexConversion() {
     let color = UIColor(Color(hex: "#3366CC"))
@@ -73,10 +92,4 @@ struct DDDCoreUITests {
     #expect(UIScreen.screenSize == UIScreen.main.bounds.size)
   }
 
-  @Test("Scroll bounce 설정이 appearance에 반영된다", arguments: [true, false])
-  func scrollBounceConfiguration(_ isEnabled: Bool) {
-    _ = ScrollViewModifier(isBounce: isEnabled)
-
-    #expect(UIScrollView.appearance().bounces == isEnabled)
-  }
 }

@@ -70,6 +70,8 @@ extension ProfileView {
         CustomNavigationBar(backAction: { store.send(.delegate(.presentBack)) }, addAction: {
           send(.appearModal)
         }, image: .info)
+        .backButtonAccessibilityIdentifier(ProfileAccessibilityID.Main.backButton)
+        .actionButtonAccessibilityIdentifier(ProfileAccessibilityID.Main.infoButton)
 
         ProfileSkeletonView()
           .dddAccessibilityID(ProfileAccessibilityID.Main.skeleton)
@@ -89,6 +91,8 @@ extension ProfileView {
       CustomNavigationBar(backAction: { store.send(.delegate(.presentBack)) }, addAction: {
         send(.appearModal)
       }, image: .info)
+      .backButtonAccessibilityIdentifier(ProfileAccessibilityID.Main.backButton)
+      .actionButtonAccessibilityIdentifier(ProfileAccessibilityID.Main.infoButton)
 
       mangerCardImage()
         .dddAccessibilityID(ProfileAccessibilityID.Main.card)

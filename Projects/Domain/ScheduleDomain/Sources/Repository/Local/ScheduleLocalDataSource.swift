@@ -70,6 +70,9 @@ public actor ScheduleLocalDataSource: ScheduleLocalDataSourceProtocol {
 public enum ScheduleLocalDataSourceDependency: DependencyKey {
   public static var liveValue: ScheduleLocalDataSourceProtocol {
     @Dependency(\.appDatabase) var database
+    guard let database else {
+      return InMemoryScheduleLocalDataSource()
+    }
     return ScheduleLocalDataSource(database: database)
   }
 

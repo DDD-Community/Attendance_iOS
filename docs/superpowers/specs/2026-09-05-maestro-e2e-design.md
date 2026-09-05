@@ -12,7 +12,7 @@
 
 1. `maestro test .maestro/flows/smoke_test.yaml` 이 5분 내 통과한다.
 2. `maestro test .maestro/flows/full_test.yaml` 이 전 화면을 거쳐 통과한다.
-3. 모든 화면 flow가 `solo/` 래퍼로 단독 실행 가능하다.
+3. 모든 화면이 화면 단위 flow 파일 하나로 대응된다.
 4. `.maestro/bin/verify-ids.sh` 가 yaml이 참조하는 ID와 Swift 상수 집합의 불일치를 잡아낸다.
 
 ## 현황
@@ -83,14 +83,20 @@ A안(단독 실행 가능성)과 B안(세션 재사용)을 결합한다.
     full_test.yaml
   member/
     login_to_home.yaml  home_smoke.yaml
-    schedule_list.yaml  vote_flow.yaml   qr_code.yaml        # 신규
+    schedule_list.yaml  qr_code.yaml                         # 신규
+    vote.yaml   vote_team_select.yaml   vote_feedback.yaml   # 신규, 화면 단위 분리
     full_test.yaml
   profile/
     home_smoke.yaml
-    privacy_policy_web.yaml  generation_edit.yaml            # 신규
+    privacy_policy_web.yaml  create_app.yaml                 # 신규
     full_test.yaml
-  solo/                      # 화면 flow별 단독 실행 래퍼
+  onboarding/
+    invite_code.yaml                                         # 신규
+    full_test.yaml
 ```
+
+flow 파일은 화면 하나에 하나씩 대응시킨다. 투표처럼 여러 화면을 거치는 흐름도
+`vote` / `vote_team_select` / `vote_feedback` 로 나눠 화면별로 단독 수정·실행한다.
 
 ### 화면 flow 계약
 
@@ -101,10 +107,7 @@ A안(단독 실행 가능성)과 B안(세션 재사용)을 결합한다.
 3. `launchApp`, `clearState`를 쓰지 않는다.
 
 이 계약 덕분에 로그인 1회로 여러 화면 flow를 체이닝할 수 있다.
-계약을 지키지 못하는 flow는 `solo/`에서만 실행한다.
-
-`solo/<flow>.yaml`은 `login_to_home` + 대상 flow를 잇는 얇은 래퍼다.
-Maestro는 `runFlow`의 파일 경로를 변수화할 수 없어 flow마다 명시적 파일이 필요하다.
+단독 실행이 필요하면 `login_to_home`을 앞에 붙여 `maestro test` 를 두 번 호출한다.
 
 ### 스위트 구성
 
@@ -119,7 +122,7 @@ Maestro는 `runFlow`의 파일 경로를 변수화할 수 없어 flow마다 명�
 7. `member/home_smoke`
 
 `full_test.yaml` — 위에 더해 팀 전환, 출석 새로고침, 일정 변경, 투표 진행 화면,
-QR 진입, 프로필 웹뷰·기수 수정 모달.
+QR 진입, 프로필 웹뷰·만든 사람들 모달, 온보딩 초대 코드 화면.
 
 태그 체계: `smoke` / `full` / `e2e` / 역할(`management`, `member`) / 화면(`vote` 등).
 태그는 필터 용도로만 쓰고 실행 순서 보장에는 쓰지 않는다. Maestro가 태그 실행 시
@@ -142,5 +145,5 @@ QR 진입, 프로필 웹뷰·기수 수정 모달.
 | --- | --- |
 | 1 | ID 네임스페이스 생성·확장, 뷰에 ID 부여, 네임스페이스 테스트 추가 |
 | 2 | `tuist generate` + 빌드, Studio로 ID 노출 검증 |
-| 3 | yaml 작성: `_shared` → 화면 flow → `solo` 래퍼 → `smoke_test`/`full_test` |
+| 3 | yaml 작성: `_shared` → 화면 flow → 모듈별 `full_test` → `smoke_test`/루트 `full_test` |
 | 4 | 실행 및 안정화, `verify-ids.sh` 도입 |

@@ -45,8 +45,12 @@ enum OnBoardingAccessibilityID {
 
   enum InviteCode {
     static let root = "onboarding.invitecode.root"
-    static let textField = "onboarding.invitecode.textfield"
     static let backButton = "onboarding.invitecode.backbutton"
     static let confirmButton = "onboarding.invitecode.confirmbutton"
+
+    /// 초대 코드는 한 자리씩 4개의 입력 칸으로 나뉘어 있어 포커스 필드별로 ID 를 만든다.
+    static func textField(_ field: String) -> String {
+      "onboarding.invitecode.textfield.\(field)"
+    }
   }
 }

@@ -11,7 +11,6 @@ import ComposableArchitecture
 import DDDAccessibility
 import DDDDesignKit
 import ProfileDomainInterface
-import SwiftUIX
 
 struct CreateAppView: View {
   @Bindable private var store: StoreOf<CreateAppFeature>

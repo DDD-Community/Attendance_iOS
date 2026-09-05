@@ -12,6 +12,9 @@ enum ProfileAccessibilityID {
     static let withdrawButton = "profile.main.withdrawbutton"
     static let version = "profile.main.version"
     static let privacyPolicyButton = "profile.main.privacypolicybutton"
+    static let backButton = "profile.main.backbutton"
+    /// 우측 상단 info 버튼. "만든 사람들" 모달을 연다.
+    static let infoButton = "profile.main.infobutton"
   }
 
   enum CreateApp {

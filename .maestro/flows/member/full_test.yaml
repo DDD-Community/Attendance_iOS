@@ -8,3 +8,13 @@ tags:
     file: login_to_home.yaml
 - runFlow:
     file: home_smoke.yaml
+- runFlow:
+    file: schedule_list.yaml
+- runFlow:
+    file: vote.yaml
+- runFlow:
+    file: vote_team_select.yaml
+- runFlow:
+    file: vote_feedback.yaml
+- runFlow:
+    file: qr_code.yaml
