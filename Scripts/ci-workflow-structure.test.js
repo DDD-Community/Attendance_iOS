@@ -69,7 +69,7 @@ test("test shard는 build job 산출물을 사용하고 프로젝트를 다시 �
   assert.doesNotMatch(prShard, /Report failed shard build to Tuist/);
 });
 
-test("Sharing module alias를 빌드하는 job은 이전 외부 binary cache를 사용하지 않는다", () => {
+test("Sharing module alias를 포함한 현재 그래프는 외부 binary cache를 사용한다", () => {
   const pr = read(".github/workflows/ios-pr-coverage.yml");
   const develop = read(".github/workflows/ios-develop-sharded-tests.yml");
   const buildJobs = [
@@ -84,10 +84,12 @@ test("Sharing module alias를 빌드하는 job은 이전 외부 binary cache를 
 
   for (const buildJob of buildJobs) {
     assert.doesNotMatch(buildJob, /tuist generate/);
-    assert.match(buildJob, /tuist test[\s\S]*?--build-only[\s\S]*?--no-binary-cache/);
+    assert.match(buildJob, /tuist test[\s\S]*?--build-only/);
+    assert.doesNotMatch(buildJob, /--no-binary-cache/);
   }
 
-  assert.match(read("Scripts/run-isolated-module-tests.sh"), /--no-binary-cache/);
+  assert.doesNotMatch(read("Scripts/run-isolated-module-tests.sh"), /--no-binary-cache/);
+  assert.match(read("Tuist.swift"), /profiles:\s*\.profiles\(default:\s*\.onlyExternal\)/);
 });
 
 test("단일 self-hosted runner에서는 테스트가 bundle 분석보다 먼저 실행된다", () => {

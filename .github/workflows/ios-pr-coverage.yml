@@ -100,7 +100,6 @@ jobs:
         run: |
           mise exec -- tuist test run DDDAttendance-Stage \
             --build-only \
-            --no-binary-cache \
             --test-plan DDDAttendance \
             --configuration Stage \
             --no-selective-testing \
