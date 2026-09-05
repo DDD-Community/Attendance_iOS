@@ -101,15 +101,7 @@ let packageSettings = PackageSettings(
     "GoogleSignInSwift": .framework,
     "GTMSessionFetcher": .framework
   ],
-  baseSettings: .baseSettings,
-  targetSettings: [
-    // Xcode 26 런타임의 동명 Sharing.framework와 hostless XCTest discovery가 충돌한다.
-    // Swift 모듈명과 동적 런타임 공유는 유지하고 산출물 이름만 프로젝트 소유 이름으로 분리한다.
-    "Sharing": .settings(base: [
-      "PRODUCT_NAME": "DDDPointFreeSharing",
-      "PRODUCT_MODULE_NAME": "Sharing"
-    ])
-  ]
+  baseSettings: .baseSettings
 )
 #endif
 let package = Package(

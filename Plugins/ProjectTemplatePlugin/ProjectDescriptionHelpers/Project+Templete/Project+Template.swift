@@ -233,8 +233,6 @@ public extension Project {
         infoPlist: .default,
         buildableFolders: ["Tests"],
         // 모듈 테스트는 별도 앱 호스트 없이 로직 테스트로 실행한다.
-        // Xcode 26 런타임과 Point-Free Sharing의 산출물 이름 충돌은
-        // Tuist/Package.swift에서 동적 프레임워크 이름만 분리해 방지한다.
         // Testing 이 있으면 테스트가 그 목을 그대로 쓴다.
         dependencies: [
           .target(name: name)
