@@ -70,7 +70,7 @@ jobs:
       - name: Generate Xcode workspace
         run: |
           mise exec -- tuist install
-          mise exec -- tuist generate --no-open
+          mise exec -- tuist generate --no-open --cache-profile none
 
       - name: Prepare build DerivedData
         run: |
@@ -347,7 +347,7 @@ jobs:
       - name: Generate Xcode workspace
         run: |
           mise exec -- tuist install
-          mise exec -- tuist generate --no-open
+          mise exec -- tuist generate --no-open --cache-profile none
 
       - name: Prepare bundle DerivedData
         run: |

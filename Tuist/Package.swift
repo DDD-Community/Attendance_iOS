@@ -15,6 +15,9 @@ private extension Settings {
   /// 외부 패키지 타깃이 앱과 동일한 빌드 configuration을 사용하도록 맞춘다.
   static var baseSettings: Settings {
     return .settings(
+      base: [
+        "OTHER_SWIFT_FLAGS": "$(inherited) -module-alias Sharing=DDDPointFreeSharing"
+      ],
       configurations: [
         .debug(name: "Stage", settings: ["ONLY_ACTIVE_ARCH": "YES"]),
         .release(name: "Prod", settings: ["ONLY_ACTIVE_ARCH": "NO"])
@@ -106,10 +109,10 @@ let packageSettings = PackageSettings(
   ],
   baseSettings: .baseSettings,
   targetSettings: [
-    // 모듈·wrapper 이름은 Sharing으로 유지해 explicit-module 해석을 보존하고,
-    // 실행 파일명만 분리해 Apple private Sharing.framework/Sharing과 dyld 충돌을 피한다.
+    // Xcode 26 XCTest가 먼저 로드하는 Apple private Sharing 모듈과 충돌하지 않도록
+    // Point-Free 구현은 별도 Swift module/framework 이름으로 빌드한다.
     "Sharing": .settings(base: [
-      "EXECUTABLE_NAME": "DDDPointFreeSharing"
+      "PRODUCT_NAME": "DDDPointFreeSharing"
     ])
   ]
 )

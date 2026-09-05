@@ -63,7 +63,7 @@ jobs:
       - name: Install project dependencies
         run: |
           mise exec -- tuist install
-          mise exec -- tuist generate --no-open
+          mise exec -- tuist generate --no-open --cache-profile none
 
       - name: Select simulator
         run: |

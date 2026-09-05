@@ -14,7 +14,7 @@ private let suppressWarningsSettings: ProjectDescription.Settings = .settings(
     // Xcode 26의 ld가 제거한 -no_warn_empty_source_files/-no_warn_no_symbols를
     // 오래된 xcconfig에서 상속하지 않도록 타깃 수준에서 안전한 플래그만 사용한다.
     "OTHER_LDFLAGS": "-w -Wl,-no_warn_unused_dylibs -dead_strip",
-    "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
+    "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings -module-alias Sharing=DDDPointFreeSharing"
   ],
   configurations: XCConfig.configurations
 )

@@ -65,3 +65,16 @@ test("test shard는 build job 산출물을 사용하고 프로젝트를 다시 �
   assert.match(read("Scripts/run-isolated-module-tests.sh"), /--without-building/);
   assert.match(developShard, /--without-building/);
 });
+
+test("Sharing module alias를 빌드하는 job은 이전 외부 binary cache를 사용하지 않는다", () => {
+  const workflows = [
+    read(".github/workflows/ios-pr-coverage.yml"),
+    read(".github/workflows/ios-develop-sharded-tests.yml"),
+  ];
+
+  for (const workflow of workflows) {
+    const generateCommands = workflow.match(/tuist generate[^\n]+/g) ?? [];
+    assert.ok(generateCommands.length > 0);
+    assert.ok(generateCommands.every((command) => command.includes("--cache-profile none")));
+  }
+});
