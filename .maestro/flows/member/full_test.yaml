@@ -1,0 +1,10 @@
+appId: io.DDD.Attendance
+name: 멤버 전체 테스트
+tags:
+  - full
+  - member
+---
+- runFlow:
+    file: login_to_home.yaml
+- runFlow:
+    file: home_smoke.yaml

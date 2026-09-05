@@ -1,0 +1,20 @@
+appId: io.DDD.Attendance
+name: 로그인부터 운영진 홈까지
+tags:
+  - e2e
+  - login
+  - management
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: ../login/google_management.yaml
+- extendedWaitUntil:
+    visible:
+      id: "management.staff.root"
+    timeout: 60000
+- assertVisible:
+    id: "management.attendance.root"
+- assertVisible:
+    id: "management.attendance.summary"
+- takeScreenshot: .maestro/artifacts/management/login-to-home

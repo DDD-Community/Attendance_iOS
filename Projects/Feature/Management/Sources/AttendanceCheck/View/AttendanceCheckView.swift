@@ -32,6 +32,7 @@ struct AttendanceCheckView: View {
 
       selectPartAttendanceStatus()
     }
+    .accessibilityElement(children: .contain)
     .dddAccessibilityID(ManagementAccessibilityID.Attendance.root)
     .onAppear {
       send(.onAppear)

@@ -58,9 +58,8 @@ public struct ProfileReducer: Sendable {
       )
     }
 
-    /// 다른 화면과 달리 `.loaded` 로 시작한다.
-    /// 캐시 히트와 세션 폴백은 스켈레톤 없이 바로 그리는 게 목적이라, `.loading` 을 기본값으로 두면 그 경로가 무너진다.
-    var viewState: ViewState = .loaded
+    /// 캐시나 서버 프로필이 확정되기 전에는 빈 프로필 카드(`"님"`) 대신 스켈레톤을 그린다.
+    var viewState: ViewState = .loading
 
     var deleteUser: WithdrawEntity?
     var authExit: AuthExitEntity?

@@ -28,18 +28,22 @@ public enum StorageFactory {
   }
 
   public static var sharedValueStorage: any SharedValueStorage {
-    if let database {
-      return SQLiteSharedValueStorage(database: database)
-    }
-    return VolatileSharedValueStorage()
+    SQLiteSharedValueStorage(database: databaseWriter)
+  }
+
+  public static var databaseWriter: any DatabaseWriter {
+    database ?? fallbackDatabase
   }
 
   public static func register(into values: inout DependencyValues) {
-    guard let database else {
-      values.sharedValueStorage = VolatileSharedValueStorage()
-      return
-    }
-    values.defaultDatabase = database
-    values.sharedValueStorage = SQLiteSharedValueStorage(database: database)
+    values.defaultDatabase = databaseWriter
+    values.appDatabase = databaseWriter
+    values.sharedValueStorage = sharedValueStorage
   }
+
+  private static let fallbackDatabase: any DatabaseWriter = {
+    let database = try! SQLiteData.defaultDatabase()
+    try? AppDatabaseMigrator.migrate(database)
+    return database
+  }()
 }

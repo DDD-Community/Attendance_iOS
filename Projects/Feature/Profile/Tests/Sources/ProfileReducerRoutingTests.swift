@@ -230,7 +230,7 @@ struct ProfileReducerRoutingTests {
     #expect(state.managerProfileManaging == "담당 업무")
     #expect(state.managerProfileGeneration == "소속 기수")
     #expect(state.logoutText == "로그아웃")
-    #expect(state.viewState == .loaded)
+    #expect(state.viewState == .loading)
     #expect(state.profileModel == nil)
     #expect(state.deleteUser == nil)
     #expect(state.authExit == nil)

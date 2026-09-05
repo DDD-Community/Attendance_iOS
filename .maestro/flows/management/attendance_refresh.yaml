@@ -1,0 +1,67 @@
+# 운영진 출석 상태 변경 E2E
+# TARGET_USER_ID의 상태를 바꾼 뒤 ORIGINAL_STATUS로 복구한다.
+appId: io.DDD.Attendance
+name: 운영진 출석 상태 변경은 카드 목록만 갱신한다
+tags:
+  - e2e
+  - management
+  - attendance
+---
+- launchApp:
+    clearState: false
+
+- extendedWaitUntil:
+    visible:
+      id: "management.attendance.root"
+    timeout: 30000
+
+- assertVisible:
+    id: "management.attendance.summary"
+- assertVisible:
+    id: "management.attendance.list"
+- assertNotVisible:
+    id: "management.staff.skeleton"
+
+- tapOn:
+    id: "management.attendance.card.${TARGET_USER_ID}.editbutton"
+- assertVisible:
+    id: "management.attendance.modal"
+- tapOn:
+    id: "management.attendance.modal.statusbutton"
+- tapOn:
+    id: "management.attendance.modal.status.${UPDATED_STATUS}"
+- tapOn:
+    id: "management.attendance.modal.confirmbutton"
+
+- extendedWaitUntil:
+    visible:
+      id: "management.attendance.list.skeleton"
+    timeout: 10000
+- assertVisible:
+    id: "management.staff.root"
+- assertVisible:
+    id: "management.attendance.summary"
+- assertNotVisible:
+    id: "management.staff.skeleton"
+
+- extendedWaitUntil:
+    visible:
+      id: "management.attendance.card.${TARGET_USER_ID}"
+    timeout: 30000
+- assertNotVisible:
+    id: "management.attendance.list.skeleton"
+
+- tapOn:
+    id: "management.attendance.card.${TARGET_USER_ID}.editbutton"
+- tapOn:
+    id: "management.attendance.modal.statusbutton"
+- tapOn:
+    id: "management.attendance.modal.status.${ORIGINAL_STATUS}"
+- tapOn:
+    id: "management.attendance.modal.confirmbutton"
+- extendedWaitUntil:
+    visible:
+      id: "management.attendance.card.${TARGET_USER_ID}"
+    timeout: 30000
+
+- takeScreenshot: .maestro/artifacts/management/attendance-refresh

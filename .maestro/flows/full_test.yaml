@@ -1,0 +1,16 @@
+appId: io.DDD.Attendance
+name: 전체 E2E 테스트
+tags:
+  - full
+  - e2e
+---
+- runFlow:
+    file: splash/launch_to_login.yaml
+- runFlow:
+    file: login/relaunch_keeps_login.yaml
+- runFlow:
+    file: management/full_test.yaml
+- runFlow:
+    file: member/full_test.yaml
+- runFlow:
+    file: profile/full_test.yaml

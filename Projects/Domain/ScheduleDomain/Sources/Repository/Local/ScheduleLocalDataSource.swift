@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import DDDStorageInterface
 import Dependencies
 import SQLiteData
 
@@ -68,7 +69,7 @@ public actor ScheduleLocalDataSource: ScheduleLocalDataSourceProtocol {
 /// ScheduleLocalDataSource의 DependencyKey 구조체
 public enum ScheduleLocalDataSourceDependency: DependencyKey {
   public static var liveValue: ScheduleLocalDataSourceProtocol {
-    @Dependency(\.defaultDatabase) var database
+    @Dependency(\.appDatabase) var database
     return ScheduleLocalDataSource(database: database)
   }
 
