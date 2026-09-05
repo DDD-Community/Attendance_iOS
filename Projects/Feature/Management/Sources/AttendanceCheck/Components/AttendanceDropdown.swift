@@ -134,9 +134,7 @@ struct AttendanceDropdown: View {
   }
 
   private var optionDivider: some View {
-    Rectangle()
-      .fill(.gray70)
-      .frame(height: 1)
+    DDDDivider(color: .gray70)
       .padding(.horizontal, 16)
   }
 }

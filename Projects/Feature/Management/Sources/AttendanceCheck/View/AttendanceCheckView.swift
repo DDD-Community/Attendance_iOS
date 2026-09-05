@@ -20,7 +20,6 @@ import ComposableArchitecture
 @ViewAction(for: AttendanceCheckFeature.self)
 struct AttendanceCheckView: View {
   @Bindable var store: StoreOf<AttendanceCheckFeature>
-  @Namespace private var teamTabNamespace
 
   var body: some View {
     VStack {
@@ -104,94 +103,16 @@ private extension AttendanceCheckView {
       Spacer()
         .frame(height: 28)
 
-      ScrollViewReader { proxy in
-        teamTabScroller(proxy: proxy)
-      }
-    }
-  }
-
-  @ViewBuilder
-  func teamTabScroller(proxy: ScrollViewProxy) -> some View {
-    VStack {
-      ScrollView(.horizontal, showsIndicators: false) {
-        HStack {
-          ForEach(store.teams) { item in
-            teamTabItem(item: item)
-          }
+      DDDTabs(
+        items: Array(store.teams),
+        selectedID: store.selectedTeamID,
+        title: { $0.teams.attendanceListDescription },
+        onSelect: { item in
+          send(.selectPartButton(selectPart: item))
         }
-        .padding(.horizontal, 24)
-      }
-      .scrollDisabled(true)
-
-      Spacer()
-        .frame(height: 12)
-
-      Divider()
-        .frame(height: 1)
-        .background(.borderInactive.opacity(0.12))
-        .offset(y: -12)
-    }
-    .onChange(of: store.selectedTeamID) { _, selectedTeamID in
-      guard let selectedTeamID,
-            let target = store.teams[id: selectedTeamID]
-      else { return }
-      withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-        proxy.scrollTo(target.id, anchor: .center)
-      }
-    }
-  }
-
-  @ViewBuilder
-  func teamTabItem(item: SelectTeamEntity) -> some View {
-    let isSelected = store.selectedTeamID == item.teamId
-
-    VStack(spacing: .zero) {
-      HStack {
-        Spacer().frame(width: 16)
-
-        Text(item.teams.attendanceListDescription)
-          .pretendardFont(family: .Bold, size: 16)
-          .foregroundColor(isSelected ? .staticWhite : .gray600)
-          .animation(.easeInOut(duration: 0.25), value: store.selectedTeamID)
-          .background(teamTabWidthProbe(itemID: item.id))
-
-        Spacer().frame(width: 16)
-      }
-
-      Spacer().frame(height: 12)
-
-      teamTabUnderline(itemID: item.id, isSelected: isSelected)
-    }
-    .onPreferenceChange(TeamTextWidthPreferenceKey.self) { newWidths in
-      send(.updateDividerWidths(newWidths))
-    }
-    .onTapGesture {
-      withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-        _ = send(.selectPartButton(selectPart: item))
-      }
-    }
-    .id(item.id)
-    .dddAccessibilityID(ManagementAccessibilityID.Attendance.team(item.teamId))
-  }
-
-  @ViewBuilder
-  func teamTabWidthProbe(itemID: Int) -> some View {
-    GeometryReader { geometry in
-      Color.clear
-        .preference(key: TeamTextWidthPreferenceKey.self, value: [itemID: geometry.size.width])
-    }
-  }
-
-  @ViewBuilder
-  func teamTabUnderline(itemID: Int, isSelected: Bool) -> some View {
-    ZStack {
-      if isSelected {
-        Rectangle()
-          .fill(Color.blue40)
-          .frame(width: store.teamTabWidths[itemID] ?? 0, height: 2)
-          .matchedGeometryEffect(id: "teamTabUnderline", in: teamTabNamespace)
-      } else {
-        Color.clear.frame(height: 2)
+      )
+      .accessibilityIdentifier {
+        ManagementAccessibilityID.Attendance.team($0.teamId)
       }
     }
   }
@@ -305,8 +226,6 @@ private extension AttendanceCheckView {
       selectPart: item.selectPartEntity ?? .all,
       selectTeam: item.selectTeamEntity ?? .unknown,
       name: item.userName,
-      accessibilityID: ManagementAccessibilityID.Attendance.card(userID: item.userID),
-      editAccessibilityID: ManagementAccessibilityID.Attendance.cardEditButton(userID: item.userID),
       editAction: {
         store.send(
           .view(
@@ -317,6 +236,12 @@ private extension AttendanceCheckView {
           )
         )
       }
+    )
+    .accessibilityIdentifier(
+      ManagementAccessibilityID.Attendance.card(userID: item.userID)
+    )
+    .editAccessibilityIdentifier(
+      ManagementAccessibilityID.Attendance.cardEditButton(userID: item.userID)
     )
   }
 
@@ -344,13 +269,5 @@ private extension AttendanceCheckView {
         Spacer()
       }
     }
-  }
-}
-
-private struct TeamTextWidthPreferenceKey: PreferenceKey {
-  static var defaultValue: [Int: CGFloat] = [:]
-
-  static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
-    value.merge(nextValue(), uniquingKeysWith: { $1 })
   }
 }

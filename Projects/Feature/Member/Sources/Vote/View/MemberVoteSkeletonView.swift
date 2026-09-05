@@ -92,9 +92,7 @@ struct MemberVoteSkeletonView: View {
         teamRowSkeleton
 
         if index < 3 {
-          Rectangle()
-            .fill(Color.gray90)
-            .frame(height: 1)
+          DDDDivider(color: .gray90)
         }
       }
     }

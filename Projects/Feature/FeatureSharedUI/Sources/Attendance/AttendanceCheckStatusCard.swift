@@ -16,8 +16,8 @@ public struct AttendanceCheckStatusCard: View {
   private let selectPart: SelectParts
   private let selectTeam: SelectTeams
   private let name: String
-  private let accessibilityID: String
-  private let editAccessibilityID: String
+  private var accessibilityID: String?
+  private var editAccessibilityID: String?
   private let editAction: () -> Void
 
   public init(
@@ -25,16 +25,12 @@ public struct AttendanceCheckStatusCard: View {
     selectPart: SelectParts,
     selectTeam: SelectTeams,
     name: String,
-    accessibilityID: String,
-    editAccessibilityID: String,
     editAction: @escaping () -> Void
   ) {
     self.attendanceStatus = attendanceStatus
     self.selectPart = selectPart
     self.selectTeam = selectTeam
     self.name = name
-    self.accessibilityID = accessibilityID
-    self.editAccessibilityID = editAccessibilityID
     self.editAction = editAction
   }
 
@@ -84,7 +80,7 @@ public struct AttendanceCheckStatusCard: View {
               .onTapGesture {
                 editAction()
               }
-              .dddAccessibilityID(editAccessibilityID)
+              .applyAccessibilityIdentifier(editAccessibilityID)
 
           }
           
@@ -108,7 +104,7 @@ public struct AttendanceCheckStatusCard: View {
     )
     .padding(.vertical, isDisabled ? 2: 0)
     .accessibilityElement(children: .contain)
-    .dddAccessibilityID(accessibilityID)
+    .applyAccessibilityIdentifier(accessibilityID)
   }
 
   private var isDisabled: Bool {
@@ -126,6 +122,31 @@ public struct AttendanceCheckStatusCard: View {
       case .defaults:
         return "Default_icons"
 
+    }
+  }
+}
+
+public extension AttendanceCheckStatusCard {
+  func accessibilityIdentifier(_ identifier: String) -> Self {
+    var copy = self
+    copy.accessibilityID = identifier
+    return copy
+  }
+
+  func editAccessibilityIdentifier(_ identifier: String) -> Self {
+    var copy = self
+    copy.editAccessibilityID = identifier
+    return copy
+  }
+}
+
+private extension View {
+  @ViewBuilder
+  func applyAccessibilityIdentifier(_ identifier: String?) -> some View {
+    if let identifier {
+      dddAccessibilityID(identifier)
+    } else {
+      self
     }
   }
 }

@@ -370,25 +370,25 @@ extension ProfileView {
 
       HStack(alignment: .center) {
 
-        Text("탈퇴하기")
-          .dddFont(.body2NormalMedium)
-          .foregroundStyle(.mediumGray)
-          .underline(true, color: .mediumGray)
-          .onTapGesture {
-            send(.showWithdrawAlert)
-          }
+        DDDUnderlinedTextButton(
+          title: "탈퇴하기",
+          font: .body2NormalMedium,
+          foregroundColor: .mediumGray,
+          underlineColor: .mediumGray,
+          action: { send(.showWithdrawAlert) }
+        )
           .dddAccessibilityID(ProfileAccessibilityID.Main.withdrawButton)
 
       Spacer()
           .frame(width: 64)
 
-        Text("로그아웃")
-          .dddFont(.body2NormalMedium)
-          .foregroundStyle(.staticWhite)
-          .underline(true, color: .staticWhite)
-          .onTapGesture {
-            send(.showLogoutAlert)
-          }
+        DDDUnderlinedTextButton(
+          title: "로그아웃",
+          font: .body2NormalMedium,
+          foregroundColor: .staticWhite,
+          underlineColor: .staticWhite,
+          action: { send(.showLogoutAlert) }
+        )
       }
     }
     .padding(.horizontal, 24)
@@ -409,13 +409,13 @@ extension ProfileView {
       Spacer()
         .frame(height: 4)
 
-      Text("개인정보처리방침 보기")
-        .dddFont(.body3NormalRegular)
-        .foregroundStyle(.mediumGray)
-        .underline(true, color: .mediumGray)
-        .onTapGesture {
-          store.send(.delegate(.presentPrivacyPolicy))
-        }
+      DDDUnderlinedTextButton(
+        title: "개인정보처리방침 보기",
+        font: .body3NormalRegular,
+        foregroundColor: .mediumGray,
+        underlineColor: .mediumGray,
+        action: { store.send(.delegate(.presentPrivacyPolicy)) }
+      )
         .dddAccessibilityID(ProfileAccessibilityID.Main.privacyPolicyButton)
 
       Spacer()

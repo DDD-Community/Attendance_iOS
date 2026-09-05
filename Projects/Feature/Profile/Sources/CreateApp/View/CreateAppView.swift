@@ -112,16 +112,9 @@ extension CreateAppView {
       Spacer()
         .frame(height: 36)
 
-      Capsule()
-        .strokeBorder(.borderInactive, lineWidth: 1)
-        .frame(height: 58)
-        .overlay {
-          Text("앱 피드백 남기기")
-            .dddFont(.body1NormalMedium)
-            .foregroundStyle(.staticWhite)
-        }
-        .contentShape(Capsule())
-        .onTapGesture { store.send(.delegate(.presentWeb)) }
+      DDDOutlinedButton(title: "앱 피드백 남기기") {
+        store.send(.delegate(.presentWeb))
+      }
 
       Spacer()
         .frame(height: 8)

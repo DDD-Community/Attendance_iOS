@@ -7,9 +7,10 @@
 
 import SwiftUI
 
-import SwiftUIX
-import DDDDesignKit
 import ComposableArchitecture
+import DDDAccessibility
+import DDDDesignKit
+import SwiftUIX
 
 @ViewAction(for: ScheduleFeature.self)
 struct ScheduleView: View {
@@ -35,6 +36,7 @@ struct ScheduleView: View {
   private var content: some View {
     if store.viewState == .loading {
       ScheduleSkeletonView()
+        .dddAccessibilityID(ManagementAccessibilityID.Schedule.skeleton)
     } else {
       VStack(spacing: 0) {
         // 메인 콘텐츠
@@ -50,33 +52,37 @@ struct ScheduleView: View {
           .padding(.horizontal, 20)
           .padding(.top, 24)
           .padding(.bottom, 20)
+          .dddAccessibilityID(ManagementAccessibilityID.Schedule.header)
 
           // 스케줄 리스트
           scheduleListView()
         }
       }
+      .accessibilityElement(children: .contain)
+      .dddAccessibilityID(ManagementAccessibilityID.Schedule.root)
     }
   }
 }
 
-extension ScheduleView {
-
+private extension ScheduleView {
   @ViewBuilder
-  fileprivate func scheduleListView() -> some View {
+  func scheduleListView() -> some View {
     ScrollView(.vertical) {
       LazyVStack(spacing: 16) {
         ForEach(store.schedules, id: \.id) { item in
           ScheduleCardView(
-            month:"\(item.month)",
+            month: "\(item.month)",
             day: "\(item.day)",
             title: item.name,
             description: item.description
           )
+          .dddAccessibilityID(ManagementAccessibilityID.Schedule.card(item.id))
         }
       }
       .padding(.horizontal, 20)
+      .accessibilityElement(children: .contain)
+      .dddAccessibilityID(ManagementAccessibilityID.Schedule.list)
     }
     .scrollIndicators(.hidden)
   }
-
 }

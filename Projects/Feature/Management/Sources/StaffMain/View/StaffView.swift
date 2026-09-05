@@ -5,8 +5,8 @@
 //  Created by DDD on 6/6/24.
 //
 
-import DDDCoreUI
 import DDDAccessibility
+import DDDCoreUI
 import SwiftUI
 
 import DDDDesignKit
@@ -60,9 +60,9 @@ public struct StaffView: View {
     }
     .sheet(item: $store.scope(state: \.destination?.qrcode, action: \.destination.qrcode)) { qrCodeStore in
       QRScannerView(store: qrCodeStore)
-      .presentationDetents([.height(UIScreen.screenHeight * 0.85)])
-      .presentationCornerRadius(20)
-      .presentationDragIndicator(.hidden)
+        .presentationDetents([.height(UIScreen.screenHeight * 0.85)])
+        .presentationCornerRadius(20)
+        .presentationDragIndicator(.hidden)
     }
     // 투표 모달 — 전체 화면(상단바 포함)을 덮도록 루트에 부착
     .dddAlert($store.scope(state: \.vote.customAlert, action: \.vote.scope.customAlert))
@@ -113,38 +113,28 @@ private extension StaffView {
 
         Spacer()
 
-        Circle()
-          .fill(.blue70)
-          .frame(width: 36, height: 36)
-          .overlay {
-            Image(asset: .qrCode)
-              .resizable()
-              .scaledToFit()
-              .frame(width: 20, height: 20)
-              .foregroundStyle(.staticWhite)
-          }
-          .onTapGesture {
+        DDDHomeIconButton(
+          image: .qrCode,
+          foregroundColor: .staticWhite,
+          backgroundColor: .blue70,
+          action: {
             store.send(.view(.presentQrcode))
           }
-          .dddAccessibilityID(ManagementAccessibilityID.Staff.qrButton)
+        )
+        .dddAccessibilityID(ManagementAccessibilityID.Staff.qrButton)
 
         Spacer()
           .frame(width: 12)
 
-        Circle()
-          .fill(.gray80)
-          .frame(width: 36, height: 36)
-          .overlay {
-            Image(asset: .user)
-              .resizable()
-              .scaledToFit()
-              .frame(width: 20, height: 20)
-              .foregroundStyle(.staticWhite)
-          }
-          .onTapGesture {
+        DDDHomeIconButton(
+          image: .user,
+          foregroundColor: .staticWhite,
+          backgroundColor: .gray80,
+          action: {
             store.send(.delegate(.presentManagerProfile))
           }
-          .dddAccessibilityID(ManagementAccessibilityID.Staff.profileButton)
+        )
+        .dddAccessibilityID(ManagementAccessibilityID.Staff.profileButton)
       }
     }
     .padding(.trailing, 24)
@@ -190,8 +180,14 @@ private extension StaffView {
             }
           }
         )
+        .accessibilityIdentifier { entry in
+          guard let item = SelectDropDownItem(rawValue: entry.id) else { return nil }
+          return ManagementAccessibilityID.Staff.dropdownItem(item)
+        }
         .padding(.leading, 24)
         .padding(.top, 52)
+        .accessibilityElement(children: .contain)
+        .dddAccessibilityID(ManagementAccessibilityID.Staff.dropdown)
       }
       .transition(.opacity)
       .zIndex(1)

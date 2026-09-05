@@ -139,14 +139,4 @@ struct ManagementStaffFeatureCoverageTests {
     }
   }
 
-  @Test("출석 탭 스코프는 구분선 너비 갱신도 전달한다")
-  func attendanceCheckScopeForwardsDividerWidths() async {
-    let store = TestStore(initialState: StaffFeature.State()) {
-      StaffFeature()
-    }
-
-    await store.send(.attendance(.view(.updateDividerWidths([1: 12])))) {
-      $0.attendance.teamTabWidths = [1: 12]
-    }
-  }
 }

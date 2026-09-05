@@ -42,9 +42,7 @@ struct TeamVoteCategoryView: View {
         )
 
         if idx < teams.count - 1 {
-          Rectangle()
-            .fill(Color.gray90)
-            .frame(height: 1)
+          DDDDivider(color: .gray90)
         }
       }
     }

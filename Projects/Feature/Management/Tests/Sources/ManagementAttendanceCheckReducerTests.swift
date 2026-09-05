@@ -19,20 +19,6 @@ import Testing
 struct ManagementAttendanceCheckReducerTests {
   // MARK: - View
 
-  @Test("updateDividerWidths 는 받은 너비를 누적해서 병합한다")
-  func updateDividerWidthsMergesValues() async {
-    var state = AttendanceCheckFeature.State()
-    state.teamTabWidths = [1: 10]
-
-    let store = TestStore(initialState: state) {
-      AttendanceCheckFeature()
-    }
-
-    await store.send(.view(.updateDividerWidths([2: 20]))) {
-      $0.teamTabWidths = [1: 10, 2: 20]
-    }
-  }
-
   @Test("tapSelectDate 는 일정 모달을 띄우고 closeModal 은 닫는다")
   func tapSelectDatePresentsScheduleModal() async {
     let store = TestStore(initialState: AttendanceCheckFeature.State()) {
@@ -96,6 +82,20 @@ struct ManagementAttendanceCheckReducerTests {
     #expect(state.orderedTeams.map(\.teamId) == [1, 2, 3, 4])
     #expect(state.pageTeams.map(\.teamId) == [4, 1, 2, 3])
     #expect(Array(state.pageTeams.ids) == [4, 1, 2, 3])
+  }
+
+  @Test("팀 선택은 배열 위치가 아닌 비연속 teamID를 사용한다")
+  func selectPartButtonUsesStableTeamID() async {
+    let selectedTeam = SelectTeamEntity(teamId: 30, teams: .web1)
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
+    }
+
+    await store.send(.view(.selectPartButton(selectPart: selectedTeam))) {
+      $0.selectedTeamID = 30
+      $0.settledTeamID = 30
+    }
+    await store.receive(\.async)
   }
 
   @Test("페이지 전환이 끝난 뒤에만 선택 팀을 중심으로 배열한다")

@@ -111,38 +111,25 @@ public struct MemberMainView: View {
       Spacer()
 
       HStack(spacing: 12) {
-        Button(action: {
-          store.send(.delegate(.routeToQRCode))
-        }) {
-          Image(asset: ImageAsset.qrCode)
-            .renderingMode(.template)
-            .resizable()
-            .scaledToFit()
-            .frame(width: 20, height: 20)
-            .foregroundStyle(.staticWhite)
-        }
-        .frame(width: 36, height: 36)
-        .background(.blue70)
-        .clipShape(.rect(cornerRadius: 99))
-        .overlay(
-          RoundedRectangle(cornerRadius: 99)
-            .stroke(Color.blue30, lineWidth: 1)
+        DDDHomeIconButton(
+          image: .qrCode,
+          foregroundColor: .staticWhite,
+          backgroundColor: .blue70,
+          borderColor: .blue30,
+          action: {
+            store.send(.delegate(.routeToQRCode))
+          }
         )
         .dddAccessibilityID(MemberAccessibilityID.qrButton)
 
-        Button(action: {
-          store.send(.delegate(.routeToProfile))
-        }) {
-          Image(asset: ImageAsset.managementProfile)
-            .renderingMode(.template)
-            .resizable()
-            .scaledToFit()
-            .frame(width: 20, height: 20)
-            .foregroundStyle(.staticWhite)
-        }
-        .frame(width: 36, height: 36)
-        .background(.gray80)
-        .clipShape(RoundedRectangle(cornerRadius: 99))
+        DDDHomeIconButton(
+          image: .managementProfile,
+          foregroundColor: .staticWhite,
+          backgroundColor: .gray80,
+          action: {
+            store.send(.delegate(.routeToProfile))
+          }
+        )
         .dddAccessibilityID(MemberAccessibilityID.profileButton)
       }
     }

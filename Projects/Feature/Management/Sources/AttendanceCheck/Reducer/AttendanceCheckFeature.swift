@@ -51,8 +51,6 @@ public struct AttendanceCheckFeature {
 
     var editTarget: EditTarget?
 
-    var teamTabWidths: [Int: CGFloat] = [:]
-
     @Presents var destination: Destination.State?
     @Presents var attendanceModal: AttendanceModalState<AttendanceModalAction>?
     @Presents public var alert: AlertState<AlertAction>?
@@ -133,7 +131,6 @@ public struct AttendanceCheckFeature {
     case tapSelectDate
     case showEditAttendanceModal(id: Int?, userId: String)
     case refreshData // 수동 새로고침
-    case updateDividerWidths([Int: CGFloat])
   }
 
   // MARK: - AsyncAction 비동기 처리 액션
@@ -261,12 +258,6 @@ extension AttendanceCheckFeature {
         .run { await $0(.async(.fetchTeams)) },
         .run { await $0(.async(.fetchStatus)) }
       )
-
-    case let .updateDividerWidths(widths):
-      for (key, width) in widths {
-        state.teamTabWidths[key] = width
-      }
-      return .none
 
     case let .selectPartButton(selectPart):
       updateSelectedTeam(state: &state, team: selectPart)
