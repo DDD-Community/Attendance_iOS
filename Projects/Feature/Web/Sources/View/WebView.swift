@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import DDDAccessibility
+import DDDCoreUI
 import DDDDesignKit
 import SwiftUI
 
@@ -39,7 +40,7 @@ public struct WebView: View {
         WebRepresentableView(urlToLoad: store.url)
           .edgesIgnoringSafeArea(.bottom)
       }
-      .navigationBarBackButtonHidden(true)
+      .dddNavigationBarBackButtonHidden()
     }
     .accessibilityElement(children: .contain)
     .dddAccessibilityID(WebAccessibilityID.root)

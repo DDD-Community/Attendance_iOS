@@ -68,9 +68,6 @@ struct ManagementQRCodeReducerTests {
     await store.receive(\.inner) {
       $0.validation = ManagementSupportFixture.qrValidateSuccess
       $0.isUseQRCode = false
-    }
-
-    await store.receive(\.view) {
       $0.isScanning = false
     }
   }

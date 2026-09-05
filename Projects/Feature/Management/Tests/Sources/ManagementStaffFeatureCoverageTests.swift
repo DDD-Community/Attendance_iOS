@@ -4,7 +4,7 @@
 //
 //  Created by DDD on 2026-09-03.
 //
-//  StaffFeatureTests 가 다루지 않는 StaffFeature 의 나머지 분기(닫기·위임·바인딩·자식 스코프)를 훑는다.
+//  StaffFeatureTests 가 다루지 않는 StaffFeature 의 나머지 분기(위임·바인딩·자식 스코프)를 훑는다.
 //
 
 import ComposableArchitecture
@@ -25,18 +25,20 @@ struct ManagementStaffFeatureCoverageTests {
     #expect(state.destination == nil)
   }
 
-  @Test("closeModal 은 떠 있는 QR destination 을 내린다")
-  func closeModalDismissesDestination() async {
+  @Test("QR presentBack 은 destination 을 내리고 출석 갱신을 한 번 요청한다")
+  func qrPresentBackDismissesAndRefreshesAttendance() async {
     var state = StaffFeature.State()
     state.destination = .qrcode(.init())
+    state.attendance.viewState = .loading
 
     let store = TestStore(initialState: state) {
       StaffFeature()
     }
 
-    await store.send(.view(.closeModal)) {
+    await store.send(.destination(.presented(.qrcode(.delegate(.presentBack))))) {
       $0.destination = nil
     }
+    await store.receive(\.attendance)
   }
 
   @Test("closeDropDown 은 펼쳐진 드롭다운만 접는다")

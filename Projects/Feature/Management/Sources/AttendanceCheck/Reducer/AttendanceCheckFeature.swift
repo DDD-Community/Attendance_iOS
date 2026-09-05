@@ -111,7 +111,6 @@ public struct AttendanceCheckFeature {
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
-    case delegate(DelegateAction)
     case scope(ScopeAction)
   }
 
@@ -157,10 +156,6 @@ public struct AttendanceCheckFeature {
     case pageTransitionFinished(teamID: Int)
   }
 
-  // MARK: - DelegateAction
-
-  public enum DelegateAction: Equatable {}
-
   @CasePathable
   public enum AlertAction {
     case confirmTapped
@@ -205,9 +200,6 @@ public struct AttendanceCheckFeature {
       case let .inner(innerAction):
         return handleInnerAction(state: &state, action: innerAction)
 
-      case let .delegate(delegateAction):
-        return handleDelegateAction(state: &state, action: delegateAction)
-
       case let .destination(destinationAction):
         return handleDestinationAction(state: &state, action: destinationAction)
 
@@ -245,7 +237,7 @@ extension AttendanceCheckFeature {
         )
 
       case .loaded:
-        return .send(.view(.refreshData))
+        return refreshEffect()
 
       case .loading, .refreshingAttendanceList:
         return .none
@@ -253,11 +245,7 @@ extension AttendanceCheckFeature {
 
     case .refreshData:
       // 수동 새로고침: 실시간 데이터만 다시 가져옴 (스케줄은 제외)
-      return .merge(
-        .run { await $0(.async(.fetchAttendanceCount)) },
-        .run { await $0(.async(.fetchTeams)) },
-        .run { await $0(.async(.fetchStatus)) }
-      )
+      return refreshEffect()
 
     case let .selectPartButton(selectPart):
       updateSelectedTeam(state: &state, team: selectPart)
@@ -402,13 +390,6 @@ extension AttendanceCheckFeature {
       }
       .cancellable(id: CancelID.editAttendance, cancelInFlight: true)
     }
-  }
-
-  private func handleDelegateAction(
-    state _: inout State,
-    action _: DelegateAction
-  ) -> Effect<Action> {
-    return .none
   }
 
   private func handleInnerAction(
@@ -599,6 +580,14 @@ extension AttendanceCheckFeature {
 }
 
 private extension AttendanceCheckFeature {
+  func refreshEffect() -> Effect<Action> {
+    .merge(
+      .run { await $0(.async(.fetchAttendanceCount)) },
+      .run { await $0(.async(.fetchTeams)) },
+      .run { await $0(.async(.fetchStatus)) }
+    )
+  }
+
   func updateSelectedTeam(
     state: inout State,
     team: SelectTeamEntity,

@@ -9,6 +9,7 @@ import DDDCoreLogger
 import ComposableArchitecture
 import DDDDesignKit
 import Foundation
+import MemberInterface
 import VoteDomainInterface
 
 /// [멤버] 투표 참여 플로우 리듀서.
@@ -82,9 +83,7 @@ public struct MemberVoteFeature {
     case submitResponse(Result<Bool, VoteError>)
   }
 
-  public enum DelegateAction: Equatable {
-    case exitVote
-  }
+  public typealias DelegateAction = MemberVoteDelegate
 
   /// 1·2단계 템플릿을 한 번에 로드한 결과.
   public struct Templates: Equatable, Sendable {
@@ -310,7 +309,8 @@ extension MemberVoteFeature {
         state.exitAlert = nil
         switch state.step {
         case .feedback:
-          return .send(.view(.backToTeamSelect))
+          state.step = .teamSelect
+          return .none
 
         case .teamSelect:
           return .send(.delegate(.exitVote))

@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import DDDDesignKit
 import Testing
 
 @testable import Member
@@ -370,6 +371,23 @@ struct MemberMainReducerCoverageTests {
       $0.selectedHomeTab = .attendance
       $0.isExpandedDropDown = false
       $0.vote = MemberVoteFeature.State()
+    }
+  }
+
+  @Test("피드백 이탈 확인은 중간 view 액션 없이 팀 선택 단계로 바로 돌아간다")
+  func voteExitAlert_feedback_팀선택으로직접복귀() async {
+    var state = MemberMainFeature.State()
+    state.selectedHomeTab = .vote
+    state.vote.step = .feedback
+
+    let store = makeStore(state: state)
+
+    await store.send(.vote(.view(.requestExit))) {
+      $0.vote.exitAlert = .exitWriting()
+    }
+    await store.send(.vote(.scope(.exitAlert(.presented(.cancelTapped))))) {
+      $0.vote.exitAlert = nil
+      $0.vote.step = .teamSelect
     }
   }
 

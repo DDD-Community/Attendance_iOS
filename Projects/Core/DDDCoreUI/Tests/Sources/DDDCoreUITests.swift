@@ -85,6 +85,21 @@ struct DDDCoreUITests {
     #expect(navigationController.canBeginInteractivePopGesture)
   }
 
+  @Test("SwiftUI가 비활성화한 뒤로가기 gesture를 push 화면에서 복구한다")
+  func restoresDisabledPopGestureForPushedController() throws {
+    let navigationController = UINavigationController(rootViewController: UIViewController())
+    navigationController.pushViewController(UIViewController(), animated: false)
+
+    let gesture = try #require(navigationController.interactivePopGestureRecognizer)
+    gesture.isEnabled = false
+    gesture.delegate = nil
+
+    navigationController.restoreInteractivePopGesture()
+
+    #expect(gesture.isEnabled)
+    #expect((gesture.delegate as AnyObject?) === navigationController)
+  }
+
   @Test("화면 크기 토큰이 main screen 값과 일치한다")
   func screenSizeTokensMatchMainScreen() {
     #expect(UIScreen.screenWidth == UIScreen.main.bounds.width)

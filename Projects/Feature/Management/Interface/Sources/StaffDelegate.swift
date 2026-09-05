@@ -6,8 +6,7 @@
 //
 //  Management 가 바깥에 알리는 위임 계약.
 //
-//  Management 밖으로 전달할 계약만 여기에 둔다.
-//  동일 모듈 내부의 자식 Feature delegate는 구체 Feature에서 관리한다.
+//  Management 밖으로 전달하거나 상위 Feature가 소비하는 이동 계약을 여기에 둔다.
 //
 
 import ComposableArchitecture
@@ -17,4 +16,9 @@ import Foundation
 public enum StaffDelegate: Equatable, Sendable {
   case presentSchedule
   case presentManagerProfile
+}
+
+@CasePathable
+public enum QRCodeDelegate: Equatable, Sendable {
+  case presentBack
 }

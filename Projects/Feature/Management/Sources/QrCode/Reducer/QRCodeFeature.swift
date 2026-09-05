@@ -9,6 +9,7 @@ import DDDCoreLogger
 import Foundation
 
 import DDDSharedUI
+import ManagementInterface
 import QRCodeDomainInterface
 
 import ComposableArchitecture
@@ -67,9 +68,7 @@ public struct QRCodeFeature {
   }
 
   //MARK: - DelegateAction
-  public enum DelegateAction: Equatable {
-    case presentBack
-  }
+  public typealias DelegateAction = QRCodeDelegate
 
   private struct QRCodeCancel: Hashable {}
 
@@ -159,11 +158,10 @@ extension QRCodeFeature {
         state.validation = qrCodeValidateData
         state.isUseQRCode = false
 
-          if qrCodeValidateData.isSuccess {
-            return .send(.view(.stopScanning))
-          } else {
-            return .none
-          }
+        if qrCodeValidateData.isSuccess {
+          state.isScanning = false
+        }
+        return .none
 
 
       case .failure(let error):

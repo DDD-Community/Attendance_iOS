@@ -43,7 +43,6 @@ public struct ScheduleFeature {
     case view(View)
     case async(AsyncAction)
     case inner(InnerAction)
-    case delegate(DelegateAction)
     
   }
   
@@ -64,12 +63,6 @@ public struct ScheduleFeature {
   //MARK: - 앱내에서 사용하는 액션
   public enum InnerAction {
     case fetchScheduleResponse(Result<[Schedule], ScheduleError>)
-  }
-  
-  //MARK: - DelegateAction
-  public enum DelegateAction: Equatable {
-    
-    
   }
   
   nonisolated enum CancelID: Hashable {
@@ -96,8 +89,6 @@ public struct ScheduleFeature {
       case .inner(let innerAction):
         return handleInnerAction(state: &state, action: innerAction)
         
-      case .delegate(let delegateAction):
-        return handleDelegateAction(state: &state, action: delegateAction)
       }
     }
   }
@@ -143,13 +134,6 @@ extension ScheduleFeature {
       return await send(.inner(.fetchScheduleResponse(scheduleResult)))
     }
     .cancellable(id: CancelID.fetchSchedule, cancelInFlight: true)
-  }
-
-  private func handleDelegateAction(
-    state: inout State,
-    action: DelegateAction
-  ) -> Effect<Action> {
-    return .none
   }
 
   private func handleInnerAction(

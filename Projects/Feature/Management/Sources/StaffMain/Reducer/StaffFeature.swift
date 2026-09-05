@@ -68,7 +68,6 @@ public struct StaffFeature {
   @CasePathable
   public enum View: Equatable {
     case presentQrcode
-    case closeModal
     case toggleDropDown
     case closeDropDown
     case selectItem(SelectDropDownItem)
@@ -99,10 +98,7 @@ public struct StaffFeature {
     BindingReducer()
     Reduce { state, action in
       switch action {
-      case .binding(_):
-        return .none
-        
-      case .binding(\.isExpandedDropDown):
+      case .binding:
         return .none
         
       case .destination(.presented(.qrcode(.delegate(.presentBack)))):
@@ -154,10 +150,6 @@ extension StaffFeature {
     case .presentQrcode:
       state.isExpandedDropDown = false
       state.destination = .qrcode(.init())
-      return .none
-
-    case .closeModal:
-      state.destination = nil
       return .none
 
     case .toggleDropDown:

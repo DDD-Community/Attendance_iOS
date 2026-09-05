@@ -81,8 +81,11 @@ let packageSettings = PackageSettings(
     "DependenciesMacros": .framework,
     "PerceptionCore": .framework,
     "Perception": .framework,
-    // SQLiteData/TCA/DDDStorageInterface가 각각 Sharing을 품지 않도록 런타임을 하나로 공유한다.
+    // Sharing과 SQLiteData는 여러 동적 DDD 모듈에서 사용하므로 단일 런타임으로 공유한다.
+    // 버전 마커는 정적으로 링크해 앱이 Sharing1/2.framework를 찾지 않게 한다.
     "Sharing": .framework,
+    "Sharing1": .staticFramework,
+    "Sharing2": .staticFramework,
     "SQLiteData": .framework,
     "GRDB": .framework,
     "GRDBSQLite": .framework,
@@ -101,7 +104,14 @@ let packageSettings = PackageSettings(
     "GoogleSignInSwift": .framework,
     "GTMSessionFetcher": .framework
   ],
-  baseSettings: .baseSettings
+  baseSettings: .baseSettings,
+  targetSettings: [
+    // 모듈·wrapper 이름은 Sharing으로 유지해 explicit-module 해석을 보존하고,
+    // 실행 파일명만 분리해 Apple private Sharing.framework/Sharing과 dyld 충돌을 피한다.
+    "Sharing": .settings(base: [
+      "EXECUTABLE_NAME": "DDDPointFreeSharing"
+    ])
+  ]
 )
 #endif
 let package = Package(
