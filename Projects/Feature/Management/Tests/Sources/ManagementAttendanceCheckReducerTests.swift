@@ -111,6 +111,8 @@ struct ManagementAttendanceCheckReducerTests {
     state.selectedTeamID = 1
     state.settledTeamID = 1
 
+    #expect(state.pageSelection == 1)
+
     let store = TestStore(initialState: state) {
       AttendanceCheckFeature()
     } withDependencies: {

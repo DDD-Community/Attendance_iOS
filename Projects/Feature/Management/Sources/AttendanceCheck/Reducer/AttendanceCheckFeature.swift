@@ -100,6 +100,10 @@ public struct AttendanceCheckFeature {
       return .init(uniqueElements: rotatedTeams)
     }
 
+    var pageSelection: Int {
+      selectedTeamID ?? pageTeams.first?.teamId ?? 0
+    }
+
     public init() {}
   }
 

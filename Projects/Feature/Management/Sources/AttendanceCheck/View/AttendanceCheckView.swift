@@ -248,27 +248,21 @@ private extension AttendanceCheckView {
         .frame(width: 15, height: 15)
     }
     .padding(.horizontal, 20)
-    .frame(height: 84)
+    .frame(height: 80)
     .background(.borderInverse)
     .clipShape(.rect(cornerRadius: 15))
+    .padding(.vertical, 2)
   }
 
   @ViewBuilder
   func attendanceTabView() -> some View {
-    TabView(selection: pageSelection) {
+    TabView(selection: $store.pageSelection.sending(\.view.pageChanged)) {
       ForEach(store.pageTeams) { team in
         selectPartAttendanceStatusCard(team: team)
           .tag(team.teamId)
       }
     }
     .tabViewStyle(.page(indexDisplayMode: .never))
-  }
-
-  var pageSelection: Binding<Int> {
-    Binding(
-      get: { store.selectedTeamID ?? store.pageTeams.first?.teamId ?? 0 },
-      set: { send(.pageChanged(teamID: $0)) }
-    )
   }
 
   @ViewBuilder
