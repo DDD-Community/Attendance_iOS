@@ -25,6 +25,17 @@ test("xccov package 디렉터리를 coverage 병합 입력으로 찾는다", () 
   assert.deepEqual(findFilesByExtension(directory, ".xccovreport"), [report]);
 });
 
+test("Xcode 26 coverage export 이름을 coverage 병합 입력으로 찾는다", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "xcode-26-coverage-"));
+  const archive = path.join(directory, "0_Test_iPhone 17 Pro_CoverageArchive");
+  const report = path.join(directory, "0_Test_iPhone 17 Pro_CoverageReport");
+  fs.mkdirSync(archive);
+  fs.writeFileSync(report, "report");
+
+  assert.deepEqual(findFilesByExtension(directory, ".xccovarchive"), [archive]);
+  assert.deepEqual(findFilesByExtension(directory, ".xccovreport"), [report]);
+});
+
 test("프로젝트 매니페스트에서 자사 커버리지 대상을 구성한다", () => {
   const targets = internalCoverageTargetNames();
 

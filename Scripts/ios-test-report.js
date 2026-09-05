@@ -113,12 +113,19 @@ function readCoverage(bundle) {
 
 function findFilesByExtension(root, extension) {
   if (!fs.existsSync(root)) return [];
-  if (root.endsWith(extension)) return [root];
+  const xcodeCoverageSuffix = {
+    ".xccovarchive": "_CoverageArchive",
+    ".xccovreport": "_CoverageReport",
+  }[extension];
+  const matches = (candidate) =>
+    candidate.endsWith(extension) || (xcodeCoverageSuffix && candidate.endsWith(xcodeCoverageSuffix));
+
+  if (matches(root)) return [root];
   if (!fs.statSync(root).isDirectory()) return [];
 
   return fs.readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
     const child = path.join(root, entry.name);
-    return entry.isDirectory() ? findFilesByExtension(child, extension) : child.endsWith(extension) ? [child] : [];
+    return entry.isDirectory() ? findFilesByExtension(child, extension) : matches(child) ? [child] : [];
   });
 }
 
@@ -584,6 +591,7 @@ module.exports.__test__ = {
   findFilesByExtension,
   internalCoverageTargetNames,
   mergeCoverage,
+  readMergedCoverage,
   readBundleInsights,
   readDashboardURL,
   renderBundleInsights,
