@@ -8,6 +8,7 @@
 import DDDCoreUtility
 import FeatureAssembly
 import ComposableArchitecture
+import Foundation
 
 @Reducer
 public struct AppReducer: Sendable {
