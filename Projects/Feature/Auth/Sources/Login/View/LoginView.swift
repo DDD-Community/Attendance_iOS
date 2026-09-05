@@ -6,6 +6,7 @@
 //
 
 import DDDCoreUI
+import DDDAccessibility
 import AuthenticationServices
 import SwiftUI
 
@@ -37,7 +38,7 @@ public struct LoginView: View {
       }
     }
     .accessibilityElement(children: .contain)
-    .accessibilityIdentifier("login_root")
+    .dddAccessibilityID(AuthAccessibilityID.Login.root)
     .dddToast()
     .dddAlert($store.scope(state: \.customAlert, action: \.scope.customAlert))
   }
@@ -51,7 +52,7 @@ extension LoginView {
         .resizable()
         .scaledToFit()
         .frame(width: 65, height: 72)
-        .accessibilityIdentifier("login_logo")
+        .dddAccessibilityID(AuthAccessibilityID.Login.logo)
       
       Spacer()
     }

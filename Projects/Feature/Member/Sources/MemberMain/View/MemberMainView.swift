@@ -6,6 +6,7 @@
 //
 
 import DDDSharedUI
+import DDDAccessibility
 import SwiftUI
 
 import DDDDesignKit
@@ -43,6 +44,7 @@ public struct MemberMainView: View {
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     .background(.backGroundPrimary)
+    .dddAccessibilityID(MemberAccessibilityID.root)
     .overlay {
       dropDownOverlay()
     }
@@ -53,6 +55,7 @@ public struct MemberMainView: View {
       if store.viewState == .loading {
         MemberMainSkeletonView()
           .transition(.opacity)
+          .dddAccessibilityID(MemberAccessibilityID.skeleton)
       }
     }
     .animation(.easeInOut(duration: 0.2), value: store.viewState)
@@ -103,6 +106,7 @@ public struct MemberMainView: View {
         }
       }
       .buttonStyle(.plain)
+      .dddAccessibilityID(MemberAccessibilityID.sectionButton)
 
       Spacer()
 
@@ -124,6 +128,7 @@ public struct MemberMainView: View {
           RoundedRectangle(cornerRadius: 99)
             .stroke(Color.blue30, lineWidth: 1)
         )
+        .dddAccessibilityID(MemberAccessibilityID.qrButton)
 
         Button(action: {
           store.send(.delegate(.routeToProfile))
@@ -138,6 +143,7 @@ public struct MemberMainView: View {
         .frame(width: 36, height: 36)
         .background(.gray80)
         .clipShape(RoundedRectangle(cornerRadius: 99))
+        .dddAccessibilityID(MemberAccessibilityID.profileButton)
       }
     }
     .frame(height: 52)
@@ -227,6 +233,7 @@ public struct MemberMainView: View {
         case .loading:
           MemberAttendanceCardSkeletonView()
             .transition(.opacity)
+            .dddAccessibilityID(MemberAccessibilityID.attendanceSummarySkeleton)
 
         case .loaded:
           AttendanceCard(
@@ -239,6 +246,7 @@ public struct MemberMainView: View {
             }
           )
           .transition(.opacity)
+          .dddAccessibilityID(MemberAccessibilityID.attendanceSummary)
         }
       }
     }
@@ -286,8 +294,10 @@ public struct MemberMainView: View {
           style: schedule.status.toScheduleCellStyle
         )
         .id(schedule.id) // SwiftUI 뷰 재사용 최적화
+        .dddAccessibilityID(MemberAccessibilityID.schedule(schedule.id))
       }
     }
+    .dddAccessibilityID(MemberAccessibilityID.scheduleList)
   }
 }
 

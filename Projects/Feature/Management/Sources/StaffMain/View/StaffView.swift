@@ -6,6 +6,7 @@
 //
 
 import DDDCoreUI
+import DDDAccessibility
 import SwiftUI
 
 import DDDDesignKit
@@ -37,6 +38,7 @@ public struct StaffView: View {
         Spacer()
       }
     }
+    .dddAccessibilityID(ManagementAccessibilityID.Staff.root)
     .overlay {
       dropDownView()
     }
@@ -107,6 +109,7 @@ private extension StaffView {
           }
           .padding(.leading, 24)
         }
+        .dddAccessibilityID(ManagementAccessibilityID.Staff.sectionButton)
 
         Spacer()
 
@@ -123,6 +126,7 @@ private extension StaffView {
           .onTapGesture {
             store.send(.view(.presentQrcode))
           }
+          .dddAccessibilityID(ManagementAccessibilityID.Staff.qrButton)
 
         Spacer()
           .frame(width: 12)
@@ -140,6 +144,7 @@ private extension StaffView {
           .onTapGesture {
             store.send(.delegate(.presentManagerProfile))
           }
+          .dddAccessibilityID(ManagementAccessibilityID.Staff.profileButton)
       }
     }
     .padding(.trailing, 24)
@@ -232,10 +237,13 @@ private extension StaffView {
     switch store.selectDropDownItem {
     case .attandance:
       StaffSkeletonView()
+        .dddAccessibilityID(ManagementAccessibilityID.Staff.skeleton)
     case .schedule:
       ScheduleSkeletonView()
+        .dddAccessibilityID(ManagementAccessibilityID.Staff.skeleton)
     case .vote:
       VoteSkeletonView()
+        .dddAccessibilityID(ManagementAccessibilityID.Staff.skeleton)
     }
   }
 }

@@ -7,6 +7,7 @@
 
 import AttendanceDomainInterface
 import DDDCoreUI
+import DDDAccessibility
 import SwiftUI
 
 import DDDDesignKit
@@ -31,6 +32,7 @@ struct AttendanceCheckView: View {
 
       selectPartAttendanceStatus()
     }
+    .dddAccessibilityID(ManagementAccessibilityID.Attendance.root)
     .onAppear {
       send(.onAppear)
     }
@@ -72,6 +74,7 @@ private extension AttendanceCheckView {
       .onTapGesture {
         send(.tapSelectDate)
       }
+      .dddAccessibilityID(ManagementAccessibilityID.Attendance.dateButton)
     }
     .padding(.horizontal, 24)
   }
@@ -88,6 +91,7 @@ private extension AttendanceCheckView {
         absentCount: store.absentCount,
         showWarning: false
       )
+      .dddAccessibilityID(ManagementAccessibilityID.Attendance.summary)
     }
     .padding(.horizontal, 24)
   }
@@ -166,6 +170,7 @@ private extension AttendanceCheckView {
       }
     }
     .id(item.id)
+    .dddAccessibilityID(ManagementAccessibilityID.Attendance.team(item.teamId))
   }
 
   @ViewBuilder
@@ -223,6 +228,7 @@ private extension AttendanceCheckView {
     }
     .scrollIndicators(.hidden)
     .animation(.easeInOut(duration: 0.2), value: store.viewState)
+    .dddAccessibilityID(ManagementAccessibilityID.Attendance.listSkeleton)
   }
 
   @ViewBuilder
@@ -256,8 +262,8 @@ private extension AttendanceCheckView {
   @ViewBuilder
   func attendanceTabView() -> some View {
     TabView(selection: pageSelection) {
-      ForEach(Array(pagedTeams.enumerated()), id: \.offset) { index, team in
-        selectPartAttendanceStatusCard(team: team)
+      ForEach(pagedTeams.indices, id: \.self) { index in
+        selectPartAttendanceStatusCard(team: pagedTeams[index])
           .tag(index)
       }
     }
@@ -329,6 +335,7 @@ private extension AttendanceCheckView {
     .onAppear {
       UIScrollView.appearance().bounces = false
     }
+    .dddAccessibilityID(ManagementAccessibilityID.Attendance.list)
   }
 
   @ViewBuilder
@@ -338,6 +345,8 @@ private extension AttendanceCheckView {
       selectPart: item.selectPartEntity ?? .all,
       selectTeam: item.selectTeamEntity ?? .unknown,
       name: item.userName,
+      accessibilityID: ManagementAccessibilityID.Attendance.card(userID: item.userID),
+      editAccessibilityID: ManagementAccessibilityID.Attendance.cardEditButton(userID: item.userID),
       editAction: {
         store.send(
           .view(

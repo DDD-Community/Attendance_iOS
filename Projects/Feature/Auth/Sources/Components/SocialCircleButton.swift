@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AuthenticationServices
+import DDDAccessibility
 
 
 import ComposableArchitecture
@@ -50,6 +51,7 @@ struct SocialCircleButtonView: View {
       }
       .scaleEffect(isPressed ? 0.95 : 1.0)
       .animation(.spring(response: 0.52, dampingFraction: 0.94, blendDuration: 0.14), value: isPressed)
+      .dddAccessibilityID(AuthAccessibilityID.Login.socialButton(type))
 
     case .google:
       Button(action: onTap) {
@@ -74,6 +76,7 @@ struct SocialCircleButtonView: View {
           isPressed = pressing
         }
       }, perform: {})
+      .dddAccessibilityID(AuthAccessibilityID.Login.socialButton(type))
 
     }
   }

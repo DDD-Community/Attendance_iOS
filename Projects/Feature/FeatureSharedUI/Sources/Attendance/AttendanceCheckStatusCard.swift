@@ -6,6 +6,7 @@
 //
 
 import DDDDesignKit
+import DDDAccessibility
 import SwiftUI
 import AttendanceDomainInterface
 import ProfileDomainInterface
@@ -15,6 +16,8 @@ public struct AttendanceCheckStatusCard: View {
   private let selectPart: SelectParts
   private let selectTeam: SelectTeams
   private let name: String
+  private let accessibilityID: String
+  private let editAccessibilityID: String
   private let editAction: () -> Void
 
   public init(
@@ -22,12 +25,16 @@ public struct AttendanceCheckStatusCard: View {
     selectPart: SelectParts,
     selectTeam: SelectTeams,
     name: String,
+    accessibilityID: String,
+    editAccessibilityID: String,
     editAction: @escaping () -> Void
   ) {
     self.attendanceStatus = attendanceStatus
     self.selectPart = selectPart
     self.selectTeam = selectTeam
     self.name = name
+    self.accessibilityID = accessibilityID
+    self.editAccessibilityID = editAccessibilityID
     self.editAction = editAction
   }
 
@@ -77,6 +84,7 @@ public struct AttendanceCheckStatusCard: View {
               .onTapGesture {
                 editAction()
               }
+              .dddAccessibilityID(editAccessibilityID)
 
           }
           
@@ -99,6 +107,7 @@ public struct AttendanceCheckStatusCard: View {
       : nil
     )
     .padding(.vertical, isDisabled ? 2: 0)
+    .dddAccessibilityID(accessibilityID)
   }
 
   private var isDisabled: Bool {

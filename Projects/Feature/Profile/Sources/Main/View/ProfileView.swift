@@ -6,6 +6,7 @@
 //
 
 import DDDCoreUI
+import DDDAccessibility
 import SwiftUI
 
 import ComposableArchitecture
@@ -70,7 +71,9 @@ extension ProfileView {
         }, image: .info)
 
         ProfileSkeletonView()
+          .dddAccessibilityID(ProfileAccessibilityID.Main.skeleton)
       }
+      .dddAccessibilityID(ProfileAccessibilityID.Main.root)
     } else {
       mangerProfileData()
     }
@@ -87,6 +90,7 @@ extension ProfileView {
       }, image: .info)
 
       mangerCardImage()
+        .dddAccessibilityID(ProfileAccessibilityID.Main.card)
 
       logoutButton()
 
@@ -94,6 +98,7 @@ extension ProfileView {
 
       Spacer()
     }
+    .dddAccessibilityID(ProfileAccessibilityID.Main.root)
   }
 
   @ViewBuilder
@@ -167,6 +172,7 @@ extension ProfileView {
         .dddFont(.body3NormalMedium)
         .foregroundStyle(.staticWhite)
     }
+    .dddAccessibilityID(ProfileAccessibilityID.Main.generationEditButton)
     .padding(.horizontal, 18)
     .padding(.vertical, 10)
     .background {
@@ -370,6 +376,7 @@ extension ProfileView {
           .onTapGesture {
             send(.showWithdrawAlert)
           }
+          .dddAccessibilityID(ProfileAccessibilityID.Main.withdrawButton)
 
       Spacer()
           .frame(width: 64)
@@ -396,6 +403,7 @@ extension ProfileView {
       Text("Version \(store.appVersion)")
         .dddFont(.body3NormalRegular)
         .foregroundStyle(.mediumGray100)
+        .dddAccessibilityID(ProfileAccessibilityID.Main.version)
 
       Spacer()
         .frame(height: 4)
@@ -407,6 +415,7 @@ extension ProfileView {
         .onTapGesture {
           store.send(.delegate(.presentPrivacyPolicy))
         }
+        .dddAccessibilityID(ProfileAccessibilityID.Main.privacyPolicyButton)
 
       Spacer()
         .frame(height: 20)
