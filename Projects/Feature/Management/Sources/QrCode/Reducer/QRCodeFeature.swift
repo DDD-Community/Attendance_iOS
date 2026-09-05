@@ -1,5 +1,5 @@
 //
-//  QRCode.swift
+//  QRCodeFeature.swift
 //  DDDAttendance
 //
 //  Created by DDD on 6/11/24.
@@ -16,7 +16,7 @@ import Vision
 import UIKit
 
 @Reducer
-public struct QRCode {
+public struct QRCodeFeature {
   public init() {}
 
   @ObservableState
@@ -26,7 +26,7 @@ public struct QRCode {
     let scannerSize: CGFloat = 240
     var isPresent: Bool = false
 
-    var qrCheckModel: QRValidateEntity?
+    var validation: QRValidateEntity?
     var scheduleId: String = ""
     var isUseQRCode: Bool = false
     @Presents public var alert: AlertState<AlertAction>?
@@ -113,7 +113,7 @@ public struct QRCode {
   }
 }
 
-extension QRCode {
+extension QRCodeFeature {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -162,7 +162,7 @@ extension QRCode {
     case .qrCodeValidateResponse(let result):
       switch result {
       case .success(let qrCodeValidateData):
-        state.qrCheckModel = qrCodeValidateData
+        state.validation = qrCodeValidateData
         state.isUseQRCode = false
 
           if qrCodeValidateData.isSuccess {

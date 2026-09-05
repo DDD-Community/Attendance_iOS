@@ -1,5 +1,5 @@
 //
-//  MemberVote.swift
+//  MemberVoteFeature.swift
 //  Member
 //
 //  Created by DDD on 6/11/26.
@@ -14,7 +14,7 @@ import VoteDomainInterface
 /// [멤버] 투표 참여 플로우 리듀서.
 /// 진행 중 투표 조회 → 템플릿 로드 → 1단계(팀 선택) → 2단계(피드백) → 제출.
 @Reducer
-public struct MemberVote {
+public struct MemberVoteFeature {
   public init() {}
 
   /// 투표 탭의 화면 단계.
@@ -138,7 +138,7 @@ public struct MemberVote {
   }
 }
 
-extension MemberVote {
+extension MemberVoteFeature {
   private func handleViewAction(
     state: inout State,
     action: View

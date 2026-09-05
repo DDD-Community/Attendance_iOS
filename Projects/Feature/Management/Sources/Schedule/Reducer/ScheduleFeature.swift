@@ -1,5 +1,5 @@
 //
-//  ScheduleReducer.swift
+//  ScheduleFeature.swift
 //  Presentation
 //
 //  Created by DDD on 5/9/25.
@@ -15,7 +15,7 @@ import ScheduleDomainInterface
 import AuthDomainInterface
 
 @Reducer
-public struct ScheduleReducer {
+public struct ScheduleFeature {
   public init() {}
   
   @ObservableState
@@ -23,7 +23,7 @@ public struct ScheduleReducer {
     
     public init() {}
     
-    var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
+    var schedules: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
     /// 이 화면이 지금 무엇을 그려야 하는지.
     public enum ViewState: Equatable {
       case loading
@@ -105,7 +105,7 @@ public struct ScheduleReducer {
   }
 }
 
-extension ScheduleReducer {
+extension ScheduleFeature {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -169,7 +169,7 @@ extension ScheduleReducer {
     case .fetchScheduleResponse(let result):
       switch result {
       case .success(let schedules):
-        state.scheduleModel = .init(uniqueElements: schedules)
+        state.schedules = .init(uniqueElements: schedules)
           state.viewState = .loaded
 
       case .failure(let error):

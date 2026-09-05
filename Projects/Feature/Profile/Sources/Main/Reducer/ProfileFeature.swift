@@ -1,5 +1,5 @@
 //
-//  ProfileReducer.swift
+//  ProfileFeature.swift
 //  DDDAttendance
 //
 //  Created by DDD on 7/17/24.
@@ -17,7 +17,7 @@ import DDDDesignKit
 import ProfileInterface
 
 @Reducer
-public struct ProfileReducer: Sendable {
+public struct ProfileFeature: Sendable {
   public init() {}
 
   @ObservableState
@@ -35,12 +35,12 @@ public struct ProfileReducer: Sendable {
     var managerProfileGeneration: String = "소속 기수"
     var logoutText: String = "로그아웃"
 
-    var profileModel: ProfileEntity?
+    var profile: ProfileEntity?
 
     /// 네트워크 갱신 전에는 앱 전역 세션의 마지막 프로필을 즉시 표시합니다.
     var displayedProfile: ProfileEntity? {
-      if let profileModel {
-        return profileModel
+      if let profile {
+        return profile
       }
 
       guard !userSession.name.isEmpty else {
@@ -80,7 +80,7 @@ public struct ProfileReducer: Sendable {
 
   @Reducer
   public enum Destination {
-    case createApp(CreateApp)
+    case createApp(CreateAppFeature)
   }
 
   public enum Action: ViewAction, BindableAction {
@@ -197,7 +197,7 @@ public struct ProfileReducer: Sendable {
   }
 }
 
-extension ProfileReducer {
+extension ProfileFeature {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -253,7 +253,7 @@ extension ProfileReducer {
 
           await send(.inner(.fetchUserResponse(fetchUserResult)))
         } catch is CancellationError {
-          DDDLogger.info("ProfileReducer.fetchUser Effect가 취소됨", category: .network)
+          DDDLogger.info("ProfileFeature.fetchUser Effect가 취소됨", category: .network)
         }
       }
       .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
@@ -294,14 +294,14 @@ extension ProfileReducer {
         return .none
       }
       // 세션 폴백으로라도 보여줄 프로필이 있으면 스켈레톤으로 되돌리지 않는다.
-      state.viewState = state.profileModel == nil ? .loading : .loaded
+      state.viewState = state.profile == nil ? .loading : .loaded
       return .none
 
     case let .fetchUserResponse(result):
       state.viewState = .loaded
       switch result {
       case let .success(profileDTOData):
-        state.profileModel = profileDTOData
+        state.profile = profileDTOData
 
       case let .failure(error):
         DDDLogger.error("유저 정보 가져오기: \(error.localizedDescription)", category: .network)
@@ -435,4 +435,4 @@ extension ProfileReducer {
   }
 }
 
-extension ProfileReducer.Destination.State: Equatable {}
+extension ProfileFeature.Destination.State: Equatable {}

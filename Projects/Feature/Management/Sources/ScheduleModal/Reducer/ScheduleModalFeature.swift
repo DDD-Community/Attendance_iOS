@@ -20,7 +20,7 @@ public struct ScheduleModalFeature {
 
   @ObservableState
   public struct State: Equatable {
-    var scheduleModel: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
+    var schedules: IdentifiedArrayOf<Schedule> = .init(uniqueElements: [])
     /// 이 화면이 지금 무엇을 그려야 하는지.
     public enum ViewState: Equatable {
       case loading
@@ -125,7 +125,7 @@ extension ScheduleModalFeature {
     switch action {
     case .fetchSchedule:
       // 캐시 있으면 로딩 표시 X (SWR로 백그라운드 갱신)
-      state.viewState = state.scheduleModel.isEmpty ? .loading : .loaded
+      state.viewState = state.schedules.isEmpty ? .loading : .loaded
       return .run { send in
         if let cached = await scheduleUseCase.getCachedSchedule(), !cached.isEmpty {
           await send(.inner(.scheduleResponse(.success(cached))))
@@ -162,7 +162,7 @@ extension ScheduleModalFeature {
       state.viewState = .loaded
       switch result {
       case let .success(data):
-        state.scheduleModel = .init(uniqueElements: data)
+        state.schedules = .init(uniqueElements: data)
       case let .failure(error):
         DDDLogger.error("네트워크 에러: \(error.localizedDescription)", category: .network)
       }

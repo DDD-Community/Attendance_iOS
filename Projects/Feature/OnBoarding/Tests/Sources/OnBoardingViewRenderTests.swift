@@ -139,7 +139,7 @@ struct OnBoardingViewRenderTests {
   func renderSelectManagingForManager() {
     var state = SelectManagingFeature.State()
     state.viewState = .loaded
-    state.selectMangers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
+    state.managers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
     state.userSession.userRole = .manager
     state.activeButton = true
 
@@ -156,7 +156,7 @@ struct OnBoardingViewRenderTests {
   func renderSelectManagingForMember() {
     var state = SelectManagingFeature.State()
     state.viewState = .loaded
-    state.selectMangers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
+    state.managers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
     state.userSession.userRole = .member
 
     let store = Store(initialState: state) {

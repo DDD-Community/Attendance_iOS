@@ -34,7 +34,7 @@ struct ManagementScheduleModalReducerTests {
     await store.send(.async(.fetchSchedule))
     await store.receive(\.inner) {
       $0.viewState = .loaded
-      $0.scheduleModel = .init(uniqueElements: ManagementScheduleFixture.all)
+      $0.schedules = .init(uniqueElements: ManagementScheduleFixture.all)
     }
   }
 
@@ -57,7 +57,7 @@ struct ManagementScheduleModalReducerTests {
     await clock.advance(by: .seconds(0.6))
     await store.receive(\.inner) {
       $0.viewState = .loaded
-      $0.scheduleModel = .init(uniqueElements: ManagementScheduleFixture.all)
+      $0.schedules = .init(uniqueElements: ManagementScheduleFixture.all)
     }
   }
 
@@ -80,7 +80,7 @@ struct ManagementScheduleModalReducerTests {
     await clock.advance(by: .seconds(0.6))
     await store.receive(\.inner) {
       $0.viewState = .loaded
-      $0.scheduleModel = .init(uniqueElements: [ManagementScheduleFixture.demoDay])
+      $0.schedules = .init(uniqueElements: [ManagementScheduleFixture.demoDay])
     }
   }
 
@@ -95,7 +95,7 @@ struct ManagementScheduleModalReducerTests {
     // 재조회는 첫 로드가 끝난 뒤 상황이므로 .loaded 에서 출발한다.
     var state = ScheduleModalFeature.State()
     state.viewState = .loaded
-    state.scheduleModel = .init(uniqueElements: [ManagementScheduleFixture.orientation])
+    state.schedules = .init(uniqueElements: [ManagementScheduleFixture.orientation])
 
     let store = TestStore(initialState: state) {
       ScheduleModalFeature()
@@ -107,7 +107,7 @@ struct ManagementScheduleModalReducerTests {
     await store.send(.async(.fetchSchedule))
     await clock.advance(by: .seconds(0.6))
     await store.receive(\.inner) {
-      $0.scheduleModel = .init(uniqueElements: ManagementScheduleFixture.all)
+      $0.schedules = .init(uniqueElements: ManagementScheduleFixture.all)
     }
   }
 
@@ -131,7 +131,7 @@ struct ManagementScheduleModalReducerTests {
     await store.receive(\.inner) {
       $0.viewState = .loaded
     }
-    #expect(store.state.scheduleModel.isEmpty)
+    #expect(store.state.schedules.isEmpty)
   }
 
   /// 다른 일정을 고르면 선택이 교체된다(같은 일정 재선택 해제는 기존 스위트가 커버).

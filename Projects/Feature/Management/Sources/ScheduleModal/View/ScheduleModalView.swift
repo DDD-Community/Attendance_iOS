@@ -76,7 +76,7 @@ extension ScheduleModalView {
 
   @ViewBuilder
   private func scheduleList() -> some View {
-    let schedules = store.scheduleModel
+    let schedules = store.schedules
 
     LazyVStack(spacing: 8) {
       ForEach(schedules, id: \.id) { item in

@@ -2,7 +2,7 @@
 //  MemberMainReducerCoverageTests.swift
 //  MemberTests
 //
-//  MemberMain 리듀서의 view / inner / async / delegate / vote 스코프 분기를 모두 태운다.
+//  MemberMainFeature 리듀서의 view / inner / async / delegate / vote 스코프 분기를 모두 태운다.
 //
 
 import ComposableArchitecture
@@ -11,7 +11,7 @@ import Testing
 @testable import Member
 
 @MainActor
-@Suite("MemberMain 커버리지")
+@Suite("MemberMainFeature 커버리지")
 struct MemberMainReducerCoverageTests {
   // MARK: - View 액션
 
@@ -45,7 +45,7 @@ struct MemberMainReducerCoverageTests {
 
   @Test("이미 onAppear 를 처리했다면 두 번째 onAppear 는 아무 효과도 만들지 않는다")
   func onAppear_이미노출됨_효과없음() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.didAppear = true
 
     let store = makeStore(state: state)
@@ -55,7 +55,7 @@ struct MemberMainReducerCoverageTests {
 
   @Test("onDisappear 는 다음 진입에서 데이터를 다시 불러올 수 있게 한다")
   func onDisappear_노출상태초기화() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.didAppear = true
 
     let store = makeStore(state: state)
@@ -75,7 +75,7 @@ struct MemberMainReducerCoverageTests {
 
   @Test("결석 경고 아이콘이 있으면 결석 버튼이 알럿을 열고 닫기 버튼이 다시 닫는다")
   func didTapAbesentButton_경고아이콘있음_알럿토글() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.showAttendanceWarningIcon = true
 
     let store = makeStore(state: state)
@@ -108,7 +108,7 @@ struct MemberMainReducerCoverageTests {
 
   @Test("투표 메뉴가 비활성이면 투표 탭 선택이 거부되고 드롭다운만 닫힌다")
   func selectHomeTab_투표비활성_탭전환거부() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.isExpandedDropDown = true
 
     let store = makeStore(state: state)
@@ -121,7 +121,7 @@ struct MemberMainReducerCoverageTests {
 
   @Test("투표 메뉴가 활성이면 투표 탭으로 전환되고 다시 출석 탭으로 돌아올 수 있다")
   func selectHomeTab_투표활성_탭전환성공() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.isVoteMenuAvailable = true
     state.isExpandedDropDown = true
 
@@ -138,7 +138,7 @@ struct MemberMainReducerCoverageTests {
 
   @Test("투표 작성 중 뒤로가기는 투표 리듀서에 종료 요청을 전달한다")
   func didTapVoteBackButton_투표종료요청전달() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.isVoteMenuAvailable = true
     state.selectedHomeTab = .vote
 
@@ -151,7 +151,7 @@ struct MemberMainReducerCoverageTests {
 
     // step 이 .loading 이므로 곧바로 exitVote 로 이어져 출석 탭으로 되돌아온다.
     #expect(store.state.selectedHomeTab == .attendance)
-    #expect(store.state.vote == MemberVote.State())
+    #expect(store.state.vote == MemberVoteFeature.State())
   }
 
   @Test("바인딩 액션은 상태를 그대로 반영한다")
@@ -167,7 +167,7 @@ struct MemberMainReducerCoverageTests {
 
   @Test("프로필 조회 성공은 멤버를 저장하고 실패는 멤버를 비운다")
   func onFetchUserResponse_성공과실패() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.member = MemberTestFixture.profile
 
     let store = makeStore(state: state)
@@ -234,7 +234,7 @@ struct MemberMainReducerCoverageTests {
 
   @Test("투표 탭에서 진행 중 투표 조회가 실패하면 출석 탭으로 되돌리고 투표 상태를 초기화한다")
   func onFetchActiveVoteResponse_실패_투표탭이탈() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.isVoteMenuAvailable = true
     state.selectedHomeTab = .vote
     state.isExpandedDropDown = true
@@ -245,14 +245,14 @@ struct MemberMainReducerCoverageTests {
     await store.send(.inner(.onFetchActiveVoteResponse(.failure(.noActiveVote)))) {
       $0.isVoteMenuAvailable = false
       $0.selectedHomeTab = .attendance
-      $0.vote = MemberVote.State()
+      $0.vote = MemberVoteFeature.State()
       $0.isExpandedDropDown = false
     }
   }
 
   @Test("onResume 은 기존 화면을 유지한 채 출석 현황만 다시 조회한다")
   func onResume_출석현황만재조회() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.viewState = .loaded
     state.attendanceViewState = .loaded
     state.member = MemberTestFixture.profile
@@ -310,7 +310,7 @@ struct MemberMainReducerCoverageTests {
 
   @Test("멤버 홈은 프로필·출석·일정·투표 조회가 모두 끝날 때까지 로딩을 유지한다")
   func loading_모든필수조회완료후종료() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.pendingLoadingResources = [.profileAndAttendance, .schedule, .activeVote]
 
     let store = makeStore(state: state)
@@ -339,7 +339,7 @@ struct MemberMainReducerCoverageTests {
 
   @Test("QR·프로필 라우팅 델리게이트는 드롭다운을 닫는다")
   func delegate_라우팅_드롭다운닫힘() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.isExpandedDropDown = true
 
     let store = makeStore(state: state)
@@ -359,7 +359,7 @@ struct MemberMainReducerCoverageTests {
 
   @Test("투표 리듀서가 종료를 알리면 출석 탭으로 돌아가고 투표 상태를 초기화한다")
   func voteDelegate_exitVote_투표상태초기화() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.selectedHomeTab = .vote
     state.isExpandedDropDown = true
     state.vote.step = .feedback
@@ -369,13 +369,13 @@ struct MemberMainReducerCoverageTests {
     await store.send(.vote(.delegate(.exitVote))) {
       $0.selectedHomeTab = .attendance
       $0.isExpandedDropDown = false
-      $0.vote = MemberVote.State()
+      $0.vote = MemberVoteFeature.State()
     }
   }
 
   @Test("투표 리듀서의 진행 중 투표 조회 실패는 상위 투표 메뉴도 잠근다")
   func voteInner_activeVoteResponse실패_투표메뉴잠금() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.isVoteMenuAvailable = true
     state.selectedHomeTab = .vote
     state.isExpandedDropDown = true
@@ -395,7 +395,7 @@ struct MemberMainReducerCoverageTests {
 
   @Test("그 밖의 투표 액션은 상위 상태를 바꾸지 않는다")
   func vote_기타액션_상위상태유지() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.isVoteMenuAvailable = true
     state.selectedHomeTab = .vote
     state.vote.step = .feedback
@@ -412,18 +412,18 @@ struct MemberMainReducerCoverageTests {
 
   @Test("투표 작성 네비게이션 바는 투표 탭의 작성 단계에서만 사용된다")
   func usesVoteWritingNavigationBar_단계별판정() {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
 
     state.selectedHomeTab = .attendance
     state.vote.step = .teamSelect
     #expect(!state.usesVoteWritingNavigationBar)
 
     state.selectedHomeTab = .vote
-    for step in [MemberVote.Step.loading, .teamSelect, .feedback] {
+    for step in [MemberVoteFeature.Step.loading, .teamSelect, .feedback] {
       state.vote.step = step
       #expect(state.usesVoteWritingNavigationBar)
     }
-    for step in [MemberVote.Step.empty, .alreadyVoted, .completed] {
+    for step in [MemberVoteFeature.Step.empty, .alreadyVoted, .completed] {
       state.vote.step = step
       #expect(!state.usesVoteWritingNavigationBar)
     }
@@ -431,10 +431,10 @@ struct MemberMainReducerCoverageTests {
 
   @Test("홈 탭은 출석현황과 투표 두 가지이며 각각 한글 제목을 가진다")
   func homeTab_전체케이스와제목() {
-    #expect(MemberMain.HomeTab.allCases == [.attendance, .vote])
-    #expect(MemberMain.HomeTab.attendance.title == "출석현황")
-    #expect(MemberMain.HomeTab.vote.title == "투표")
-    #expect(MemberMain.HomeTab.attendance.rawValue == "attendance")
+    #expect(MemberMainFeature.HomeTab.allCases == [.attendance, .vote])
+    #expect(MemberMainFeature.HomeTab.attendance.title == "출석현황")
+    #expect(MemberMainFeature.HomeTab.vote.title == "투표")
+    #expect(MemberMainFeature.HomeTab.attendance.rawValue == "attendance")
   }
 }
 
@@ -442,11 +442,11 @@ struct MemberMainReducerCoverageTests {
 
 private extension MemberMainReducerCoverageTests {
   func makeStore(
-    state: MemberMain.State = MemberMain.State(),
+    state: MemberMainFeature.State = MemberMainFeature.State(),
     dependencies: @escaping (inout DependencyValues) -> Void = { $0.stubMemberUseCases() }
-  ) -> TestStoreOf<MemberMain> {
+  ) -> TestStoreOf<MemberMainFeature> {
     TestStore(initialState: state) {
-      MemberMain()
+      MemberMainFeature()
     } withDependencies: {
       dependencies(&$0)
     }

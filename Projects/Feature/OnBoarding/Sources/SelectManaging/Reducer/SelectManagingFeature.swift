@@ -34,7 +34,7 @@ public struct SelectManagingFeature {
     var viewState: ViewState = .loading
     var activeButton: Bool = false
     var errorMessage: String?
-    var selectMangers: IdentifiedArrayOf<SelectManaging> = .init(uniqueElements: [])
+    var managers: IdentifiedArrayOf<SelectManaging> = .init(uniqueElements: [])
     var signUpUser: SignUpUser?
     var editProfile: ProfileEntity?
 
@@ -142,7 +142,7 @@ extension SelectManagingFeature {
     switch action {
     case .onAppear:
       // 이미 데이터가 있다면 다시 fetch하지 않음
-      if !state.selectMangers.isEmpty {
+      if !state.managers.isEmpty {
         return .none
       }
       return .send(.async(.fetchMangerList))
@@ -268,7 +268,7 @@ extension SelectManagingFeature {
       switch result {
       case let .success(data):
         state.viewState = .loaded
-        state.selectMangers = .init(uniqueElements: data)
+        state.managers = .init(uniqueElements: data)
 
       case let .failure(error):
         state.viewState = .loaded

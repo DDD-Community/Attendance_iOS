@@ -25,8 +25,8 @@ public struct StaffFeature {
     var dropDownItem: [String] = SelectDropDownItem.item
     var selectDropDownItem: SelectDropDownItem = .attandance
     
-    var attendanceCheck = AttendanceCheck.State()
-    var schedule = ScheduleReducer.State()
+    var attendance = AttendanceCheckFeature.State()
+    var schedule = ScheduleFeature.State()
     var vote = VoteFeature.State()
 
     /// 이 화면이 지금 무엇을 그려야 하는지.
@@ -40,7 +40,7 @@ public struct StaffFeature {
       let childIsLoading: Bool
       switch selectDropDownItem {
       case .attandance:
-        childIsLoading = attendanceCheck.viewState == .loading
+        childIsLoading = attendance.viewState == .loading
       case .schedule:
         childIsLoading = schedule.viewState == .loading
       case .vote:
@@ -67,8 +67,8 @@ public struct StaffFeature {
     case async(AsyncAction)
     case inner(InnerAction)
     case delegate(DelegateAction)
-    case attendanceCheck(AttendanceCheck.Action)
-    case schedule(ScheduleReducer.Action)
+    case attendance(AttendanceCheckFeature.Action)
+    case schedule(ScheduleFeature.Action)
     case vote(VoteFeature.Action)
   }
   
@@ -100,7 +100,7 @@ public struct StaffFeature {
   
   @Reducer(state: .equatable)
   public enum Destination {
-    case qrcode(QRCode)
+    case qrcode(QRCodeFeature)
   }
   
   
@@ -116,7 +116,7 @@ public struct StaffFeature {
         
       case .destination(.presented(.qrcode(.delegate(.presentBack)))):
         state.destination = nil
-        return .send(.attendanceCheck(.view(.onAppear)))
+        return .send(.attendance(.view(.onAppear)))
 
       case .destination:
         return .none
@@ -142,11 +142,11 @@ public struct StaffFeature {
       }
     }
     .ifLet(\.$destination, action: \.destination)
-    Scope(state: \.attendanceCheck, action: \.attendanceCheck) {
-      AttendanceCheck()
+    Scope(state: \.attendance, action: \.attendance) {
+      AttendanceCheckFeature()
     }
     Scope(state: \.schedule, action: \.schedule) {
-      ScheduleReducer()
+      ScheduleFeature()
     }
     Scope(state: \.vote, action: \.vote) {
       VoteFeature()

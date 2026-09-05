@@ -31,14 +31,14 @@ struct SelectManagingReducerTests {
     await store.receive(\.async)
     await store.receive(\.inner) {
       $0.viewState = .loaded
-      $0.selectMangers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
+      $0.managers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
     }
   }
 
   @Test("목록이 이미 있으면 onAppear 는 다시 조회하지 않는다")
   func onAppearSkipsFetchWhenListAlreadyLoaded() async {
     var state = SelectManagingFeature.State()
-    state.selectMangers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
+    state.managers = .init(uniqueElements: OnBoardingCoverageFixture.managings)
 
     let store = TestStore(initialState: state) {
       SelectManagingFeature()

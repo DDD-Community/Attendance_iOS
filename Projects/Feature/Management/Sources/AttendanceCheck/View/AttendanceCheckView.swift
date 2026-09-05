@@ -17,9 +17,9 @@ import OnBoardingDomainInterface
 
 import ComposableArchitecture
 
-@ViewAction(for: AttendanceCheck.self)
+@ViewAction(for: AttendanceCheckFeature.self)
 struct AttendanceCheckView: View {
-  @Bindable var store: StoreOf<AttendanceCheck>
+  @Bindable var store: StoreOf<AttendanceCheckFeature>
   @Namespace private var teamTabNamespace
 
   var body: some View {

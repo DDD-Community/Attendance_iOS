@@ -109,10 +109,10 @@ public struct AppReducer: Sendable {
       .cancel(id: MemberCoordinator.CancelID.allEffects),
       .cancel(id: MemberCoordinator.CancelID.profileEffects),
 
-      // ProfileReducer 핵심 Effect만
-      .cancel(id: ProfileReducer.CancelID.fetchProfile),
-      .cancel(id: ProfileReducer.CancelID.deleteUser),
-      .cancel(id: ProfileReducer.CancelID.logoutUser)
+      // ProfileFeature 핵심 Effect만
+      .cancel(id: ProfileFeature.CancelID.fetchProfile),
+      .cancel(id: ProfileFeature.CancelID.deleteUser),
+      .cancel(id: ProfileFeature.CancelID.logoutUser)
     ])
   }
 

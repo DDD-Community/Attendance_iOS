@@ -13,12 +13,12 @@ import DDDDesignKit
 
 import ComposableArchitecture
 
-@ViewAction(for: MemberMain.self)
+@ViewAction(for: MemberMainFeature.self)
 public struct MemberMainView: View {
-  @Bindable public var store: StoreOf<MemberMain>
+  @Bindable public var store: StoreOf<MemberMainFeature>
   @State private var isDropDownClosing = false
 
-  public init(store: StoreOf<MemberMain>) {
+  public init(store: StoreOf<MemberMainFeature>) {
     self.store = store
   }
 
@@ -182,7 +182,7 @@ public struct MemberMainView: View {
           }
 
         HomeDropdownMenu(
-          entries: MemberMain.HomeTab.allCases
+          entries: MemberMainFeature.HomeTab.allCases
             .filter { tab in
               tab != .vote || store.isVoteMenuAvailable
             }
@@ -195,7 +195,7 @@ public struct MemberMainView: View {
               )
             },
           onSelect: { entry in
-            if let tab = MemberMain.HomeTab(rawValue: entry.id) {
+            if let tab = MemberMainFeature.HomeTab(rawValue: entry.id) {
               closeDropDown(.selectHomeTab(tab))
             }
           }
@@ -309,7 +309,7 @@ private extension MemberMainView {
     }
   }
 
-  func closeDropDown(_ action: MemberMain.View = .closeDropDown) {
+  func closeDropDown(_ action: MemberMainFeature.View = .closeDropDown) {
     guard store.isExpandedDropDown, !isDropDownClosing else { return }
     isDropDownClosing = true
 

@@ -75,7 +75,7 @@ extension SelectManagingView {
 
       ScrollView {
         VStack {
-          ForEach(store.selectMangers, id: \.managingKeys) { item in
+          ForEach(store.managers, id: \.managingKeys) { item in
             SelectPartItem(
               content: item.managing.desc,
               isActive: store.userSession.managing.contains(item.managing)

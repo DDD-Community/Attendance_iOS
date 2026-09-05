@@ -32,7 +32,7 @@ public struct InviteCodeFeature {
     var secondInviteCode: String = ""
     var thirdInviteCode: String = ""
     var lastInviteCode: String = ""
-    var verifyInviteCodeModel: VerifyCodeEntity?
+    var verification: VerifyCodeEntity?
     var focusedField: FocusField? = .first
 
     @Shared(.userSession) var userSession
@@ -195,7 +195,7 @@ extension InviteCodeFeature {
     case .verifyInviteCodeResponse(let result):
       switch result {
       case .success(let data):
-        state.verifyInviteCodeModel = data
+        state.verification = data
         state.isNotAvailableCode = false
         let inviteCode = state.totalInviteCode
         state.$userSession.withLock {

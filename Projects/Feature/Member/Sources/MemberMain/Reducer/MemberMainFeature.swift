@@ -1,5 +1,5 @@
 //
-//  MemberMain.swift
+//  MemberMainFeature.swift
 //  Presentation
 //
 //  Created by DDD on 1/2/25.
@@ -19,7 +19,7 @@ import MemberInterface
 import ScheduleDomainInterface
 
 @Reducer
-public struct MemberMain {
+public struct MemberMainFeature {
   public init() {}
 
   // 멤버 홈 탭 (일정은 운영진 전용이라 제외)
@@ -60,7 +60,7 @@ public struct MemberMain {
     var isVoteMenuAvailable: Bool = false
 
     // 투표 탭
-    var vote: MemberVote.State = .init()
+    var vote: MemberVoteFeature.State = .init()
 
     @ObservationStateIgnored
     var didAppear: Bool = false
@@ -87,7 +87,7 @@ public struct MemberMain {
     case inner(InnerAction)
     case async(AsyncAction)
     case delegate(DelegateAction)
-    case vote(MemberVote.Action)
+    case vote(MemberVoteFeature.Action)
   }
 
   @CasePathable
@@ -134,7 +134,7 @@ public struct MemberMain {
     BindingReducer()
 
     Scope(state: \.vote, action: \.vote) {
-      MemberVote()
+      MemberVoteFeature()
     }
 
     Reduce { state, action in
@@ -175,13 +175,13 @@ public struct MemberMain {
   }
 }
 
-extension MemberMain.State {
+extension MemberMainFeature.State {
   var usesVoteWritingNavigationBar: Bool {
     selectedHomeTab == .vote && vote.step.usesVoteWritingNavigationBar
   }
 }
 
-private extension MemberVote.Step {
+private extension MemberVoteFeature.Step {
   var usesVoteWritingNavigationBar: Bool {
     switch self {
     case .loading, .teamSelect, .feedback:
@@ -192,7 +192,7 @@ private extension MemberVote.Step {
   }
 }
 
-extension MemberMain {
+extension MemberMainFeature {
   private func handleViewAction(
     state: inout State,
     action: View

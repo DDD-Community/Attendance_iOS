@@ -1,5 +1,5 @@
 //
-//  CreateApp.swift
+//  CreateAppFeature.swift
 //  Presentation
 //
 //  Created by DDD on 4/6/25.
@@ -12,7 +12,7 @@ import ProfileInterface
 import DDDSharedUI
 
 @Reducer
-public struct CreateApp {
+public struct CreateAppFeature {
   public init() {}
   
   @ObservableState

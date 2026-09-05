@@ -15,11 +15,11 @@ import DDDDesignKit
 import ComposableArchitecture
 import AuthDomainInterface
 
-@ViewAction(for: Login.self)
+@ViewAction(for: LoginFeature.self)
 public struct LoginView: View {
-  @Bindable public var store: StoreOf<Login>
+  @Bindable public var store: StoreOf<LoginFeature>
   
-  public init(store: StoreOf<Login>) {
+  public init(store: StoreOf<LoginFeature>) {
     self.store = store
   }
   
@@ -84,9 +84,9 @@ extension LoginView {
 #Preview {
   LoginView(
     store: .init(
-      initialState: Login.State(),
+      initialState: LoginFeature.State(),
       reducer: {
-        Login()
+        LoginFeature()
       })
   )
 }

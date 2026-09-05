@@ -1,5 +1,5 @@
 //
-//  WebReducer.swift
+//  WebFeature.swift
 //  Profile
 //
 //  Created by DDD on 1/4/26.
@@ -11,7 +11,7 @@ import WebInterface
 
 
 @Reducer
-public struct WebReducer {
+public struct WebFeature {
   public init() {}
 
   @ObservableState

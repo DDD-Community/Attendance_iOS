@@ -14,7 +14,7 @@ import ComposableArchitecture
 import AuthDomainInterface
 
 struct SocialCircleButtonView: View {
-  @State var store: StoreOf<Login>
+  @State var store: StoreOf<LoginFeature>
   let type: SocialType
   let onTap: () -> Void
   @State private var isPressed = false

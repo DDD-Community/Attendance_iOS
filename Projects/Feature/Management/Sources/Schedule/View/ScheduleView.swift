@@ -11,12 +11,12 @@ import SwiftUIX
 import DDDDesignKit
 import ComposableArchitecture
 
-@ViewAction(for: ScheduleReducer.self)
+@ViewAction(for: ScheduleFeature.self)
 struct ScheduleView: View {
-  @Bindable var store: StoreOf<ScheduleReducer>
+  @Bindable var store: StoreOf<ScheduleFeature>
 
   init(
-    store: StoreOf<ScheduleReducer>
+    store: StoreOf<ScheduleFeature>
   ) {
     self.store = store
   }
@@ -65,7 +65,7 @@ extension ScheduleView {
   fileprivate func scheduleListView() -> some View {
     ScrollView(.vertical) {
       LazyVStack(spacing: 16) {
-        ForEach(store.scheduleModel, id: \.id) { item in
+        ForEach(store.schedules, id: \.id) { item in
           ScheduleCardView(
             month:"\(item.month)",
             day: "\(item.day)",

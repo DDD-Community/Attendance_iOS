@@ -155,7 +155,7 @@ private extension StaffView {
   func switchSelectDropDownView() -> some View {
     switch store.selectDropDownItem {
     case .attandance:
-      AttendanceCheckView(store: store.scope(state: \.attendanceCheck, action: \.attendanceCheck))
+      AttendanceCheckView(store: store.scope(state: \.attendance, action: \.attendance))
 
     case .schedule:
       ScheduleView(store: store.scope(state: \.schedule, action: \.schedule))

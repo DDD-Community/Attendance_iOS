@@ -33,10 +33,10 @@ struct ManagementStaffViewRenderTests {
   }
 
   private func makeAttendanceStore(
-    state: AttendanceCheck.State
-  ) -> StoreOf<AttendanceCheck> {
+    state: AttendanceCheckFeature.State
+  ) -> StoreOf<AttendanceCheckFeature> {
     Store(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     } withDependencies: {
       $0.attendanceUseCase = ManagementSupportAttendanceUseCase()
       $0.scheduleUseCase = ManagementSupportScheduleUseCase()
@@ -45,8 +45,8 @@ struct ManagementStaffViewRenderTests {
     }
   }
 
-  private func loadedAttendanceState() -> AttendanceCheck.State {
-    var state = AttendanceCheck.State()
+  private func loadedAttendanceState() -> AttendanceCheckFeature.State {
+    var state = AttendanceCheckFeature.State()
     state.viewState = .loaded
     state.selectedSchedule = EntityFixtureSchedule.value
     state.attendanceSummary = ManagementSupportFixture.attendanceCount
@@ -63,7 +63,7 @@ struct ManagementStaffViewRenderTests {
   @Test("기본 StaffView 는 출석 탭 본문을 렌더링한다")
   func rendersStaffViewAttendanceTab() {
     var state = StaffFeature.State()
-    state.attendanceCheck = loadedAttendanceState()
+    state.attendance = loadedAttendanceState()
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }
@@ -71,7 +71,7 @@ struct ManagementStaffViewRenderTests {
   @Test("출석 탭이 로딩 중이면 StaffView 는 스켈레톤 경로를 탄다")
   func rendersStaffViewAttendanceSkeleton() {
     var state = StaffFeature.State()
-    state.attendanceCheck.viewState = .loading
+    state.attendance.viewState = .loading
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }
@@ -79,8 +79,8 @@ struct ManagementStaffViewRenderTests {
   @Test("출석 상태 갱신 중에는 전체 화면이 아닌 출석 카드 목록만 skeleton을 렌더링한다")
   func rendersStaffViewAttendanceListSkeleton() {
     var state = StaffFeature.State()
-    state.attendanceCheck = loadedAttendanceState()
-    state.attendanceCheck.viewState = .refreshingAttendanceList
+    state.attendance = loadedAttendanceState()
+    state.attendance.viewState = .refreshingAttendanceList
 
     #expect(state.viewState == .loaded)
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
@@ -126,7 +126,7 @@ struct ManagementStaffViewRenderTests {
   func rendersStaffViewWithExpandedDropDown() {
     var state = StaffFeature.State()
     state.isExpandedDropDown = true
-    state.attendanceCheck.viewState = .loaded
+    state.attendance.viewState = .loaded
 
     ManagementSupportViewRenderer.render(StaffView(store: makeStaffStore(state: state)))
   }
@@ -148,7 +148,7 @@ struct ManagementStaffViewRenderTests {
   @Test("데이터가 비어 있는 AttendanceCheckView 를 렌더링한다")
   func rendersAttendanceCheckViewEmpty() {
     ManagementSupportViewRenderer.render(
-      AttendanceCheckView(store: makeAttendanceStore(state: AttendanceCheck.State()))
+      AttendanceCheckView(store: makeAttendanceStore(state: AttendanceCheckFeature.State()))
     )
   }
 

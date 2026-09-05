@@ -13,9 +13,9 @@ import ComposableArchitecture
 import AttendanceDomainInterface
 
 struct QRScannerView: View {
-  @Bindable var store: StoreOf<QRCode>
+  @Bindable var store: StoreOf<QRCodeFeature>
   
-  init(store: StoreOf<QRCode>) {
+  init(store: StoreOf<QRCodeFeature>) {
     self.store = store
   }
   
@@ -43,7 +43,7 @@ struct QRScannerView: View {
       }
     }
     .alert($store.scope(state: \.alert, action: \.scope.alert))
-    .onChange(of: store.qrCheckModel?.isSuccess) { oldValue, newValue in
+    .onChange(of: store.validation?.isSuccess) { oldValue, newValue in
       switch newValue {
         case true:
         _Concurrency.Task {
@@ -95,7 +95,7 @@ extension QRScannerView {
   
   @ViewBuilder
   fileprivate func scanedTextViewWithBackGround() -> some View {
-    let attendanceStatus =  store.qrCheckModel?.status
+    let attendanceStatus =  store.validation?.status
     GeometryReader { proxy in
       let width = proxy.size.width
       let height = proxy.size.height

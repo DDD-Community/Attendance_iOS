@@ -1,5 +1,5 @@
 //
-//  Login.swift
+//  LoginFeature.swift
 //  Presentation
 //
 //  Created by DDD on 10/29/24.
@@ -17,7 +17,7 @@ import AuthInterface
 import DDDDesignKit
 
 @Reducer
-public struct Login {
+public struct LoginFeature {
   public init() {}
 
   @ObservableState
@@ -29,7 +29,7 @@ public struct Login {
     @Shared var userSession: UserSession
     @Shared(.staffRole) var staffRole
     @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
-    var loginEntity: LoginEntity?
+    var login: LoginEntity?
     var currentSocialType: SocialType?
     @Presents public var customAlert: CustomAlertState<CustomAlertAction>?
 
@@ -122,7 +122,7 @@ public struct Login {
   }
 }
 
-extension Login {
+extension LoginFeature {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -199,13 +199,13 @@ extension Login {
     switch action {
       case .loginResponse(let result):
         switch result {
-          case .success(let loginEntity):
-            state.loginEntity = loginEntity
-            let role = loginEntity.role ?? .member
-            state.$staffRole.withLock { $0 = loginEntity.isNewUser ? nil : role }
+          case .success(let login):
+            state.login = login
+            let role = login.role ?? .member
+            state.$staffRole.withLock { $0 = login.isNewUser ? nil : role }
             state.$userSession.withLock { $0.userRole = role }
 
-            if loginEntity.isNewUser  {
+            if login.isNewUser  {
               // 신규 가입: editGeneration 잔재(true)로 인한 editProfile 오분기 방지 → 회원가입(signUp) 강제
               state.$editGeneration.withLock { $0 = false }
               return .send(.view(.showPolicyPopUp))

@@ -51,7 +51,7 @@ struct OnBoardingReducerTests {
     }
 
     await store.send(.inner(.verifyInviteCodeResponse(.success(verification)))) {
-      $0.verifyInviteCodeModel = verification
+      $0.verification = verification
       $0.isNotAvailableCode = false
       $0.userSession.userRole = .manager
       $0.userSession.generationId = 13

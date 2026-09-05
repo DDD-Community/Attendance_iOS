@@ -12,11 +12,11 @@ import SwiftUI
 import ComposableArchitecture
 import DDDDesignKit
 
-@ViewAction(for: ProfileReducer.self)
+@ViewAction(for: ProfileFeature.self)
 public struct ProfileView: View {
-  @Bindable public var store: StoreOf<ProfileReducer>
+  @Bindable public var store: StoreOf<ProfileFeature>
 
-  public init(store: StoreOf<ProfileReducer>) {
+  public init(store: StoreOf<ProfileFeature>) {
     self.store = store
   }
 

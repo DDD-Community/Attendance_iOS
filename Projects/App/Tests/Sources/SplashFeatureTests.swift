@@ -19,7 +19,7 @@ struct SplashFeatureTests {
   func upToDateMemberNavigatesToMemberAfterProfileFetch() async {
     var state = SplashFeature.State()
     state.staffRole = .member
-    state.profileModel = .init(
+    state.profile = .init(
       userID: 1,
       name: "김철수",
       generation: "2기",

@@ -110,7 +110,7 @@ struct ManagementStaffFeatureCoverageTests {
     }
 
     await store.send(.destination(.presented(.qrcode(.view(.stopScanning))))) {
-      var qrCodeState = QRCode.State()
+      var qrCodeState = QRCodeFeature.State()
       qrCodeState.isScanning = false
       $0.destination = .qrcode(qrCodeState)
     }
@@ -130,14 +130,14 @@ struct ManagementStaffFeatureCoverageTests {
     }
   }
 
-  @Test("출석 탭 스코프 액션은 AttendanceCheck 자식 상태를 바꾼다")
+  @Test("출석 탭 스코프 액션은 AttendanceCheckFeature 자식 상태를 바꾼다")
   func attendanceCheckScopeForwardsAction() async {
     let store = TestStore(initialState: StaffFeature.State()) {
       StaffFeature()
     }
 
-    await store.send(.attendanceCheck(.view(.tapSelectDate))) {
-      $0.attendanceCheck.destination = .scheduleModal(.init())
+    await store.send(.attendance(.view(.tapSelectDate))) {
+      $0.attendance.destination = .scheduleModal(.init())
     }
   }
 
@@ -147,8 +147,8 @@ struct ManagementStaffFeatureCoverageTests {
       StaffFeature()
     }
 
-    await store.send(.attendanceCheck(.view(.updateDividerWidths([1: 12])))) {
-      $0.attendanceCheck.teamTabWidths = [1: 12]
+    await store.send(.attendance(.view(.updateDividerWidths([1: 12])))) {
+      $0.attendance.teamTabWidths = [1: 12]
     }
   }
 }

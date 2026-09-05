@@ -13,9 +13,9 @@ import ProfileDomainInterface
 import SwiftUIX
 
 struct CreateAppView: View {
-  @Bindable private var store: StoreOf<CreateApp>
+  @Bindable private var store: StoreOf<CreateAppFeature>
 
-  init(store: StoreOf<CreateApp>) {
+  init(store: StoreOf<CreateAppFeature>) {
     self.store = store
   }
   

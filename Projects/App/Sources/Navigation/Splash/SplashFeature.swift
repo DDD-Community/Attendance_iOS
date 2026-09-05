@@ -18,7 +18,7 @@ public struct SplashFeature: Sendable {
   @ObservableState
   public struct State: Equatable {
     @Shared(.staffRole) var staffRole
-    var profileModel: ProfileEntity?
+    var profile: ProfileEntity?
     
     // 앱 업데이트 관련
     @Presents var customAlert: CustomAlertState<CustomAlertAction>?
@@ -202,7 +202,7 @@ extension SplashFeature {
       switch result {
       case let .success(profileDTOData):
         DDDLogger.debug("[Splash] User profile fetched successfully", category: .app)
-        state.profileModel = profileDTOData
+        state.profile = profileDTOData
         state.profileFetchCompleted = true
         
         // 업데이트 체크가 완료되고 팝업이 없는 경우에만 화면 이동

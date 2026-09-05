@@ -13,11 +13,11 @@ import DDDDesignKit
 import ComposableArchitecture
 
 /// [멤버] 투표 탭 컨테이너. 단계(Step)에 따라 팀 선택/피드백/완료 화면을 전환한다.
-@ViewAction(for: MemberVote.self)
+@ViewAction(for: MemberVoteFeature.self)
 struct MemberVoteView: View {
-  @Bindable var store: StoreOf<MemberVote>
+  @Bindable var store: StoreOf<MemberVoteFeature>
 
-  init(store: StoreOf<MemberVote>) {
+  init(store: StoreOf<MemberVoteFeature>) {
     self.store = store
   }
 

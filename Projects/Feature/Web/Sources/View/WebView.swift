@@ -11,10 +11,10 @@ import ComposableArchitecture
 
 
 public struct WebView: View {
-  @Bindable var store: StoreOf<WebReducer>
+  @Bindable var store: StoreOf<WebFeature>
 
   public init(
-    store: StoreOf<WebReducer>,
+    store: StoreOf<WebFeature>,
   ) {
     self.store = store
   }

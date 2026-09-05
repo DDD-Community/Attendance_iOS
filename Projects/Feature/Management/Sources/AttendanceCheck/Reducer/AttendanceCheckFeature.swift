@@ -1,5 +1,5 @@
 //
-//  AttendanceCheck.swift
+//  AttendanceCheckFeature.swift
 //  Presentation
 //
 //  Created by DDD on 1/16/25.
@@ -18,7 +18,7 @@ import ComposableArchitecture
 import ScheduleDomainInterface
 
 @Reducer
-public struct AttendanceCheck {
+public struct AttendanceCheckFeature {
   public init() {}
 
   @ObservableState
@@ -159,6 +159,7 @@ public struct AttendanceCheck {
 
   // MARK: - 앱내에서 사용하는 액션
 
+  @CasePathable
   public enum InnerAction: Equatable {
     case fetchScheduleResponse(Result<[Schedule], ScheduleError>)
     case attendanceCountResponse(Result<AttendanceCount, AttendanceError>)
@@ -236,12 +237,12 @@ public struct AttendanceCheck {
     .ifLet(\.$destination, action: \.destination)
     .ifLet(\.$alert, action: \.scope.alert)
     .ifLet(\.$attendanceModal, action: \.scope.attendanceModal) {
-      AttendanceModal()
+      AttendanceModalFeature()
     }
   }
 }
 
-extension AttendanceCheck {
+extension AttendanceCheckFeature {
   private func handleViewAction(
     state: inout State,
     action: View
@@ -616,7 +617,7 @@ extension AttendanceCheck {
   }
 }
 
-private extension AttendanceCheck {
+private extension AttendanceCheckFeature {
   func updateSelectedTeam(
     state: inout State,
     team: SelectTeamEntity,

@@ -12,14 +12,14 @@ import Testing
 @testable import Member
 
 @MainActor
-@Suite("MemberMain")
+@Suite("MemberMainFeature")
 struct MemberMainReducerTests {
   @Test("투표 메뉴가 비활성화되면 투표 탭 선택을 출석 탭으로 되돌린다")
   func unavailableVoteTabFallsBackToAttendance() async {
-    var state = MemberMain.State()
+    var state = MemberMainFeature.State()
     state.isExpandedDropDown = true
     let store = TestStore(initialState: state) {
-      MemberMain()
+      MemberMainFeature()
     }
 
     await store.send(.view(.selectHomeTab(.vote))) {
@@ -34,8 +34,8 @@ struct MemberMainReducerTests {
       totalLate: 1,
       totalAbsent: 2
     )
-    let store = TestStore(initialState: MemberMain.State()) {
-      MemberMain()
+    let store = TestStore(initialState: MemberMainFeature.State()) {
+      MemberMainFeature()
     }
 
     await store.send(.inner(.onFetchAttendanceSummaryResponse(.success(summary)))) {

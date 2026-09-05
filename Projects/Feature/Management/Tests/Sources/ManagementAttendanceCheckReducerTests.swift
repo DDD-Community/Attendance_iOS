@@ -4,7 +4,7 @@
 //
 //  Created by DDD on 2026-09-03.
 //
-//  AttendanceCheck 의 view / async / inner / destination / modal 분기를 TestStore 로 훑는다.
+//  AttendanceCheckFeature 의 view / async / inner / destination / modal 분기를 TestStore 로 훑는다.
 //
 
 import AttendanceDomainInterface
@@ -21,11 +21,11 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("updateDividerWidths 는 받은 너비를 누적해서 병합한다")
   func updateDividerWidthsMergesValues() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.teamTabWidths = [1: 10]
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     }
 
     await store.send(.view(.updateDividerWidths([2: 20]))) {
@@ -35,8 +35,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("tapSelectDate 는 일정 모달을 띄우고 closeModal 은 닫는다")
   func tapSelectDatePresentsScheduleModal() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     }
 
     await store.send(.view(.tapSelectDate)) {
@@ -50,11 +50,11 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("showEditAttendanceModal 은 수정 대상과 관리자 모달을 세팅한다")
   func showEditAttendanceModalStoresTarget() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.availableStatuses = .init(uniqueElements: ManagementSupportFixture.statuses)
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     }
 
     await store.send(.view(.showEditAttendanceModal(id: 100, userId: "user-1"))) {
@@ -68,8 +68,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("selectPartButton 은 선택 팀을 바꾸고 출석 조회를 요청한다")
   func selectPartButtonUpdatesTeamAndRequestsAttendance() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     }
 
     await store.send(.view(.selectPartButton(selectPart: ManagementSupportFixture.teams[1]))) {
@@ -83,7 +83,7 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("팀 정렬과 페이지 배열은 State 파생값 하나를 사용한다")
   func stateOwnsOrderedUniquePages() {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.teams = .init(uniqueElements: [
       SelectTeamEntity(teamId: 3, teams: .web2),
       SelectTeamEntity(teamId: 1, teams: .ios1),
@@ -101,7 +101,7 @@ struct ManagementAttendanceCheckReducerTests {
   @Test("페이지 전환이 끝난 뒤에만 선택 팀을 중심으로 배열한다")
   func pageChangeRotatesAfterTransition() async {
     let clock = TestClock()
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.teams = .init(uniqueElements: [
       SelectTeamEntity(teamId: 1, teams: .ios1),
       SelectTeamEntity(teamId: 2, teams: .web1),
@@ -112,7 +112,7 @@ struct ManagementAttendanceCheckReducerTests {
     state.settledTeamID = 1
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     } withDependencies: {
       $0.continuousClock = clock
     }
@@ -134,8 +134,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("onAppear 는 최초 1회만 전체 로딩을 돌리고 이후에는 새로고침만 한다")
   func onAppearLoadsOnceThenRefreshes() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     } withDependencies: {
       $0.attendanceUseCase = ManagementSupportAttendanceUseCase()
       $0.scheduleUseCase = ManagementSupportScheduleUseCase()
@@ -164,11 +164,11 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("최초 로딩 중 재진입은 중복 요청을 만들지 않는다")
   func onAppearDuringInitialLoadingDoesNothing() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.viewState = .loading
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     }
 
     await store.send(.view(.onAppear))
@@ -178,8 +178,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("scheduleID 가 없으면 출석 통계와 출석 목록 조회를 건너뛴다")
   func asyncGuardsSkipWithoutScheduleID() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     }
 
     await store.send(.async(.fetchAttendanceCount))
@@ -188,8 +188,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("fetchStatus 는 출석 상태 목록을 받아 담는다")
   func fetchStatusStoresStatuses() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     } withDependencies: {
       $0.attendanceUseCase = ManagementSupportAttendanceUseCase()
     }
@@ -202,8 +202,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("fetchSchedule 은 로딩을 켰다가 응답으로 끈다")
   func fetchScheduleTogglesLoading() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     } withDependencies: {
       $0.scheduleUseCase = ManagementSupportScheduleUseCase()
       $0.attendanceUseCase = ManagementSupportAttendanceUseCase()
@@ -223,11 +223,11 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("스케줄 조회 실패는 로딩만 내린다")
   func fetchScheduleFailureStopsLoading() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.viewState = .loading
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     }
 
     await store.send(.inner(.fetchScheduleResponse(.failure(.loadFailed)))) {
@@ -237,8 +237,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("출석 통계 응답은 참석·지각·결석 수를 채운다")
   func attendanceCountResponseFillsCounts() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     }
 
     await store.send(.inner(.attendanceCountResponse(.success(ManagementSupportFixture.attendanceCount)))) {
@@ -251,8 +251,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("출석 통계 실패는 상태를 건드리지 않는다")
   func attendanceCountFailureKeepsState() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     }
 
     await store.send(.inner(.attendanceCountResponse(.failure(.loadFailed))))
@@ -260,8 +260,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("팀 응답은 중복을 제거하고 teamId 순으로 정렬해 첫 팀을 고른다")
   func fetchTeamsResponseDedupesAndSelectsFirstTeam() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     }
 
     let duplicated = ManagementSupportFixture.teams + [SelectTeamEntity(teamId: 3, teams: .ios1)]
@@ -276,11 +276,11 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("스케줄이 정해진 뒤 팀 응답이 오면 출석 목록까지 이어서 조회한다")
   func fetchTeamsResponseChainsAttendance() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.selectedSchedule = EntityFixtureSchedule.value
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     } withDependencies: {
       $0.attendanceUseCase = ManagementSupportAttendanceUseCase()
     }
@@ -301,8 +301,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("팀 조회 실패는 상태를 건드리지 않는다")
   func fetchTeamsFailureKeepsState() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     }
 
     await store.send(.inner(.fetchTeamsResponse(.failure(.loadFailed))))
@@ -310,13 +310,13 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("출석 목록 응답은 팀별 캐시에만 저장한다")
   func attendanceResponseStoresTeamCache() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.viewState = .refreshingAttendanceList
     state.teams = .init(uniqueElements: ManagementSupportFixture.teams)
     state.selectedTeamID = 1
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     }
 
     await store.send(.inner(.attendanceResponse(teamId: 1, .success(ManagementSupportFixture.attendances)))) {
@@ -329,11 +329,11 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("출석 목록 재조회가 실패해도 로딩을 끝낸다")
   func attendanceResponseFailureStopsLoading() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.viewState = .refreshingAttendanceList
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     }
 
     await store.send(.inner(.attendanceResponse(teamId: 1, .failure(.loadFailed)))) {
@@ -343,8 +343,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("출석 상태 조회 실패는 상태를 건드리지 않는다")
   func attendanceStatusFailureKeepsState() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     }
 
     await store.send(.inner(.attendanceStatusResponse(.failure(.loadFailed))))
@@ -352,11 +352,11 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("출석 수정 성공은 통계와 목록을 다시 부른다")
   func editAttendanceSuccessRefetches() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.viewState = .loaded
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     }
     store.exhaustivity = .off
 
@@ -368,8 +368,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("rejected 로 거절되면 서버 문구를 그대로 알림에 싣는다")
   func editAttendanceRejectedShowsServerMessage() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     }
 
     await store.send(.inner(.editAttendanceResponse(.failure(.rejected("출석일이 아닙니다"))))) {
@@ -387,8 +387,8 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("그 밖의 수정 실패는 수정 실패 알럿을 띄운다")
   func editAttendanceFailureShowsGenericAlert() async {
-    let store = TestStore(initialState: AttendanceCheck.State()) {
-      AttendanceCheck()
+    let store = TestStore(initialState: AttendanceCheckFeature.State()) {
+      AttendanceCheckFeature()
     }
 
     await store.send(.inner(.editAttendanceResponse(.failure(.updateFailed)))) {
@@ -406,7 +406,7 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("알럿 확인은 알럿을 닫는다")
   func alertConfirmDismissesAlert() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.alert = AlertState {
       TextState("출석 수정 실패")
     } actions: {
@@ -416,7 +416,7 @@ struct ManagementAttendanceCheckReducerTests {
     }
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     }
 
     await store.send(.scope(.alert(.presented(.confirmTapped)))) {
@@ -428,11 +428,11 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("일정 모달이 날짜를 확정하면 모달을 닫고 해당 스케줄을 다시 조회한다")
   func scheduleModalDelegateUpdatesSelectedSchedule() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.destination = .scheduleModal(.init())
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     } withDependencies: {
       $0.attendanceUseCase = ManagementSupportAttendanceUseCase()
     }
@@ -450,7 +450,7 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("모달에서 상태를 확정하면 모달을 닫고 수정 요청을 보낸다")
   func attendanceModalConfirmSendsEdit() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.attendanceModal = .adminStatusChangeWithAvailable(
       availableStatuses: ManagementSupportFixture.statuses
     )
@@ -458,7 +458,7 @@ struct ManagementAttendanceCheckReducerTests {
     state.selectedSchedule = EntityFixtureSchedule.value
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     } withDependencies: {
       $0.attendanceUseCase = ManagementSupportAttendanceUseCase()
     }
@@ -474,13 +474,13 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("모달 취소는 모달만 닫는다")
   func attendanceModalCancelClosesModal() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.attendanceModal = .adminStatusChangeWithAvailable(
       availableStatuses: ManagementSupportFixture.statuses
     )
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     }
 
     await store.send(.scope(.attendanceModal(.presented(.cancelTapped)))) {
@@ -490,13 +490,13 @@ struct ManagementAttendanceCheckReducerTests {
 
   @Test("모달 dismiss 는 상태를 비운다")
   func attendanceModalDismissClearsState() async {
-    var state = AttendanceCheck.State()
+    var state = AttendanceCheckFeature.State()
     state.attendanceModal = .adminStatusChangeWithAvailable(
       availableStatuses: ManagementSupportFixture.statuses
     )
 
     let store = TestStore(initialState: state) {
-      AttendanceCheck()
+      AttendanceCheckFeature()
     }
 
     await store.send(.scope(.attendanceModal(.dismiss))) {
