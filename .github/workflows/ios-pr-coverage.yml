@@ -12,7 +12,7 @@ concurrency:
 jobs:
   coverage:
     runs-on: self-hosted
-    timeout-minutes: 90
+    timeout-minutes: 20
 
     permissions:
       contents: read

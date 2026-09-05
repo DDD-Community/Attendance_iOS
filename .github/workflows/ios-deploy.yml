@@ -15,7 +15,7 @@ jobs:
     # main 머지 시 태그를 푸시하려면 쓰기 권한이 필요하다.
     permissions:
       contents: write
-    timeout-minutes: 120
+    timeout-minutes: 20
 
     env:
       APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}

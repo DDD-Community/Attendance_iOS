@@ -23,7 +23,7 @@ concurrency:
 jobs:
   warm:
     runs-on: self-hosted
-    timeout-minutes: 120
+    timeout-minutes: 20
 
     permissions:
       contents: read
