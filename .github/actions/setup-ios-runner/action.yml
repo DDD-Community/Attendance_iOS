@@ -46,7 +46,11 @@ runs:
         VERIFY_CONFIG_IGNORED: ${{ inputs.verify-config-ignored }}
         VERIFY_CONFIG_NONEMPTY: ${{ inputs.verify-config-nonempty }}
       run: |
-        printf '%s' "$CONFIG_TAR" | base64 --decode | tar xzf -
+        CONFIG_ARCHIVE="$(mktemp "${RUNNER_TEMP:-/tmp}/ddd-ios-config.XXXXXX")"
+        trap 'rm -f "$CONFIG_ARCHIVE"' EXIT
+        printf '%s' "$CONFIG_TAR" | base64 --decode > "$CONFIG_ARCHIVE"
+        tar tzf "$CONFIG_ARCHIVE" >/dev/null
+        tar xzf "$CONFIG_ARCHIVE"
         mkdir -p Projects/App/Resources
         printf '%s' "$GOOGLE_PLIST" | base64 --decode > Projects/App/Resources/GoogleService-Info.plist
 

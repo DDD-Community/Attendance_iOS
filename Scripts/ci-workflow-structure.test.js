@@ -25,6 +25,8 @@ function job(source, name, nextName) {
 test("iOS workflow는 공통 runner setup action을 사용한다", () => {
   const action = read(".github/actions/setup-ios-runner/action.yml");
   assert.match(action, /using: composite/);
+  assert.match(action, /base64 --decode > "\$CONFIG_ARCHIVE"/);
+  assert.doesNotMatch(action, /base64 --decode \| tar/);
 
   const expectedCalls = new Map([
     [".github/workflows/ios-pr-coverage.yml", { setup: 3, checkout: 4 }],
