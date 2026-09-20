@@ -86,7 +86,11 @@ public extension SettingsDictionary {
   }
   
   func setExplicitlyBuiltModules(_ value: Bool = true) -> SettingsDictionary {
-    return self.merging(["EXPLICITLY_BUILT_MODULES": SettingValue(stringLiteral: value ? "YES" : "NO")])
+    let stringValue = value ? "YES" : "NO"
+    return merging([
+      "CLANG_ENABLE_EXPLICIT_MODULES": SettingValue(stringLiteral: stringValue),
+      "SWIFT_ENABLE_EXPLICIT_MODULES": SettingValue(stringLiteral: stringValue)
+    ]) { _, new in new }
   }
   
   /// 기본 로케일을 한국어(ko)로 설정하는 메서드
@@ -150,6 +154,4 @@ public extension SettingsDictionary {
     ]) { _, new in new }
   }
 }
-
-
 

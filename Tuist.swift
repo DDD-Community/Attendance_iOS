@@ -16,7 +16,8 @@ let tuist = Tuist(
   // 캐시 업로드는 CI 에서만 한다. 로컬은 읽기 전용으로 두어 개발 중 업로드 비용을 없앤다.
   project: .tuist(
     compatibleXcodeVersions: .all,
-    swiftVersion: .some("6.0.0"),
+    // Swift 6.4의 precise module tracking을 캐시/원격 빌드에서도 동일하게 사용한다.
+    swiftVersion: .some("6.4.0"),
     plugins: [
       .local(path: .relativeToRoot("Plugins/ProjectTemplatePlugin")),
       .local(path: .relativeToRoot("Plugins/DependencyPackagePlugin")),

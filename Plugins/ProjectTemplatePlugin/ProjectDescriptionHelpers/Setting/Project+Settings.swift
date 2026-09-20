@@ -42,6 +42,7 @@ extension Settings {
       .setCodeSignIdentity()
       .setCodeSignStyle()
       .setSwiftVersion("6.0")
+      .setExplicitlyBuiltModules()
       .setVersioningSystem()
       .setProvisioningProfileSpecifier("match Development \(Project.Environment.bundlePrefix)")
       .setDevelopmentTeam(Project.Environment.organizationTeamId)
@@ -81,13 +82,18 @@ extension Settings {
 public extension Settings {
   /// 모듈 기본 설정 — 앱과 동일한 Stage/Prod 환경 목록을 사용한다.
   static var moduleSettings: Settings {
-    return .settings(configurations: XCConfig.configurations)
+    return .settings(
+      base: SettingsDictionary().setExplicitlyBuiltModules(),
+      configurations: XCConfig.configurations
+    )
   }
 
   static func repositoryBaseSettings() -> Settings {
     return .settings(
       base: [
         "IPHONEOS_DEPLOYMENT_TARGET": "18.0",
+        "CLANG_ENABLE_EXPLICIT_MODULES": "YES",
+        "SWIFT_ENABLE_EXPLICIT_MODULES": "YES",
         "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings -module-alias Sharing=DDDPointFreeSharing"
       ],
       configurations: XCConfig.configurations
@@ -98,6 +104,8 @@ public extension Settings {
     return .settings(
       base: [
         "IPHONEOS_DEPLOYMENT_TARGET": "18.0",
+        "CLANG_ENABLE_EXPLICIT_MODULES": "YES",
+        "SWIFT_ENABLE_EXPLICIT_MODULES": "YES",
         "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings -module-alias Sharing=DDDPointFreeSharing",
         "ENABLE_TESTING_SEARCH_PATHS": "YES",
         "SWIFT_TESTING": "YES"
