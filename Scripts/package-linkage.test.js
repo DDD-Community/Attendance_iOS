@@ -22,3 +22,10 @@ test("Point-Free Sharing은 Apple private module과 다른 이름으로 한 번�
   assert.match(projectTemplate, /-module-alias Sharing=DDDPointFreeSharing/);
   assert.match(projectSettings, /-module-alias Sharing=DDDPointFreeSharing/);
 });
+
+test("IssueReporting은 Tuist 자기참조가 없는 마지막 호환 버전으로 고정한다", () => {
+  assert.match(
+    packageManifest,
+    /\.package\(url: "https:\/\/github\.com\/pointfreeco\/xctest-dynamic-overlay", exact: "1\.11\.0"\)/
+  );
+});
