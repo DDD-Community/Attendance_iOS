@@ -46,3 +46,51 @@ categories:
     notes:
       - "이번에도 조금씩 나아졌어요!"
       - "자잘한 개선이 들어갔어요."
+
+# App Store "새로운 기능" 문구.
+# release 브랜치 배포 시 현재 앱 버전을 넣고 버전별로 한 문구를 안정적으로 선택한다.
+# 같은 버전을 재배포하거나 심사 제출해도 동일한 문구를 사용한다.
+app_store:
+  ko:
+    - |-
+      [v %{version}]
+      [개선 사항]
+      - 앱 안정성과 전반적인 사용성을 개선했어요.
+      - 발견된 오류를 수정했어요.
+    - |-
+      [v %{version}]
+      [개선 사항]
+      - 더 안정적으로 사용할 수 있도록 앱을 다듬었어요.
+      - 사용 중 불편했던 부분을 개선했어요.
+    - |-
+      [v %{version}]
+      [개선 사항]
+      - 앱 성능과 안정성을 개선했어요.
+      - 더욱 원활한 사용을 위해 세부 기능을 정리했어요.
+    - |-
+      [v %{version}]
+      [개선 사항]
+      - 전반적인 사용 경험을 개선했어요.
+      - 기타 사소한 오류를 수정했어요.
+
+  en-US:
+    - |-
+      [v %{version}]
+      [Improvements]
+      - Improved overall app stability and usability.
+      - Fixed known issues.
+    - |-
+      [v %{version}]
+      [Improvements]
+      - Refined the app for a more reliable experience.
+      - Improved areas that could be inconvenient during use.
+    - |-
+      [v %{version}]
+      [Improvements]
+      - Improved app performance and stability.
+      - Refined details for a smoother experience.
+    - |-
+      [v %{version}]
+      [Improvements]
+      - Improved the overall user experience.
+      - Fixed other minor issues.

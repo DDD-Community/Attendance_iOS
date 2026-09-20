@@ -2,7 +2,7 @@ name: iOS Deploy
 
 on:
   push:
-    branches: [develop, main]
+    branches: [develop, release]
 
 # 셀프호스티드 러너가 한 대뿐이라 배포는 항상 직렬로 실행한다.
 concurrency:
@@ -12,7 +12,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: self-hosted
-    # main 머지 시 태그를 푸시하려면 쓰기 권한이 필요하다.
+    # release 머지 시 태그를 푸시하려면 쓰기 권한이 필요하다.
     permissions:
       contents: write
     timeout-minutes: 20
@@ -97,10 +97,10 @@ jobs:
         run: |
           tuist share fastlane/output/DDDAttendance.ipa --track nightly
 
-      # main 머지 → 태그 갱신
+      # release 머지 → 태그 갱신
       # GITHUB_TOKEN 으로 푸시하면 워크플로우가 재트리거되지 않아 중복 배포가 없다.
       - name: Update release tag
-        if: github.ref_name == 'main'
+        if: github.ref_name == 'release'
         env:
           VERSION: ${{ steps.ver.outputs.version }}
         run: |
@@ -110,9 +110,9 @@ jobs:
           git push -f origin "refs/tags/$VERSION"
           echo "태그 갱신: $VERSION"
 
-      # main 머지 → App Store 업로드 + 심사 제출
+      # release 머지 → App Store 업로드 + 심사 제출
       - name: Deploy to App Store
-        if: github.ref_name == 'main'
+        if: github.ref_name == 'release'
         env:
           VERSION: ${{ steps.ver.outputs.version }}
         run: |

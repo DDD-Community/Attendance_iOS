@@ -1,5 +1,6 @@
 # Fastlane 기본 설정
 require "yaml"
+require File.expand_path("app_store_release_notes", __dir__)
 
 default_platform(:ios)
 
@@ -199,6 +200,7 @@ end
 # 테스터에게 나가고 같은 문구가 계속 반복된다(9/7 하루에만 8회).
 # 그래서 안내 문구는 풀에서 돌려 쓰고, 커밋 제목은 접두사와 PR 번호를 벗겨 부제로만 붙인다.
 RELEASE_NOTES_FILE = File.expand_path("release_notes.yml", __dir__)
+APP_STORE_METADATA_PATH = File.expand_path("metadata", __dir__)
 
 # 커밋 제목에서 작업 성격을 판별한다. 위에서부터 먼저 걸리는 카테고리를 쓰므로
 # release_notes.yml 의 순서가 곧 우선순위다.
@@ -321,6 +323,13 @@ platform :ios do
     end
     puts "📦 릴리스 버전: #{version}"
 
+    AppStoreReleaseNotes.write(
+      config_path: RELEASE_NOTES_FILE,
+      metadata_path: APP_STORE_METADATA_PATH,
+      version: version
+    )
+    puts "📝 App Store 릴리스 노트 자동 생성 완료"
+
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
@@ -378,6 +387,12 @@ platform :ios do
   desc "Submit already uploaded version for review"
   lane :submit_for_review do |options|
     if options[:version]
+      AppStoreReleaseNotes.write(
+        config_path: RELEASE_NOTES_FILE,
+        metadata_path: APP_STORE_METADATA_PATH,
+        version: options[:version]
+      )
+
       app_store_connect_api_key(
         key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
         issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
