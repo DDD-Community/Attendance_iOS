@@ -17,7 +17,7 @@ import IssueReporting
 /// Effect 가 아니라 뷰 생명주기라 .cancel(id:) 로 막을 수 없고,
 /// 자식 리듀서가 부모 필터보다 먼저 돌기 때문에 리듀서 쪽에서도 막을 수 없다. 동작상 무해하다.
 private struct AppReducerScopeIssueFilter: IssueReporter {
-  private let base: any IssueReporter = .runtimeWarning
+  private let base: any IssueReporter = _DefaultReporter.default
 
   func reportIssue(
     _ message: @autoclosure () -> String?,
