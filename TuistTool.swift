@@ -33,10 +33,15 @@ private enum Command: String {
 }
 
 @discardableResult
-private func run(_ executable: String, arguments: [String]) -> Int32 {
+private func run(
+  _ executable: String,
+  arguments: [String],
+  environmentOverrides: [String: String] = [:]
+) -> Int32 {
   let process = Process()
   process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
   process.arguments = [executable] + arguments
+  process.environment = ProcessInfo.processInfo.environment.merging(environmentOverrides) { _, new in new }
   process.standardInput = FileHandle.standardInput
   process.standardOutput = FileHandle.standardOutput
   process.standardError = FileHandle.standardError
@@ -57,35 +62,95 @@ private func prompt(_ message: String) -> String {
 }
 
 @discardableResult
-private func runTuist(arguments: [String]) -> Int32 {
-  return run("mise", arguments: ["exec", "--", "tuist"] + arguments)
+private func runTuist(
+  arguments: [String],
+  environmentOverrides: [String: String] = [:]
+) -> Int32 {
+  return run(
+    "mise",
+    arguments: ["exec", "--", "tuist"] + arguments,
+    environmentOverrides: environmentOverrides
+  )
+}
+
+private var isCIEnvironment: Bool {
+  let environment = ProcessInfo.processInfo.environment
+  let ciValues = ["1", "true", "TRUE"]
+  return ciValues.contains(environment["CI"] ?? "")
+    || ciValues.contains(environment["GITHUB_ACTIONS"] ?? "")
+    || ciValues.contains(environment["TUIST_CI"] ?? "")
+}
+
+private func usesBinaryCache(forwardedArguments: [String]) -> Bool {
+  return !forwardedArguments.contains("--no-binary-cache")
+}
+
+private func cacheWarmArguments(forwardedArguments: [String]) -> [String] {
+  if forwardedArguments.first == "print-hashes" {
+    return ["cache"] + forwardedArguments
+  }
+
+  var warmArguments = forwardedArguments
+  if warmArguments.first == "warm" {
+    warmArguments.removeFirst()
+  }
+
+  var arguments = ["cache", "warm"]
+  if !warmArguments.contains("--external-only"), !warmArguments.contains("--no-external-only") {
+    arguments.append("--external-only")
+  }
+  return arguments + warmArguments
+}
+
+private func installArguments(forwardedArguments: [String]) -> [String] {
+  return forwardedArguments.filter { argument in
+    argument != "--no-binary-cache" && argument != "--no-open"
+  }
+}
+
+private func filteredGenerateArguments(forwardedArguments: [String]) -> [String] {
+  return forwardedArguments.filter { argument in
+    argument == "--no-binary-cache" || argument == "--no-open"
+  }
+}
+
+private func warmBinaryCache(forwardedArguments: [String] = []) -> Int32 {
+  guard !isCIEnvironment else {
+    print("CI 환경이라 Tuist 바이너리 캐시 준비를 건너뜁니다.")
+    return 0
+  }
+  guard usesBinaryCache(forwardedArguments: forwardedArguments) else {
+    print("--no-binary-cache 옵션이 있어 Tuist 바이너리 캐시 준비를 건너뜁니다.")
+    return 0
+  }
+  return runTuist(
+    arguments: cacheWarmArguments(forwardedArguments: forwardedArguments),
+    environmentOverrides: ["TUIST_LOCAL_CACHE_ONLY": "true"]
+  )
+}
+
+private func setupXcodeCompilationCache() -> Int32 {
+  guard !isCIEnvironment else {
+    print("CI 환경이라 Xcode Compilation Cache 설정을 건너뜁니다.")
+    return 0
+  }
+  return runTuist(arguments: ["setup", "cache"])
 }
 
 private func installAndGenerate(forwardedArguments: [String] = []) -> Int32 {
-  let installStatus = runTuist(arguments: ["install"] + forwardedArguments)
+  let installStatus = runTuist(
+    arguments: ["install"] + installArguments(forwardedArguments: forwardedArguments)
+  )
   guard installStatus == 0 else { return installStatus }
-  return runTuist(arguments: ["generate"])
-}
-
-private enum StepResult {
-  case passed
-  case skipped(String)
-  case failed(Int32)
-}
-
-private func printSetupSummary(_ results: [(String, StepResult)]) {
-  print("")
-  print("📋 setup 결과")
-  for (name, result) in results {
-    switch result {
-    case .passed:
-      print("  ✅ \(name)")
-    case let .skipped(reason):
-      print("  ⚠️  \(name) — 건너뜀 (\(reason))")
-    case let .failed(status):
-      print("  ❌ \(name) — 실패 (exit \(status))")
-    }
-  }
+  let cacheSetupStatus = setupXcodeCompilationCache()
+  guard cacheSetupStatus == 0 else { return cacheSetupStatus }
+  let cacheStatus = warmBinaryCache(
+    forwardedArguments: forwardedArguments.filter { $0 == "--no-binary-cache" }
+  )
+  guard cacheStatus == 0 else { return cacheStatus }
+  return runTuist(
+    arguments: ["generate"] + filteredGenerateArguments(forwardedArguments: forwardedArguments)
+  )
 }
 
 private func resetProject() -> Int32 {
@@ -375,11 +440,11 @@ private func printHelp() {
     🚀 DDDAttendance Tuist 도구
 
     기본 명령어:
-      ./make setup          # mise 도구 설치 + 캐시 설정 + 의존성 설치 + 프로젝트 생성
-      ./make generate       # Demo 앱을 포함해 프로젝트 생성
-      ./make build          # 클린 + 의존성 설치 + 프로젝트 생성
-      ./make install        # 의존성 설치 + 프로젝트 생성
-      ./make cache          # 바이너리 캐시 생성
+      ./make setup          # mise 설치 + install + Xcode 캐시 설정 + 로컬 외부 캐시 준비 + generate
+      ./make generate       # 준비된 캐시를 사용해 Demo 앱을 포함한 프로젝트 생성
+      ./make build          # 클린 + 의존성 설치 + Xcode 캐시 설정 + 로컬 외부 캐시 준비 + 프로젝트 생성
+      ./make install        # 의존성 설치 + Xcode 캐시 설정 + 로컬 외부 캐시 준비 + 프로젝트 생성
+      ./make cache          # 외부 바이너리 캐시 준비
       ./make cache:setup    # Xcode Compilation Cache 설정
       ./make test           # 전체 테스트 실행
       ./make format         # SwiftFormat 적용
@@ -410,50 +475,23 @@ private func printHelp() {
 private func execute(_ command: Command, forwardedArguments: [String]) -> Int32 {
   switch command {
   case .setup:
-    var results: [(String, StepResult)] = []
-
     let miseStatus = run("mise", arguments: ["install"])
-    results.append(("mise 도구 설치", miseStatus == 0 ? .passed : .failed(miseStatus)))
-    guard miseStatus == 0 else {
-      printSetupSummary(results)
-      return miseStatus
-    }
-
-    // Xcode Compilation Cache 는 Tuist 계정 로그인과 네트워크가 필요하다.
-    // 실패해도 프로젝트 생성 자체는 막지 않고 건너뛴 사실만 남긴다.
-    let cacheStatus = runTuist(arguments: ["setup", "cache"])
-    results.append((
-      "Xcode Compilation Cache 설정",
-      cacheStatus == 0 ? .passed : .skipped("`tuist auth login` 후 ./make cache:setup 으로 재시도")
-    ))
-
-    let installStatus = runTuist(arguments: ["install"] + forwardedArguments)
-    results.append(("의존성 설치", installStatus == 0 ? .passed : .failed(installStatus)))
-    guard installStatus == 0 else {
-      printSetupSummary(results)
-      return installStatus
-    }
-
-    let generateStatus = runTuist(arguments: ["generate"])
-    results.append(("프로젝트 생성", generateStatus == 0 ? .passed : .failed(generateStatus)))
-    printSetupSummary(results)
-    return generateStatus
+    guard miseStatus == 0 else { return miseStatus }
+    return installAndGenerate(forwardedArguments: forwardedArguments)
 
   case .generate:
     return runTuist(arguments: ["generate"] + forwardedArguments)
 
   case .build:
-    for arguments in [["clean"], ["install"], ["generate"]] {
-      let status = runTuist(arguments: arguments)
-      guard status == 0 else { return status }
-    }
-    return 0
+    let cleanStatus = runTuist(arguments: ["clean"])
+    guard cleanStatus == 0 else { return cleanStatus }
+    return installAndGenerate(forwardedArguments: forwardedArguments)
 
   case .install:
     return installAndGenerate(forwardedArguments: forwardedArguments)
 
   case .cache:
-    return runTuist(arguments: ["cache"] + forwardedArguments)
+    return warmBinaryCache(forwardedArguments: forwardedArguments)
 
   case .cacheSetup:
     return runTuist(arguments: ["setup", "cache"] + forwardedArguments)
