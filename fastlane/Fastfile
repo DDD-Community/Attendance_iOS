@@ -1,6 +1,7 @@
 # Fastlane 기본 설정
 require "yaml"
 require File.expand_path("app_store_release_notes", __dir__)
+require File.expand_path("ci_slack", __dir__)
 
 default_platform(:ios)
 
@@ -82,6 +83,7 @@ end
 
 # Extension+String.swift 의 빌드 번호 갱신 (tuist generate 시 CFBundleVersion 으로 반영)
 def apply_build_number(new_build_number)
+  CISlack.notify("generate", version: current_app_version, build: new_build_number)
   extension_file_path = "../Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
   content = File.read(extension_file_path)
   updated_content = content.gsub(
@@ -153,6 +155,7 @@ def build_ipa(scheme)
     build_attempts = 0
     begin
       build_attempts += 1
+      CISlack.notify("build")
       ipa_path = build_app(
         workspace: workspace_path,
         scheme: scheme,
@@ -267,6 +270,7 @@ platform :ios do
   # 🚀 TestFlight 업로드 (Debug)
   desc "Upload to TestFlight (Debug)"
   lane :QA do
+    CISlack.notify("fastlane", version: current_app_version)
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
@@ -278,6 +282,7 @@ platform :ios do
     build_number = next_build_number
     apply_build_number(build_number)
 
+    CISlack.notify("sign")
     match(
       type: "appstore",
       readonly: true,
@@ -291,6 +296,7 @@ platform :ios do
     ipa_path = build_ipa(STAGE_SCHEME)
 
     begin
+      CISlack.notify("upload")
       upload_to_testflight(
         ipa: ipa_path,
         changelog: testflight_changelog(build_number),
@@ -316,6 +322,7 @@ platform :ios do
   # 🚀 App Store 배포
   desc "Submit to App Store"
   lane :release do |options|
+    CISlack.notify("fastlane", version: options[:version] || current_app_version)
     # version 옵션이 없으면 Extension+String.swift 의 appVersion 에서 자동 추출
     version = options[:version] || current_app_version
     if version.nil? || version.empty?
@@ -341,6 +348,7 @@ platform :ios do
     new_build_number = next_build_number
     apply_build_number(new_build_number)
 
+    CISlack.notify("sign")
     match(
       type: "appstore",
       readonly: true,
@@ -356,6 +364,7 @@ platform :ios do
     # clean_symbols_from_ipa(ipa_path: ipa_path)
 
     # 업로드 후 자동으로 심사 요청
+    CISlack.notify("upload")
     upload_to_app_store(
       app_version: version,
       username: ENV["APPLE_ID"],
@@ -386,6 +395,7 @@ platform :ios do
   # 🚀 이미 업로드된 버전을 심사에 제출
   desc "Submit already uploaded version for review"
   lane :submit_for_review do |options|
+    CISlack.notify("review", version: options[:version])
     if options[:version]
       AppStoreReleaseNotes.write(
         config_path: RELEASE_NOTES_FILE,

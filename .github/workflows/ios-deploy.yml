@@ -36,9 +36,17 @@ jobs:
       LC_ALL: en_US.UTF-8
       FASTLANE_SKIP_UPDATE_CHECK: '1'
       FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: '600'
+      CI_SLACK_ENABLED: '1'
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_DEPLOY_CHANNEL_ID: C0C0NDRSBQT
+      CI_SLACK_STATE_PATH: ${{ runner.temp }}/attendance-slack-${{ github.run_id }}-${{ github.run_attempt }}.json
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Notify deployment start
+        continue-on-error: true
+        run: ruby fastlane/ci_slack.rb start
 
       - name: Setup iOS runner
         uses: ./.github/actions/setup-ios-runner
@@ -51,11 +59,13 @@ jobs:
 
       - name: Install Ruby dependencies
         run: |
+          ruby fastlane/ci_slack.rb prepare
           # Tuist는 공통 runner action에서 설치하고 배포용 Ruby gem만 준비한다.
           bundle install
 
       - name: Generate Xcode workspace
         run: |
+          ruby fastlane/ci_slack.rb generate
           tuist install
           # 배포 아카이브는 module cache 대상이 아니다.
           # 바이너리 캐시는 시뮬레이터/디바이스 실행과 테스트용이라
@@ -95,6 +105,8 @@ jobs:
       - name: Share Tuist Preview
         if: github.ref_name == 'develop'
         run: |
+          ruby fastlane/ci_slack.rb uploaded
+          ruby fastlane/ci_slack.rb preview
           tuist share fastlane/output/DDDAttendance.ipa --track nightly
 
       # release 머지 → 태그 갱신
@@ -127,11 +139,20 @@ jobs:
             exit "$RELEASE_EXIT_CODE"
           fi
 
+          ruby fastlane/ci_slack.rb uploaded
           bundle exec fastlane ios submit_for_review version:"$VERSION" > fastlane-submit.log 2>&1
           SUBMIT_EXIT_CODE=$?
           echo "Fastlane submit exit code: $SUBMIT_EXIT_CODE"
           Scripts/ci-log-digest.sh fastlane-submit.log "Fastlane submit"
+          if [[ "$SUBMIT_EXIT_CODE" -eq 0 ]]; then ruby fastlane/ci_slack.rb submitted; fi
           exit "$SUBMIT_EXIT_CODE"
+
+      - name: Notify deployment result
+        if: always()
+        continue-on-error: true
+        env:
+          DEPLOY_STATUS: ${{ job.status }}
+        run: ruby fastlane/ci_slack.rb "$DEPLOY_STATUS"
 
       - name: Upload build artifacts
         id: upload-build-artifacts
