@@ -6,6 +6,12 @@ const test = require("node:test");
 const repositoryRoot = path.resolve(__dirname, "..");
 const actionReference = "uses: ./.github/actions/setup-ios-runner";
 
+test("develop shard는 크래시 뒤 600초 simulator 진단 수집을 기다리지 않는다", () => {
+  const shard = job(read(".github/workflows/ios-develop-sharded-tests.yml"), "test-shards", "warm-module-cache");
+  assert.match(shard, /-collect-test-diagnostics never/);
+  assert.match(shard, /--result-bundle-path/);
+});
+
 function read(relativePath) {
   return fs.readFileSync(path.join(repositoryRoot, relativePath), "utf8");
 }

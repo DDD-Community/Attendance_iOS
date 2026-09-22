@@ -193,6 +193,7 @@ jobs:
             -derivedDataPath "$CI_DERIVED_DATA" \
             -retry-tests-on-failure \
             -test-iterations 3 \
+            -collect-test-diagnostics never \
             ONLY_ACTIVE_ARCH=YES
 
       - name: Clean shard DerivedData
