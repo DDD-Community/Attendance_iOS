@@ -110,9 +110,13 @@ let packageSettings = PackageSettings(
     "StructuredQueriesCore": .framework,
     "StructuredQueriesSQLite": .framework,
     "StructuredQueriesSQLiteCore": .framework,
-    "SwiftNavigation": .staticFramework,
+    "SwiftNavigation": deploymentLinked,
     "SwiftUINavigation": deploymentLinked,
-    "CasePaths": .staticFramework,
+    // Stage의 동적 소비자들이 프로토콜 메타데이터를 각각 정적으로 포함하지 않는다.
+    "CasePaths": deploymentLinked,
+    "CasePathsCore": deploymentLinked,
+    // 매크로 실행 파일은 동적 지원 모듈을 사용할 수 없다(Tuist 그래프 제약).
+    "CasePathsMacrosSupport": .staticFramework,
     "Alamofire": .framework,
 
     // GoogleSignIn 관련
