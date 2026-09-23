@@ -39,14 +39,16 @@ jobs:
       CI_SLACK_ENABLED: '1'
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       SLACK_DEPLOY_CHANNEL_ID: C0C0NDRSBQT
-      CI_SLACK_STATE_PATH: ${{ runner.temp }}/attendance-slack-${{ github.run_id }}-${{ github.run_attempt }}.json
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Notify deployment start
         continue-on-error: true
-        run: ruby fastlane/ci_slack.rb start
+        run: |
+          export CI_SLACK_STATE_PATH="$RUNNER_TEMP/attendance-slack-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT.json"
+          echo "CI_SLACK_STATE_PATH=$CI_SLACK_STATE_PATH" >> "$GITHUB_ENV"
+          ruby fastlane/ci_slack.rb start
 
       - name: Setup iOS runner
         uses: ./.github/actions/setup-ios-runner
