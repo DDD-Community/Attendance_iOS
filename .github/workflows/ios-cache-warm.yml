@@ -1,0 +1,60 @@
+name: Warm Module Cache
+
+# 외부 패키지(Firebase·TCA·RxSwift·Moya 등)를 미리 빌드해 원격 module cache 에 올린다.
+# PR·develop 워크플로의 `tuist generate` 는 only-external 프로파일이라
+# 여기서 올린 xcframework 를 그대로 내려받아 쓰고, 외부 의존성 컴파일을 통째로 건너뛴다.
+on:
+  push:
+    branches: [develop]
+    # 캐싱 대상이 외부 패키지뿐이라 의존성 그래프가 바뀔 때만 데우면 충분하다.
+    # 러너가 한 대뿐이라 매 커밋 전체 빌드는 대기열만 늘린다.
+    paths:
+      - 'Tuist/Package.swift'
+      - 'Tuist/Package.resolved'
+      - 'Tuist.swift'
+      - '.mise.toml'
+      - '.github/workflows/ios-cache-warm.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ios-cache-warm
+  cancel-in-progress: true
+
+jobs:
+  warm:
+    runs-on: self-hosted
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    env:
+      TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup iOS runner
+        uses: ./.github/actions/setup-ios-runner
+        env:
+          CONFIG_TAR: ${{ secrets.CONFIG_DIR_TAR_BASE64 }}
+          GOOGLE_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+
+      - name: Setup Tuist cache
+        continue-on-error: true
+        timeout-minutes: 3
+        run: mise exec -- tuist setup cache
+
+      - name: Resolve dependencies
+        run: mise exec -- tuist install
+
+      # `tuist cache` 는 워크스페이스를 캐시 전용으로 바꿔놓는다.
+      # 이 잡은 데우기만 하고 끝내며, 워크스페이스가 필요한 다른 잡은
+      # 각자 `tuist generate` 로 새로 만든다.
+      - name: Warm module cache
+        run: |
+          mise exec -- tuist cache warm \
+            --cache-profile only-external \
+            --configuration Stage

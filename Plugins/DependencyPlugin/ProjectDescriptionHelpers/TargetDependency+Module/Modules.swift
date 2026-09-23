@@ -2,116 +2,81 @@
 //  Modules.swift
 //  Plugins
 //
-//  Created by 서원지 on 2/21/24.
+//  레이어별 모듈 카탈로그(단일 출처).
+//  모듈 추가 = case 한 줄. rawValue 가 실제 타깃명이라 오타로 깨지지 않는다.
 //
 
 import Foundation
 import ProjectDescription
 
-public enum ModulePath {
-  case Presentation(Presentations)
-  case Core(Cores)
-  case Network(Networks)
-  case Interface(Interfaces)
-  case Domain(Domains)
-  case Data(Datas)
-  case Shared(Shareds)
-}
+public enum FeatureModule: String, CaseIterable {
+  case sharedUI = "FeatureSharedUI"
+  case auth = "Auth"
+  case management = "Management"
+  case profile = "Profile"
+  case member = "Member"
+  case onBoarding = "OnBoarding"
+  case web = "Web"
 
-//MARK: -  앱  모듈
-public extension ModulePath {
-  enum App: String, CaseIterable {
-    case iOS
-    case iPad
-    
-    public static let name: String = "App"
+  /// Projects/Feature/<name>
+  var path: Path {
+    return .relativeToFeature(rawValue)
   }
 }
 
-// MARK: FeatureModule
-public extension ModulePath {
-  enum Presentations: String, CaseIterable {
-    case Presentation
-    case Splash
-    case Auth
-    case Management
-    case Profile
-    case Member
-    case OnBoarding
-    case Web
+public enum CoreModule: String, CaseIterable {
+  case assembly = "CoreAssembly"
+  case logger = "DDDCoreLogger"
+  case network = "DDDNetwork"
+  case storage = "DDDStorage"
+  case coreUI = "DDDCoreUI"
+  case coreUtility = "DDDCoreUtility"
+  case thirdParty = "DDDThirdParty"
 
-    public static let name: String = "Presentation"
-
+  /// Projects/Core/<name>
+  var path: Path {
+    return .relativeToCore(rawValue)
   }
 }
 
-//MARK: -  CoreMoudule
-public extension ModulePath {
-  enum Cores: String, CaseIterable {
-    case Core
-    
-    public static let name: String = "Core"
+public enum ServiceModule: String, CaseIterable {
+  case accessibility = "DDDAccessibility"
+  case assembly = "ServiceAssembly"
+  case api = "API"
+  case apiEndpoint = "APIEndpoint"
+  case auth = "DDDAuth"
+  case config = "DDDConfig"
+
+  /// Projects/Service/<name>
+  var path: Path {
+    return .relativeToService(rawValue)
   }
 }
 
-//MARK: -  CoreDomainModule
-public extension ModulePath {
-  enum Networks: String, CaseIterable {
-    case Networks
-    case Foundations
-    case ThirdPartys
-    
-    
-    public static let name: String = "Network"
+public enum DomainModule: String, CaseIterable {
+  case assembly = "DomainAssembly"
+  case appUpdate = "AppUpdateDomain"
+  case auth = "AuthDomain"
+  case attendance = "AttendanceDomain"
+  case myPage = "MyPageDomain"
+  case onBoarding = "OnBoardingDomain"
+  case profile = "ProfileDomain"
+  case qrCode = "QRCodeDomain"
+  case schedule = "ScheduleDomain"
+  case vote = "VoteDomain"
+  /// Projects/Domain/<name>
+  var path: Path {
+    return .relativeToDomain(rawValue)
   }
 }
 
-//MARK: -  CoreMoudule
-public extension ModulePath {
-  enum Datas: String, CaseIterable {
-    case Model
-    case Repository
-    case Service
-    case API
+public enum UIModule: String, CaseIterable {
+  case animation = "DDDAnimation"
+  case designKit = "DDDDesignKit"
+  case sharedUI = "DDDSharedUI"
 
-    public static let name: String = "Data"
+  /// Projects/UI/<name>
+  var path: Path {
+    return .relativeToUI(rawValue)
   }
 }
-
-
-//MARK: -  CoreMoudule
-public extension ModulePath {
-  enum Domains: String, CaseIterable {
-    case UseCase
-    case DomainInterface
-    case QRCode
-
-
-    public static let name: String = "Domain"
-      case Entity
-  }
-}
-
-//MARK: -  CoreMoudule
-public extension ModulePath {
-  enum Interfaces: String, CaseIterable {
-    case Interface
-
-
-    public static let name: String = "Interface"
-  }
-}
-
-
-public extension ModulePath {
-  enum Shareds: String, CaseIterable {
-    case Shareds
-    case DesignSystem
-    case Utill
-    case ThirdParty
-    
-    public static let name: String = "Shared"
-  }
-}
-
-

@@ -1,0 +1,21 @@
+appId: io.DDD.Attendance
+name: 멤버 홈 주요 콘텐츠
+tags:
+  - e2e
+  - member
+---
+# 단독 실행돼도 돌 수 있게 로그인 상태를 먼저 보장한다.
+- runFlow:
+    file: ../_shared/ensure_member_home.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "member.home.root"
+    timeout: 30000
+- assertVisible:
+    id: "member.attendance.summary"
+- assertVisible:
+    id: "member.schedule.list"
+- assertNotVisible:
+    id: "member.home.skeleton"
+- takeScreenshot: .maestro/artifacts/member/home

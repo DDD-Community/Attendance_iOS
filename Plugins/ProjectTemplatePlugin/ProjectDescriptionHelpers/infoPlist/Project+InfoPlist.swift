@@ -2,7 +2,7 @@
 //  Project+InfoPlist.swift
 //  Plugins
 //
-//  Created by Wonji Suh  on 3/22/25.
+//  Created by DDD on 3/22/25.
 //
 
 import Foundation
@@ -24,7 +24,6 @@ public extension InfoPlist {
       .setAppUseExemptEncryption(value: false)
       .setCFBundleVersion(.appBuildVersion())
       .setLSRequiresIPhoneOS(true)
-      .setUIAppFonts(["PretendardVariable.ttf"])
       .setUIApplicationSceneManifest([
         "UIApplicationSupportsMultipleScenes": true,
         "UISceneConfigurations": [
@@ -38,7 +37,7 @@ public extension InfoPlist {
       .setUIRequiredDeviceCapabilities(["armv7"])
       .setUISupportedInterfaceOrientations(["UIInterfaceOrientationPortrait"])
       .setNSCameraUsageDescription("QR 코드 인식을 위해 카메라 접근 권한이 필요합니다")
-      .setUILaunchScreens()
+      .setUILaunchScreen()
       .setCalenderUsage("캘린더의 정보를 가져오기 위해서 접근 권한을 허용해주세요")
       .setCFBundleDevelopmentRegion()
       .setGoogleReversedClientID("${REVERSED_CLIENT_ID}")
@@ -48,6 +47,24 @@ public extension InfoPlist {
       .setBaseURL("$(BASE_URL)")
   )
   
+  /// Demo 앱용. 모듈 하나만 띄우므로 실제 앱의 권한·OAuth·URL 스킴 설정은 넣지 않는다.
+  /// 런치 스크린이 없으면 시뮬레이터가 호환 모드로 letterbox 표시하므로 이는 반드시 둔다.
+  static let demoInfoPlist: Self = .extendingDefault(
+    with: InfoPlistDictionary()
+      .setUIUserInterfaceStyle("Light")
+      .setCFBundleDevelopmentRegion("$(DEVELOPMENT_LANGUAGE)")
+      .setCFBundleExecutable("$(EXECUTABLE_NAME)")
+      .setCFBundleIdentifier("$(PRODUCT_BUNDLE_IDENTIFIER)")
+      .setCFBundleInfoDictionaryVersion("6.0")
+      .setCFBundlePackageType("APPL")
+      .setCFBundleShortVersionString(.appVersion())
+      .setCFBundleVersion(.appBuildVersion())
+      .setLSRequiresIPhoneOS(true)
+      .setUILaunchScreen()
+      .setUISupportedInterfaceOrientations(["UIInterfaceOrientationPortrait"])
+      .setBaseURL("$(BASE_URL)")
+  )
+
   static let moduleInfoPlist: Self = .extendingDefault(
     with: InfoPlistDictionary()
       .setUIUserInterfaceStyle("Light")

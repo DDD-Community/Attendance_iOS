@@ -2,12 +2,14 @@
 //  Project.swift
 //  Manifests
 //
-//  Created by 서원지 on 6/7/24.
+//  Created by DDD on 6/7/24.
 //
 
-import ProjectDescription
+import DependencyPackagePlugin
 import DependencyPlugin
 import ProjectTemplatePlugin
+
+import ProjectDescription
 
 let project = Project.makeAppModule(
   name: Project.Environment.appName,
@@ -15,17 +17,16 @@ let project = Project.makeAppModule(
   product: .app,
   settings: .appMainSetting,
   scripts: [],
+  // App은 FeatureAssembly의 composition root 하나만 호출한다.
   dependencies: [
-    .Shared(implements: .Shareds),
-    .Presentation(implements: .Presentation),
-    .Data(implements: .Repository),
-    .Domain(implements: .DomainInterface),
-    .Domain(implements: .UseCase),
-    .Network(implements: .Foundations),
-    .Presentation(implements: .Auth)
+    .featureAssembly,
+    .service(.config),
+    .SPM.composableArchitecture,
+    .SPM.tcaFlow,
   ],
   sources: ["Sources/**"],
   resources: ["Resources/**"],
   infoPlist: .appInfoPlist,
-  entitlements: .file(path: "../../Entitlements/DDDAttendance.entitlements")
+  entitlements: .file(path: "../../Entitlements/DDDAttendance.entitlements"),
+  hasTests: true
 )

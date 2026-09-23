@@ -2,29 +2,36 @@
 //  Extension+Configuration.swift
 //  DependencyPackagePlugin
 //
-//  Created by Wonji Suh  on 7/31/25.
+//  Created by DDD on 7/31/25.
 //
 
 import Foundation
 import ProjectDescription
 
-extension ConfigurationName {
-    static let dev = ConfigurationName.configuration(ConfigurationEnvironment.dev.name)
-    static let stage = ConfigurationName.configuration(ConfigurationEnvironment.stage.name)
-    static let prod = ConfigurationName.configuration(ConfigurationEnvironment.prod.name)
+public extension ConfigurationName {
+  static let stage = BuildEnvironment.stage.configurationName
+  static let prod = BuildEnvironment.prod.configurationName
 }
 
-public extension Array where Element == Configuration {
-    static let `default`: [Configuration] = [
-        .debug(name: .dev, xcconfig: .path(.dev)),
-        .debug(name: .stage, xcconfig: .path(.stage)),
-        .debug(name: .prod, xcconfig: .path(.prod)),
-        .release(name: .release, xcconfig: .path(.release))
-    ]
+public enum XCConfig {
+  /// Joonggonara처럼 환경 enum에서 모든 프로젝트의 Configuration을 파생한다.
+  public static let configurations: [Configuration] = BuildEnvironment.allCases.map { environment in
+    return environment.isDebug
+      ? .debug(
+        name: environment.configurationName,
+        settings: environment.buildSettings,
+        xcconfig: environment.xcconfigPath
+      )
+      : .release(
+        name: environment.configurationName,
+        settings: environment.buildSettings,
+        xcconfig: environment.xcconfigPath
+      )
+  }
 }
 
 public extension ProjectDescription.Path {
-    static func path(_ configuration: ConfigurationName) -> Self {
-        return .relativeToRoot("Config/\(configuration.rawValue).xcconfig")
-    }
+  static func path(_ environment: BuildEnvironment) -> Self {
+    return environment.xcconfigPath
+  }
 }

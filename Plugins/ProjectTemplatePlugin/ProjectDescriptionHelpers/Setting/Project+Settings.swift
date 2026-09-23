@@ -2,7 +2,7 @@
 //  Project+Settings.swift
 //  MyPlugin
 //
-//  Created by 서원지 on 1/6/24.
+//  Created by DDD on 1/6/24.
 //
 
 import Foundation
@@ -18,24 +18,16 @@ extension Settings {
     return SettingsDictionary()
       .setProductName(appName)
       .setCFBundleDisplayName(displayName)
-      .setOtherLdFlags("-ObjC -all_load -w -Wl,-no_warn_unused_dylibs")
+      // Assembly bootstrap이 필요한 Swift conformance를 명시적으로 보존하므로
+      // 모든 정적 오브젝트를 강제로 링크하는 -all_load는 사용하지 않는다.
+      .setOtherLdFlags("$(inherited) -ObjC -w -Wl,-no_warn_unused_dylibs -dead_strip")
       .setDebugInformationFormat("dwarf-with-dsym")
       .setProvisioningProfileSpecifier(provisioningProfile)
       .setSkipInstall(setSkipInstall)
       .setCFBundleDevelopmentRegion("ko")
       .setSuppressAllWarnings()
   }
-  
-  private static func commonBaseSettings(
-    appName: String
-  ) -> SettingsDictionary {
-    return SettingsDictionary()
-      .setProductName(appName)
-      .setOtherLdFlags("-ObjC -all_load -w -Wl,-no_warn_unused_dylibs")
-      .setStripStyle()
-      .setSuppressAllWarnings()
-  }
-  
+
   public static let appMainSetting: Settings = .settings(
     base: SettingsDictionary()
       .setProductName(Project.Environment.appName)
@@ -50,125 +42,75 @@ extension Settings {
       .setCodeSignIdentity()
       .setCodeSignStyle()
       .setSwiftVersion("6.0")
+      .setExplicitlyBuiltModules()
       .setVersioningSystem()
       .setProvisioningProfileSpecifier("match Development \(Project.Environment.bundlePrefix)")
       .setDevelopmentTeam(Project.Environment.organizationTeamId)
       .setCFBundleDevelopmentRegion()
       .setDebugInformationFormat()
       .setSuppressAllWarnings(),
-    configurations: [
-      .debug(
-        name: .debug,
-        settings:
-          commonSettings(
-            appName: Project.Environment.appName,
-            displayName: Project.Environment.appName,
-            provisioningProfile: "match Development \(Project.Environment.bundlePrefix)",
-            setSkipInstall: false
-          ),
-        xcconfig: .path(.dev)
-      ),
-      .debug(
-        name: .stage,
-        settings:
-          commonSettings(
-            appName: Project.Environment.appStageName,
-            displayName: Project.Environment.appName,
-            provisioningProfile: "match Development \(Project.Environment.bundlePrefix)",
-            setSkipInstall: false
-          ),
-        xcconfig: .path(.stage)
-      ),
-      .release(
-        name: .release,
-        settings:
-          commonSettings(
-            appName: Project.Environment.appName,
-            displayName: Project.Environment.appName,
-            provisioningProfile: "match AppStore \(Project.Environment.bundlePrefix)",
-            setSkipInstall: false
-          ),
-        xcconfig: .path(.release)
-      ),
-      .release(
-        name: .prod,
-        settings:
-          commonSettings(
-            appName: Project.Environment.appProdName,
-            displayName: Project.Environment.appName,
-            provisioningProfile: "match AppStore \(Project.Environment.bundlePrefix)",
-            setSkipInstall: false
-          ),
-        xcconfig: .path(.prod)
-      ),
+    configurations: BuildEnvironment.allCases.map { environment in
+      let isStage = environment == .stage
+      let settings = commonSettings(
+        appName: isStage ? Project.Environment.appStageName : Project.Environment.appProdName,
+        displayName: Project.Environment.appName,
+        provisioningProfile: isStage
+          ? "match Development \(Project.Environment.bundlePrefix)"
+          : "match AppStore \(Project.Environment.bundlePrefix)",
+        setSkipInstall: false
+      )
+      .merging(environment.buildSettings) { _, environmentValue in environmentValue }
 
-    ], defaultSettings: .recommended
-  )
-  
-  public static func appBaseSetting(appName: String) -> Settings {
-    let appBaseSetting: Settings = .settings(
-      base: SettingsDictionary()
-        .setProductName(appName)
-        .setMarketingVersion(.appVersion())
-        .setCurrentProjectVersion(.appBuildVersion())
-        .setCodeSignIdentity()
-        .setArchs()
-        .setSwiftVersion("6.0")
-        .setVersioningSystem()
-        .setDebugInformationFormat()
-        .setSuppressAllWarnings(),
-      configurations: [
-        .debug(
-          name: .debug,
-          settings:
-            commonBaseSettings(
-              appName: appName
-            ),
-          xcconfig:
-              .relativeToRoot("./Config/dev.xcconfig")
-        ),
-        .debug(
-          name: .stage,
-          settings: commonBaseSettings(
-            appName: appName
-          ),
-          xcconfig:
-              .relativeToRoot("./Config/stage.xcconfig")
-        ),
-        .release(
-          name: .release,
-          settings: commonBaseSettings(
-            appName: appName
-          ),
-          xcconfig: .relativeToRoot("./Config/release.xcconfig")
+      return environment.isDebug
+        ? .debug(
+          name: environment.configurationName,
+          settings: settings,
+          xcconfig: environment.xcconfigPath
         )
-      ], defaultSettings: .recommended)
-    
-    return appBaseSetting
-    
-  }
+        : .release(
+          name: environment.configurationName,
+          settings: settings,
+          xcconfig: environment.xcconfigPath
+        )
+    },
+    defaultSettings: .recommended
+  )
 }
 
-
 // MARK: - Settings Extensions
-extension Settings {
-  public static func repositoryBaseSettings() -> Settings {
-    .settings(
-      base: [
-        "IPHONEOS_DEPLOYMENT_TARGET": "18.0",
-        "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings"
-      ]
+
+public extension Settings {
+  /// 모듈 기본 설정 — 앱과 동일한 Stage/Prod 환경 목록을 사용한다.
+  static var moduleSettings: Settings {
+    return .settings(
+      base: SettingsDictionary().setExplicitlyBuiltModules(),
+      configurations: XCConfig.configurations
     )
   }
-  
-  public static func repositoryTestSettings() -> Settings {
-    .settings(
+
+  static func repositoryBaseSettings() -> Settings {
+    return .settings(
       base: [
         "IPHONEOS_DEPLOYMENT_TARGET": "18.0",
-        "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings",
+        "CLANG_ENABLE_EXPLICIT_MODULES": "YES",
+        "SWIFT_ENABLE_EXPLICIT_MODULES": "YES",
+        "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings -module-alias Sharing=DDDPointFreeSharing"
+      ],
+      configurations: XCConfig.configurations
+    )
+  }
+
+  static func repositoryTestSettings() -> Settings {
+    return .settings(
+      base: [
+        "IPHONEOS_DEPLOYMENT_TARGET": "18.0",
+        "CLANG_ENABLE_EXPLICIT_MODULES": "YES",
+        "SWIFT_ENABLE_EXPLICIT_MODULES": "YES",
+        "OTHER_SWIFT_FLAGS": "$(inherited) -suppress-warnings -module-alias Sharing=DDDPointFreeSharing",
         "ENABLE_TESTING_SEARCH_PATHS": "YES",
         "SWIFT_TESTING": "YES"
-      ]
+      ],
+      configurations: XCConfig.configurations
     )
   }
 }

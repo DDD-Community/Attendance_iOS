@@ -1,4 +1,10 @@
 // swift-tools-version: 5.8
+//
+//  Package.swift
+//  ProjectTemplatePlugin
+//
+//  Created by DDD on 9/4/26.
+//
 
 import PackageDescription
 

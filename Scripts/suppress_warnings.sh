@@ -6,7 +6,7 @@
 echo "🔧 Swift 6 링커 경고 억제 스크립트 실행중..."
 
 # Xcode 빌드 로그에서 "has no symbols" 경고 필터링
-export OTHER_LDFLAGS="${OTHER_LDFLAGS} -w -Wl,-no_warn_unused_dylibs -Wl,-no_warn_no_symbols"
+export OTHER_LDFLAGS="${OTHER_LDFLAGS} -w -Wl,-no_warn_unused_dylibs -dead_strip"
 
 # 링커 경고 관련 환경변수 설정
 export LD_NO_WARN_UNUSED_DYLIBS=YES

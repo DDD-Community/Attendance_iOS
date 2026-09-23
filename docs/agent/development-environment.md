@@ -6,7 +6,7 @@
 
 | 명령어 | 설명 |
 |--------|------|
-| `./make generate` | Xcode 프로젝트 생성 |
+| `./make generate` | Demo 앱을 포함해 Xcode 프로젝트 생성 |
 | `./make build` | clean → install → generate 순차 실행 |
 | `./make install` | 의존성 설치 |
 | `./make clean` | 프로젝트 정리 |

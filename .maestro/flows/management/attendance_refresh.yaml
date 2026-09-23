@@ -1,0 +1,73 @@
+# 운영진 출석 상태 변경 E2E
+# 첫 출석 카드의 상태를 지각으로 바꾼 뒤 출석으로 복구한다.
+# 카드 id 는 userID 를 포함하므로 특정 사용자에 묶지 않고 정규식으로 첫 카드를 집는다.
+appId: io.DDD.Attendance
+name: 운영진 출석 상태 변경은 카드 목록만 갱신한다
+tags:
+  - e2e
+  - management
+  - attendance
+---
+# 단독 실행돼도 돌 수 있게 로그인 상태를 먼저 보장한다.
+- runFlow:
+    file: ../_shared/ensure_management_home.yaml
+
+- extendedWaitUntil:
+    visible:
+      id: "management.attendance.summary"
+    timeout: 30000
+
+- assertVisible:
+    id: "management.attendance.summary"
+- assertVisible:
+    id: "management.attendance.list"
+- assertNotVisible:
+    id: "management.staff.skeleton"
+
+- tapOn:
+    id: "management.attendance.card.[0-9]+.editbutton"
+    index: 0
+- assertVisible:
+    text: "출석 상태를 변경하시겠습니까?"
+- tapOn:
+    id: "management.attendance.modal.statusbutton"
+- tapOn:
+    id: "management.attendance.modal.status.late"
+- tapOn:
+    id: "management.attendance.modal.confirmbutton"
+
+- assertVisible:
+    id: "management.staff.root"
+- assertVisible:
+    id: "management.attendance.summary"
+- assertNotVisible:
+    id: "management.staff.skeleton"
+
+- extendedWaitUntil:
+    visible:
+      id: "management.attendance.card.[0-9]+"
+    timeout: 30000
+- assertNotVisible:
+    id: "management.attendance.list.skeleton"
+- assertVisible:
+    text: "지각"
+
+- tapOn:
+    id: "management.attendance.card.[0-9]+.editbutton"
+    index: 0
+- tapOn:
+    id: "management.attendance.modal.statusbutton"
+- tapOn:
+    id: "management.attendance.modal.status.attended"
+- tapOn:
+    id: "management.attendance.modal.confirmbutton"
+- extendedWaitUntil:
+    visible:
+      id: "management.attendance.card.[0-9]+"
+    timeout: 30000
+- assertNotVisible:
+    id: "management.attendance.list.skeleton"
+- assertVisible:
+    text: "출석"
+
+- takeScreenshot: .maestro/artifacts/management/attendance-refresh

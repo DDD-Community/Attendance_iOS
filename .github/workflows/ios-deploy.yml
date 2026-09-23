@@ -1,0 +1,189 @@
+name: iOS Deploy
+
+on:
+  push:
+    branches: [develop, release]
+
+# 셀프호스티드 러너가 한 대뿐이라 배포는 항상 직렬로 실행한다.
+concurrency:
+  group: ios-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    # release 머지 시 태그를 푸시하려면 쓰기 권한이 필요하다.
+    permissions:
+      contents: write
+    timeout-minutes: 20
+
+    env:
+      APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      TEAM_ID: ${{ secrets.TEAM_ID }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      MATCH_KEYCHAIN_PASSWORD: ${{ secrets.MATCH_KEYCHAIN_PASSWORD }}
+      APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+      APP_STORE_CONNECT_API_KEY_IS_KEY_CONTENT_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_IS_KEY_CONTENT_BASE64 }}
+      TUIST_CONFIG_TOKEN: ${{ secrets.TUIST_TOKEN }}
+      # 배포 아카이브만 외부 의존성을 정적으로 링크한다.
+      # 중첩 Frameworks/libswift_*.dylib 로 인한 업로드 거부를 막기 위한 것이고,
+      # 이 플래그가 없는 빌드는 동적으로 링크돼 커버리지 계측이 붙는다.
+      TUIST_RELEASE_BUILD: '1'
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+      FASTLANE_SKIP_UPDATE_CHECK: '1'
+      FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: '600'
+      CI_SLACK_ENABLED: '1'
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_DEPLOY_CHANNEL_ID: C0C0NDRSBQT
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Notify deployment start
+        continue-on-error: true
+        run: |
+          export CI_SLACK_STATE_PATH="$RUNNER_TEMP/attendance-slack-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT.json"
+          echo "CI_SLACK_STATE_PATH=$CI_SLACK_STATE_PATH" >> "$GITHUB_ENV"
+          ruby fastlane/ci_slack.rb start
+
+      - name: Setup iOS runner
+        uses: ./.github/actions/setup-ios-runner
+        env:
+          CONFIG_TAR: ${{ secrets.CONFIG_DIR_TAR_BASE64 }}
+          GOOGLE_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        with:
+          include-ruby-path: 'true'
+          verify-config-nonempty: 'true'
+
+      - name: Install Ruby dependencies
+        run: |
+          ruby fastlane/ci_slack.rb prepare
+          # Tuist는 공통 runner action에서 설치하고 배포용 Ruby gem만 준비한다.
+          bundle install
+
+      - name: Generate Xcode workspace
+        run: |
+          ruby fastlane/ci_slack.rb generate
+          tuist install
+          # 배포 아카이브는 module cache 대상이 아니다.
+          # 바이너리 캐시는 시뮬레이터/디바이스 실행과 테스트용이라
+          # 릴리스는 항상 소스에서 빌드한다.
+          tuist generate --no-open --cache-profile none
+
+      # 앱버전(appVersion)은 수동 관리한다. CI 는 빌드번호(날짜형)만 올린다.
+      - name: Read app version
+        id: ver
+        run: |
+          FILE=Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift
+          VERSION=$(sed -nE 's/.*appVersion\(version: String = "([0-9.]+)"\).*/\1/p' "$FILE" | head -1)
+          test -n "$VERSION" || { echo "appVersion 추출 실패: $FILE"; exit 1; }
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "앱버전: $VERSION"
+
+      # develop 푸시 → TestFlight
+      - name: Deploy to TestFlight
+        if: github.ref_name == 'develop'
+        run: |
+          set +e
+          RELEASE_NOTES="$(git log -1 --pretty=%s)" bundle exec fastlane ios QA > fastlane-qa.log 2>&1
+          DEPLOY_EXIT_CODE=$?
+          echo "Fastlane QA exit code: $DEPLOY_EXIT_CODE"
+          Scripts/ci-log-digest.sh fastlane-qa.log "Fastlane QA"
+          # 컴파일 에러는 fastlane 로그가 아니라 gym 의 원본 xcodebuild 로그에 남는다.
+          if [[ "$DEPLOY_EXIT_CODE" -ne 0 ]]; then
+            GYM_LOG=$(ls -t ~/Library/Logs/gym/*.log 2>/dev/null | head -1)
+            [[ -n "$GYM_LOG" ]] && Scripts/ci-log-digest.sh "$GYM_LOG" "gym xcodebuild"
+          fi
+          exit "$DEPLOY_EXIT_CODE"
+
+      # fastlane 이 방금 만든 IPA 를 그대로 공유한다.
+      # 별도 빌드가 필요 없고, 빌드번호도 fastlane 이 올린 값이라
+      # Tuist 가 같은 build version 으로 보고 거부하는 일이 없다.
+      # 경로를 직접 주면 --configuration / --platforms 는 무시된다.
+      - name: Share Tuist Preview
+        if: github.ref_name == 'develop'
+        run: |
+          ruby fastlane/ci_slack.rb uploaded
+          ruby fastlane/ci_slack.rb preview
+          tuist share fastlane/output/DDDAttendance.ipa --track nightly
+
+      # release 머지 → 태그 갱신
+      # GITHUB_TOKEN 으로 푸시하면 워크플로우가 재트리거되지 않아 중복 배포가 없다.
+      - name: Update release tag
+        if: github.ref_name == 'release'
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f "$VERSION"
+          git push -f origin "refs/tags/$VERSION"
+          echo "태그 갱신: $VERSION"
+
+      # release 머지 → App Store 업로드 + 심사 제출
+      - name: Deploy to App Store
+        if: github.ref_name == 'release'
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set +e
+          bundle exec fastlane ios release > fastlane-release.log 2>&1
+          RELEASE_EXIT_CODE=$?
+          Scripts/ci-log-digest.sh fastlane-release.log "Fastlane release"
+          if [[ "$RELEASE_EXIT_CODE" -ne 0 ]]; then
+            echo "Fastlane release exit code: $RELEASE_EXIT_CODE"
+            GYM_LOG=$(ls -t ~/Library/Logs/gym/*.log 2>/dev/null | head -1)
+            [[ -n "$GYM_LOG" ]] && Scripts/ci-log-digest.sh "$GYM_LOG" "gym xcodebuild"
+            exit "$RELEASE_EXIT_CODE"
+          fi
+
+          ruby fastlane/ci_slack.rb uploaded
+          bundle exec fastlane ios submit_for_review version:"$VERSION" > fastlane-submit.log 2>&1
+          SUBMIT_EXIT_CODE=$?
+          echo "Fastlane submit exit code: $SUBMIT_EXIT_CODE"
+          Scripts/ci-log-digest.sh fastlane-submit.log "Fastlane submit"
+          if [[ "$SUBMIT_EXIT_CODE" -eq 0 ]]; then ruby fastlane/ci_slack.rb submitted; fi
+          exit "$SUBMIT_EXIT_CODE"
+
+      - name: Notify deployment result
+        if: always()
+        continue-on-error: true
+        env:
+          DEPLOY_STATUS: ${{ job.status }}
+        run: ruby fastlane/ci_slack.rb "$DEPLOY_STATUS"
+
+      - name: Upload build artifacts
+        id: upload-build-artifacts
+        if: always()
+        continue-on-error: true
+        # v7은 Node 24를 사용하며 self-hosted runner 2.327.1 이상이 필요하다.
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: build-output-${{ github.run_id }}
+          path: |
+            fastlane/output/*.ipa
+            fastlane/output/*.dSYM.zip
+            fastlane-*.log
+            ~/Library/Logs/gym/*.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # finalize 단계의 일시적인 403이 배포 결과를 실패로 바꾸지 않도록
+      # immutable artifact와 충돌하지 않는 이름으로 한 번 재시도한다.
+      - name: Retry build artifact upload
+        if: always() && steps.upload-build-artifacts.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: build-output-${{ github.run_id }}-retry-${{ github.run_attempt }}
+          path: |
+            fastlane/output/*.ipa
+            fastlane/output/*.dSYM.zip
+            fastlane-*.log
+            ~/Library/Logs/gym/*.log
+          if-no-files-found: ignore
+          retention-days: 7

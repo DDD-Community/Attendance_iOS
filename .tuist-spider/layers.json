@@ -8,167 +8,437 @@
     {
       "layer" : "app",
       "projectPath" : "Projects/App",
-      "targetName" : "DDDAttendance-Debug"
+      "targetName" : "DDDAttendanceTests"
     },
     {
-      "layer" : "app",
-      "projectPath" : "Projects/App",
-      "targetName" : "DDDAttendance-Prod"
+      "layer" : "core",
+      "projectPath" : "Projects/Core/CoreAssembly",
+      "targetName" : "CoreAssembly"
     },
     {
-      "layer" : "app",
-      "projectPath" : "Projects/App",
-      "targetName" : "DDDAttendance-Stage"
+      "layer" : "core",
+      "projectPath" : "Projects/Core/CoreAssembly",
+      "targetName" : "CoreAssemblyTests"
     },
     {
-      "layer" : "infrastructure",
-      "projectPath" : "Projects/Data/API",
-      "targetName" : "API"
+      "layer" : "core",
+      "projectPath" : "Projects/Core/DDDCoreLogger",
+      "targetName" : "DDDCoreLogger"
     },
     {
-      "layer" : "data",
-      "projectPath" : "Projects/Data/Model",
-      "targetName" : "Model"
+      "layer" : "core",
+      "projectPath" : "Projects/Core/DDDCoreLogger",
+      "targetName" : "DDDCoreLoggerTests"
     },
     {
-      "layer" : "data",
-      "projectPath" : "Projects/Data/Repository",
-      "targetName" : "Repository"
+      "layer" : "Ui",
+      "projectPath" : "Projects/Core/DDDCoreUI",
+      "targetName" : "DDDCoreUI"
     },
     {
-      "layer" : "data",
-      "projectPath" : "Projects/Data/Repository",
-      "targetName" : "RepositoryTests"
+      "layer" : "core",
+      "projectPath" : "Projects/Core/DDDCoreUI",
+      "targetName" : "DDDCoreUITests"
+    },
+    {
+      "layer" : "core",
+      "projectPath" : "Projects/Core/DDDCoreUtility",
+      "targetName" : "DDDCoreUtility"
+    },
+    {
+      "layer" : "core",
+      "projectPath" : "Projects/Core/DDDCoreUtility",
+      "targetName" : "DDDCoreUtilityTests"
+    },
+    {
+      "layer" : "core",
+      "projectPath" : "Projects/Core/DDDNetwork",
+      "targetName" : "DDDNetwork"
+    },
+    {
+      "layer" : "core",
+      "projectPath" : "Projects/Core/DDDNetwork",
+      "targetName" : "DDDNetworkInterface"
+    },
+    {
+      "layer" : "core",
+      "projectPath" : "Projects/Core/DDDNetwork",
+      "targetName" : "DDDNetworkTests"
     },
     {
       "layer" : "service",
-      "projectPath" : "Projects/Data/Service",
-      "targetName" : "Service"
+      "projectPath" : "Projects/Core/DDDStorage",
+      "targetName" : "DDDStorage"
+    },
+    {
+      "layer" : "service",
+      "projectPath" : "Projects/Core/DDDStorage",
+      "targetName" : "DDDStorageInterface"
+    },
+    {
+      "layer" : "service",
+      "projectPath" : "Projects/Core/DDDStorage",
+      "targetName" : "DDDStorageTests"
+    },
+    {
+      "layer" : "Ui",
+      "projectPath" : "Projects/Core/DDDThirdParty",
+      "targetName" : "DDDThirdParty"
     },
     {
       "layer" : "domain",
-      "projectPath" : "Projects/Domain/DomainInterface",
-      "targetName" : "DomainInterface"
+      "projectPath" : "Projects/Domain/AppUpdateDomain",
+      "targetName" : "AppUpdateDomain"
     },
     {
       "layer" : "domain",
-      "projectPath" : "Projects/Domain/Entity",
-      "targetName" : "Entity"
+      "projectPath" : "Projects/Domain/AppUpdateDomain",
+      "targetName" : "AppUpdateDomainInterface"
     },
     {
       "layer" : "domain",
-      "projectPath" : "Projects/Domain/UseCase",
-      "targetName" : "UseCase"
+      "projectPath" : "Projects/Domain/AppUpdateDomain",
+      "targetName" : "AppUpdateDomainTests"
     },
     {
       "layer" : "domain",
-      "projectPath" : "Projects/Domain/UseCase",
-      "targetName" : "UseCaseTests"
+      "projectPath" : "Projects/Domain/AttendanceDomain",
+      "targetName" : "AttendanceDomain"
     },
     {
-      "layer" : "infrastructure",
-      "projectPath" : "Projects/Network/Foundations",
-      "targetName" : "Foundations"
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/AttendanceDomain",
+      "targetName" : "AttendanceDomainInterface"
     },
     {
-      "layer" : "infrastructure",
-      "projectPath" : "Projects/Network/Networks",
-      "targetName" : "Networks"
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/AttendanceDomain",
+      "targetName" : "AttendanceDomainTests"
     },
     {
-      "layer" : "infrastructure",
-      "projectPath" : "Projects/Network/ThirdPartys",
-      "targetName" : "ThirdPartys"
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/AuthDomain",
+      "targetName" : "AuthDomain"
     },
     {
-      "layer" : "Presentaion",
-      "projectPath" : "Projects/Presentation/Auth",
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/AuthDomain",
+      "targetName" : "AuthDomainInterface"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/AuthDomain",
+      "targetName" : "AuthDomainTests"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/DomainAssembly",
+      "targetName" : "DomainAssembly"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/DomainAssembly",
+      "targetName" : "DomainAssemblyTests"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/MyPageDomain",
+      "targetName" : "MyPageDomain"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/MyPageDomain",
+      "targetName" : "MyPageDomainInterface"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/MyPageDomain",
+      "targetName" : "MyPageDomainTests"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/OnBoardingDomain",
+      "targetName" : "OnBoardingDomain"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/OnBoardingDomain",
+      "targetName" : "OnBoardingDomainInterface"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/OnBoardingDomain",
+      "targetName" : "OnBoardingDomainTests"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/ProfileDomain",
+      "targetName" : "ProfileDomain"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/ProfileDomain",
+      "targetName" : "ProfileDomainInterface"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/ProfileDomain",
+      "targetName" : "ProfileDomainTests"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/QRCodeDomain",
+      "targetName" : "QRCodeDomain"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/QRCodeDomain",
+      "targetName" : "QRCodeDomainInterface"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/QRCodeDomain",
+      "targetName" : "QRCodeDomainTests"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/ScheduleDomain",
+      "targetName" : "ScheduleDomain"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/ScheduleDomain",
+      "targetName" : "ScheduleDomainInterface"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/ScheduleDomain",
+      "targetName" : "ScheduleDomainTests"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/VoteDomain",
+      "targetName" : "VoteDomain"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/VoteDomain",
+      "targetName" : "VoteDomainInterface"
+    },
+    {
+      "layer" : "domain",
+      "projectPath" : "Projects/Domain/VoteDomain",
+      "targetName" : "VoteDomainTests"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Auth",
       "targetName" : "Auth"
     },
     {
-      "layer" : "testing",
-      "projectPath" : "Projects/Presentation/Auth",
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Auth",
+      "targetName" : "AuthDemo"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Auth",
+      "targetName" : "AuthInterface"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Auth",
       "targetName" : "AuthTests"
     },
     {
-      "layer" : "Presentaion",
-      "projectPath" : "Projects/Presentation/Management",
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/FeatureAssembly",
+      "targetName" : "FeatureAssembly"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/FeatureSharedUI",
+      "targetName" : "FeatureSharedUI"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Management",
       "targetName" : "Management"
     },
     {
-      "layer" : "testing",
-      "projectPath" : "Projects/Presentation/Management",
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Management",
+      "targetName" : "ManagementDemo"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Management",
+      "targetName" : "ManagementInterface"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Management",
       "targetName" : "ManagementTests"
     },
     {
-      "layer" : "Presentaion",
-      "projectPath" : "Projects/Presentation/Member",
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Member",
       "targetName" : "Member"
     },
     {
-      "layer" : "testing",
-      "projectPath" : "Projects/Presentation/Member",
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Member",
+      "targetName" : "MemberDemo"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Member",
+      "targetName" : "MemberInterface"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Member",
       "targetName" : "MemberTests"
     },
     {
-      "layer" : "Presentaion",
-      "projectPath" : "Projects/Presentation/OnBoarding",
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/OnBoarding",
       "targetName" : "OnBoarding"
     },
     {
-      "layer" : "testing",
-      "projectPath" : "Projects/Presentation/OnBoarding",
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/OnBoarding",
+      "targetName" : "OnBoardingDemo"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/OnBoarding",
+      "targetName" : "OnBoardingInterface"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/OnBoarding",
       "targetName" : "OnBoardingTests"
     },
     {
-      "layer" : "Presentaion",
-      "projectPath" : "Projects/Presentation/Presentation",
-      "targetName" : "Presentation"
-    },
-    {
-      "layer" : "Presentaion",
-      "projectPath" : "Projects/Presentation/Profile",
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Profile",
       "targetName" : "Profile"
     },
     {
-      "layer" : "testing",
-      "projectPath" : "Projects/Presentation/Profile",
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Profile",
+      "targetName" : "ProfileDemo"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Profile",
+      "targetName" : "ProfileInterface"
+    },
+    {
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Profile",
       "targetName" : "ProfileTests"
     },
     {
-      "layer" : "Presentaion",
-      "projectPath" : "Projects/Presentation/Splash",
-      "targetName" : "Splash"
-    },
-    {
-      "layer" : "testing",
-      "projectPath" : "Projects/Presentation/Splash",
-      "targetName" : "SplashTests"
-    },
-    {
-      "layer" : "Presentaion",
-      "projectPath" : "Projects/Presentation/Web",
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Web",
       "targetName" : "Web"
     },
     {
-      "layer" : "design-system",
-      "projectPath" : "Projects/Shared/DesignSystem",
-      "targetName" : "DesignSystem"
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Web",
+      "targetName" : "WebDemo"
     },
     {
-      "layer" : "shared",
-      "projectPath" : "Projects/Shared/Shareds",
-      "targetName" : "Shareds"
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Web",
+      "targetName" : "WebInterface"
     },
     {
-      "layer" : "shared",
-      "projectPath" : "Projects/Shared/ThirdParty",
-      "targetName" : "ThirdParty"
+      "layer" : "feature",
+      "projectPath" : "Projects/Feature/Web",
+      "targetName" : "WebTests"
     },
     {
-      "layer" : "shared",
-      "projectPath" : "Projects/Shared/Utill",
-      "targetName" : "Utill"
+      "layer" : "service",
+      "projectPath" : "Projects/Service/API",
+      "targetName" : "API"
+    },
+    {
+      "layer" : "service",
+      "projectPath" : "Projects/Service/API",
+      "targetName" : "APITests"
+    },
+    {
+      "layer" : "service",
+      "projectPath" : "Projects/Service/APIEndpoint",
+      "targetName" : "APIEndpoint"
+    },
+    {
+      "layer" : "service",
+      "projectPath" : "Projects/Service/APIEndpoint",
+      "targetName" : "APIEndpointTests"
+    },
+    {
+      "layer" : "service",
+      "projectPath" : "Projects/Service/DDDAuth",
+      "targetName" : "DDDAuth"
+    },
+    {
+      "layer" : "service",
+      "projectPath" : "Projects/Service/DDDAuth",
+      "targetName" : "DDDAuthInterface"
+    },
+    {
+      "layer" : "service",
+      "projectPath" : "Projects/Service/DDDAuth",
+      "targetName" : "DDDAuthTests"
+    },
+    {
+      "layer" : "service",
+      "projectPath" : "Projects/Service/ServiceAssembly",
+      "targetName" : "ServiceAssembly"
+    },
+    {
+      "layer" : "service",
+      "projectPath" : "Projects/Service/ServiceAssembly",
+      "targetName" : "ServiceAssemblyTests"
+    },
+    {
+      "layer" : "Ui",
+      "projectPath" : "Projects/UI/DDDAnimation",
+      "targetName" : "DDDAnimation"
+    },
+    {
+      "layer" : "Ui",
+      "projectPath" : "Projects/UI/DDDAnimation",
+      "targetName" : "DDDAnimationTests"
+    },
+    {
+      "layer" : "Ui",
+      "projectPath" : "Projects/UI/DDDDesignKit",
+      "targetName" : "DDDDesignKit"
+    },
+    {
+      "layer" : "Ui",
+      "projectPath" : "Projects/UI/DDDDesignKit",
+      "targetName" : "DDDDesignKitDemo"
+    },
+    {
+      "layer" : "Ui",
+      "projectPath" : "Projects/UI/DDDDesignKit",
+      "targetName" : "DDDDesignKitTests"
+    },
+    {
+      "layer" : "Ui",
+      "projectPath" : "Projects/UI/DDDSharedUI",
+      "targetName" : "DDDSharedUI"
+    },
+    {
+      "layer" : "Ui",
+      "projectPath" : "Projects/UI/DDDSharedUI",
+      "targetName" : "DDDSharedUITests"
     }
   ],
   "version" : 1

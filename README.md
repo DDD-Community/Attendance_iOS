@@ -2,49 +2,38 @@
 
 <div align="center">
 
-
 <img width="150" alt="DDD Logo" src="https://github.com/user-attachments/assets/667db68b-d600-4e2d-a50f-f517de7b30fa">
 
-**DDD IT 동아리를 위한 출석 관리 시스템**
+**DDD 동아리의 출석·일정·투표 운영을 위한 iOS 앱**
 
 ![Platform](https://img.shields.io/badge/Platform-iOS-orange.svg)
-![Language](https://img.shields.io/badge/Language-Swift-FA7343.svg?logo=swift&logoColor=white)
+![Swift](https://img.shields.io/badge/Swift-6-FA7343.svg?logo=swift&logoColor=white)
 ![iOS](https://img.shields.io/badge/iOS-17.0+-34C759.svg)
-![Xcode](https://img.shields.io/badge/Xcode-16.0+-007ACC.svg)
-![TCA](https://img.shields.io/badge/Architecture-TCA-purple.svg)
-![Tuist](https://img.shields.io/badge/Modularization-Tuist-blue.svg)
-![Fastlane](https://img.shields.io/badge/fastlane-00F200.svg?logo=fastlane&logoColor=white)
+![Architecture](https://img.shields.io/badge/Architecture-TCA-purple.svg)
+![Tuist](https://img.shields.io/badge/Tuist-4.206.0-blue.svg)
 
-[📱 App Store](https://apps.apple.com/kr/app/ddd/id6736766383) | [🎯 Features](#-주요-기능) | [🏗 Architecture](#-프로젝트-아키텍처) | [🚀 Quick Start](#-빠른-시작)
-
----
+[앱 스토어](https://apps.apple.com/kr/app/ddd/id6736766383) · [아키텍처](#아키텍처) · [빠른 시작](#빠른-시작) · [개발 명령어](#개발-명령어)
 
 </div>
 
-## 📖 프로젝트 소개
+## 프로젝트
 
-**DDD 출석**은 DDD IT 동아리의 출석 관리를 효율적으로 도와주는 iOS 애플리케이션입니다.
-간단하고 직관적한 인터페이스로 동아리원들의 출석 현황을 관리하고, 동아리 활동을 체계화할 수 있도록 지원합니다.
+DDD 출석은 멤버와 운영진이 한 앱에서 일정과 출석 현황을 확인하고, QR 출석·투표·프로필 관리를 수행할 수 있도록 만든 앱입니다.
 
-> 💡 **우리는 왜 이 앱을 만들었을까요?**
-> DDD IT 동아리의 출석 관리를 위한 번거로운 과정을 줄이고,
-> 개발자들이 학습과 네트워킹에 더 집중할 수 있는 환경을 만들고자 합니다.
+주요 기능:
 
-## 🛠 Setup
+- Apple·Google OAuth 로그인과 토큰 재발급
+- 멤버 출석 일정, 출석·지각·결석 현황 조회
+- 운영진 출석 현황 및 멤버 관리
+- QR 코드 기반 출석 확인
+- 활성 투표 조회·응답
+- 프로필, 기수·팀 정보, 로그아웃·회원 탈퇴 관리
 
-### AI 도구 연동
-
-프로젝트 규칙은 AGENTS.md에 정의되어 있습니다. Claude Code 사용 시 심볼릭 링크를 연결하세요.
-
-```bash
-ln -s AGENTS.md CLAUDE.md
-```
-
-### 📱 스크린샷
+## 스크린샷
 
 <div align="center">
 
-| 메인 화면 | 로그인 | 출석 관리 |
+| 메인 | 로그인 | 출석 관리 |
 |:---:|:---:|:---:|
 | <img width="200" src="fastlane/screenshots/ko/0_APP_IPHONE_65_0.png"> | <img width="200" src="fastlane/screenshots/ko/1_APP_IPHONE_65_1.png"> | <img width="200" src="fastlane/screenshots/ko/2_APP_IPHONE_65_2.png"> |
 
@@ -54,382 +43,302 @@ ln -s AGENTS.md CLAUDE.md
 
 </div>
 
-## ✨ 주요 기능
+## 아키텍처
 
-### 🔐 간편한 인증
-- **Google OAuth 2.0**: 간단한 구글 계정 로그인
-- **자동 로그인 유지**: 재실행 시 자동 인증 상태 유지
-- **보안 강화**: OAuth 2.0 기반 안전한 인증 시스템
+SwiftUI와 The Composable Architecture를 기반으로 한 Clean Architecture 멀티모듈 프로젝트입니다. Tuist가 프로젝트 생성, 모듈 의존성, Stage 전체 테스트 스킴을 관리합니다.
 
-### 📊 출석 관리
-- **실시간 출석 체크**: 빠르고 정확한 출석 확인
-- **출석 상태 관리**: 출석, 지각, 결석, 대기 상태 구분
-- **출석 이력 조회**: 개인별 출석 현황 및 통계
-- **출석률 통계**: 시각적 통계 정보 제공
+~~~text
+Projects/
+├── App/                         # 앱 진입점, 루트 Reducer·Coordinator
+├── Feature/
+│   ├── FeatureAssembly/         # 전체 Feature와 Domain 조립 결과를 앱에 제공
+│   ├── FeatureSharedUI/         # Feature 공통 UI
+│   ├── Auth/                    # 로그인
+│   ├── OnBoarding/              # 신규 사용자 등록
+│   ├── Management/              # 운영진 출석·투표 관리
+│   ├── Member/                  # 멤버 출석·투표
+│   ├── Profile/                 # 프로필·계정 관리
+│   └── Web/                     # 웹 화면
+├── Domain/
+│   ├── DomainAssembly/          # 도메인별 의존성 구현 조립
+│   ├── AuthDomain/              # 로그인·토큰 도메인
+│   ├── OnBoardingDomain/        # 신규 사용자 등록 도메인
+│   ├── AttendanceDomain/        # 출석 도메인
+│   ├── QRCodeDomain/            # QR 출석 도메인
+│   ├── ScheduleDomain/          # 일정 도메인
+│   ├── VoteDomain/              # 투표 도메인
+│   ├── ProfileDomain/           # 프로필 도메인
+│   ├── MyPageDomain/            # 마이페이지 도메인
+│   └── AppUpdateDomain/         # 앱 업데이트 도메인
+├── Service/
+│   ├── ServiceAssembly/         # 인증·저장소·네트워크 조립
+│   ├── API/                     # API 경로 상수
+│   ├── APIEndpoint/             # DDDNetwork 요청 명세
+│   └── DDDAuth/                 # 인증 세션과 토큰 갱신
+├── Core/
+│   ├── CoreAssembly/            # Core 구현 묶음
+│   ├── DDDNetwork/              # Alamofire 기반 HTTP 클라이언트
+│   ├── DDDStorage/              # Keychain 저장소
+│   ├── DDDCoreLogger/           # os.Logger 기반 로깅
+│   ├── DDDCoreUtility/          # 공통 Swift·TCA 유틸리티
+│   ├── DDDCoreUI/               # UI 기반 타입
+│   └── DDDThirdParty/           # 외부 UI 패키지 재노출
+└── UI/
+    ├── DDDDesignKit/            # 디자인 토큰·컴포넌트·리소스
+    ├── DDDSharedUI/             # 앱 공통 화면 컴포넌트
+    └── DDDAnimation/            # 이미지·애니메이션 리소스
+~~~
 
-### 👥 멤버 관리
-- **스터디 멤버 목록**: 전체 참가자 현황 확인
-- **멤버 상태 조회**: 각 멤버의 출석 패턴 분석
-- **관리자 권한**: 스터디 운영진을 위한 관리 기능
+### 의존성 흐름
 
-### 📱 사용자 경험
-- **직관적 UI/UX**: 간단하고 명확한 인터페이스
-- **실시간 동기화**: 서버와의 실시간 데이터 동기화
-- **오프라인 지원**: 네트워크 없이도 기본 기능 사용 가능
-- **다크 모드**: 시스템 설정에 따른 다크/라이트 모드 지원
+~~~mermaid
+flowchart TD
+    App --> FeatureAssembly
+    FeatureAssembly --> Features[Feature modules]
+    FeatureAssembly --> DomainAssembly
 
-## 🏗 프로젝트 아키텍처
+    Features --> DomainIface["*Domain / Interface"]
+    Features --> UI[UI modules]
 
-### 🎯 Clean Architecture with Tuist
+    DomainAssembly --> Domains
+    DomainAssembly --> ServiceAssembly
 
-```
-DDD-Attendance-iOS/
-├── 📱 Projects/
-│   ├── App/                     # 메인 애플리케이션 타겟
-│   │   ├── Sources/
-│   │   │   ├── Application/     # AppDelegate, SceneDelegate
-│   │   │   ├── Di/             # Dependency Injection
-│   │   │   ├── Reducer/        # TCA Root Reducer
-│   │   │   └── View/           # Root Views
-│   │   ├── Resources/          # Assets, Fonts, Localizations
-│   │   └── Tests/              # App 레벨 테스트
-│   │
-│   ├── Presentation/           # 🎨 UI Layer
-│   │   ├── Auth/               # 로그인/인증 화면
-│   │   ├── Splash/             # 스플래시 화면
-│   │   ├── OnBoarding/         # 온보딩 화면
-│   │   ├── Management/         # 출석 관리 화면
-│   │   ├── Member/             # 멤버 관리 화면
-│   │   ├── Profile/            # 프로필 화면
-│   │   ├── Web/                # 웹뷰 화면
-│   │   └── Presentation/       # 공통 프레젠테이션 유틸
-│   │
-│   ├── Domain/                 # 🔥 Business Logic Layer
-│   │   ├── Entity/             # 도메인 엔티티
-│   │   ├── UseCase/            # 비즈니스 로직 구현
-│   │   └── RepositoryInterface/ # Repository 프로토콜
-│   │
-│   ├── Data/                   # 📡 Data Layer
-│   │   ├── Repository/         # Repository 구현체
-│   │   ├── DataSource/         # 로컬/원격 데이터소스
-│   │   └── Model/              # DTO, Response Models
-│   │
-│   ├── Network/                # 🌐 Network Layer
-│   │   ├── Foundation/         # 네트워크 기반 설정
-│   │   ├── Service/            # API 서비스 구현
-│   │   └── Configuration/      # 네트워크 설정
-│   │
-│   └── Shared/                 # 🔧 Shared Layer
-│       ├── DesignSystem/       # 디자인 시스템
-│       ├── Utility/            # 공통 유틸리티
-│       └── Extension/          # Swift Extensions
-│
-└── 🔧 Tuist/                   # 프로젝트 설정
-    ├── Package.swift
-    ├── ProjectDescriptionHelpers/
-    └── Dependencies.swift
-```
+    ServiceAssembly --> CoreAssembly
+    ServiceAssembly --> DDDAuth
+    ServiceAssembly --> APIEndpoint
 
-### 🏛️ Clean Architecture Pattern
+    Domains --> DomainIface
+    Domains --> ServiceAssembly
 
-```mermaid
-graph TD
-    A[🎨 Presentation Layer] --> B[🔥 Domain Layer]
-    B --> C[📡 Data Layer]
-    D[🌐 Network Layer] --> C
-    E[🔧 Shared Layer] --> A
-    E --> B
-    E --> C
+    DDDAuth --> DDDNetwork
+    DDDAuth --> APIEndpoint
+    DDDAuth --> StorageInterface[DDDStorageInterface]
 
-    A -.-> F[SwiftUI Views]
-    A -.-> G[TCA Reducers]
-    B -.-> H[Use Cases]
-    B -.-> I[Entities]
-    C -.-> J[Repositories]
-    C -.-> K[API Services]
-```
+    CoreAssembly --> DDDNetwork
+    CoreAssembly --> DDDStorage
+~~~
 
-### 📊 의존성 그래프 (Tuist Graph)
+설계 원칙:
 
-<div align="center">
+- App은 세부 구현 대신 **FeatureAssembly** 하나를 진입점으로 사용합니다.
+- **FeatureAssembly**는 Feature 모듈을 모으고 **DomainAssembly**의 의존성 조립 결과를 앱에 제공합니다.
+- 각 `*Domain` 모듈은 해당 기능의 Entity, Repository 계약·구현, UseCase를 함께 소유합니다.
+- **DomainAssembly**는 도메인별 라이브 의존성을 조립하고 **ServiceAssembly**를 통해 공통 서비스 구현을 사용합니다.
+- **ServiceAssembly**는 APIEndpoint, 인증, Network·Storage 구현을 **CoreAssembly**와 연결합니다.
+- **DDDNetwork**와 **DDDStorage**는 Interface/Implementation 타깃을 분리합니다.
+- 리소스를 포함하는 **DDDDesignKit**, **DDDAnimation**은 동적 프레임워크이며 나머지 내부 모듈은 기본적으로 정적 프레임워크입니다.
 
-![Dependency Graph](graph.png)
+### 의존성 주입
 
-</div>
+별도 런타임 DI 컨테이너 대신 Point-Free Dependencies를 사용합니다.
 
-*프로젝트 모듈 간 의존성 관계도 (자동 생성)*
+- **각 Domain 모듈**: Repository·UseCase DependencyKey와 테스트 기본값 선언
+- **DomainAssembly**: 도메인별 Repository·UseCase 라이브 구현 등록
+- **ServiceAssembly**: 인증 세션, Keychain, Network 구현 조립
+- **CoreAssembly**: Core 인터페이스에 Network·Storage 라이브 구현 등록
+- **FeatureAssembly**: Feature와 Domain 조립 결과를 App에 재노출
 
-#### 🕸️ TuistSpider 확장 뷰
+### 모듈 그래프
 
-레이어별로 묶어 보거나(Grouped) 모든 모듈을 펼쳐 본(Expanded) 시각화입니다. (TuistSpider 결과)
+~~~bash
+./make graph       # 외부 패키지를 제외하고 Tests·Demo를 포함한 전체 모듈 그래프
+./make graph:prod  # 외부 패키지와 Tests·Demo를 제외한 제품 그래프
+~~~
 
-<div align="center">
+TuistSpider에서 주요 조립 모듈을 기준으로 내부 의존성을 확장한 그래프입니다.
 
-| Grouped | Expanded |
-|:---:|:---:|
-| <img src="docs/graphs/DDDAttendance-grouped-DDDAttendance.png" width="420"> | <img src="docs/graphs/DDDAttendance-expanded-DDDAttendance.png" width="420"> |
+<details>
+<summary>DDD 전체 모듈</summary>
 
-</div>
+![DDD 전체 모듈 단계별 그래프](docs/graphs/DDDAttendance-grouped-DDDAttendance.png)
 
-### 🔄 의존성 방향 원칙
+![DDD 전체 모듈 그래프](docs/graphs/DDDAttendance-expanded-DDDAttendance.png)
 
-```
-Presentation → Domain (UseCase Protocol)
-       ↓
-Domain/UseCase → Domain (Repository Protocol)
-       ↓
-Data/Repository → Domain (Entity + Repository Protocol)
-       ↓
-Network/Service → Data (API 통신)
-```
+</details>
 
-**핵심 설계 원칙:**
-- ✅ **Presentation**은 Domain의 UseCase만 의존
-- ✅ **Domain**은 외부 계층에 의존하지 않는 순수 비즈니스 로직
-- ✅ **Data**는 Domain의 Entity와 Repository Protocol을 구현
-- ✅ 모든 데이터 흐름은 **Domain을 중심**으로 진행
+<details>
+<summary>FeatureAssembly</summary>
 
-## 📚 개발 가이드 문서
+![FeatureAssembly 모듈 그래프](docs/graphs/DDDAttendance-expanded-FeatureAssembly.png)
 
-프로젝트의 상세한 개발 가이드라인은 `docs/` 폴더의 문서들을 참고하세요:
+</details>
 
-### 🏗️ 아키텍처 & 패턴
-- **[TCA 패턴 가이드](./docs/tca-patterns.md)** - TCA 기본 구조, Extension 패턴, Action 처리
-- **[SwiftUI 스타일 가이드](./docs/swiftui-patterns.md)** - View 구조화, Extension 패턴, @ViewBuilder 활용
-- **[의존성 주입 (DI)](./docs/dependency-injection.md)** - WeaveDI 3.4.1 패턴, AppDIManager
-- **[TCAFlow 네비게이션](./docs/tcaflow-navigation.md)** - @FlowCoordinator, 화면 전환, 딥 링크
+<details>
+<summary>DomainAssembly</summary>
 
-### 🎨 UI & UX 시스템
-- **[팝업 & 모달 시스템](./docs/popup-modal-system.md)** - CustomAlert, Toast, Modal 구현
-- **[Swift 코딩 규칙](./docs/swift-coding-rules.md)** - Swift 스타일, 에러 처리, 테스트 패턴
+![DomainAssembly 모듈 그래프](docs/graphs/DDDAttendance-expanded-DomainAssembly.png)
 
-### 🚀 성능 & 최적화
-- **[iOS 성능 최적화](./docs/ios-performance-optimization.md)** - 서브에이전트 호출, 빌드 오류 해결
+</details>
 
-### 🛠️ 개발 환경 & 협업
-- **[Git 워크플로우](./docs/git-workflow.md)** - 브랜치 전략, PR 규칙, 코드 리뷰
-- **[개발 환경 설정](./docs/development-environment.md)** - Make 명령어, Xcode 설정, Tuist
+<details>
+<summary>ServiceAssembly</summary>
 
-> 💡 **참고**: 이 가이드 문서들은 AI 에이전트들도 참조하여 프로젝트의 일관성 있는 코드 품질을 유지합니다.
+![ServiceAssembly 모듈 그래프](docs/graphs/DDDAttendance-expanded-ServiceAssembly.png)
 
-## 🛠 기술 스택
+</details>
 
-### Core Technologies
-- **🎯 Architecture**: The Composable Architecture (TCA) 1.25.5
-- **📦 Modularization**: Tuist 4.x (Micro Feature Architecture)
-- **💉 Dependency Injection**: WeaveDI 3.4.0
-- **🔀 Navigation**: TCAFlow 1.1.0 (커스텀 라이브러리)
-- **⚡ Concurrency**: Swift Concurrency (async/await)
+<details>
+<summary>CoreAssembly</summary>
 
-### 📚 주요 라이브러리
+![CoreAssembly 모듈 그래프](docs/graphs/DDDAttendance-expanded-CoreAssembly.png)
 
-#### 🎯 아키텍처 & 상태 관리
-- **[ComposableArchitecture](https://github.com/pointfreeco/swift-composable-architecture)** 1.25.5 - 단방향 데이터 플로우 및 상태 관리
-- **[TCAFlow](https://github.com/Roy-wonji/TCAFlow.git)** 1.1.0 ⭐️ - TCA 기반 화면 전환 및 네비게이션 (커스텀)
-- **[WeaveDI](https://github.com/Roy-wonji/WeaveDI.git)** 3.4.0 ⭐️ - 의존성 주입 컨테이너 (커스텀 포크)
+</details>
 
-#### 🔐 인증 & 보안
-- **[GoogleSignIn-iOS](https://github.com/google/GoogleSignIn-iOS)** 9.0.0 - Google OAuth 2.0 인증
-- **[AppAuth-iOS](https://github.com/openid/AppAuth-iOS.git)** 2.0.0 - OAuth 2.0 및 OpenID Connect 클라이언트
+<details>
+<summary>DDDSharedUI</summary>
 
-#### 🌐 네트워킹
-- **[AsyncMoya](https://github.com/Roy-wonji/AsyncMoya)** 1.1.8 ⭐️ - async/await 기반 HTTP 클라이언트 (커스텀)
+![DDDSharedUI 모듈 그래프](docs/graphs/DDDAttendance-expanded-DDDSharedUI.png)
 
-#### 🎨 UI & UX
-- **[SwiftUIX](https://github.com/SwiftUIX/SwiftUIX.git)** 0.2.3 - SwiftUI 확장 컴포넌트
-- **[SDWebImageSwiftUI](https://github.com/SDWebImage/SDWebImageSwiftUI.git)** 2.0.0 - 비동기 이미지 로딩 및 캐싱
+</details>
 
-#### 🔥 백엔드 서비스
-- **[Firebase iOS SDK](https://github.com/firebase/firebase-ios-sdk)** 12.7.0 - Analytics, Crashlytics, Remote Config
+## 기술 스택
 
-### 🛠 개발 도구 & 유틸리티
+| 영역 | 기술 |
+|---|---|
+| 언어 | Swift 6, Swift Concurrency |
+| UI | SwiftUI |
+| 상태 관리 | The Composable Architecture 1.26.2 |
+| 내비게이션 | TCAFlow main |
+| 프로젝트 | Tuist 4.206.0, Mise |
+| 의존성 주입 | Point-Free Dependencies |
+| 네트워크 | DDDNetwork, Alamofire 5.12.0 |
+| 인증 | Sign in with Apple, GoogleSignIn 9.2.0, AppAuth 2.1.0 |
+| 저장소 | DDDStorage, Keychain |
+| 이미지 | SDWebImageSwiftUI 3.1.4 |
+| 모니터링 | Firebase Crashlytics 12.12.0 |
+| 테스트 | Swift Testing, Tuist Test Insights |
 
-#### 📊 로깅 & 디버깅
-- **LogMacro**: 커스텀 로깅 매크로
-- **IssueReporting**: 개발 단계 이슈 추적
-- **XCTestDynamicOverlay**: 테스트 환경 오버레이
+### 로깅과 진단
 
-#### ⚡ 성능 & 동시성
-- **Clocks**: 시간 관련 유틸리티
-- **ConcurrencyExtras**: Swift Concurrency 확장
-- **Swift 6.0**: 최신 Swift 언어 기능
+- **DDDCoreLogger**: os.Logger 기반 자체 로거이며 로그 값은 `.private`로 기록
+- **IssueReporting**: TCA 의존성 그래프에서 개발 단계 문제 보고를 담당
+- **XCTestDynamicOverlay**: 앱 코드의 테스트 assertion을 XCTest 환경과 연결
 
-#### 🔧 빌드 & 배포
-- **Tuist**: 프로젝트 생성 및 의존성 관리
-- **Swift Package Manager (SPM)**: 패키지 의존성 관리
-- **fastlane**: 자동화된 빌드 및 배포
+지원 환경:
 
-### 📱 지원 환경
-- **💻 Xcode**: 16.0 이상
-- **📱 iOS**: 17.0 이상
-- **⚡ Swift**: 6.0 이상
-- **🔧 Tuist**: 4.x 이상
+- iOS 17.0 이상
+- Swift 6
+- Xcode 26 이상
+- iPhone
 
-## 🚀 빠른 시작
+## 빌드 환경
 
-### ✅ 필수 요구사항
+프로젝트는 Dev 없이 두 구성만 사용합니다.
 
-- **💻 Xcode**: 16.0 이상
-- **📱 iOS**: 17.0 이상
-- **⚡ Swift**: 6.0 이상
-- **🔧 Tuist**: 4.x 이상
+| 구성 | 용도 | 스킴 |
+|---|---|---|
+| Stage | 로컬 개발, 시뮬레이터, CI 전체 테스트 | DDDAttendance-Stage |
+| Prod | 배포·아카이브 | DDDAttendance-Prod |
 
-### 🛠 설치 및 실행
+공통 값은 Config/base.xcconfig, 환경 값은 Config/Stage.xcconfig와 Config/Prod.xcconfig에서 관리합니다. Google 설정 파일은 Projects/App/Resources/GoogleService-Info.plist에 둡니다. 저장소에 포함되지 않는 설정 파일은 팀의 안전한 공유 경로 또는 GitHub Actions Secret에서 복원해야 합니다.
 
-#### 1️⃣ 저장소 클론
-```bash
+## 빠른 시작
+
+### 요구사항
+
+- Xcode 26 이상
+- Homebrew
+- 프로젝트 설정 파일과 GoogleService-Info.plist
+
+### 설치
+
+~~~bash
 git clone https://github.com/DDD-Community/Attendance_iOS.git
 cd Attendance_iOS
-```
 
-#### 2️⃣ Tuist 설치
-```bash
-curl -Ls https://install.tuist.io | bash
-```
+# Mise 도구 설치 → Tuist 의존성 설치 → 워크스페이스 생성
+./make setup
 
-#### 3️⃣ 프로젝트 빌드 및 생성
-```bash
-# 전체 워크플로우 (권장)
-./make build      # clean → install → generate
-
-# 또는 단계별 실행
-./make clean      # 기존 파일 정리
-./make install    # 의존성 설치
-./make generate   # 프로젝트 생성
-```
-
-#### 4️⃣ Xcode에서 실행
-```bash
 open DDDAttendance.xcworkspace
-```
+~~~
 
-### ⚙️ 환경 설정
+Xcode에서 **DDDAttendance-Stage** 스킴과 사용할 iPhone 시뮬레이터를 선택해 실행합니다.
 
-프로젝트 실행을 위해 다음 설정이 필요합니다:
+## 개발 명령어
 
-```swift
-// Config 파일에서 설정 (Dev.xcconfig, Prod.xcconfig)
-BASE_URL = api.dddstudy.kr/
-GOOGLE_CLIENT_ID = YOUR_GOOGLE_CLIENT_ID
-GOOGLE_IOS_CLIENT_ID = YOUR_GOOGLE_IOS_CLIENT_ID
-REVERSED_CLIENT_ID = YOUR_REVERSED_CLIENT_ID
-```
+~~~bash
+./make setup                     # Mise 도구, 의존성, 워크스페이스 준비
+./make generate                  # Demo 앱을 포함해 Xcode 프로젝트 생성
+./make build                     # clean → install → generate
+./make install                   # 의존성 설치 후 generate
+./make test                      # 전체 테스트
+./make cache                     # Tuist 바이너리 캐시 생성
+./make cache:setup               # Xcode Compilation Cache 준비
+./make format                    # SwiftFormat 적용
+./make lint                      # SwiftFormat 검사
+./make clean                     # 생성 프로젝트 정리
+./make reset                     # DerivedData 정리 후 프로젝트 재생성
+~~~
 
-## 🛠️ 주요 명령어
+새 모듈 생성:
 
-### 🔄 기본 워크플로우
-```bash
-./make build      # 전체 빌드 프로세스 (권장)
-./make generate   # 프로젝트 생성만
-./make clean      # 빌드 아티팩트 정리
-./make install    # 의존성 설치
-```
+~~~bash
+./make feature <이름>
+./make core <이름>
+./make service <이름>
+./make data <이름>
+./make domain <이름>
+./make ui <이름>
 
-### 🚨 문제 해결
-```bash
-tuist clean       # Tuist 캐시 정리
-./make clean      # 모든 빌드 파일 정리
-```
+# 자동으로 만든 카탈로그 case가 원하는 이름과 다를 때
+./make feature <이름> --case <케이스명>
+~~~
 
-### 🔍 코드 품질 관리
-```bash
-tuist graph       # 의존성 그래프 생성
-tuist test        # 전체 테스트 실행
-```
+모듈 생성 명령은 scaffold뿐 아니라 모듈 카탈로그와 해당 레이어 Assembly 의존성도 함께 갱신합니다.
 
-### 📱 fastlane 자동화
-```bash
-fastlane ios beta               # TestFlight 배포
-fastlane ios release            # App Store 배포
-fastlane ios screenshots        # 스크린샷 자동 생성
-fastlane ios build_for_testing  # 테스트 빌드
-```
+## 테스트와 CI
 
-**fastlane 주요 기능:**
-- 자동화된 빌드 및 배포
-- App Store Connect 관리
-- 인증서 및 프로필 관리
-- 스크린샷 자동 생성
+- **DDDAttendance-Stage** workspace 스킴은 Projects/**/Tests를 자동 수집합니다.
+- 코드 커버리지는 workspace의 관련 타깃만 집계합니다.
+- PR 워크플로는 self-hosted 러너에서 **DDDAttendance-Stage** 전체 테스트를 한 번 실행하고 PR 커버리지 리포트를 생성합니다.
+- 테스트는 `tuist test`와 `--inspect-mode remote`로 실행하고 결과를 [Tuist 웹 프로젝트](https://tuist.dev/DDD2026/attendance)에 업로드합니다.
+- Tuist Test Insights에서 모듈별 테스트 케이스, 성공·실패, 실행 시간, flaky test와 quarantine 상태를 확인합니다.
+- 전체 테스트가 성공한 경우에만 디바이스용 Stage 앱을 코드 서명 없이 빌드하고, `Payload/DDDAttendance.app`을 `DDDAttendance-Stage.ipa`로 묶어 Bundle Insights를 생성합니다.
+- 생성한 IPA는 JSON으로 분석해 PR 리포트에 설치·다운로드 크기를 표시하고, Tuist 서버에도 별도로 등록해 Tuist Run Report의 **Bundles** 섹션에 노출합니다.
+- 테스트가 실패하면 앱 빌드, IPA 생성, 번들 분석은 실행하지 않고 테스트·빌드 실패 결과만 보고합니다.
+- develop 워크플로는 Tuist Test Sharding으로 테스트를 분산하고 동일한 Test Run에 shard 결과를 수집합니다.
+- Build Insights에서 빌드 상태와 시간을, Bundle Insights에서 앱 설치 크기와 증감을 확인합니다.
+- Xcode Compilation Cache와 Tuist 외부 패키지 바이너리 캐시를 사용합니다.
 
-## 📋 사용법
+Tuist 웹 리포트:
 
-### 1️⃣ 초기 설정
-1. **앱 다운로드 및 설치**
-2. **Google 계정으로 로그인**
-3. **권한 설정** (푸시 알림 등)
+- [Tests](https://tuist.dev/DDD2026/attendance/tests/test-runs): 테스트 실행과 테스트 케이스
+- [Builds](https://tuist.dev/DDD2026/attendance/builds/build-runs): 빌드 성공 여부와 빌드 시간
+- [Bundles](https://tuist.dev/DDD2026/attendance/bundles): 앱 번들 크기와 변경 추이
 
-### 2️⃣ 출석 체크
-1. **출석 탭**에서 현재 스터디 세션 확인
-2. **출석 체크** 버튼 터치
-3. **출석 상태** 자동 업데이트 (출석/지각/결석/대기)
+관련 워크플로:
 
-### 3️⃣ 출석 현황 조회
-1. **통계 탭**에서 개인 출석률 확인
-2. **달력 뷰**로 월별 출석 패턴 확인
-3. **상세 이력** 조회 가능
+- .github/workflows/ios-pr-coverage.yml
+- .github/workflows/ios-develop-sharded-tests.yml
+- .github/workflows/ios-cache-warm.yml
+- .github/workflows/ios-deploy.yml
 
-### 4️⃣ 프로필 관리
-1. **프로필 탭**에서 개인 정보 확인
-2. **설정** 메뉴에서 앱 환경 설정
-3. **로그아웃** 및 계정 관리
+## 개발 가이드
 
-## 📄 라이선스
+- [TCA 패턴](docs/agent/tca-patterns.md)
+- [SwiftUI 패턴](docs/agent/swiftui-patterns.md)
+- [Swift 코딩 규칙](docs/agent/swift-coding-rules.md)
+- [팝업과 모달](docs/agent/popup-modal-system.md)
+- [TCAFlow 내비게이션](docs/agent/tcaflow-navigation.md)
+- [개발 환경](docs/agent/development-environment.md)
+- [Git 워크플로](docs/agent/git-workflow.md)
 
-이 프로젝트는 **MIT 라이선스** 하에 배포됩니다.
-자세한 내용은 [LICENSE](LICENSE) 파일을 참고하세요.
+프로젝트 운영 규칙과 AI 에이전트 지침은 [AGENTS.md](AGENTS.md)를 기준으로 합니다.
 
-## 👥 팀 & 크레딧
+## 브랜치 전략
 
-### 💻 개발팀
-- **iOS Lead Developer**: 서원지 ([@Roy-wonji](https://github.com/Roy-wonji))
-- **iOS Developer**: 홍은표 ([@honghoker](https://github.com/honghoker))
+- **main**: 프로덕션 배포. 푸시하면 버전 태그를 갱신하고 App Store 업로드·심사 제출까지 진행합니다.
+- **develop**: 개발 통합. 푸시하면 TestFlight로 배포합니다.
+- 기능·수정 브랜치 → develop Pull Request
 
-### 🛠 기술 스택
-- **iOS**: 
-  ![Swift](https://img.shields.io/badge/swift-F05138?style=for-the-badge&logo=swift&logoColor=white)
-  ![Xcode](https://img.shields.io/badge/xcode-147EFB?style=for-the-badge&logo=xcode&logoColor=white)
-  ![Fastlane](https://img.shields.io/badge/fastlane-00F200?style=for-the-badge&logo=fastlane&logoColor=white)
+## 문의
 
-- **Server**: 
-  ![AWS EC2](https://img.shields.io/badge/amazonec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white)
-  ![AWS](https://img.shields.io/badge/amazonaws-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white)
-  ![Swagger](https://img.shields.io/badge/swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=white)
-
-- **Design**: 
-  ![Figma](https://img.shields.io/badge/figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
-
-- **VCS**: 
-  ![Git](https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white)
-  ![GitHub](https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white)
-
-## 🐈‍⬛ Git 브랜칭 전략
-
-### 1️⃣ Git Branching Strategy
-
-- **Main Branch**: 프로덕션 배포용
-- **Develop Branch**: 개발 통합 브랜치  
-- **Feature Branch**: 기능별 개발 브랜치
-
-### 📋 워크플로우
-1. **Develop** 브랜치에서 **Feature** 브랜치 생성
-2. **Feature** 브랜치에서 개발 진행
-3. **Feature** → **Develop** Pull Request
-4. 코드 리뷰 및 충돌 해결 후 머지
-5. **Develop** → **Main** 배포용 Pull Request
-
-## 📞 문의 및 지원
-
-- 📧 **이메일**: suhwj81@gmail.com
-- 🐛 **버그 신고**: [Issues](https://github.com/DDD-Community/Attendance_iOS/issues)
-- 💡 **기능 제안**: [Discussions](https://github.com/DDD-Community/Attendance_iOS/discussions)
-- 📱 **App Store**: [DDD 출석 다운로드](https://apps.apple.com/kr/app/ddd/id6736766383)
-
----
+- [GitHub Issues](https://github.com/DDD-Community/Attendance_iOS/issues)
+- [GitHub Discussions](https://github.com/DDD-Community/Attendance_iOS/discussions)
+- [App Store](https://apps.apple.com/kr/app/ddd/id6736766383)
 
 <div align="center">
 
-**Made with ❤️ by DDD Team**
-
-[![Star this repo](https://img.shields.io/github/stars/Roy-wonji/DDD-Attendance-iOS?style=social)](https://github.com/DDD-Community/Attendance_iOS)
+Made with ❤️ by DDD
 
 </div>

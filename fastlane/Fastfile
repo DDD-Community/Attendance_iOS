@@ -1,4 +1,8 @@
 # Fastlane 기본 설정
+require "yaml"
+require File.expand_path("app_store_release_notes", __dir__)
+require File.expand_path("ci_slack", __dir__)
+
 default_platform(:ios)
 
 ENV["FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT"] = "600"
@@ -51,42 +55,40 @@ def unlock_match_keychain
   )
 end
 
-# 빌드 번호 자동 증가 — TestFlight/App Store 최신 빌드 번호 + 1
+# 빌드 번호 = 날짜형 YYMMDDHHMM (항상 증가, App Store에서 조회하여 이전 번호보다 큼 보장)
 def next_build_number
-  begin
-    current_build_number = latest_testflight_build_number(
-      app_identifier: BUNDLE_ID,
-      platform: "ios"
-    )
-    puts "📱 TestFlight 최신 빌드 번호: #{current_build_number}"
-  rescue => e
-    puts "⚠️ TestFlight 빌드 번호 조회 실패, 기본값 1 사용: #{e.message}"
-    current_build_number = 1
-  end
+  # App Store에서 현재 빌드 번호 조회
+  latest_build_number = latest_testflight_build_number(
+    app_identifier: BUNDLE_ID,
+    version: current_app_version
+  ).to_i
 
-  begin
-    live_build_number = app_store_build_number(
-      app_identifier: BUNDLE_ID,
-      platform: "ios"
-    )
-    puts "🏪 App Store 라이브 빌드 번호: #{live_build_number}"
-    current_build_number = [current_build_number, live_build_number].max
-  rescue => e
-    puts "⚠️ App Store 빌드 번호 조회 실패: #{e.message}"
-  end
+  # 날짜 기반 새 빌드 번호 (YYMMDDHHMM)
+  date_based_number = Time.now.strftime("%y%m%d%H%M").to_i
 
-  new_build_number = current_build_number + 1
-  puts "🔢 새로운 빌드 번호: #{new_build_number}"
-  new_build_number
+  # 같은 시간 내에 여러 번 빌드할 경우를 대비해 더 큰 번호 선택
+  new_build_number = [latest_build_number + 1, date_based_number].max
+  puts "🔢 이전 빌드: #{latest_build_number}, 새 빌드 번호: #{new_build_number}"
+  new_build_number.to_s
+end
+
+# 마케팅 버전(version)을 Extension+String.swift 의 appVersion 기본값에서 추출
+def current_app_version
+  extension_file_path = "../Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
+  content = File.read(extension_file_path)
+  if content =~ /static func appVersion\(version: String = "([0-9.]+)"\)/
+    Regexp.last_match(1)
+  end
 end
 
 # Extension+String.swift 의 빌드 번호 갱신 (tuist generate 시 CFBundleVersion 으로 반영)
 def apply_build_number(new_build_number)
+  CISlack.notify("generate", version: current_app_version, build: new_build_number)
   extension_file_path = "../Plugins/ProjectTemplatePlugin/ProjectDescriptionHelpers/Project+Templete/Extension+String.swift"
   content = File.read(extension_file_path)
   updated_content = content.gsub(
-    /public static func appBuildVersion\(buildVersion: String = "\d+"\) -> String \{/,
-    "public static func appBuildVersion(buildVersion: String = \"#{new_build_number}\") -> String {"
+    /static func appBuildVersion\(buildVersion: String = "\d+"\) -> String \{/,
+    "static func appBuildVersion(buildVersion: String = \"#{new_build_number}\") -> String {"
   )
   File.write(extension_file_path, updated_content)
   puts "✅ 빌드 번호를 #{new_build_number}로 업데이트 완료"
@@ -94,7 +96,8 @@ def apply_build_number(new_build_number)
   # 갱신된 빌드 번호 반영을 위해 Tuist 강제 재생성
   Dir.chdir("..") do
     puts "🔧 Tuist workspace 재생성 중..."
-    sh("tuist generate --no-open")
+    # 배포 archive는 공급자 서명이 없는 Tuist 바이너리 캐시를 사용하지 않는다.
+    sh("tuist generate --no-open --cache-profile none")
     puts "✅ Tuist workspace 재생성 완료"
   end
 end
@@ -147,36 +150,116 @@ def build_ipa(scheme)
     workspace_path = File.expand_path(workspace_files.first)
     puts "✅ Using workspace: #{workspace_path}"
 
-    ipa_path = build_app(
-      workspace: workspace_path,
-      scheme: scheme,
-      configuration: "Release",
-      export_method: "app-store",
-      output_directory: File.expand_path(OUTPUT_DIR),
-      output_name: IPA_FILENAME,
-      clean: false,
-      silent: false,
-      build_timing_summary: true,
-      disable_package_automatic_updates: true,
-      skip_package_dependencies_resolution: true,
-      use_system_scm: true,
-      xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
-              "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
-              "SWIFT_COMPILATION_MODE=incremental -parallelizeTargets " +
-              "ENABLE_PARALLEL_SIGNING=YES DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES " +
-              "FRAMEWORK_SEARCH_PATHS='$(inherited)' LIBRARY_SEARCH_PATHS='$(inherited)' " +
-              "-allowProvisioningUpdates",
-      export_options: {
-        signingStyle: "manual",
-        uploadBitcode: false,
-        teamID: TEAM_ID,
-        provisioningProfiles: {
-          "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
+    # Xcode 26 + pointfree 매크로(CasePathsMacrosSupport)의 clean-archive 레이스:
+    # 1차에서 매크로 지원 프레임워크가 생성되고, 동일 DerivedData로 재시도하면 2차부터 통과한다.
+    build_attempts = 0
+    begin
+      build_attempts += 1
+      CISlack.notify("build")
+      ipa_path = build_app(
+        workspace: workspace_path,
+        scheme: scheme,
+        configuration: "Release",
+        export_method: "app-store",
+        output_directory: File.expand_path(OUTPUT_DIR),
+        output_name: IPA_FILENAME,
+        clean: false,
+        silent: false,
+        build_timing_summary: true,
+        disable_package_automatic_updates: true,
+        skip_package_dependencies_resolution: true,
+        use_system_scm: true,
+        xcodebuild_formatter: "",
+        xcargs: "CODE_SIGN_IDENTITY='Apple Distribution' CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{TEAM_ID} " +
+                "COMPILER_INDEX_STORE_ENABLE=NO ENABLE_BITCODE=NO " +
+                "SWIFT_COMPILATION_MODE=incremental " +
+                "ENABLE_PARALLEL_SIGNING=YES DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES " +
+                "STRIP_SWIFT_SYMBOLS=NO EMBEDDED_CONTENT_CONTAINS_SWIFT=YES " +
+                "-allowProvisioningUpdates",
+        export_options: {
+          signingStyle: "manual",
+          uploadBitcode: false,
+          teamID: TEAM_ID,
+          stripSymbols: false,
+          provisioningProfiles: {
+            "#{BUNDLE_ID}" => "match AppStore #{BUNDLE_ID}"
+          }
         }
-      }
-    )
+      )
+    rescue => e
+      if build_attempts < 5
+        UI.important("⚠️ archive 실패 (#{build_attempts}/5) — 매크로 워밍업 후 동일 DerivedData로 재시도")
+        retry
+      else
+        raise e
+      end
+    end
   end
   ipa_path
+end
+
+# TestFlight "테스트할 사항" 문구.
+# 커밋 제목을 그대로 넘기면 "fix: 배포 오류 수정" 같은 내부 작업 로그가
+# 테스터에게 나가고 같은 문구가 계속 반복된다(9/7 하루에만 8회).
+# 그래서 안내 문구는 풀에서 돌려 쓰고, 커밋 제목은 접두사와 PR 번호를 벗겨 부제로만 붙인다.
+RELEASE_NOTES_FILE = File.expand_path("release_notes.yml", __dir__)
+APP_STORE_METADATA_PATH = File.expand_path("metadata", __dir__)
+
+# 커밋 제목에서 작업 성격을 판별한다. 위에서부터 먼저 걸리는 카테고리를 쓰므로
+# release_notes.yml 의 순서가 곧 우선순위다.
+def matching_category(categories, subject)
+  haystack = subject.to_s.downcase
+
+  matched = categories.find do |category|
+    Array(category["keywords"]).any? { |keyword| haystack.include?(keyword.to_s.downcase) }
+  end
+
+  matched || categories.find { |category| category["id"] == "default" } || categories.last
+end
+
+# 빌드번호는 YYMMDDHHMM 이라 항상 증가한다. 개수로 나눈 나머지를 쓰면
+# 별도 상태 없이 배포마다 같은 카테고리 안에서도 다른 문장이 배정된다.
+def rotating_test_note(build_number, subject)
+  categories = YAML.load_file(RELEASE_NOTES_FILE)["categories"]
+  return nil if categories.nil? || categories.empty?
+
+  notes = Array(matching_category(categories, subject)&.fetch("notes", nil))
+  return nil if notes.empty?
+
+  notes[build_number.to_i % notes.size]
+rescue StandardError => e
+  UI.important("release_notes.yml 을 읽지 못해 안내 문구를 생략한다: #{e.message}")
+  nil
+end
+
+# "fix: 배포 오류 수정 (#96)" -> "배포 오류 수정"
+def humanized_commit_subject
+  subject = ENV.fetch("RELEASE_NOTES", "").strip
+  return nil if subject.empty?
+
+  cleaned = subject
+    .sub(/\A(feat|fix|chore|refactor|docs|test|ci|build|perf|style)(\([^)]*\))?!?:\s*/i, "")
+    .sub(/\s*\(#\d+\)\z/, "")
+    .strip
+
+  cleaned.empty? ? nil : cleaned
+end
+
+def testflight_changelog(build_number)
+  lines = []
+  subject = humanized_commit_subject
+
+  # 카테고리 판별은 접두사를 벗기기 전 원문으로 해야 "fix:" 같은 힌트를 살릴 수 있다.
+  note = rotating_test_note(build_number, ENV.fetch("RELEASE_NOTES", ""))
+  lines << note if note
+
+  if subject
+    lines << "" unless lines.empty?
+    lines << "이번 변경: #{subject}"
+  end
+
+  lines << "빌드 #{build_number}"
+  lines.join("\n")
 end
 
 platform :ios do
@@ -187,6 +270,7 @@ platform :ios do
   # 🚀 TestFlight 업로드 (Debug)
   desc "Upload to TestFlight (Debug)"
   lane :QA do
+    CISlack.notify("fastlane", version: current_app_version)
     app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
@@ -195,8 +279,10 @@ platform :ios do
       in_house: false
     )
 
-    apply_build_number(next_build_number)
+    build_number = next_build_number
+    apply_build_number(build_number)
 
+    CISlack.notify("sign")
     match(
       type: "appstore",
       readonly: true,
@@ -210,9 +296,10 @@ platform :ios do
     ipa_path = build_ipa(STAGE_SCHEME)
 
     begin
+      CISlack.notify("upload")
       upload_to_testflight(
         ipa: ipa_path,
-        changelog: ENV.fetch("RELEASE_NOTES", "변경사항"),
+        changelog: testflight_changelog(build_number),
         groups: ["DDD", "ddd"],
         beta_app_description: "DDD 출석 앱입니다.",
         notify_external_testers: true,
@@ -221,9 +308,11 @@ platform :ios do
         uses_non_exempt_encryption: false
       )
     rescue => e
-      # 외부 그룹 베타 심사는 버전당 1개만 가능 → 이전 빌드 심사 중이면 제출만 실패(바이너리 업로드는 이미 완료)
-      if e.message.include?("Another build is in review") || e.message.downcase.include?("beta review")
-        UI.important("⚠️ 이전 빌드가 베타 심사 중이라 외부 그룹 제출은 보류됨. 바이너리 업로드는 완료 — 이전 심사 완료 후 배포 가능.")
+      # 바이너리 업로드는 끝났는데 그룹/심사 배포 단계만 실패하면 빌드 실패시키지 않고 경고만
+      # (External 베타 심사 충돌 또는 Internal 그룹은 빌드 지정 불가 → 자동 수신)
+      if e.message.include?("Another build is in review") || e.message.downcase.include?("beta review") ||
+         e.message.include?("internal group") || e.message.downcase.include?("cannot be assigned")
+        UI.important("⚠️ 그룹/심사 배포 단계 보류 — 바이너리 업로드는 완료됨. (Internal 그룹은 자동 수신)")
       else
         raise e
       end
@@ -233,67 +322,87 @@ platform :ios do
   # 🚀 App Store 배포
   desc "Submit to App Store"
   lane :release do |options|
-    if options[:version]
-      app_store_connect_api_key(
-        key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
-        issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-        key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
-        is_key_content_base64: true,
-        in_house: false
-      )
-
-      new_build_number = next_build_number
-      apply_build_number(new_build_number)
-
-      match(
-        type: "appstore",
-        readonly: true,
-        git_url: ENV.fetch("MATCH_GIT_URL", "git@github.com:Roy-wonji/FastlaneMatch.git"),
-        storage_mode: "git",
-        app_identifier: [BUNDLE_ID],
-        keychain_name: MATCH_KEYCHAIN_NAME,
-        keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"]
-      )
-
-      ipa_path = build_ipa(PROD_SCHEME)
-
-      # clean_symbols_from_ipa(ipa_path: ipa_path)
-
-      # 업로드 후 자동으로 심사 요청
-      upload_to_app_store(
-        app_version: options[:version],
-        username: ENV["APPLE_ID"],
-        team_id: "KL4Y9PB9B8",
-        ipa: ipa_path,
-        skip_metadata: false,
-        metadata_path: "./fastlane/metadata",
-        skip_screenshots: true,
-        force: true,
-        submit_for_review: true,
-        automatic_release: false,
-        precheck_include_in_app_purchases: false,
-        reject_if_possible: true
-      )
-
-      UI.success("🎉 앱 업로드 및 심사 요청 완료!")
-      UI.important("")
-      UI.important("📱 심사 진행 상황 확인:")
-      UI.important("   1. https://appstoreconnect.apple.com 접속")
-      UI.important("   2. DDD Attendance 앱 선택")
-      UI.important("   3. 버전 #{options[:version]} 심사 상태 확인")
-      UI.important("   4. 빌드 번호: #{new_build_number}")
-      UI.important("")
-      UI.success("✅ 빌드, 업로드, 심사 요청이 모두 성공적으로 완료되었습니다!")
-      UI.success("🚀 이제 Apple의 심사를 기다리기만 하면 됩니다!")
-    else
-      UI.user_error!("⚠️ version 옵션을 지정해주세요: fastlane release version:'1.0.0'")
+    CISlack.notify("fastlane", version: options[:version] || current_app_version)
+    # version 옵션이 없으면 Extension+String.swift 의 appVersion 에서 자동 추출
+    version = options[:version] || current_app_version
+    if version.nil? || version.empty?
+      UI.user_error!("⚠️ 버전을 확인할 수 없어요. fastlane release version:'1.0.0' 처럼 지정하거나 Extension+String.swift 의 appVersion 을 확인해주세요.")
     end
+    puts "📦 릴리스 버전: #{version}"
+
+    AppStoreReleaseNotes.write(
+      config_path: RELEASE_NOTES_FILE,
+      metadata_path: APP_STORE_METADATA_PATH,
+      version: version
+    )
+    puts "📝 App Store 릴리스 노트 자동 생성 완료"
+
+    app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: true,
+      in_house: false
+    )
+
+    new_build_number = next_build_number
+    apply_build_number(new_build_number)
+
+    CISlack.notify("sign")
+    match(
+      type: "appstore",
+      readonly: true,
+      git_url: ENV.fetch("MATCH_GIT_URL", "git@github.com:Roy-wonji/FastlaneMatch.git"),
+      storage_mode: "git",
+      app_identifier: [BUNDLE_ID],
+      keychain_name: MATCH_KEYCHAIN_NAME,
+      keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"]
+    )
+
+    ipa_path = build_ipa(PROD_SCHEME)
+
+    # clean_symbols_from_ipa(ipa_path: ipa_path)
+
+    # 업로드 후 자동으로 심사 요청
+    CISlack.notify("upload")
+    upload_to_app_store(
+      app_version: version,
+      username: ENV["APPLE_ID"],
+      team_id: "KL4Y9PB9B8",
+      ipa: ipa_path,
+      skip_metadata: false,
+      metadata_path: "./fastlane/metadata",
+      skip_screenshots: true,
+      force: true,
+      submit_for_review: false,
+      automatic_release: false,
+      precheck_include_in_app_purchases: false,
+      reject_if_possible: true
+    )
+
+    UI.success("🎉 앱 업로드 및 심사 요청 완료!")
+    UI.important("")
+    UI.important("📱 심사 진행 상황 확인:")
+    UI.important("   1. https://appstoreconnect.apple.com 접속")
+    UI.important("   2. DDD Attendance 앱 선택")
+    UI.important("   3. 버전 #{version} 심사 상태 확인")
+    UI.important("   4. 빌드 번호: #{new_build_number}")
+    UI.important("")
+    UI.success("✅ 빌드, 업로드, 심사 요청이 모두 성공적으로 완료되었습니다!")
+    UI.success("🚀 이제 Apple의 심사를 기다리기만 하면 됩니다!")
   end
 
   # 🚀 이미 업로드된 버전을 심사에 제출
   desc "Submit already uploaded version for review"
   lane :submit_for_review do |options|
+    CISlack.notify("review", version: options[:version])
     if options[:version]
+      AppStoreReleaseNotes.write(
+        config_path: RELEASE_NOTES_FILE,
+        metadata_path: APP_STORE_METADATA_PATH,
+        version: options[:version]
+      )
+
       app_store_connect_api_key(
         key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
         issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],

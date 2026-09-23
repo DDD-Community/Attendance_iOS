@@ -57,15 +57,15 @@ public final class AppDIManager {
 ```swift
 final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
   @Dependency(\.keychainManager) private var keychainManager
-  private let provider: MoyaProvider<AuthService>
-  private let authProvider: MoyaProvider<AuthService>
+  private let client: any DDDRequestClient
+  private let authService: any AuthService
 
   public init(
-    provider: MoyaProvider<AuthService> = MoyaProvider<AuthService>.default,
-    authProvider: MoyaProvider<AuthService> = MoyaProvider<AuthService>.authorized
+    client: any DDDRequestClient,
+    authService: any AuthService
   ) {
-    self.provider = provider
-    self.authProvider = authProvider
+    self.client = client
+    self.authService = authService
   }
 
   // MARK: - 로그인 API
@@ -73,17 +73,28 @@ final public class AuthRepositoryImpl: AuthInterface, @unchecked Sendable {
     provider socialProvider: SocialType,
     token: String
   ) async throws -> LoginEntity {
-    let dto: LoginResponseDTO = try await provider.request(
-      .login(body: OAuthLoginRequest(provider: socialProvider.description, token: token))
-     )
-    return dto.toDomain()
+    let dto = try await client.send(
+      AuthRequest.login(
+        body: OAuthLoginRequest(provider: socialProvider.description, token: token)
+      ),
+      as: LoginResponseDTO.self
+    )
+    let entity = dto.toDomain()
+    await authService.signIn(
+      accessToken: entity.token.accessToken,
+      refreshToken: entity.token.refreshToken
+    )
+    return entity
   }
 
   // MARK: - 토큰 재발급
   public func refresh() async throws -> AuthTokens {
     let refreshToken = keychainManager.refreshToken() ?? ""
     // keychainManager는 @Dependency로 주입받아 사용
-    let dto: TokenDTO = try await provider.request(.refresh(refreshToken: refreshToken))
+    let dto = try await client.send(
+      AuthRequest.refresh(refreshToken: refreshToken),
+      as: TokenDTO.self
+    )
     return dto.toDomain()
   }
 }

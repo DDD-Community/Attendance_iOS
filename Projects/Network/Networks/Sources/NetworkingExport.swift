@@ -1,9 +1,0 @@
-//
-//  NetworkingExport.swift
-//  Networkings
-//
-//  Created by Wonji Suh  on 11/1/24.
-//
-
-@_exported  import Model
-@_exported  import ThirdPartys

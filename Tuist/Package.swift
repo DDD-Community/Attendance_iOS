@@ -1,71 +1,153 @@
 // swift-tools-version: 6.2
+//
+//  Package.swift
+//  Manifests
+//
+//  Created by DDD on 9/4/26.
+//
+
 @preconcurrency import PackageDescription
 
 #if TUIST
 @preconcurrency import ProjectDescription
 
+import Foundation
+
+// TestFlight/App Store 아카이브는 framework 안에 중첩 Frameworks/libswift_*.dylib 가 생기면
+// 업로드가 거부된다. 그래서 배포 빌드에서는 이 의존성들을 정적으로 링크한다.
+//
+// 반대로 정적으로 링크하면 모듈이 소비자 바이너리에 흡수돼 독립 바이너리가 사라지고,
+// xccov 가 개별 타깃으로 잡지 못해 커버리지에서 통째로 빠진다.
+// (이 전환 뒤 PR 리포트의 framework 타깃이 85개에서 3개로 줄었다.)
+// 그래서 배포가 아닌 빌드 - Stage 커버리지 측정 - 에서는 동적으로 둔다.
+// PackageDescription 에도 Product 가 있어 모듈을 명시해야 모호성이 없다.
+private let deploymentLinked: ProjectDescription.Product =
+  ProcessInfo.processInfo.environment["TUIST_RELEASE_BUILD"] == "1" ? .staticFramework : .framework
+
+private extension Settings {
+  /// 외부 패키지 타깃이 앱과 동일한 빌드 configuration을 사용하도록 맞춘다.
+  static var baseSettings: Settings {
+    return .settings(
+      base: [
+        "OTHER_SWIFT_FLAGS": "$(inherited) -module-alias Sharing=DDDPointFreeSharing",
+        // Swift 표준 라이브러리는 최종 앱에만 임베드한다. 프레임워크 안에
+        // Frameworks/libswift_*.dylib가 생기면 App Store 업로드가 거부된다.
+        "ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES": "NO"
+      ],
+      configurations: [
+        .debug(name: "Stage", settings: ["ONLY_ACTIVE_ARCH": "YES"]),
+        .release(name: "Prod", settings: ["ONLY_ACTIVE_ARCH": "NO"])
+      ]
+    )
+  }
+}
+
 let packageSettings = PackageSettings(
   productTypes: [
-    // Firebase 관련 패키지들을 정적 프레임워크로 설정
-    "FirebaseCore": .staticFramework,
-    "FirebaseCoreExtension": .staticFramework,
-    "FirebaseAppCheck": .staticFramework,
-    "FirebaseAppCheckInterop": .staticFramework,
-    "AppCheckCore": .staticFramework,
-    "GoogleUtilities": .staticFramework,
-    "nanopb": .staticFramework,
-    "PromisesObjC": .staticFramework,
+    // Release/TestFlight는 cache-profile none으로 생성해 SPM 소스를 직접 빌드한다.
+    // 리소스(PrivacyInfo.xcprivacy 등)를 포함한 제품은 동적으로 유지하고,
+    // 나머지는 정적으로 링크해 framework 내부 중첩 Frameworks를 최소화한다.
+    // (App Store Connect 90206 방지)
+    "Firebase": .framework,
+    "FirebaseCore": .framework,
+    "FirebaseCoreExtension": .framework,
+    "FirebaseCoreInternal": .framework,
+    "FirebaseInstallations": .framework,
+    "FirebaseSessions": .framework,
+    "FirebaseSessionsObjC": .framework,
+    "FirebaseCrashlytics": .framework,
+    "FirebaseCrashlyticsSwift": .framework,
+    "FirebaseRemoteConfigInterop": .framework,
+    "FirebaseAppCheck": .framework,
+    "FirebaseAppCheckInterop": .framework,
+    "GoogleDataTransport": .framework,
+    "nanopb": .framework,
+    "AppCheckCore": deploymentLinked,
+    "FBLPromises": .framework,
+    "Promises": .framework,
+    "GoogleUtilities-AppDelegateSwizzler": .framework,
+    "GoogleUtilities-Environment": .framework,
+    "GoogleUtilities-Logger": .framework,
+    "GoogleUtilities-MethodSwizzler": .framework,
+    "GoogleUtilities-Network": .framework,
+    "GoogleUtilities-NSData": .framework,
+    "GoogleUtilities-Reachability": .framework,
+    "GoogleUtilities-UserDefaults": .framework,
 
-    // 기존 설정 유지
-    "ComposableArchitecture": .staticFramework,
-    "IdentifiedCollections": .staticFramework,
-    "TCAFlow": .staticFramework,
-    "Moya": .staticFramework,
-    "LogMacro": .staticFramework,
-    "AsyncMoya": .staticFramework,
-    "AppAuth": .staticFramework,
-    "AppAuthCore": .staticFramework,
-    "GTMAppAuth": .staticFramework,
-    "GTMSessionFetcherCore": .staticFramework,
-    "IssueReporting": .staticFramework,
-    "IssueReportingPackageSupport": .staticFramework,
-    "XCTestDynamicOverlay": .staticFramework,
-    // Picke 스타일에 맞춰 정적 프레임워크로 통일 (archive 시 strip 노이즈 제거)
-    "Clocks": .staticFramework,
-    "CombineSchedulers": .staticFramework,
-    "ConcurrencyExtras": .staticFramework,
-    "SDWebImageSwiftUI": .staticFramework,
-    "SDWebImage": .staticFramework,
-    "SwiftUIX": .staticFramework,
-    "WeaveDI": .staticFramework,
+    // GoogleSignIn 전이 의존성도 정적으로 링크한다.
+    "AppAuth": .framework,
+    "AppAuthCore": .framework,
+    "GTMAppAuth": .framework,
+    "GTMSessionFetcherCore": .framework,
+
+    "ComposableArchitecture": .framework,
+    "IdentifiedCollections": deploymentLinked,
+    "TCAFlow": deploymentLinked,
+    "IssueReporting": .framework,
+    "IssueReportingPackageSupport": .framework,
+    "XCTestDynamicOverlay": .framework,
+    "Clocks": deploymentLinked,
+    "CombineSchedulers": deploymentLinked,
+    "ConcurrencyExtras": deploymentLinked,
+    "SDWebImageSwiftUI": .framework,
+    "SDWebImage": .framework,
+
+    // ── 경고에 떴지만 productTypes에 없어서 기본값(static)으로 중복되던 전이 의존성 ──
+    "Dependencies": .framework,
+    "DependenciesMacros": .framework,
+    "PerceptionCore": .framework,
+    "Perception": .framework,
+    // Sharing은 리소스 번들을 포함하므로 동적 framework로 유지한다.
+    // 버전 마커만 정적으로 링크해 앱이 Sharing1/2.framework를 찾지 않게 한다.
+    "Sharing": .framework,
+    "Sharing1": .staticFramework,
+    "Sharing2": .staticFramework,
+    "SQLiteData": .framework,
+    "GRDB": .framework,
+    "GRDBSQLite": .framework,
+    "GRDB_GRDB": .framework,
+    "StructuredQueries": .framework,
+    "StructuredQueriesCore": .framework,
+    "StructuredQueriesSQLite": .framework,
+    "StructuredQueriesSQLiteCore": .framework,
+    "SwiftNavigation": deploymentLinked,
+    "SwiftUINavigation": deploymentLinked,
+    // Stage의 동적 소비자들이 프로토콜 메타데이터를 각각 정적으로 포함하지 않는다.
+    "CasePaths": deploymentLinked,
+    "CasePathsCore": deploymentLinked,
+    // 매크로 실행 파일은 동적 지원 모듈을 사용할 수 없다(Tuist 그래프 제약).
+    "CasePathsMacrosSupport": .staticFramework,
+    "Alamofire": .framework,
 
     // GoogleSignIn 관련
-    "GoogleSignIn": .staticFramework,
-    "GoogleSignInSwift": .staticFramework,
-    "GTMSessionFetcher": .staticFramework
+    "GoogleSignIn": .framework,
+    "GoogleSignInSwift": .framework,
+    "GTMSessionFetcher": .framework
   ],
-  baseSettings: .settings(
-    configurations: [
-      .debug(name: "Debug"),
-      .debug(name: "Stage"),
-      .release(name: "Release"),
-      .release(name: "Prod")
-    ]
-  )
+  baseSettings: .baseSettings,
+  targetSettings: [
+    // Xcode 26 XCTest가 먼저 로드하는 Apple private Sharing 모듈과 충돌하지 않도록
+    // Point-Free 구현은 별도 Swift module/framework 이름으로 빌드한다.
+    "Sharing": .settings(base: [
+      "PRODUCT_NAME": "DDDPointFreeSharing"
+    ])
+  ]
 )
 #endif
 let package = Package(
   name: "DDDAttendance",
   dependencies: [
     .package(url: "https://github.com/firebase/firebase-ios-sdk", exact: "12.12.0"),
-    .package(url: "https://github.com/google/GoogleSignIn-iOS", exact: "9.1.0"),
+    .package(url: "https://github.com/google/GoogleSignIn-iOS", exact: "9.2.0"),
     .package(url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git", exact: "3.1.4"),
-    .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.25.5"),
-    .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.1.0"),
-    .package(url: "https://github.com/Roy-wonji/TCAFlow.git", exact: "1.1.2"),
-    .package(url: "https://github.com/Roy-wonji/AsyncMoya", exact: "1.1.8"),
-    .package(url: "https://github.com/SwiftUIX/SwiftUIX.git", exact: "0.2.3"),
-    .package(url: "https://github.com/openid/AppAuth-iOS.git", exact: "2.0.0"),
-    .package(url: "https://github.com/Roy-wonji/WeaveDI.git", exact: "3.4.1")
+    .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.26.2"),
+    // 1.12+ redirects to swift-issue-reporting through a compatibility target.
+    // Tuist 4.206 can resolve that target back to itself and report a circular dependency.
+    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", exact: "1.11.0"),
+    .package(url: "https://github.com/pointfreeco/sqlite-data", exact: "1.11.0"),
+    .package(url: "https://github.com/pointfreeco/swift-structured-queries", exact: "0.36.0"),
+    .package(url: "https://github.com/Roy-wonji/TCAFlow.git", exact: "1.1.8"),
+    .package(url: "https://github.com/openid/AppAuth-iOS.git", exact: "2.1.0"),
+    .package(url: "https://github.com/Alamofire/Alamofire", exact: "5.12.0"),
   ]
 )
