@@ -22,7 +22,6 @@ let project = Project.makeAppModule(
     .featureAssembly,
     .service(.config),
     .SPM.composableArchitecture,
-    .SPM.issueReporting,
     .SPM.tcaFlow,
   ],
   sources: ["Sources/**"],
