@@ -66,7 +66,7 @@ class CacheCommandsTests(unittest.TestCase):
             [
                 ["install"],
                 ["setup", "cache"],
-                ["cache", "warm", "--external-only"],
+                ["cache", "warm", "--cache-profile", "only-external"],
                 ["generate", "--no-open"],
             ],
         )
@@ -106,14 +106,29 @@ class CacheCommandsTests(unittest.TestCase):
             [
                 ["install"],
                 ["setup", "cache"],
-                ["cache", "warm", "--external-only"],
+                ["cache", "warm", "--cache-profile", "only-external"],
             ],
         )
 
     def test_cache_warms_external_dependencies(self):
         result, calls = self.run_command(["cache"])
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(calls, [["cache", "warm", "--external-only"]])
+        self.assertEqual(calls, [["cache", "warm", "--cache-profile", "only-external"]])
+
+    def test_explicit_cache_profile_is_preserved(self):
+        for options in (["--cache-profile", "all-possible"], ["--cache-profile=none"]):
+            with self.subTest(options=options):
+                result, calls = self.run_command(["cache", "warm", *options])
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(calls, [["cache", "warm", *options]])
+
+    def test_legacy_flags_are_translated(self):
+        for flag, profile in (("--external-only", "only-external"),
+                              ("--no-external-only", "all-possible")):
+            with self.subTest(flag=flag):
+                result, calls = self.run_command(["cache", flag])
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(calls, [["cache", "warm", "--cache-profile", profile]])
 
     def test_cache_setup_runs_tuist_setup(self):
         result, calls = self.run_command(["cache:setup"])
@@ -128,7 +143,7 @@ class CacheCommandsTests(unittest.TestCase):
             [
                 ["install"],
                 ["setup", "cache"],
-                ["cache", "warm", "--external-only"],
+                ["cache", "warm", "--cache-profile", "only-external"],
                 ["generate", "--no-open"],
             ],
         )
