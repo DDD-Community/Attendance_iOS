@@ -16,12 +16,16 @@ import ComposableArchitecture
 struct OnBoardingNameReducerTests {
   @Test("입력한 이름으로 다음 이동을 요청한다", arguments: ["서원지", "가나다라마"])
   func enteredNameNavigates(name: String) async {
-    let store = TestStore(initialState: OnBoardingNameFeature.State()) {
+    var state = OnBoardingNameFeature.State()
+    // 매개변수 케이스끼리 같은 영속 키의 세션을 공유하지 않도록 분리한다.
+    state.$userSession = Shared(value: .empty)
+    let store = TestStore(initialState: state) {
       OnBoardingNameFeature()
     }
     await store.send(.view(.nameChanged(name))) {
       $0.$userSession.withLock { $0.name = name }
     }
+    #expect(store.state.userSession.name == name)
     #expect(store.state.enableButton)
     await store.send(.view(.checkIsAvailableName))
     await store.receive(\.delegate.presentSignUpPart)
