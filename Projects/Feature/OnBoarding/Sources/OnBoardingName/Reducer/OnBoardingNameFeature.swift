@@ -40,6 +40,7 @@ public struct OnBoardingNameFeature {
   
   @CasePathable
   public enum View {
+    case nameChanged(String)
     case checkIsAvailableName
     case initSignUpName
   }
@@ -72,6 +73,11 @@ extension OnBoardingNameFeature {
     action: View
   ) -> Effect<Action> {
     switch action {
+    case .nameChanged(let name):
+      state.$userSession.withLock { $0.name = String(name.prefix(5)) }
+      state.isNotAvailableName = false
+      return .none
+
     case .checkIsAvailableName:
       if state.userSession.name.count > 5 {
         state.isNotAvailableName = true

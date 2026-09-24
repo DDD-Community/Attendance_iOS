@@ -28,6 +28,9 @@ public struct  OnBoardingNameView: View {
       ZStack {
         Color.backGroundPrimary
           .edgesIgnoringSafeArea(.all)
+          .onTapGesture {
+            dismissKeyboard()
+          }
         
         VStack {
           
@@ -47,6 +50,7 @@ public struct  OnBoardingNameView: View {
           }
           .scrollIndicators(.hidden)
           .scrollBounceBehavior(.basedOnSize)
+          .scrollDismissesKeyboard(.interactively)
           .onAppear {
             UIScrollView.appearance().bounces = false
           }
@@ -55,9 +59,6 @@ public struct  OnBoardingNameView: View {
           
           Spacer()
             .frame(height: 20)
-        }
-        .onTapGesture {
-          dismissKeyboard()
         }
       }
       .onAppear {
@@ -107,11 +108,8 @@ extension  OnBoardingNameView {
             .dddFont(.body2NormalMedium)  // 입력 글자 스타일
             .foregroundStyle(.staticWhite)                        // 입력 글자 색
             .frame(maxWidth: .infinity)
-            .onChange(of: store.userSession.name) { new, _ in
-              if new.count > 5 {
-                store.userSession.name = String(new.prefix(5))
-                store.isNotAvailableName = false
-              }
+            .onChange(of: store.userSession.name) { _, newValue in
+              send(.nameChanged(newValue))
             }
             
             Spacer()
@@ -166,6 +164,7 @@ extension  OnBoardingNameView {
       
       CustomButton(
         action: {
+          dismissKeyboard()
           send(.checkIsAvailableName)
         },
         title: "다음",
