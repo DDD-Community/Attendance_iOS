@@ -95,9 +95,15 @@ private func cacheWarmArguments(forwardedArguments: [String]) -> [String] {
     warmArguments.removeFirst()
   }
 
+  let hasCacheProfile = warmArguments.contains { argument in
+    argument == "--cache-profile" || argument.hasPrefix("--cache-profile=")
+  }
+  let includeProjectTargets = warmArguments.contains("--no-external-only")
+  warmArguments.removeAll { $0 == "--external-only" || $0 == "--no-external-only" }
+
   var arguments = ["cache", "warm"]
-  if !warmArguments.contains("--external-only"), !warmArguments.contains("--no-external-only") {
-    arguments.append("--external-only")
+  if !hasCacheProfile {
+    arguments += ["--cache-profile", includeProjectTargets ? "all-possible" : "only-external"]
   }
   return arguments + warmArguments
 }
