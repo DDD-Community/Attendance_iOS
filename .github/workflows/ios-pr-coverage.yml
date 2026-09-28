@@ -94,6 +94,8 @@ jobs:
         run: ./Scripts/prepare-ios-simulator.sh
 
       # Tuist가 테스트 산출물을 원격 shard storage에 올리고 matrix JSON을 GITHUB_OUTPUT으로 내보낸다.
+      # 소스 경로 매핑은 xctestrun의 원본 소스 목록과 달라져 xccov가 0/0을 기록한다.
+      # 커버리지 빌드만 원본 경로를 유지하고 컴파일 캐시는 계속 사용한다.
       - name: Build and plan test shards
         id: build
         continue-on-error: true
@@ -113,6 +115,10 @@ jobs:
             -destination "$SIMULATOR_DESTINATION" \
             -derivedDataPath "$CI_DERIVED_DATA" \
             -enableCodeCoverage YES \
+            SWIFT_ENABLE_PREFIX_MAPPING=NO \
+            SWIFT_ENABLE_PROJECT_PREFIX_MAPPING=NO \
+            CLANG_ENABLE_PREFIX_MAPPING=NO \
+            CLANG_ENABLE_PROJECT_PREFIX_MAPPING=NO \
             -collect-test-diagnostics never \
             ONLY_ACTIVE_ARCH=YES \
             COMPILATION_CACHE_ENABLE_CACHING="$XCODE_COMPILATION_CACHE_ENABLED" \

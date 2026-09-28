@@ -8,27 +8,24 @@
 import SwiftUI
 
 public struct StepNavigationBar: View {
-  private var activeStep: Int
-  private var buttonAction: () -> Void
-  
-  public init(
-    activeStep: Int,
-    buttonAction: @escaping () -> Void
-  ) {
-    self.activeStep = activeStep
-    self.buttonAction = buttonAction
-  }
+  private var activeStep = 1
+  private var buttonAction: () -> Void = {}
+
+  public init() {}
   
   public var body: some View {
     HStack {
-      Image(asset: .backButton)
-        .resizable()
-        .scaledToFit()
-        .frame(width: 12, height: 20)
-        .foregroundStyle(Color.gray400)
-        .onTapGesture {
-          buttonAction()
-        }
+      Button(action: buttonAction) {
+        Image(asset: .backButton)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 12, height: 20)
+          .foregroundStyle(.gray400)
+          .frame(width: 44, height: 44)
+          .contentShape(Rectangle())
+      }
+      .buttonStyle(.plain)
+      .accessibilityLabel("뒤로가기")
       
       Spacer()
       
@@ -51,7 +48,6 @@ public struct StepNavigationBar: View {
 // MARK: - 체이닝 설정
 //
 // 값 타입 사본을 돌려주므로 호출 순서에 영향받지 않는다.
-// 기존 init 은 그대로 두어, 체이닝은 선택지로만 더한다.
 public extension StepNavigationBar {
   /// `activeStep` 을 바꾼 사본을 돌려준다.
   func activeStep(_ activeStep: Int) -> Self {

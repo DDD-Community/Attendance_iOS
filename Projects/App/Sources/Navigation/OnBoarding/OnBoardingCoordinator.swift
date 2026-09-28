@@ -86,8 +86,7 @@ extension OnBoardingCoordinator {
          .routeAction(id: _, action: .selectPart(.delegate(.presentBack))),
          .routeAction(id: _, action: .selectManaging(.delegate(.presentBack))),
          .routeAction(id: _, action: .selectTeam(.delegate(.presentBack))):
-      state.routes.goBack()
-      return .none
+      return .send(.view(.backAction))
 
     // MARK: - 이름 입력
 

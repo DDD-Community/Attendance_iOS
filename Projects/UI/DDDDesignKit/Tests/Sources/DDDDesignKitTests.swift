@@ -52,7 +52,7 @@ struct DDDDesignKitTests {
     }
 
     build(NavigationBackButton(buttonAction: {}).buttonAction({}))
-    build(StepNavigationBar(activeStep: 1, buttonAction: {}).activeStep(3).buttonAction({}))
+    build(StepNavigationBar().activeStep(3).buttonAction({}))
     build(CustomNavigationBackBar(buttonAction: {}))
     build(
       CustomNavigationBar(backAction: {}, addAction: {}, image: .plus)

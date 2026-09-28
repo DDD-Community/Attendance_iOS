@@ -31,9 +31,11 @@ public struct SelectTeamView: View {
         Spacer()
           .frame(height: 12)
 
-        StepNavigationBar(activeStep: 3) {
-          store.send(.delegate(.presentBack))
-        }
+        StepNavigationBar()
+          .activeStep(3)
+          .buttonAction {
+            store.send(.delegate(.presentBack))
+          }
 
         // 목록을 받아오는 동안 실제 화면과 같은 자리에서 스켈레톤을 보여준다.
         switch store.viewState {
