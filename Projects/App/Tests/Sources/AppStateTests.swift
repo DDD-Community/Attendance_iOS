@@ -17,6 +17,34 @@ import TCAFlow
 @Suite("App State")
 struct AppStateTests {
   @MainActor
+  @Test("이름 뒤로가기는 로그인으로 나가지 않고 초대 코드로 돌아온다")
+  func nameBackReturnsToInviteCode() async {
+    var onboarding = OnBoardingCoordinator.State()
+    onboarding.routes.append(.push(.onBoardingName(.init())))
+    var state = AuthCoordinator.State()
+    state.routes.append(.push(.onboarding(onboarding)))
+    let store = Store(initialState: state) { AuthCoordinator() }
+
+    await store.send(.router(.routeAction(
+      id: 1,
+      action: .onboarding(.router(.routeAction(
+        id: 1, action: .onBoardingName(.delegate(.presentBack))
+      )))
+    ))).finish()
+
+    #expect(store.routes.count == 2)
+    guard case let .onboarding(result) = store.routes.last?.screen else {
+      Issue.record("이름 뒤로가기 후에도 온보딩이 유지되어야 한다")
+      return
+    }
+    #expect(result.routes.count == 1)
+    guard case .InviteCode = result.routes.first?.screen else {
+      Issue.record("초대 코드 화면으로 돌아와야 한다")
+      return
+    }
+  }
+
+  @MainActor
   @Test("중첩 가입 라우터는 이름 다음 직무 화면까지 표시한다")
   func nestedOnboardingDisplaysSecondPush() async throws {
     func makeRoutes() -> Store<[Route<Int>], IndexedRouterAction<Int, Int>> {

@@ -37,9 +37,11 @@ public struct  OnBoardingNameView: View {
           Spacer()
             .frame(height: 12)
           
-          StepNavigationBar(activeStep: 1) {
-            store.send(.delegate(.presentBack))
-          }
+          StepNavigationBar()
+            .activeStep(1)
+            .buttonAction {
+              store.send(.delegate(.presentBack))
+            }
           
           ScrollView {
             signUpNameText()

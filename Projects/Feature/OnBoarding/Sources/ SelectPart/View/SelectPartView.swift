@@ -31,7 +31,7 @@ public struct SelectPartView: View {
         Spacer()
           .frame(height: 12)
 
-        StepNavigationBar(activeStep: 2) {
+        StepNavigationBar().activeStep(2).buttonAction {
           store.send(.delegate(.presentBack))
         }
 
