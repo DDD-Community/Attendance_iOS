@@ -28,6 +28,23 @@ function job(source, name, nextName) {
   return source.slice(start, end);
 }
 
+test("커버리지 빌드는 원본 소스 경로를 유지하면서 컴파일 캐시를 사용한다", () => {
+  const build = job(read(".github/workflows/ios-pr-coverage.yml"), "build-test-shards", "test-shards");
+  const tests = read("Scripts/run-isolated-module-tests.sh");
+  for (const command of [build, tests]) {
+    assert.match(command, /-enableCodeCoverage YES/);
+    for (const setting of [
+      "SWIFT_ENABLE_PREFIX_MAPPING",
+      "SWIFT_ENABLE_PROJECT_PREFIX_MAPPING",
+      "CLANG_ENABLE_PREFIX_MAPPING",
+      "CLANG_ENABLE_PROJECT_PREFIX_MAPPING",
+    ]) {
+      assert.ok(command.includes(`${setting}=NO`), setting);
+    }
+    assert.match(command, /COMPILATION_CACHE_ENABLE_CACHING=/);
+  }
+});
+
 test("iOS workflow는 공통 runner setup action을 사용한다", () => {
   const action = read(".github/actions/setup-ios-runner/action.yml");
   assert.match(action, /using: composite/);

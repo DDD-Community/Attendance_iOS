@@ -65,6 +65,10 @@ mise exec -- tuist test run "$TEST_SCHEME" \
   -destination "$SIMULATOR_DESTINATION" \
   -derivedDataPath "$CI_DERIVED_DATA" \
   -enableCodeCoverage YES \
+  SWIFT_ENABLE_PREFIX_MAPPING=NO \
+  SWIFT_ENABLE_PROJECT_PREFIX_MAPPING=NO \
+  CLANG_ENABLE_PREFIX_MAPPING=NO \
+  CLANG_ENABLE_PROJECT_PREFIX_MAPPING=NO \
   -retry-tests-on-failure \
   -test-iterations 2 \
   -collect-test-diagnostics never \
