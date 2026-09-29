@@ -364,13 +364,13 @@ platform :ios do
     # clean_symbols_from_ipa(ipa_path: ipa_path)
 
     # Prod IPA를 TestFlight로 한 번 업로드하고 동일 빌드를 App Store 버전에 연결한다.
+    # 외부 테스터 배포는 QA 레인에서 처리한다. 베타 심사 대기가 App Store 연결을 막지 않게 한다.
     CISlack.notify("upload")
     upload_to_testflight(
       ipa: ipa_path,
       changelog: testflight_changelog(new_build_number),
-      groups: ["DDD", "ddd"],
       beta_app_description: "DDD 출석 앱입니다.",
-      notify_external_testers: true,
+      skip_submission: true,
       skip_waiting_for_build_processing: false,
       demo_account_required: false,
       uses_non_exempt_encryption: false
@@ -392,7 +392,7 @@ platform :ios do
       reject_if_possible: true
     )
 
-    UI.success("🎉 TestFlight 배포 및 App Store 버전 연결 완료!")
+    UI.success("🎉 Prod 빌드 업로드 및 App Store 버전 연결 완료!")
     UI.important("")
     UI.important("📱 심사 진행 상황 확인:")
     UI.important("   1. https://appstoreconnect.apple.com 접속")
