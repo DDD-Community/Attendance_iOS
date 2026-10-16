@@ -9,6 +9,9 @@ concurrency:
   group: pr-coverage-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
+env:
+  IOS_LOCAL_CONFIG_ROOT: ${{ vars.IOS_LOCAL_CONFIG_ROOT }}
+
 jobs:
   build-test-shards:
     name: Build test shards
@@ -19,7 +22,6 @@ jobs:
       contents: read
 
     env:
-      TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
       TUIST_BUILD_TAGS: ci,pull-request
       TUIST_BUILD_VALUE_PR_URL: ${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
       LANG: en_US.UTF-8
@@ -37,6 +39,7 @@ jobs:
           CONFIG_TAR: ${{ secrets.CONFIG_DIR_TAR_BASE64 }}
           GOOGLE_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
         with:
+          tuist-token: ${{ secrets.TUIST_TOKEN }}
           derived-data-directory: DDDAttendance-pr-build-shards
 
       # CI 잡마다 캐시 데몬과 소켓을 빌드 전에 보장한다.
@@ -188,7 +191,7 @@ jobs:
   test-shards:
     name: Test shard ${{ matrix.shard }}
     needs: build-test-shards
-    if: needs.build-test-shards.result == 'success' && toJSON(fromJSON(needs.build-test-shards.outputs.matrix).shard) != '[]'
+    if: needs.build-test-shards.result == 'success' && toJSON(fromJSON(needs.build-test-shards.outputs.matrix || '{"shard":[]}').shard) != '[]'
     runs-on: self-hosted
     timeout-minutes: 20
 
@@ -197,10 +200,9 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.build-test-shards.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.build-test-shards.outputs.matrix || '{"shard":[]}') }}
 
     env:
-      TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
       TUIST_BUILD_TAGS: ci,pull-request,sharded
       TUIST_BUILD_VALUE_PR_URL: ${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
       TUIST_SHARD_INDEX: ${{ matrix.shard }}
@@ -220,6 +222,7 @@ jobs:
           CONFIG_TAR: ${{ secrets.CONFIG_DIR_TAR_BASE64 }}
           GOOGLE_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
         with:
+          tuist-token: ${{ secrets.TUIST_TOKEN }}
           derived-data-directory: DDDAttendance-pr-shard-${{ matrix.shard }}
 
       - name: Select simulator
@@ -306,7 +309,6 @@ jobs:
       contents: read
 
     env:
-      TUIST_TOKEN: ${{ secrets.TUIST_TOKEN }}
       TUIST_BUILD_TAGS: ci,pull-request,bundle
       TUIST_BUILD_VALUE_PR_URL: ${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
       LANG: en_US.UTF-8
@@ -323,6 +325,7 @@ jobs:
           CONFIG_TAR: ${{ secrets.CONFIG_DIR_TAR_BASE64 }}
           GOOGLE_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
         with:
+          tuist-token: ${{ secrets.TUIST_TOKEN }}
           derived-data-directory: DDDAttendance-pr-bundle
 
       - name: Setup Tuist cache
@@ -491,8 +494,10 @@ jobs:
       - name: Report to PR
         uses: actions/github-script@v7
         env:
+          # Fork tokens cannot write comments; keep the same results in Actions summary.
+          REPORT_COMMENT: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
           RESULT_BUNDLE_DIR: Artifacts/tests
-          COVERAGE_SHARD_IDS: ${{ join(fromJSON(needs.build-test-shards.outputs.matrix).shard, ',') }}
+          COVERAGE_SHARD_IDS: ${{ join(fromJSON(needs.build-test-shards.outputs.matrix || '{"shard":[]}').shard, ',') }}
           TEST_OUTCOME: ${{ needs.build-test-shards.result == 'success' && needs.test-shards.result == 'success' && 'success' || 'failure' }}
           TEST_RUN_REPORT_PATH: Artifacts/tests
           BUILD_RUN_REPORT_PATH: Artifacts/bundle/BuildRunReport.json

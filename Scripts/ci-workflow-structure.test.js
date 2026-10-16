@@ -48,7 +48,7 @@ test("커버리지 빌드는 원본 소스 경로를 유지하면서 컴파일 �
 test("iOS workflow는 공통 runner setup action을 사용한다", () => {
   const action = read(".github/actions/setup-ios-runner/action.yml");
   assert.match(action, /using: composite/);
-  assert.match(action, /base64 --decode > "\$CONFIG_ARCHIVE"/);
+  assert.match(read("Scripts/restore-ios-ci-config.sh"), /base64 --decode > "\$CONFIG_ARCHIVE"/);
   assert.doesNotMatch(action, /base64 --decode \| tar/);
 
   const expectedCalls = new Map([
@@ -155,4 +155,17 @@ test("Tuist Preview는 fastlane 이 만든 IPA 를 공유한다", () => {
   // 업로드 실패가 초록불에 묻히면 배지 없는 빈 프리뷰가 쌓여도 알아채지 못한다.
   const shareStep = deploy.slice(deploy.indexOf("- name: Share Tuist Preview"));
   assert.doesNotMatch(shareStep.slice(0, 200), /continue-on-error/);
+});
+
+test("포크 PR도 Mac의 기존 shard 및 bundle 경로를 실행한다", () => {
+  const pr = read(".github/workflows/ios-pr-coverage.yml");
+  assert.equal(occurrences(pr, "runs-on: self-hosted"), 4);
+  assert.doesNotMatch(pr, /fork-tests:|xcode-27|pull_request_target|TUIST_FORK_CI/);
+  assert.doesNotMatch(pr, /TUIST_TOKEN: \$\{\{ secrets\.TUIST_TOKEN/);
+  assert.equal(occurrences(pr, "tuist-token: ${{ secrets.TUIST_TOKEN }}"), 3);
+  assert.match(pr, /REPORT_COMMENT: \$\{\{ github\.event\.pull_request\.head\.repo\.full_name == github\.repository \}\}/);
+  assert.doesNotMatch(pr, /if: .*head\.repo\.full_name/);
+  assert.doesNotMatch(pr, /fromJSON\(needs\.build-test-shards\.outputs\.matrix\)/);
+  assert.match(pr, /fromJSON\(needs\.build-test-shards\.outputs\.matrix \|\| '\{"shard":\[\]\}'\)/);
+  assert.match(read("Tuist.swift"), /enableCaching: true/);
 });
