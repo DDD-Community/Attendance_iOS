@@ -2,6 +2,10 @@ name: Setup iOS runner
 description: Configure the self-hosted macOS runner and restore gitignored iOS build inputs.
 
 inputs:
+  tuist-token:
+    description: Optional CI token. An empty value preserves the runner's local Tuist login.
+    required: false
+    default: ''
   derived-data-directory:
     description: Directory name below $HOME/ci-derived-data. Leave empty when the job does not build.
     required: false
@@ -46,13 +50,7 @@ runs:
         VERIFY_CONFIG_IGNORED: ${{ inputs.verify-config-ignored }}
         VERIFY_CONFIG_NONEMPTY: ${{ inputs.verify-config-nonempty }}
       run: |
-        CONFIG_ARCHIVE="$(mktemp "${RUNNER_TEMP:-/tmp}/ddd-ios-config.XXXXXX")"
-        trap 'rm -f "$CONFIG_ARCHIVE"' EXIT
-        printf '%s' "$CONFIG_TAR" | base64 --decode > "$CONFIG_ARCHIVE"
-        tar tzf "$CONFIG_ARCHIVE" >/dev/null
-        tar xzf "$CONFIG_ARCHIVE"
-        mkdir -p Projects/App/Resources
-        printf '%s' "$GOOGLE_PLIST" | base64 --decode > Projects/App/Resources/GoogleService-Info.plist
+        bash Scripts/restore-ios-ci-config.sh
 
         if [[ "$VERIFY_CONFIG_NONEMPTY" == "true" ]]; then
           test -f Config/base.xcconfig
@@ -67,3 +65,14 @@ runs:
     - name: Install Tuist
       shell: bash
       run: mise install tuist
+
+    - name: Configure Tuist authentication
+      shell: bash
+      env:
+        CI_TUIST_TOKEN: ${{ inputs.tuist-token }}
+      run: |
+        # Fork PRs have no repository secret. Do not shadow the Mac's saved login with an empty token.
+        if [[ -n "$CI_TUIST_TOKEN" ]]; then
+          echo "::add-mask::$CI_TUIST_TOKEN"
+          printf 'TUIST_TOKEN=%s\n' "$CI_TUIST_TOKEN" >> "$GITHUB_ENV"
+        fi

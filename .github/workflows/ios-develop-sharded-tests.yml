@@ -87,6 +87,7 @@ jobs:
         run: |
           mise exec -- tuist test DDDAttendance-Stage \
             --build-only \
+            --no-binary-cache \
             --configuration Stage \
             --no-selective-testing \
             --shard-total 2 \
@@ -241,4 +242,4 @@ jobs:
       # tuist cache는 workspace를 변경하므로 후속 빌드와 분리된 마지막 job에서 실행한다.
       - name: Warm module cache
         if: steps.tuist-cache.outcome == 'success'
-        run: mise exec -- tuist cache warm --configuration Stage
+        run: mise exec -- tuist cache warm --configuration Stage --cache-profile only-external

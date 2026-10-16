@@ -30,7 +30,9 @@ let tuist = Tuist(
     ),
     installOptions: .options(),
     cacheOptions: .options(
-      profiles: .profiles(default: .onlyExternal)
+      // SDK가 바뀌면 이전 SDK의 serialized swiftmodule은 호환되지 않는다.
+      // 기본 생성은 현재 SDK의 소스를 사용하고 Xcode compilation cache는 유지한다.
+      profiles: .profiles(default: .none)
     )
   )
 )
