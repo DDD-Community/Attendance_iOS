@@ -7,6 +7,7 @@
 
 import Foundation
 
+import AuthDomainInterface
 import DDDSharedUI
 import OnBoarding
 import Profile
@@ -22,6 +23,7 @@ public struct ProfileCoordinator: Sendable {
   @ObservableState
   public struct State: Equatable {
     var routes: [Route<ProfileScreen.State>]
+    @Shared(.isEditingGeneration) var editGeneration
 
     public init() {
       routes = [.root(.profile(.init()), embedInNavigationView: true)]
@@ -51,7 +53,7 @@ public struct ProfileCoordinator: Sendable {
 
   }
 
-  public enum NavigationAction: Equatable {
+  public enum NavigationAction: Equatable, Sendable {
     case presentLogin
     case presentRoot
     case presentStaff
@@ -59,6 +61,12 @@ public struct ProfileCoordinator: Sendable {
   }
 
   func handleRoute(state: inout State, action: Action) -> Effect<Action> {
+    defer {
+      // 버튼뿐 아니라 시스템 뒤로가기(updateRoutes)로 편집 화면이 닫혀도 조회를 재개한다.
+      if state.editGeneration, !state.routes.contains(where: { $0.screen.onBoarding != nil }) {
+        state.$editGeneration.withLock { $0 = false }
+      }
+    }
     switch action {
       case .router(let action):
         return routerAction(state: &state, action: action)
@@ -177,6 +185,7 @@ extension ProfileCoordinator {
     state: inout State,
     action: NavigationAction
   ) -> Effect<Action> {
+    state.$editGeneration.withLock { $0 = false }
     switch action {
     case .presentLogin:
       return .none

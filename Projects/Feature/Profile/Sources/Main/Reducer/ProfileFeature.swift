@@ -57,7 +57,7 @@ public struct ProfileFeature: Sendable {
 
     @Shared(.userSession) var userSession
     @Presents var destination: Destination.State?
-    @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
+    @Shared(.isEditingGeneration) var editGeneration
 
     // 기존 TCA AlertState 유지 (다른 곳에서 사용)
     @Presents public var alert: AlertState<AlertAction>?

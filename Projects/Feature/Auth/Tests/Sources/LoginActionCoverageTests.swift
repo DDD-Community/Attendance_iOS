@@ -135,11 +135,12 @@ struct LoginActionCoverageTests {
   /// 기존 멤버 로그인은 역할을 저장하고 멤버 메인으로 이동한다.
   @Test("기존 멤버 로그인 성공은 역할 저장 후 멤버 메인으로 이동한다")
   func inner_loginResponse_existingMember_navigatesToMemberMain() async {
-    let store = Self.makeStore()
+    let store = Self.makeStore(configureState: { $0.editGeneration = true })
 
     await store.send(.inner(.loginResponse(.success(LoginTestFixture.member)))) {
       $0.staffRole = .member
       $0.userSession.userRole = .member
+      $0.editGeneration = false
     }
     await store.receive(\.delegate.presentMemberMain)
   }
@@ -147,11 +148,12 @@ struct LoginActionCoverageTests {
   /// 운영진 로그인은 staffMain 으로 분기한다.
   @Test("운영진 로그인 성공은 운영진 메인으로 이동한다")
   func inner_loginResponse_manager_navigatesToStaffMain() async {
-    let store = Self.makeStore()
+    let store = Self.makeStore(configureState: { $0.editGeneration = true })
 
     await store.send(.inner(.loginResponse(.success(LoginTestFixture.manager)))) {
       $0.staffRole = .manager
       $0.userSession.userRole = .manager
+      $0.editGeneration = false
     }
     await store.receive(\.delegate.presentStaffMain)
   }
@@ -159,11 +161,12 @@ struct LoginActionCoverageTests {
   /// role 이 nil 인 경계값은 member 로 기본 처리된다.
   @Test("role 이 nil 인 로그인 성공은 member 로 기본 처리된다")
   func inner_loginResponse_nilRole_defaultsToMember() async {
-    let store = Self.makeStore()
+    let store = Self.makeStore(configureState: { $0.editGeneration = true })
 
     await store.send(.inner(.loginResponse(.success(LoginTestFixture.roleless)))) {
       $0.staffRole = .member
       $0.userSession.userRole = .member
+      $0.editGeneration = false
     }
     await store.receive(\.delegate.presentMemberMain)
   }

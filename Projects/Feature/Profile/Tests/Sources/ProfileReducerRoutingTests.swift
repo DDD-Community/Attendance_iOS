@@ -87,13 +87,10 @@ struct ProfileReducerRoutingTests {
     let store = TestStore(initialState: ProfileFeature.State()) {
       ProfileFeature()
     }
-    // editGeneration 은 appStorage 공유 상태라 초기값이 실행 순서에 따라 달라질 수 있다.
-    // 최종값만 확인해 실행 순서와 무관하게 통과하도록 둔다.
-    store.exhaustivity = .off
-
-    await store.send(.delegate(.presentEditGeneration))
-
-    #expect(store.state.editGeneration == true)
+    await store.send(.delegate(.presentEditGeneration)) {
+      $0.$editGeneration.withLock { $0 = true }
+      $0.viewState = .failed
+    }
   }
 
   @Test("화면 이동만 알리는 위임 액션들은 상태를 바꾸지 않는다")

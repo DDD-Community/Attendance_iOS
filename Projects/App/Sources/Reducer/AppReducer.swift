@@ -80,6 +80,7 @@ public struct AppReducer: Sendable {
   @Dependency(\.continuousClock) var clock
   @Shared(.userSession) var userSession
   @Shared(.staffRole) var staffRole
+  @Shared(.isEditingGeneration) var editGeneration
 
   private enum CancelID: Hashable {
     case transition
@@ -176,6 +177,7 @@ public struct AppReducer: Sendable {
       // 로그아웃·토큰 만료 이후 새 계정의 프로필 조회 전까지 이전 ID가 남지 않도록 한다.
       $userSession.withLock { $0 = .empty }
       $staffRole.withLock { $0 = nil }
+      $editGeneration.withLock { $0 = false }
       state = .auth(.init())
       return .none
 

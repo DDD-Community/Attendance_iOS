@@ -13,6 +13,14 @@ import ProfileDomainInterface
 import Dependencies
 import Sharing
 
+public extension SharedReaderKey where Self == InMemoryKey<Bool>.Default {
+  /// 기수 변경 화면이 열려 있는 동안만 유지한다.
+  /// 이전 버전의 UserDefaults 값은 읽지 않아 중단된 편집이 다음 실행의 조회를 막지 않는다.
+  static var isEditingGeneration: Self {
+    Self[.inMemory("isEditingGeneration"), default: false]
+  }
+}
+
 public extension SharedReaderKey where Self == PersistentSharedKey<UserSession>.Default {
   /// 앱 실행 사이에 유지되는 사용자 세션 메타데이터입니다.
   ///

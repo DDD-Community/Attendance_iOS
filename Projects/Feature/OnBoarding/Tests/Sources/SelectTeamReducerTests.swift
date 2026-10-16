@@ -159,14 +159,18 @@ struct SelectTeamReducerTests {
   func editGenerationSignUpEditsProfile() async {
     let profile = OnBoardingCoverageFixture.managerProfile
     let authUseCase = MockAuthRepository.refreshSuccess()
-    let appStorage = UserDefaults.inMemory
     let inMemoryStorage = InMemoryStorage()
-    appStorage.set(true, forKey: "editGeneration")
+    let initialState = withDependencies {
+      $0.defaultInMemoryStorage = inMemoryStorage
+    } operation: {
+      var state = SelectTeamFeature.State()
+      state.$editGeneration.withLock { $0 = true }
+      return state
+    }
 
-    let store = TestStore(initialState: SelectTeamFeature.State()) {
+    let store = TestStore(initialState: initialState) {
       SelectTeamFeature()
     } withDependencies: {
-      $0.defaultAppStorage = appStorage
       $0.defaultInMemoryStorage = inMemoryStorage
       $0.profileUseCase = StubProfileUseCase(profile: profile)
       $0.authUseCase = authUseCase
@@ -194,14 +198,18 @@ struct SelectTeamReducerTests {
   @Test("기수 변경 후 토큰 갱신 실패 시 운영진 API를 호출하지 않고 로그인으로 이동한다")
   func credentialRefreshFailureNavigatesToLogin() async {
     let profile = OnBoardingCoverageFixture.managerProfile
-    let appStorage = UserDefaults.inMemory
     let inMemoryStorage = InMemoryStorage()
-    appStorage.set(true, forKey: "editGeneration")
+    let initialState = withDependencies {
+      $0.defaultInMemoryStorage = inMemoryStorage
+    } operation: {
+      var state = SelectTeamFeature.State()
+      state.$editGeneration.withLock { $0 = true }
+      return state
+    }
 
-    let store = TestStore(initialState: SelectTeamFeature.State()) {
+    let store = TestStore(initialState: initialState) {
       SelectTeamFeature()
     } withDependencies: {
-      $0.defaultAppStorage = appStorage
       $0.defaultInMemoryStorage = inMemoryStorage
       $0.profileUseCase = StubProfileUseCase(profile: profile)
       $0.authUseCase = MockAuthRepository.tokenExpired()
@@ -241,7 +249,7 @@ struct SelectTeamReducerTests {
     await store.receive(\.delegate.presentMember)
   }
 
-  @Test("프로필 수정 실패는 기수 변경 플래그를 내리고 실패 알럿을 표시한다")
+  @Test("프로필 수정 실패는 기수 변경 상태를 유지하고 실패 알럿을 표시한다")
   func editProfileFailurePresentsAlert() async {
     var state = SelectTeamFeature.State()
     state.editGeneration = true
@@ -253,7 +261,6 @@ struct SelectTeamReducerTests {
     let error = ProfileError.loadFailed
 
     await store.send(.inner(.editProfileResponse(.failure(error)))) {
-      $0.editGeneration = false
       $0.alert = AlertState {
         TextState("프로필 수정 실패")
       } actions: {
@@ -281,6 +288,44 @@ struct SelectTeamReducerTests {
     await store.send(.view(.signUp))
     await store.receive(\.async)
     await store.receive(\.inner)
+  }
+
+  @Test("기수 변경 수정 실패 후 재시도는 회원가입 대신 프로필 수정을 다시 호출한다")
+  func retryAfterEditProfileFailureKeepsEditFlow() async {
+    var state = SelectTeamFeature.State()
+    state.$editGeneration.withLock { $0 = true }
+
+    let store = TestStore(initialState: state) {
+      SelectTeamFeature()
+    } withDependencies: {
+      $0.profileUseCase = StubProfileUseCase(editFailure: .profileUpdateFailed)
+      $0.signUpUseCase = StubSignUpUseCase(failure: .accountAlreadyExists)
+    }
+    let error = ProfileError.from(EditProfileError.profileUpdateFailed)
+
+    for _ in 0..<2 {
+      await store.send(.view(.signUp))
+      await store.receive {
+        guard case .async(.editProfile) = $0 else { return false }
+        return true
+      }
+      await store.receive(\.inner) {
+        $0.alert = AlertState {
+          TextState("프로필 수정 실패")
+        } actions: {
+          ButtonState(action: .confirmTapped) {
+            TextState("확인")
+          }
+        } message: {
+          TextState(error.errorDescription ?? "알 수 없는 오류가 발생했습니다.")
+        }
+      }
+      #expect(store.state.editGeneration)
+      await store.send(.scope(.alert(.dismiss))) {
+        $0.alert = nil
+      }
+    }
+    await store.finish()
   }
 
   // MARK: - Delegate / Scope / Binding

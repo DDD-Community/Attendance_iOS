@@ -121,12 +121,9 @@ struct ProfileReducerAsyncFlowTests {
 
   @Test("기수 변경 중에는 기존 프로필을 다시 조회하지 않는다")
   func fetchUserWhileEditingGenerationIsIgnored() async {
-    let suiteName = "ProfileReducerAsyncFlowTests.\(UUID().uuidString)"
-    let appStorage = UserDefaults(suiteName: suiteName)!
-    defer { appStorage.removePersistentDomain(forName: suiteName) }
-
+    let storage = InMemoryStorage()
     let initialState = withDependencies {
-      $0.defaultAppStorage = appStorage
+      $0.defaultInMemoryStorage = storage
     } operation: {
       var state = ProfileFeature.State()
       state.$editGeneration.withLock { $0 = true }
@@ -136,7 +133,7 @@ struct ProfileReducerAsyncFlowTests {
     let store = TestStore(initialState: initialState) {
       ProfileFeature()
     } withDependencies: {
-      $0.defaultAppStorage = appStorage
+      $0.defaultInMemoryStorage = storage
       $0.profileUseCase = StubProfileUseCase(
         cachedProfile: nil,
         getProfileResult: .success(ProfileTestSupport.memberProfile)
@@ -145,6 +142,28 @@ struct ProfileReducerAsyncFlowTests {
 
     await store.send(.async(.fetchUser)) {
       $0.viewState = .failed
+    }
+    await store.finish()
+  }
+
+  @Test("이전 버전의 기수 변경 저장값이 남아도 캐시 없는 프로필을 서버에서 복구한다")
+  func legacyEditFlagDoesNotBlockProfileLoading() async {
+    let defaults = UserDefaults.inMemory
+    defaults.set(true, forKey: "editGeneration")
+    let profile = ProfileTestSupport.memberProfile
+    let store = TestStore(initialState: ProfileFeature.State()) {
+      ProfileFeature()
+    } withDependencies: {
+      $0.defaultAppStorage = defaults
+      $0.defaultInMemoryStorage = InMemoryStorage()
+      $0.profileUseCase = StubProfileUseCase(refreshProfileResult: .success(profile))
+    }
+
+    #expect(!store.state.editGeneration)
+    await store.send(.async(.fetchUser))
+    await store.receive(\.inner.fetchUserResponse) {
+      $0.viewState = .loaded
+      $0.profile = profile
     }
     await store.finish()
   }
