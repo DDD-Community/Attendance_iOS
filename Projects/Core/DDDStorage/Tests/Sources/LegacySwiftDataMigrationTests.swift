@@ -48,6 +48,9 @@ struct LegacySwiftDataMigrationTests {
     let fixture = try makeFixture()
     defer { try? FileManager.default.removeItem(at: fixture.deletingLastPathComponent()) }
     let original = try Data(contentsOf: fixture)
+    let walURL = URL(fileURLWithPath: fixture.path + "-wal")
+    let originalWAL = try FileManager.default.fileExists(atPath: walURL.path)
+      ? Data(contentsOf: walURL) : nil
     let database = try makeDatabase()
 
     try LegacySwiftDataMigration.migrate(into: database, sourceURL: fixture, legacyRole: "manager")
@@ -74,6 +77,10 @@ struct LegacySwiftDataMigrationTests {
       #expect(try !LegacyCacheAccess.isAllowed(.schedule, in: db))
     }
     #expect(try Data(contentsOf: fixture) == original)
+    #expect(FileManager.default.fileExists(atPath: walURL.path) == (originalWAL != nil))
+    if let originalWAL {
+      #expect(try Data(contentsOf: walURL) == originalWAL)
+    }
 
     try setSession(42, in: database)
     try database.read { (db: Database) throws in
@@ -262,6 +269,9 @@ struct LegacySwiftDataMigrationTests {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let url = directory.appendingPathComponent("default.store")
+    let writerDirectory = directory.appendingPathComponent("writer", isDirectory: true)
+    try FileManager.default.createDirectory(at: writerDirectory, withIntermediateDirectories: true)
+    let writerURL = writerDirectory.appendingPathComponent("default.store")
     try autoreleasepool {
       var models: [any PersistentModel.Type] = []
       if profile {
@@ -271,7 +281,7 @@ struct LegacySwiftDataMigrationTests {
         models.append(ScheduleCacheEntity.self)
       }
       let schema = Schema(models)
-      let configuration = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
+      let configuration = ModelConfiguration(schema: schema, url: writerURL, cloudKitDatabase: .none)
       let container = try ModelContainer(for: schema, configurations: [configuration])
       let context = ModelContext(container)
       context.autosaveEnabled = false
@@ -290,6 +300,15 @@ struct LegacySwiftDataMigrationTests {
         ))
       }
       try context.save()
+      // 컨테이너 종료 시 checkpoint가 비교 대상 파일을 바꾸지 않도록,
+      // writer가 살아 있는 동안 DB와 WAL을 별도의 열지 않은 fixture로 복사한다.
+      try withExtendedLifetime((container, context)) {
+        try FileManager.default.copyItem(at: writerURL, to: url)
+        let writerWAL = URL(fileURLWithPath: writerURL.path + "-wal")
+        if FileManager.default.fileExists(atPath: writerWAL.path) {
+          try FileManager.default.copyItem(at: writerWAL, to: URL(fileURLWithPath: url.path + "-wal"))
+        }
+      }
     }
     return url
   }
