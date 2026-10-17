@@ -18,6 +18,22 @@ struct StorageFactoryTests {
     case failed
   }
 
+  @Test("이전 SwiftData 읽기 실패는 정상 SQLite 저장소를 교체하지 않는다")
+  func legacyImportFailureKeepsPrimaryDatabase() throws {
+    let primary = try DatabaseQueue()
+    var fallbackCount = 0
+    let database = StorageFactory.prepareDatabase(
+      primary: { primary },
+      fallback: { fallbackCount += 1; return try DatabaseQueue() },
+      importLegacy: { _ in throw PreparationError.failed }
+    )
+    #expect(database === primary)
+    #expect(fallbackCount == 0)
+    #expect(try primary.read {
+      try #sql("SELECT COUNT(*) FROM legacyCacheImport", as: Int.self).fetchOne($0)
+    } == 0)
+  }
+
   @Test
   func secureStorage를_생성한다() {
     let storage: any SecureStorage = StorageFactory.secureStorage

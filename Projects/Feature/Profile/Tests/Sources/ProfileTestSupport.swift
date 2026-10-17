@@ -90,6 +90,7 @@ struct StubProfileUseCase: ProfileUseCaseInterface {
   let cachedProfile: ProfileEntity?
   let getProfileResult: Result<ProfileEntity, ProfileError>
   let refreshProfileResult: Result<ProfileEntity, ProfileError>
+  var refreshOperation: (@Sendable () async -> ProfileEntity)?
 
   init(
     cachedProfile: ProfileEntity? = nil,
@@ -116,6 +117,9 @@ struct StubProfileUseCase: ProfileUseCaseInterface {
   }
 
   func refreshProfile() async throws(ProfileError) -> ProfileEntity {
+    if let refreshOperation {
+      return await refreshOperation()
+    }
     switch refreshProfileResult {
     case let .success(profile):
       return profile

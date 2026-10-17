@@ -28,7 +28,8 @@ public actor ScheduleLocalDataSource: ScheduleLocalDataSourceProtocol {
   public func loadAll() async throws(ScheduleError) -> [Schedule]? {
     do {
       let cached = try await database.read { db in
-        try ScheduleCacheRecord
+        guard try LegacyCacheAccess.isAllowed(.schedule, in: db) else { return [] as [ScheduleCacheRecord] }
+        return try ScheduleCacheRecord
           .order { ($0.year, $0.month, $0.day) }
           .fetchAll(db)
       }
@@ -51,6 +52,7 @@ public actor ScheduleLocalDataSource: ScheduleLocalDataSourceProtocol {
       try await database.write { db in
         try ScheduleCacheRecord.delete().execute(db)
         try ScheduleCacheRecord.insert { records }.execute(db)
+        try LegacyCacheAccess.markRefreshed(.schedule, in: db)
       }
     } catch {
       throw .cacheFailed

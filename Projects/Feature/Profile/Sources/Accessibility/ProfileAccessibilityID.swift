@@ -7,6 +7,8 @@ enum ProfileAccessibilityID {
   enum Main {
     static let root = "profile.main.root"
     static let skeleton = "profile.main.skeleton"
+    static let failure = "profile.main.failure"
+    static let retryButton = "profile.main.retrybutton"
     static let card = "profile.main.card"
     static let generationEditButton = "profile.main.generationeditbutton"
     static let withdrawButton = "profile.main.withdrawbutton"

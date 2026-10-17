@@ -26,7 +26,7 @@ public struct LoginFeature {
 
     @Shared var userSession: UserSession
     @Shared(.staffRole) var staffRole
-    @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
+    @Shared(.isEditingGeneration) var editGeneration
     var currentSocialType: SocialType?
     @Presents public var customAlert: CustomAlertState<CustomAlertAction>?
 
@@ -199,10 +199,9 @@ extension LoginFeature {
             let role = login.role ?? .member
             state.$staffRole.withLock { $0 = login.isNewUser ? nil : role }
             state.$userSession.withLock { $0.userRole = role }
+            state.$editGeneration.withLock { $0 = false }
 
             if login.isNewUser  {
-              // 신규 가입: editGeneration 잔재(true)로 인한 editProfile 오분기 방지 → 회원가입(signUp) 강제
-              state.$editGeneration.withLock { $0 = false }
               return .send(.view(.showPolicyPopUp))
             } else if role == .manager {
               return .send(.delegate(.presentStaffMain))

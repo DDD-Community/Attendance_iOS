@@ -23,6 +23,56 @@ import SQLiteData
 
 @Suite("Repository local cache", .serialized)
 struct LocalDataSourceTests {
+  @Test("이전 프로필은 계정 일치 후 조회하며 네트워크 저장으로 소유권 제한을 해제한다")
+  func migratedProfileRequiresMatchingSession() async throws {
+    let database = try makeDatabase()
+    let source = ProfileLocalDataSource(database: database)
+    let original = makeProfile(userID: 42)
+    try await source.saveUser(original)
+    try await database.write { db in
+      try #sql("INSERT INTO legacyCacheImport VALUES (1, 42, NULL)").execute(db)
+    }
+    #expect(try await source.loadUser() == nil)
+
+    let matching = Data(#"{"userID":42}"#.utf8)
+    try await database.write { db in
+      try #sql("INSERT INTO sharedValues VALUES ('UserSession', \(bind: matching))").execute(db)
+    }
+    #expect(try await source.loadUser() == original)
+
+    let different = Data(#"{"userID":99}"#.utf8)
+    try await database.write { db in
+      try #sql("UPDATE sharedValues SET value = \(bind: different) WHERE key = 'UserSession'").execute(db)
+    }
+    #expect(try await source.loadUser() == nil)
+    let refreshed = makeProfile(userID: 99)
+    try await source.saveUser(refreshed)
+    #expect(try await source.loadUser() == refreshed)
+    #expect(try await database.read { db in
+      try #sql("SELECT COUNT(*) FROM legacyCacheImport WHERE profileUserID IS NULL", as: Int.self).fetchOne(db)
+    } == 1)
+  }
+
+  @Test("소유자 없는 이전 일정은 사용하지 않고 빈 네트워크 응답도 이전 캐시를 대체한다")
+  func migratedSchedulesAreReplacedByNetworkResult() async throws {
+    let database = try makeDatabase()
+    let source = ScheduleLocalDataSource(database: database)
+    try await source.saveAll([makeSchedule()])
+    try await database.write { db in
+      try #sql("INSERT INTO legacyCacheImport VALUES (1, NULL, 0)").execute(db)
+    }
+    #expect(try await source.loadAll() == nil)
+    #expect(try scheduleCacheCount(in: database) == 1)
+    try await source.saveAll([])
+    #expect(try scheduleCacheCount(in: database) == 0)
+    #expect(try await database.read { db in
+      try #sql("SELECT COUNT(*) FROM legacyCacheImport WHERE scheduleUserID IS NULL", as: Int.self).fetchOne(db)
+    } == 1)
+    let current = makeSchedule(id: 99)
+    try await source.saveAll([current])
+    #expect(try await source.loadAll() == [current])
+  }
+
   @Test("프로필 캐시는 초기 조회, 저장, 교체, 삭제를 지원한다")
   func profileCacheLifecycle() async throws {
     let database = try makeDatabase()

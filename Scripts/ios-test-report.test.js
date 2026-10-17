@@ -3,6 +3,54 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const test = require("node:test");
+const report = require("./ios-test-report.js");
+
+test("포크 리포트는 GitHub API 호출 없이 Actions summary만 작성한다", async (t) => {
+  t.mock.method(process, "cwd", () => path.resolve(__dirname, ".."));
+  const original = process.env.REPORT_COMMENT;
+  process.env.REPORT_COMMENT = "false";
+  t.after(() => {
+    if (original === undefined) delete process.env.REPORT_COMMENT;
+    else process.env.REPORT_COMMENT = original;
+  });
+  let body;
+  let written = false;
+  await report({
+    github: new Proxy({}, { get() { throw new Error("fork report must not call GitHub"); } }),
+    context: {
+      serverUrl: "https://github.com", repo: { owner: "test", repo: "test" }, runId: 1,
+      payload: { pull_request: { number: 103, head: { sha: "abcdef123" } } },
+    },
+    core: { summary: { addRaw(value) { body = value; return this; }, async write() { written = true; } } },
+  });
+  assert.equal(written, true);
+  assert.match(body, /actions\/runs\/1/);
+});
+
+test("내부 PR은 Actions summary와 PR 댓글을 함께 작성한다", async (t) => {
+  const original = process.env.REPORT_COMMENT;
+  process.env.REPORT_COMMENT = "true";
+  t.after(() => {
+    if (original === undefined) delete process.env.REPORT_COMMENT;
+    else process.env.REPORT_COMMENT = original;
+  });
+  let summaryWritten = false;
+  let comment;
+  await report({
+    github: {
+      paginate: async () => [],
+      rest: { issues: { listComments() {}, async createComment(value) { comment = value; } } },
+    },
+    context: {
+      serverUrl: "https://github.com", repo: { owner: "test", repo: "test" }, runId: 1,
+      payload: { pull_request: { number: 103, head: { sha: "abcdef123" } } },
+    },
+    core: { summary: { addRaw() { return this; }, async write() { summaryWritten = true; } } },
+  });
+  assert.equal(summaryWritten, true);
+  assert.equal(comment.issue_number, 103);
+  assert.match(comment.body, /actions\/runs\/1/);
+});
 
 const {
   findFilesByExtension,

@@ -26,6 +26,7 @@ public struct ProfileFeature: Sendable {
     public enum ViewState: Equatable {
       case loading
       case loaded
+      case failed
     }
 
     var profile: ProfileEntity?
@@ -56,7 +57,7 @@ public struct ProfileFeature: Sendable {
 
     @Shared(.userSession) var userSession
     @Presents var destination: Destination.State?
-    @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
+    @Shared(.isEditingGeneration) var editGeneration
 
     // 기존 TCA AlertState 유지 (다른 곳에서 사용)
     @Presents public var alert: AlertState<AlertAction>?
@@ -85,6 +86,7 @@ public struct ProfileFeature: Sendable {
 
   @CasePathable
   public enum View {
+    case retryProfileTapped
     case appearModal
     case closeModal
     case showWithdrawAlert
@@ -192,6 +194,9 @@ extension ProfileFeature {
     action: View
   ) -> Effect<Action> {
     switch action {
+    case .retryProfileTapped:
+      return .send(.async(.fetchUser))
+
     case .appearModal:
       state.destination = .createApp(.init())
       return .none
@@ -217,32 +222,30 @@ extension ProfileFeature {
     switch action {
     case .fetchUser:
       guard !state.editGeneration else {
+        state.viewState = state.displayedProfile == nil ? .failed : .loaded
         return .cancel(id: CancelID.fetchProfile)
       }
 
+      state.viewState = state.displayedProfile == nil ? .loading : .loaded
       return .run { send in
         do {
-          // 캐시 hit → 즉시 표시 (로딩 X), 그 후 강제 refresh로 화면 자동 갱신
-          if let cached = await profileUseCase.getCachedProfile() {
+          let cached = await profileUseCase.getCachedProfile()
+          try Task.checkCancellation()
+
+          if let cached {
             await send(.inner(.fetchUserResponse(.success(cached))))
-            let refreshed = await Result {
-              try await profileUseCase.refreshProfile()
-            }
-            .mapError(ProfileError.from)
-            await send(.inner(.fetchUserResponse(refreshed)))
-            return
           }
 
-          // 캐시 miss → 세션의 마지막 프로필을 표시한 채 네트워크 갱신
-          await send(.inner(.setLoading(true)))
-          let fetchUserResult = await Result {
-            try await profileUseCase.getProfile()
-          }
-          .mapError(ProfileError.from)
-
-          await send(.inner(.fetchUserResponse(fetchUserResult)))
-        } catch is CancellationError {
-          DDDLogger.info("ProfileFeature.fetchUser Effect가 취소됨", category: .network)
+          try Task.checkCancellation()
+          // 저장소 전환으로 캐시가 없어도 서버에서 다시 가져온다.
+          // 캐시를 이미 확인했으므로 중복 캐시 조회와 별도 백그라운드 요청을 피한다.
+          let profile = try await profileUseCase.refreshProfile()
+          try Task.checkCancellation()
+          await send(.inner(.fetchUserResponse(.success(profile))))
+        } catch {
+          // 하위 계층에서 취소를 도메인 오류로 변환해도 취소된 응답은 반영하지 않는다.
+          guard !Task.isCancelled else { return }
+          await send(.inner(.fetchUserResponse(.failure(ProfileError.from(error)))))
         }
       }
       .cancellable(id: CancelID.fetchProfile, cancelInFlight: true)
@@ -283,7 +286,7 @@ extension ProfileFeature {
         return .none
       }
       // 세션 폴백으로라도 보여줄 프로필이 있으면 스켈레톤으로 되돌리지 않는다.
-      state.viewState = state.profile == nil ? .loading : .loaded
+      state.viewState = state.displayedProfile == nil ? .loading : .loaded
       return .none
 
     case let .fetchUserResponse(result):
@@ -293,6 +296,7 @@ extension ProfileFeature {
         state.profile = profileDTOData
 
       case let .failure(error):
+        state.viewState = state.displayedProfile == nil ? .failed : .loaded
         DDDLogger.error("유저 정보 가져오기: \(error.localizedDescription)", category: .network)
       }
       return .none
@@ -359,6 +363,7 @@ extension ProfileFeature {
 
     case .presentEditGeneration:
       state.$editGeneration.withLock { $0 = true }
+      state.viewState = state.displayedProfile == nil ? .failed : .loaded
       return .cancel(id: CancelID.fetchProfile)
 
     case .presentAppPeedBackWeb:

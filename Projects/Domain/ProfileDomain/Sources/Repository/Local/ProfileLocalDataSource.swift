@@ -29,7 +29,10 @@ public actor ProfileLocalDataSource: ProfileLocalDataSourceProtocol {
   public func loadUser() async throws(ProfileError) -> ProfileEntity? {
     do {
       guard let cache = try await database.read({ db in
-        try ProfileCacheRecord.find(ProfileCacheKey.user).fetchOne(db)
+        guard let cache = try ProfileCacheRecord.find(ProfileCacheKey.user).fetchOne(db),
+              try LegacyCacheAccess.isAllowed(.profile, profileUserID: cache.userID, in: db)
+        else { return nil as ProfileCacheRecord? }
+        return cache
       }) else {
         return nil
       }
@@ -49,6 +52,7 @@ public actor ProfileLocalDataSource: ProfileLocalDataSourceProtocol {
       try await database.write { db in
         try ProfileCacheRecord.delete().execute(db)
         try ProfileCacheRecord.insert { record }.execute(db)
+        try LegacyCacheAccess.markRefreshed(.profile, in: db)
       }
     } catch {
       throw .cacheFailed

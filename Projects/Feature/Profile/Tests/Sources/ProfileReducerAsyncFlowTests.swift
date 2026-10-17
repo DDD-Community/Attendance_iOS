@@ -92,15 +92,13 @@ struct ProfileReducerAsyncFlowTests {
 
     await store.send(.async(.fetchUser))
 
-    await store.receive(\.inner.setLoading)
-
     await store.receive(\.inner.fetchUserResponse) {
       $0.viewState = .loaded
       $0.profile = fetched
     }
   }
 
-  @Test("캐시도 없고 서버 조회도 실패하면 로딩만 꺼지고 프로필은 비어 있다")
+  @Test("캐시도 없고 서버 조회도 실패하면 재시도 가능한 실패 상태가 된다")
   func fetchUserFailureTurnsOffLoadingAndKeepsProfileNil() async {
     let store = TestStore(initialState: ProfileFeature.State()) {
       ProfileFeature()
@@ -114,10 +112,8 @@ struct ProfileReducerAsyncFlowTests {
 
     await store.send(.async(.fetchUser))
 
-    await store.receive(\.inner.setLoading)
-
     await store.receive(\.inner.fetchUserResponse) {
-      $0.viewState = .loaded
+      $0.viewState = .failed
     }
 
     #expect(store.state.profile == nil)
@@ -125,12 +121,9 @@ struct ProfileReducerAsyncFlowTests {
 
   @Test("기수 변경 중에는 기존 프로필을 다시 조회하지 않는다")
   func fetchUserWhileEditingGenerationIsIgnored() async {
-    let suiteName = "ProfileReducerAsyncFlowTests.\(UUID().uuidString)"
-    let appStorage = UserDefaults(suiteName: suiteName)!
-    defer { appStorage.removePersistentDomain(forName: suiteName) }
-
+    let storage = InMemoryStorage()
     let initialState = withDependencies {
-      $0.defaultAppStorage = appStorage
+      $0.defaultInMemoryStorage = storage
     } operation: {
       var state = ProfileFeature.State()
       state.$editGeneration.withLock { $0 = true }
@@ -140,15 +133,122 @@ struct ProfileReducerAsyncFlowTests {
     let store = TestStore(initialState: initialState) {
       ProfileFeature()
     } withDependencies: {
-      $0.defaultAppStorage = appStorage
+      $0.defaultInMemoryStorage = storage
       $0.profileUseCase = StubProfileUseCase(
         cachedProfile: nil,
         getProfileResult: .success(ProfileTestSupport.memberProfile)
       )
     }
 
-    await store.send(.async(.fetchUser))
+    await store.send(.async(.fetchUser)) {
+      $0.viewState = .failed
+    }
     await store.finish()
+  }
+
+  @Test("이전 버전의 기수 변경 저장값이 남아도 캐시 없는 프로필을 서버에서 복구한다")
+  func legacyEditFlagDoesNotBlockProfileLoading() async {
+    let defaults = UserDefaults.inMemory
+    defaults.set(true, forKey: "editGeneration")
+    let profile = ProfileTestSupport.memberProfile
+    let store = TestStore(initialState: ProfileFeature.State()) {
+      ProfileFeature()
+    } withDependencies: {
+      $0.defaultAppStorage = defaults
+      $0.defaultInMemoryStorage = InMemoryStorage()
+      $0.profileUseCase = StubProfileUseCase(refreshProfileResult: .success(profile))
+    }
+
+    #expect(!store.state.editGeneration)
+    await store.send(.async(.fetchUser))
+    await store.receive(\.inner.fetchUserResponse) {
+      $0.viewState = .loaded
+      $0.profile = profile
+    }
+    await store.finish()
+  }
+
+  @Test("캐시가 없는 업데이트 사용자도 실패 후 재시도로 프로필을 복구한다")
+  func retryAfterColdCacheFailureLoadsProfile() async {
+    let store = TestStore(initialState: ProfileFeature.State()) {
+      ProfileFeature()
+    } withDependencies: {
+      $0.profileUseCase = StubProfileUseCase()
+    }
+
+    await store.send(.async(.fetchUser))
+    await store.receive(\.inner.fetchUserResponse) {
+      $0.viewState = .failed
+    }
+
+    store.dependencies.profileUseCase = StubProfileUseCase(
+      refreshProfileResult: .success(ProfileTestSupport.memberProfile)
+    )
+    await store.send(.view(.retryProfileTapped))
+    await store.receive(\.async.fetchUser) {
+      $0.viewState = .loading
+    }
+    await store.receive(\.inner.fetchUserResponse) {
+      $0.viewState = .loaded
+      $0.profile = ProfileTestSupport.memberProfile
+    }
+    await store.finish()
+  }
+
+  @Test("세션 프로필은 캐시 조회 전부터 표시하며 갱신 실패 후에도 유지한다")
+  func sessionFallbackStaysVisibleDuringRefreshFailure() async {
+    var state = ProfileFeature.State()
+    state.$userSession.withLock {
+      $0 = UserSession(userID: 7, name: "기존 사용자", generation: "1기")
+    }
+    let store = TestStore(initialState: state) {
+      ProfileFeature()
+    } withDependencies: {
+      $0.profileUseCase = StubProfileUseCase()
+    }
+    await store.send(.async(.fetchUser)) {
+      $0.viewState = .loaded
+    }
+    await store.receive(\.inner.fetchUserResponse)
+    #expect(store.state.displayedProfile?.name == "기존 사용자")
+
+    await store.send(.inner(.setLoading(true)))
+    #expect(store.state.viewState == .loaded)
+    await store.finish()
+  }
+
+  @Test("취소를 무시하고 늦게 도착한 서버 응답은 기수 변경 중 프로필을 덮어쓰지 않는다")
+  func cancelledRefreshDoesNotApplyLateResponse() async {
+    let started = AsyncStream<Void>.makeStream()
+    let pending = LockIsolated<CheckedContinuation<ProfileEntity, Never>?>(nil)
+    var useCase = StubProfileUseCase(cachedProfile: ProfileTestSupport.memberProfile)
+    useCase.refreshOperation = {
+      await withCheckedContinuation { continuation in
+        pending.setValue(continuation)
+        started.continuation.yield(())
+      }
+    }
+    let store = TestStore(initialState: ProfileFeature.State()) {
+      ProfileFeature()
+    } withDependencies: {
+      $0.profileUseCase = useCase
+    }
+
+    await store.send(.async(.fetchUser))
+    await store.receive(\.inner.fetchUserResponse) {
+      $0.viewState = .loaded
+      $0.profile = ProfileTestSupport.memberProfile
+    }
+    var iterator = started.stream.makeAsyncIterator()
+    _ = await iterator.next()
+
+    await store.send(.delegate(.presentEditGeneration)) {
+      $0.$editGeneration.withLock { $0 = true }
+    }
+    pending.value?.resume(returning: ProfileTestSupport.managerProfile)
+    started.continuation.finish()
+    await store.finish()
+    #expect(store.state.profile == ProfileTestSupport.memberProfile)
   }
 
   // MARK: - deleteUser

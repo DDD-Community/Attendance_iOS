@@ -35,7 +35,7 @@ public struct SelectManagingFeature {
     var managers: IdentifiedArrayOf<SelectManaging> = []
 
     @Shared(.userSession) var userSession
-    @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
+    @Shared(.isEditingGeneration) var editGeneration
     @Shared(.staffRole) var staffRole
     @Presents var alert: AlertState<AlertAction>?
   }
@@ -300,7 +300,6 @@ extension SelectManagingFeature {
         }
 
       case let .failure(error):
-        state.$editGeneration.withLock { $0 = false }
         state.alert = AlertState {
           TextState("프로필 수정 실패")
         } actions: {

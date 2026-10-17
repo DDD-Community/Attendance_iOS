@@ -39,7 +39,7 @@ public struct SelectTeamFeature {
 
 
     @Shared(.userSession) var userSession
-    @Shared(.appStorage("editGeneration")) var editGeneration: Bool = false
+    @Shared(.isEditingGeneration) var editGeneration
     @Shared(.staffRole) var staffRole
     @Presents var alert: AlertState<AlertAction>?
   }
@@ -322,7 +322,6 @@ extension SelectTeamFeature {
             }
 
           case .failure(let error):
-            state.$editGeneration.withLock { $0 = false }
             state.alert = AlertState {
               TextState("프로필 수정 실패")
             } actions: {

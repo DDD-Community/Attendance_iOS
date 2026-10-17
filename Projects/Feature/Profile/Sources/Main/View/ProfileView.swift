@@ -66,7 +66,7 @@ extension ProfileView {
   // 스켈레톤과 본문 사이를 크로스페이드하려면 두 분기를 감싸는 공통 컨테이너가 필요하다.
   @ViewBuilder
   fileprivate func mangerProfileLoadingContent() -> some View {
-    if store.viewState == .loading {
+    if store.displayedProfile == nil {
       VStack {
         Spacer()
           .frame(height: 12)
@@ -77,8 +77,32 @@ extension ProfileView {
           .backButtonAccessibilityIdentifier(ProfileAccessibilityID.Main.backButton)
           .actionButtonAccessibilityIdentifier(ProfileAccessibilityID.Main.infoButton)
 
-        ProfileSkeletonView()
-          .dddAccessibilityID(ProfileAccessibilityID.Main.skeleton)
+        if store.viewState == .loading {
+          ProfileSkeletonView()
+            .dddAccessibilityID(ProfileAccessibilityID.Main.skeleton)
+        } else {
+          Spacer()
+          VStack(spacing: 16) {
+            Text("프로필을 불러오지 못했어요")
+              .font(.headline)
+            Text(store.editGeneration
+              ? "기수 변경을 마친 뒤 다시 확인해 주세요."
+              : "네트워크 연결을 확인하고 다시 시도해 주세요.")
+              .font(.subheadline)
+              .multilineTextAlignment(.center)
+            if !store.editGeneration {
+              Button("다시 시도") {
+                send(.retryProfileTapped)
+              }
+              .buttonStyle(.borderedProminent)
+              .dddAccessibilityID(ProfileAccessibilityID.Main.retryButton)
+            }
+          }
+          .foregroundStyle(.white)
+          .padding(24)
+          .dddAccessibilityID(ProfileAccessibilityID.Main.failure)
+          Spacer()
+        }
       }
       // 컨테이너로 표시하지 않으면 root ID 가 하위 Button 들의 ID 를 덮어쓴다.
       .accessibilityElement(children: .contain)

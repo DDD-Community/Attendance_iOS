@@ -58,6 +58,15 @@ enum AppDatabaseMigrator {
       try #sql("DELETE FROM profileCache").execute(db)
       try #sql("DELETE FROM scheduleCache").execute(db)
     }
+    migrator.registerMigration("2026-10-15-legacy-cache-import") { db in
+      try #sql("""
+        CREATE TABLE legacyCacheImport (
+          id INTEGER PRIMARY KEY NOT NULL,
+          profileUserID INTEGER,
+          scheduleUserID INTEGER
+        )
+        """).execute(db)
+    }
     try migrator.migrate(database)
   }
 }

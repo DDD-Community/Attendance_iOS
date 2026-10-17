@@ -594,6 +594,9 @@ module.exports = async ({ github, context, core }) => {
     buildRunUrl,
   });
 
+  await core.summary.addRaw(body.replace(MARKER, "")).write();
+  if (process.env.REPORT_COMMENT === "false") return;
+
   const target = {
     owner: context.repo.owner,
     repo: context.repo.repo,
@@ -609,7 +612,6 @@ module.exports = async ({ github, context, core }) => {
     await github.rest.issues.createComment({ ...target, body });
   }
 
-  await core.summary.addRaw(body.replace(MARKER, "")).write();
 };
 
 module.exports.__test__ = {
