@@ -4,7 +4,10 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import subprocess
+import signal
 from unittest.mock import patch
+from unittest.mock import MagicMock
 
 SPEC = importlib.util.spec_from_file_location("qa_runner", Path(__file__).parents[1] / "run-qa.py")
 qa = importlib.util.module_from_spec(SPEC)
@@ -13,6 +16,30 @@ UDID = "6A3E9844-040C-4B1D-9388-0984B681292F"
 
 
 class DeviceTests(unittest.TestCase):
+    def test_command_cleans_owned_group_after_failure_and_success(self):
+        for status in (0, 1):
+            process = MagicMock(pid=123456, returncode=status)
+            process.__enter__.return_value = process
+            process.communicate.return_value = (b"done", b"failed")
+            with patch.object(qa.subprocess, "Popen", return_value=process) as popen, \
+                 patch.object(qa.os, "killpg") as kill:
+                if status:
+                    with self.assertRaisesRegex(RuntimeError, "Command exited 1"):
+                        qa.command(["test-command"])
+                else:
+                    self.assertEqual(qa.command(["test-command"]), b"done")
+                self.assertTrue(popen.call_args.kwargs["start_new_session"])
+                kill.assert_called_once_with(123456, signal.SIGKILL)
+
+    def test_command_timeout_preserves_error_when_group_already_exited(self):
+        process = MagicMock(pid=123456)
+        process.__enter__.return_value = process
+        process.communicate.side_effect = [subprocess.TimeoutExpired("test", 1), (b"", b"")]
+        with patch.object(qa.subprocess, "Popen", return_value=process), \
+             patch.object(qa.os, "killpg", side_effect=ProcessLookupError):
+            with self.assertRaisesRegex(RuntimeError, "timed out after 1s"):
+                qa.command(["test-command"], timeout=1)
+
     def test_rejects_implicit_target_before_invoking_any_command(self):
         with patch.object(qa, "command") as command:
             for value in ["booted", "iPhone Duo", "", "--help"]:
@@ -66,7 +93,7 @@ class DeviceTests(unittest.TestCase):
             self.assertEqual(metadata["app_version"], "1.1.2")
             self.assertEqual(metadata["app_build"], "2609071448")
 
-    def exercise(self, fail_test=False, fail_screenshot=False, expected_build=None):
+    def exercise(self, fail_test=False, fail_screenshot=False, expected_build=None, profile=False):
         with tempfile.TemporaryDirectory(prefix="qa test ") as directory:
             root = Path(directory)
             cli = root / "maestro"
@@ -88,9 +115,26 @@ class DeviceTests(unittest.TestCase):
                  patch.object(qa, "target", return_value=(UDID, {"app_id": qa.APP})), \
                  patch.object(qa, "environment", return_value={}), \
                  patch.object(qa, "command", side_effect=invoke), patch("builtins.print"):
-                status = qa.run(UDID, expected_build=expected_build)
-            result = json.loads(next(root.glob("artifacts/qa/*/result.json")).read_text())
+                status = qa.run(UDID, expected_build=expected_build, profile=profile)
+            result_root = Path(qa.os.environ.get("ATTENDANCE_QA_ARTIFACTS", root / "artifacts/qa"))
+            result = json.loads(next(result_root.glob("*/result.json")).read_text())
             return status, result, calls
+
+    def test_ci_artifacts_survive_outside_checkout(self):
+        with tempfile.TemporaryDirectory() as external:
+            with patch.dict(qa.os.environ, {"ATTENDANCE_QA_ARTIFACTS": external}):
+                status, result, _ = self.exercise()
+            self.assertEqual(status, 0)
+            self.assertEqual(Path(result["artifacts"]).parent, Path(external).resolve())
+            self.assertTrue((Path(result["artifacts"]) / "result.json").is_file())
+
+    def test_profile_mode_is_explicit_and_records_separate_scope(self):
+        status, result, calls = self.exercise(profile=True)
+        self.assertEqual(status, 0)
+        self.assertEqual(result["scope"], "authenticated-profile")
+        test = next(c for c in calls if "test" in c)
+        self.assertTrue(test[-1].endswith("qa/profile.yaml"))
+        self.assertIn(UDID, test)
 
     def test_explicit_target_for_launch_cli_and_screenshot(self):
         status, result, calls = self.exercise()

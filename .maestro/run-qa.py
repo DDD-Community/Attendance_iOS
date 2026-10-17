@@ -30,13 +30,24 @@ def command(args, *, env=None, timeout=30, log=None, input_data=None):
         try:
             out, err = process.communicate(input_data, timeout=timeout)
         except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGKILL)
+            stop_process_group(process.pid)
             process.communicate()
             raise RuntimeError(f"Command timed out after {timeout}s: {args[0]}")
+        finally:
+            # Maestro can exit while its xcodebuild is still collecting diagnostics.
+            # Reap only this invocation's session, including after a normal exit.
+            stop_process_group(process.pid)
         if process.returncode:
             raise RuntimeError(f"Command exited {process.returncode}: {args[0]}\n"
                                + (err or b"").decode(errors="replace")[-2000:])
         return out or b""
+
+
+def stop_process_group(pid):
+    try:
+        os.killpg(pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
 
 
 def target(udid, expected_build=None):
@@ -86,7 +97,7 @@ def environment():
     return env
 
 
-def run(udid, display="primary", expected_build=None):
+def run(udid, display="primary", expected_build=None, profile=False):
     udid, metadata = target(udid, expected_build=expected_build)
     if not CLI.is_file():
         raise ValueError("Pinned CLI missing. Run: bash .maestro/install-cli.sh")
@@ -94,21 +105,21 @@ def run(udid, display="primary", expected_build=None):
     version = command([CLI, "--version"], env=env, timeout=60).decode().strip()
     if not re.search(r"(?m)^2\.11\.0\s*$", version):
         raise ValueError(f"Expected Maestro 2.11.0; received {version!r}")
-    parent = ROOT / "artifacts/qa"
+    parent = Path(os.environ.get("ATTENDANCE_QA_ARTIFACTS", ROOT / "artifacts/qa")).resolve()
     parent.mkdir(parents=True, exist_ok=True)
     output = Path(tempfile.mkdtemp(prefix="run-", dir=parent))
     result = {**metadata, "udid": udid, "maestro_version": "2.11.0",
               "started_at": datetime.now(timezone.utc).isoformat(),
-              "scope": "installed-app-start-screen", "status": "failed",
+              "scope": "authenticated-profile" if profile else "installed-app-start-screen", "status": "failed",
               "vision_status": "not_run", "display": display, "artifacts": str(output)}
     launched = False
     try:
         # simctl does not terminate a running app unless explicitly requested.
         command([XCRUN, "simctl", "launch", udid, APP])
         launched = True
-        args = [CLI, "--device", udid, "test", "--debug-output", output / "debug",
+        args = [CLI, "--verbose", "--device", udid, "test", "--debug-output", output / "debug",
                 "--format", "junit", "--output", output / "junit.xml",
-                ROOT / "qa/observe.yaml"]
+                ROOT / ("qa/profile.yaml" if profile else "qa/observe.yaml")]
         result["command"] = [str(a) for a in args]
         with (output / "maestro.log").open("wb") as log:
             command(args, env=env, timeout=180, log=log)
@@ -135,9 +146,10 @@ if __name__ == "__main__":
     parser.add_argument("--device", required=True, help="Explicit booted simulator UDID")
     parser.add_argument("--display", default="primary", help="Screenshot display (default: primary)")
     parser.add_argument("--expected-build", help="Require this exact installed 1.1.2 build number")
+    parser.add_argument("--profile", action="store_true", help="Open profile from an already authenticated home; preserve login")
     args = parser.parse_args()
     try:
-        sys.exit(run(args.device, args.display, args.expected_build))
+        sys.exit(run(args.device, args.display, args.expected_build, args.profile))
     except (ValueError, RuntimeError, OSError) as error:
         print(str(error), file=sys.stderr)
         sys.exit(1)
