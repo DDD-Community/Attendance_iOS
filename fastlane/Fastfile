@@ -262,6 +262,56 @@ def testflight_changelog(build_number)
   lines.join("\n")
 end
 
+# App Store Connect가 업로드 직후 상태 조회에서 5xx를 반환해도 바이너리는 도착한 경우가 있다.
+# 빌드가 처리 완료된 것을 확인하면 같은 빌드로 TestFlight 배포 단계만 이어서 실행한다.
+ASC_SERVER_ERROR = /status code 5\d\d|internal server error/i
+UPLOAD_RECOVERY_TIMEOUT = 15 * 60
+
+def upload_to_testflight_with_recovery(app_version:, build_number:, **options)
+  upload_to_testflight(options)
+rescue => e
+  raise unless e.message.match?(ASC_SERVER_ERROR)
+
+  UI.important("⚠️ App Store Connect 서버 오류로 업로드 결과를 확인하지 못했습니다. 빌드 #{app_version} (#{build_number}) 도착을 확인합니다.")
+  begin
+    wait_for_uploaded_build(app_version, build_number)
+  rescue => wait_error
+    UI.error("빌드 #{build_number}를 App Store Connect에서 확인하지 못했습니다: #{wait_error.message}")
+    raise e
+  end
+
+  UI.success("✅ 빌드 #{build_number} 도착 확인 — TestFlight 배포 단계만 이어서 진행합니다.")
+  upload_to_testflight(options.merge(
+    distribute_only: true,
+    app_identifier: BUNDLE_ID,
+    app_version: app_version,
+    build_number: build_number
+  ))
+end
+
+def wait_for_uploaded_build(app_version, build_number)
+  api_key = lane_context[Fastlane::Actions::SharedValues::APP_STORE_CONNECT_API_KEY]
+  Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.from(hash: api_key) if api_key
+  app = Spaceship::ConnectAPI::App.find(BUNDLE_ID)
+  UI.user_error!("App Store Connect에서 #{BUNDLE_ID} 앱을 찾지 못했습니다.") if app.nil?
+
+  build = FastlaneCore::BuildWatcher.wait_for_build_processing_to_be_complete(
+    app_id: app.id,
+    platform: Spaceship::ConnectAPI::Platform::IOS,
+    app_version: app_version,
+    build_version: build_number,
+    poll_interval: 30,
+    timeout_duration: UPLOAD_RECOVERY_TIMEOUT,
+    return_spaceship_testflight_build: false,
+    wait_for_build_beta_detail_processing: true
+  )
+  # BuildWatcher는 PROCESSING이 아니면 반환하므로 FAILED/INVALID 빌드는 여기서 걸러낸다.
+  unless build.processing_state == Spaceship::ConnectAPI::Build::ProcessingState::VALID
+    UI.user_error!("빌드 #{build_number} 처리 상태가 #{build.processing_state}입니다.")
+  end
+  build
+end
+
 platform :ios do
   before_all do
     unlock_match_keychain
@@ -297,7 +347,9 @@ platform :ios do
 
     begin
       CISlack.notify("upload")
-      upload_to_testflight(
+      upload_to_testflight_with_recovery(
+        app_version: current_app_version,
+        build_number: build_number,
         ipa: ipa_path,
         changelog: testflight_changelog(build_number),
         groups: ["DDD", "ddd"],
@@ -366,7 +418,9 @@ platform :ios do
     # Prod IPA를 TestFlight로 한 번 업로드하고 동일 빌드를 App Store 버전에 연결한다.
     # 외부 테스터 배포는 QA 레인에서 처리한다. 베타 심사 대기가 App Store 연결을 막지 않게 한다.
     CISlack.notify("upload")
-    upload_to_testflight(
+    upload_to_testflight_with_recovery(
+      app_version: version,
+      build_number: new_build_number,
       ipa: ipa_path,
       changelog: testflight_changelog(new_build_number),
       beta_app_description: "DDD 출석 앱입니다.",

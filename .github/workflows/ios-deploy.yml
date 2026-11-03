@@ -15,7 +15,8 @@ jobs:
     # release 머지 시 태그를 푸시하려면 쓰기 권한이 필요하다.
     permissions:
       contents: write
-    timeout-minutes: 20
+    # App Store Connect 5xx 이후 빌드 처리 완료를 확인하는 복구 대기(최대 15분)를 포함한다.
+    timeout-minutes: 35
 
     env:
       APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
