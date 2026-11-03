@@ -243,7 +243,7 @@ public actor MockAttendanceRepository: AttendanceInterface {
                 return Array(repeating: SessionAttendance(id: 1, userId: 1, userName: "Web1 Member", status: .attended, team: .web1), count: 4)
             case .web2:
                 return Array(repeating: SessionAttendance(id: 1, userId: 1, userName: "Web2 Member", status: .attended, team: .web2), count: 3)
-            case .unknown:
+            case .web3, .native1, .native2, .unknown:
                 return []
             }
         case .networkError:

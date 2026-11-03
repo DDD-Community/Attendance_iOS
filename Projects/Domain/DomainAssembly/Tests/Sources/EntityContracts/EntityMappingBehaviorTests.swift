@@ -44,9 +44,9 @@ struct EntityMappingBehaviorTests {
 
   @Test("SelectTeams는 모든 화면용 문구와 서버 이름을 매핑한다")
   func selectTeamsMapping() {
-    let teams: [SelectTeams] = [.and1, .and2, .ios1, .ios2, .web1, .web2, .unknown]
-    let managing = ["Android 1", "Android 2", "iOS 1", "iOS 2", "WEB 1", "WEB 2", ""]
-    let cards = ["Android1팀", "Android2팀", "iOS1팀", "iOS2팀", "WEB1팀", "WEB2팀", ""]
+    let teams: [SelectTeams] = [.and1, .and2, .ios1, .ios2, .web1, .web2, .web3, .native1, .native2, .unknown]
+    let managing = ["Android 1", "Android 2", "iOS 1", "iOS 2", "WEB 1", "WEB 2", "WEB 3", "Native 1", "Native 2", ""]
+    let cards = ["Android1팀", "Android2팀", "iOS1팀", "iOS2팀", "WEB1팀", "WEB2팀", "WEB3팀", "Native1팀", "Native2팀", ""]
 
     for index in teams.indices {
       #expect(teams[index].managingTeamDesc == managing[index])
@@ -56,6 +56,9 @@ struct EntityMappingBehaviorTests {
       _ = teams[index].selectTeamDescription
     }
     #expect(SelectTeams.from(name: "IOS 1팀") == .ios1)
+    #expect(SelectTeams.from(name: "WEB 3팀") == .web3)
+    #expect(SelectTeams.from(name: "NATIVE 1팀") == .native1)
+    #expect(SelectTeams.from(name: "NATIVE 2팀") == .native2)
     #expect(SelectTeams.from(name: "없는 팀") == .unknown)
   }
 
