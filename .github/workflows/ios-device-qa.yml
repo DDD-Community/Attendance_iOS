@@ -1,0 +1,55 @@
+name: iOS 1.1.2 device QA
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [develop]
+    paths:
+      - '.maestro/**'
+      - '.github/workflows/ios-device-qa.yml'
+
+concurrency:
+  group: attendance-device-qa
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  simulator-smoke:
+    name: Start-screen smoke (${{ matrix.device }})
+    # Forks can run this manually on their own runner; never execute fork PR code here.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: self-hosted
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        device: [duo, iphone18pro]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Validate QA runner isolation and result handling
+        run: python3 -m unittest discover -s .maestro/qa -p 'test_*.py'
+
+      - name: Setup iOS runner
+        uses: ./.github/actions/setup-ios-runner
+        env:
+          CONFIG_TAR: ${{ secrets.CONFIG_DIR_TAR_BASE64 }}
+          GOOGLE_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+
+      - name: Install and generate project
+        run: |
+          mise exec -- tuist install
+          mise exec -- tuist generate --no-open --cache-profile none
+
+      - name: Install pinned Maestro CLI
+        run: bash .maestro/install-cli.sh
+
+      - name: Build and observe disposable simulator
+        run: |
+          export ATTENDANCE_QA_ARTIFACTS="$HOME/attendance-qa-results/$GITHUB_REPOSITORY/$GITHUB_RUN_ID/$GITHUB_RUN_ATTEMPT"
+          python3 .maestro/run-ci-qa.py --device "${{ matrix.device }}"

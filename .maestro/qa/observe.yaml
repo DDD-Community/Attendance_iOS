@@ -1,0 +1,13 @@
+appId: io.DDD.Attendance
+name: 현재 세션의 시작 화면 확인
+---
+# 앱 실행은 run-qa.py의 simctl launch가 담당한다.
+# launchApp의 기본 권한 자동 허용과 상태 초기화를 사용하지 않는다.
+- extendedWaitUntil:
+    visible:
+      id: 'auth\.login\.root|member\.home\.root|management\.staff\.root'
+    timeout: 30000
+- extendedWaitUntil:
+    notVisible:
+      id: 'member\.home\.skeleton|management\.staff\.skeleton'
+    timeout: 30000

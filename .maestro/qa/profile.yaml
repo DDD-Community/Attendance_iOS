@@ -1,0 +1,28 @@
+appId: io.DDD.Attendance
+name: 로그인 세션을 유지한 프로필 표시 확인
+---
+# 로그인/초기화/프로필 변경 없이 현재 회원 또는 운영진 홈에서 진입한다.
+- extendedWaitUntil:
+    visible:
+      id: 'member\.home\.root|management\.staff\.root|profile\.main\.root'
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: 'member\.home\.profilebutton|management\.staff\.profilebutton'
+    commands:
+      - tapOn:
+          id: 'member\.home\.profilebutton|management\.staff\.profilebutton'
+- extendedWaitUntil:
+    visible:
+      id: 'profile\.main\.card'
+    timeout: 30000
+- assertVisible:
+    id: 'profile\.main\.root'
+- assertNotVisible:
+    id: 'profile\.main\.skeleton'
+- assertNotVisible:
+    id: 'profile\.main\.failure'
+- assertVisible:
+    id: 'profile\.main\.version'
+# 프로필에 머물러 run-qa.py가 동일 UDID/primary 화면을 증거로 캡처한다.

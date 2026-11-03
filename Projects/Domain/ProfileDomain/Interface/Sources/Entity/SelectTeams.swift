@@ -12,6 +12,9 @@ public enum SelectTeams: String, CaseIterable, Equatable, CustomStringConvertibl
   case ios2 = "IOS 2팀"
   case web1 = "WEB 1팀"
   case web2 = "WEB 2팀"
+  case web3 = "WEB 3팀"
+  case native1 = "NATIVE 1팀"
+  case native2 = "NATIVE 2팀"
   case unknown
 
 
@@ -21,6 +24,9 @@ public enum SelectTeams: String, CaseIterable, Equatable, CustomStringConvertibl
     switch self {
     case .web1: return "WEB 1"
     case .web2: return "WEB 2"
+    case .web3: return "WEB 3"
+    case .native1: return "Native 1"
+    case .native2: return "Native 2"
     case .and1: return "Android 1"
     case .and2: return "Android 2"
     case .ios1: return "iOS 1"
@@ -37,6 +43,9 @@ public enum SelectTeams: String, CaseIterable, Equatable, CustomStringConvertibl
     case .and2: return "🤖 Android 2팀"
     case .web1: return "🖥️ WEB 1팀"
     case .web2: return "🖥️ WEB 2팀"
+    case .web3: return "🖥️ WEB 3팀"
+    case .native1: return "📱 Native 1팀"
+    case .native2: return "📱 Native 2팀"
     case .unknown: return ""
     }
   }
@@ -47,6 +56,9 @@ public enum SelectTeams: String, CaseIterable, Equatable, CustomStringConvertibl
     switch self {
     case .web1: return "WEB1팀"
     case .web2: return "WEB2팀"
+    case .web3: return "WEB3팀"
+    case .native1: return "Native1팀"
+    case .native2: return "Native2팀"
     case .and1: return "Android1팀"
     case .and2: return "Android2팀"
     case .ios1: return "iOS1팀"

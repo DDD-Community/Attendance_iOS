@@ -161,5 +161,7 @@ CLAUDE.md
 
 # Maestro E2E 실행 산출물
 .maestro/artifacts/
+.maestro/.tools/
+.maestro/**/__pycache__/
 artifacts/
 fastlane/AuthKey_*.json
