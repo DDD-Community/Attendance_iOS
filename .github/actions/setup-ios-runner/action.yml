@@ -44,6 +44,18 @@ runs:
           echo "CI_DERIVED_DATA=$HOME/ci-derived-data/$DERIVED_DATA_DIRECTORY" >> "$GITHUB_ENV"
         fi
 
+    - name: Verify Fastlane Ruby
+      if: inputs.include-ruby-path == 'true'
+      shell: bash
+      run: |
+        expected="$(cat .ruby-version)"
+        actual="$(ruby -e 'print RUBY_VERSION' 2>/dev/null || true)"
+        if [[ "$actual" != "$expected" ]]; then
+          echo "::error::Ruby $expected 가 필요합니다. 현재: ${actual:-없음} ($(command -v ruby || echo 'ruby 없음'))"
+          exit 1
+        fi
+        echo "Fastlane Ruby: $actual ($(command -v ruby))"
+
     - name: Restore iOS build configuration
       shell: bash
       env:
