@@ -9,7 +9,7 @@ import Foundation
 import ProjectDescription
 
 public extension String {
-  static func appVersion(version: String = "1.1.2") -> String {
+  static func appVersion(version: String = "1.1.3") -> String {
     return version
   }
 
