@@ -37,8 +37,11 @@ public struct DDDTabs<Item: Identifiable>: View where Item.ID: Hashable {
             }
           }
           .padding(.horizontal, 24)
+          .animation(
+            .spring(response: 0.4, dampingFraction: 0.8),
+            value: selectedID
+          )
         }
-        .scrollDisabled(true)
 
         Spacer()
           .frame(height: 12)
@@ -46,7 +49,7 @@ public struct DDDTabs<Item: Identifiable>: View where Item.ID: Hashable {
         DDDDivider(color: .borderInactive.opacity(0.12))
           .offset(y: -12)
       }
-      .onChange(of: selectedID) { _, selectedID in
+      .onChange(of: selectedID, initial: true) { _, selectedID in
         guard let selectedID,
               items.contains(where: { $0.id == selectedID })
         else { return }

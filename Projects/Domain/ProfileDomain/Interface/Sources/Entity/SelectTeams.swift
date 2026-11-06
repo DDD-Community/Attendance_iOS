@@ -57,8 +57,8 @@ public enum SelectTeams: String, CaseIterable, Equatable, CustomStringConvertibl
     case .web1: return "WEB1팀"
     case .web2: return "WEB2팀"
     case .web3: return "WEB3팀"
-    case .native1: return "Native1팀"
-    case .native2: return "Native2팀"
+    case .native1: return "NATIVE 1팀"
+    case .native2: return "NATIVE 2팀"
     case .and1: return "Android1팀"
     case .and2: return "Android2팀"
     case .ios1: return "iOS1팀"
@@ -68,6 +68,25 @@ public enum SelectTeams: String, CaseIterable, Equatable, CustomStringConvertibl
   }
 
   public static func from(name: String) -> SelectTeams {
-    SelectTeams(rawValue: name) ?? .unknown
+    if let team = SelectTeams(rawValue: name) {
+      return team
+    }
+
+    let normalizedName = name
+      .uppercased()
+      .replacingOccurrences(of: " ", with: "")
+      .replacingOccurrences(of: "팀", with: "")
+    switch normalizedName {
+    case "WEB_1", "WEB1": return .web1
+    case "WEB_2", "WEB2": return .web2
+    case "WEB_3", "WEB3": return .web3
+    case "NATIVE_1", "NATIVE1": return .native1
+    case "NATIVE_2", "NATIVE2": return .native2
+    case "ANDROID_1", "ANDROID1", "AND_1", "AND1": return .and1
+    case "ANDROID_2", "ANDROID2", "AND_2", "AND2": return .and2
+    case "IOS_1", "IOS1": return .ios1
+    case "IOS_2", "IOS2": return .ios2
+    default: return .unknown
+    }
   }
 }
