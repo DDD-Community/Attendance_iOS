@@ -12,7 +12,7 @@ extension Array where Element == AttendanceTeamDTO {
     map {
       SelectTeamEntity(
         teamId: $0.teamId,
-        teams: SelectTeams(rawValue: $0.name) ?? .unknown
+        teams: SelectTeams.from(name: $0.name)
       )
     }
   }

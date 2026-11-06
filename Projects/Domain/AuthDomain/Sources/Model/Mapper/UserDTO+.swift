@@ -34,6 +34,12 @@ public extension UserDTO {
           return .web1
         case .web2:
           return .web2
+        case .web3:
+          return .web3
+        case .native1:
+          return .native1
+        case .native2:
+          return .native2
         case .notTeam, .unknown:
           return .unknown
         }
