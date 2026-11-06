@@ -46,7 +46,7 @@ struct EntityMappingBehaviorTests {
   func selectTeamsMapping() {
     let teams: [SelectTeams] = [.and1, .and2, .ios1, .ios2, .web1, .web2, .web3, .native1, .native2, .unknown]
     let managing = ["Android 1", "Android 2", "iOS 1", "iOS 2", "WEB 1", "WEB 2", "WEB 3", "Native 1", "Native 2", ""]
-    let cards = ["Android1팀", "Android2팀", "iOS1팀", "iOS2팀", "WEB1팀", "WEB2팀", "WEB3팀", "Native1팀", "Native2팀", ""]
+    let cards = ["Android1팀", "Android2팀", "iOS1팀", "iOS2팀", "WEB1팀", "WEB2팀", "WEB3팀", "NATIVE 1팀", "NATIVE 2팀", ""]
 
     for index in teams.indices {
       #expect(teams[index].managingTeamDesc == managing[index])
@@ -57,9 +57,15 @@ struct EntityMappingBehaviorTests {
     }
     #expect(SelectTeams.from(name: "IOS 1팀") == .ios1)
     #expect(SelectTeams.from(name: "WEB 3팀") == .web3)
+    #expect(SelectTeams.from(name: "WEB_3") == .web3)
     #expect(SelectTeams.from(name: "NATIVE 1팀") == .native1)
+    #expect(SelectTeams.from(name: "NATIVE_1") == .native1)
     #expect(SelectTeams.from(name: "NATIVE 2팀") == .native2)
+    #expect(SelectTeams.from(name: "NATIVE_2") == .native2)
+    #expect(SelectTeams.from(name: "IOS_1") == .ios1)
+    #expect(SelectTeams.from(name: "AND_1") == .and1)
     #expect(SelectTeams.from(name: "없는 팀") == .unknown)
+    #expect(SelectTeam.web3.description == "Web_3")
   }
 
   @Test("SelectTeamEntity는 팀 선택과 정렬을 제공한다")
@@ -74,7 +80,7 @@ struct EntityMappingBehaviorTests {
     #expect(teams[1].toSelectTeam == .web2)
     #expect(teams.orderedSelectTeams() == [.and1, .web2])
 
-    for team in [SelectTeams.and1, .and2, .ios1, .ios2, .web1, .web2] {
+    for team in [SelectTeams.and1, .and2, .ios1, .ios2, .web1, .web2, .web3, .native1, .native2] {
       #expect(SelectTeamEntity(teamId: 1, teams: team).toSelectTeam == team)
     }
   }
@@ -113,6 +119,9 @@ struct EntityMappingBehaviorTests {
     let cases: [(String, SelectTeams?, SelectParts?)] = [
       ("WEB 1팀 / FE", .web1, .frontend),
       ("WEB 2팀 / BE", .web2, .backend),
+      ("WEB 3팀 / BE", .web3, .backend),
+      ("NATIVE 1팀 / IOS", .native1, .ios),
+      ("NATIVE 2팀 / AND", .native2, .android),
       ("IOS 1팀 / IOS", .ios1, .ios),
       ("IOS 2팀 / PM", .ios2, .pm),
       ("ANDROID 1팀 / ANDROID", .and1, .android),

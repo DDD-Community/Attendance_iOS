@@ -10,10 +10,13 @@ import Foundation
 public enum SelectTeam: String, CaseIterable, Codable, Equatable, CustomStringConvertible {
   case web1 = "Web_1"
   case web2 = "Web_2"
+  case web3 = "Web_3"
   case and1 = "Android_1"
   case and2 = "Android_2"
   case ios1 = "iOS_1"
   case ios2 = "iOS_2"
+  case native1 = "NATIVE_1"
+  case native2 = "NATIVE_2"
   case notTeam = "NotTeam"
   
   case unknown
@@ -43,6 +46,12 @@ public enum SelectTeam: String, CaseIterable, Codable, Equatable, CustomStringCo
       return "Web_1"
     case .web2:
       return "Web_2"
+    case .web3:
+      return "Web_3"
+    case .native1:
+      return "NATIVE_1"
+    case .native2:
+      return "NATIVE_2"
     case .notTeam:
       return ""
     case .unknown:
@@ -64,6 +73,12 @@ public enum SelectTeam: String, CaseIterable, Codable, Equatable, CustomStringCo
       return "Web 1"
     case .web2:
       return "Web 2"
+    case .web3:
+      return "Web 3"
+    case .native1:
+      return "NATIVE 1"
+    case .native2:
+      return "NATIVE 2"
     case .notTeam:
       return ""
     case .unknown:
@@ -84,7 +99,13 @@ public enum SelectTeam: String, CaseIterable, Codable, Equatable, CustomStringCo
     case .web1:
       return "🖥️ Web 1팀"
     case .web2:
-      return "🖥️ Web 1팀"
+      return "🖥️ Web 2팀"
+    case .web3:
+      return "🖥️ Web 3팀"
+    case .native1:
+      return "📱 Native 1팀"
+    case .native2:
+      return "📱 Native 2팀"
     case .notTeam:
       return ""
     case .unknown:
@@ -93,12 +114,12 @@ public enum SelectTeam: String, CaseIterable, Codable, Equatable, CustomStringCo
   }
   
   public static var teamList: [SelectTeam] {
-    return [.and1, .and2, .ios1, .ios2, .web1, .web2]
+    return [.and1, .and2, .ios1, .ios2, .web1, .web2, .web3, .native1, .native2]
   }
   
   // MARK: - 출석 현황 리스트
   public static var attandanceList: [SelectTeam] {
-    return [.web1, .web2, .and1, .and2, .ios1, .ios2]
+    return [.web1, .web2, .web3, .and1, .and2, .ios1, .ios2, .native1, .native2]
   }
   
   // MARK: - 출석 현황 팀 이름
@@ -108,6 +129,8 @@ public enum SelectTeam: String, CaseIterable, Codable, Equatable, CustomStringCo
       return "Web 1팀"
     case .web2:
       return "Web 2팀"
+    case .web3:
+      return "Web 3팀"
     case .and1:
       return "Android 1팀"
     case .and2:
@@ -116,6 +139,10 @@ public enum SelectTeam: String, CaseIterable, Codable, Equatable, CustomStringCo
       return "iOS 1팀"
     case .ios2:
       return "iOS 2팀"
+    case .native1:
+      return "NATIVE 1팀"
+    case .native2:
+      return "NATIVE 2팀"
     default:
       return ""
     }

@@ -33,16 +33,8 @@ public struct Attendance: Equatable, Identifiable {
 public extension Attendance {
   var selectTeamEntity: SelectTeams? {
     guard let teamPart = userInfo.split(separator: "/").first else { return nil }
-    let normalized = teamPart.replacingOccurrences(of: " ", with: "").uppercased()
-    switch normalized {
-    case "WEB1팀": return .web1
-    case "WEB2팀": return .web2
-    case "IOS1팀": return .ios1
-    case "IOS2팀": return .ios2
-    case "ANDROID1팀", "AND1팀": return .and1
-    case "ANDROID2팀", "AND2팀": return .and2
-    default: return nil
-    }
+    let team = SelectTeams.from(name: String(teamPart))
+    return team == .unknown ? nil : team
   }
 
   var selectPartEntity: SelectParts? {
